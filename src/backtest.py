@@ -143,17 +143,33 @@ def build_features(p: Panel, cfg: dict) -> dict[str, np.ndarray]:
     }
 
 
-def eligible_mask(p: Panel, feat: dict, cfg: dict, t: int) -> np.ndarray:
+# Kapılar ayrı ayrı açılıp kapanabilir. Sebep: ölçüm (2026-07-26) bunların
+# AYNI ŞEY OLMADIĞINI gösterdi — SMA200 bir BİLGİ kapısıdır (skorun sıralayacağı
+# varyansı keser), likidite ve veri kalitesi ise UYGULANABİLİRLİK kapılarıdır
+# (işlem yapılamayan ismi elerler, bilgi yok etmezler). İkisini tek bayrağın
+# arkasına koymak, birini ölçerken diğerini de kapatmaya zorluyordu.
+VARSAYILAN_KAPILAR = {"sma200": True, "likidite": True, "veri": True}
+
+
+def eligible_mask(p: Panel, feat: dict, cfg: dict, t: int,
+                  kapilar: dict[str, bool] | None = None) -> np.ndarray:
     """t anında hangi isimler skorlanabilir. Kapılar skorlanmaz, ELER."""
     f, ev = cfg["faktorler"], cfg["evren"]
-    tol = float(f["kapilar"]["sma200_tolerans"])
+    k = {**VARSAYILAN_KAPILAR, **(kapilar or {})}
+    n = len(p.tickers)
 
-    ctr, s200 = p.c_tr[t], feat["sma200_tr"][t]
-    trend = np.isfinite(ctr) & np.isfinite(s200) & (ctr >= s200 * (1 - tol))
-    likit = feat["turnover_med_63"][t] >= float(ev["min_medyan_islem_hacmi_try"])
-    veri = np.isfinite(feat["mom_6_1"][t]) & np.isfinite(feat["mom_12_1"][t])
-    fiyat = np.isfinite(p.c_tr[t]) & (p.c_tr[t] > 0)
-    return trend & np.nan_to_num(likit, nan=False).astype(bool) & veri & fiyat
+    m = np.isfinite(p.c_tr[t]) & (p.c_tr[t] > 0)          # fiyat her hâlde şart
+
+    if k["sma200"]:
+        tol = float(f["kapilar"]["sma200_tolerans"])
+        s200 = feat["sma200_tr"][t]
+        m &= np.isfinite(s200) & (p.c_tr[t] >= s200 * (1 - tol))
+    if k["likidite"]:
+        likit = feat["turnover_med_63"][t] >= float(ev["min_medyan_islem_hacmi_try"])
+        m &= np.nan_to_num(likit, nan=False).astype(bool)
+    if k["veri"]:
+        m &= np.isfinite(feat["mom_6_1"][t]) & np.isfinite(feat["mom_12_1"][t])
+    return m if m.shape == (n,) else np.zeros(n, dtype=bool)
 
 
 def score_at(p: Panel, feat: dict, cfg: dict, t: int, *,
@@ -186,6 +202,7 @@ def walk_forward(cfg: dict, p: Panel, *, horizon: int, top_frac: float = 1 / 3,
                  cost_pct: float = 0.0, weights: dict[str, float] | None = None,
                  sector_map: dict[str, str] | None = None,
                  use_gates: bool = True,
+                 kapilar: dict[str, bool] | None = None,
                  start_idx: int | None = None,
                  end_idx: int | None = None) -> dict:
     """Örtüşmeyen dönemlerle yürüyen-ileri ölçüm.
@@ -236,7 +253,7 @@ def walk_forward(cfg: dict, p: Panel, *, horizon: int, top_frac: float = 1 / 3,
             ic_tum_seri.append(ic_tum)
 
         # --- (2) kapı + seçim: aynı uygun küme içinde eşleştirilmiş ---
-        uygun = (eligible_mask(p, feat, cfg, t) if use_gates
+        uygun = (eligible_mask(p, feat, cfg, t, kapilar) if use_gates
                  else np.ones(len(p.tickers), dtype=bool))
         havuz = uygun & tum
         if havuz.sum() < 2:
@@ -285,7 +302,9 @@ def walk_forward(cfg: dict, p: Panel, *, horizon: int, top_frac: float = 1 / 3,
         # HÜKÜM DAİMA EW TABANINA GÖRE — XU100 yalnız iletişim içindir.
         "hukum": stats.edge_verdict(s_ew["ort"], s_ew["n"], zn, o["min_anlamli_fark_puan"]),
         "ayar": {"horizon": horizon, "top_frac": top_frac, "cost_pct": cost_pct,
-                 "kapilar": use_gates, "sektor_notr": cfg["faktorler"]["sektor_notr"],
+                 "kapilar": ({**VARSAYILAN_KAPILAR, **(kapilar or {})}
+                             if use_gates else "hepsi kapalı"),
+                 "sektor_notr": cfg["faktorler"]["sektor_notr"],
                  "agirliklar": weights or factors.effective_weights(cfg, horizon)},
     }
 

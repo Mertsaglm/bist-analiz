@@ -217,6 +217,174 @@ def backtest_report(cfg: dict, sonuc: dict) -> str:
     return "\n".join(L)
 
 
+def diagnose_report(cfg: dict, t: dict, h: dict) -> str:
+    """Teşhis raporu — hüküm vermez, mekanizma adlandırır."""
+    L: list[str] = []
+    A = L.append
+    r = t["referans"]
+    e = t["enstruman"]
+
+    A(f"# Teşhis Raporu — {bugun()}")
+    A("")
+    A("> ⚠ **Bu bir revizyon turu DEĞİLDİR.** Burada strateji seçilmez; enstrüman "
+      "doğrulanır ve kayıp bileşenlerine ayrılır. Hiçbir varyant \"kazanan\" ilan "
+      "edilmez; her kol ortak referanstan TEK TEK saptırılır, kombinasyon aranmaz.")
+    A("")
+    A(f"**Referans kurulum:** {r['ayar']} → alfa vs EW "
+      f"**{_s(r['alfa']['ort'], 2, 'pp')}** (t={_s(r['alfa']['t'])}, N={r['alfa']['n']})")
+    A("")
+
+    # ------------------------------------------------- 1) enstrüman
+    A("## 1. Enstrüman doğrulaması — IC>0 iken alfa<0 nasıl olur?")
+    A("")
+    A("İki IC aynı şeyi ölçmüyor. Ayrışmanın kaynağı bu tabloda:")
+    A("")
+    A("| Ölçüm | popülasyon | IC ort | t | yorum |")
+    A("|---|---|---|---|---|")
+    A(f"| `ic_tum` | KAPISIZ tüm kesit (~{r['ic_tum']['n_donem']} dönem × tüm isimler) | "
+      f"{_s(e['ic_tum']['ic_ort'], 3)} | {_s(e['ic_tum']['t'])} | skor sıralayabiliyor mu |")
+    A(f"| `ic_uygun` | KAPILI havuz içi (ort. {_s(e['ort_havuz'], 1)} isim) | "
+      f"{_s(e['ic_uygun']['ic_ort'], 3)} | {_s(e['ic_uygun']['t'])} | kapıdan sonra kalan bilgi |")
+    A("")
+    A(f"**Seçim yönü tutarlılığı:** seçilenlerin ortalama skoru havuz ortalamasından "
+      f"yüksek olan dönem oranı = **%{e['secim_yonu_dogru_oran']*100:.0f}** "
+      f"({e['secim_yonu_n']} dönem). %100'den sapma sıralamanın ters uygulandığını gösterir.")
+    A("")
+    A(f"### Tanı: `{h['tani']}`")
+    A("")
+    A(h["aciklama"])
+    A("")
+
+    # ------------------------------------------------- 2) atıf
+    A("## 2. Atıf — kayıp hangi kolda?")
+    A("")
+    A("Her satır referanstan **tek bir** sapmadır. `Δ` = o kolun tek başına "
+      "getirdiği alfa değişimi (pp).")
+    A("")
+    A("| Kol | N | alfa vs EW | **Δ** | t | IC(tüm) | IC(uygun) |")
+    A("|---|---|---|---|---|---|---|")
+    A(f"| _referans_ | {r['alfa']['n']} | {_s(r['alfa']['ort'], 2, 'pp')} | — | "
+      f"{_s(r['alfa']['t'])} | {_s(e['ic_tum']['ic_ort'], 3)} | "
+      f"{_s(e['ic_uygun']['ic_ort'], 3)} |")
+    for a in t["atif"]:
+        A(f"| {a['kol']} | {a['n']} | {_s(a['alfa'], 2, 'pp')} | "
+          f"**{_s(a['delta'], 2, 'pp')}** | {_s(a['t'])} | "
+          f"{_s(a['ic_tum'], 3)} | {_s(a['ic_uygun'], 3)} |")
+    A("")
+    if h.get("baskin_kol"):
+        b = h["baskin_kol"]
+        A(f"**Baskın kol:** `{b['kol']}` → tek başına {_s(b['delta'], 2, 'pp')} "
+          f"iyileşme getiriyor.")
+    A("")
+
+    # ------------------------------------------------- 3) IC × ufuk
+    A("## 3. Sıralama bilgisi hangi ufukta yaşıyor? (kapısız, tüm kesit)")
+    A("")
+    A("| H (gün) | N | IC ort | t(IC) | alfa vs EW | t |")
+    A("|---|---|---|---|---|---|")
+    for hh, v in t["ic_ufuk"].items():
+        A(f"| {hh} | {v['n']} | {_s(v['ic']['ic_ort'], 3)} | {_s(v['ic']['t'])} | "
+          f"{_s(v['alfa']['ort'], 2, 'pp')} | {_s(v['alfa']['t'])} |")
+    A("")
+
+    # ------------------------------------------------- 4) faktör × IC
+    A("## 4. Faktör bazlı sıralama bilgisi (kapısız)")
+    A("")
+    A("| Faktör | IC tam | t | IC OOS | t | alfa tam | alfa OOS |")
+    A("|---|---|---|---|---|---|---|")
+    for ad, v in t["faktor_ic"].items():
+        A(f"| `{ad}` | {_s(v['tam']['ic_ort'], 3)} | {_s(v['tam']['t'])} | "
+          f"{_s(v['oos']['ic_ort'], 3)} | {_s(v['oos']['t'])} | "
+          f"{_s(v['alfa_tam']['ort'], 2, 'pp')} | {_s(v['alfa_oos']['ort'], 2, 'pp')} |")
+    A("")
+    A(f"> {stats.bonferroni_note(t['n_test'])} — teşhis adımı olduğu için burada "
+      "hüküm verilmiyor; bu tablolar bir sonraki deneyi TASARLAMAK içindir.")
+    return "\n".join(L)
+
+
+def revizyon_report(cfg: dict, r: dict) -> str:
+    """Ön kayıtlı revizyon turu raporu. Karar MEKANİK, ön kayıttaki kurala göre."""
+    L: list[str] = []
+    A = L.append
+    y, ref, k = r["yeni"], r["referans"], r["karar"]
+
+    A(f"# Ön Kayıtlı Revizyon Turu #1 — {bugun()}")
+    A("")
+    A(f"> Ön kayıt: `docs/on-kayit-revizyon-01.md`")
+    A(f"> sha256 (koşudan **önce** mühürlendi): `{r['on_kayit_sha'][:32]}…`")
+    A("")
+    A(f"**Karar kuralı (sonucu görmeden yazıldı):** {k['kural']}")
+    A("")
+    a = r["ayar"]
+    A(f"**Konfigürasyon:** H={a['ufuk']} · SMA200 kapısı **KAPALI** "
+      f"(likidite+veri kapıları açık) · üst %{a['top_frac']*100:.0f} · "
+      f"%{a['maliyet']:.2f} maliyet · {a['evren']} isim · OOS {a['oos_split']}")
+    A("")
+
+    A("## Sonuç")
+    A("")
+    A("| Kurulum | dilim | N | alfa vs EW | t | IC(tüm) | t(IC) | hüküm |")
+    A("|---|---|---|---|---|---|---|---|")
+    for ad, d, s in (("referans", "tam", ref["tam"]), ("referans", "OOS", ref["oos"]),
+                     ("**yeni**", "tam", y["tam"]), ("**yeni**", "in-sample", y["in_sample"]),
+                     ("**yeni**", "**OOS**", y["oos"])):
+        e = s["alfa_ew"]
+        A(f"| {ad} | {d} | {e['n']} | {_s(e['ort'], 2, 'pp')} | {_s(e['t'])} | "
+          f"{_s(s['ic_tum']['ic_ort'], 3)} | {_s(s['ic_tum']['t'])} | {s['hukum']} |")
+    A("")
+
+    A("## Tek-kol OOS katkıları (yorumlanabilirlik — karar VERMEZ)")
+    A("")
+    A("İki değişiklik birlikte test edildi çünkü bağımsız değiller "
+      "(H=42 aynı zamanda `high52_prox`'un ağırlığını sıfırdan çıkarıyor). "
+      "Hangisinin ne kadar getirdiği yine de ayrıştırılabilir:")
+    A("")
+    A("| Kol | N | alfa vs EW | t | IC(uygun) |")
+    A("|---|---|---|---|---|")
+    for ad, s in r["kollar"].items():
+        e = s["alfa_ew"]
+        A(f"| {ad} | {e['n']} | {_s(e['ort'], 2, 'pp')} | {_s(e['t'])} | "
+          f"{_s(s['ic']['ic_ort'], 3)} |")
+    A(f"| **ikisi birlikte (ön kayıtlı)** | {y['oos']['alfa_ew']['n']} | "
+      f"**{_s(y['oos']['alfa_ew']['ort'], 2, 'pp')}** | "
+      f"{_s(y['oos']['alfa_ew']['t'])} | {_s(y['oos']['ic']['ic_ort'], 3)} |")
+    A("")
+
+    A("## Faktör bazlı OOS (yeni konfigürasyon)")
+    A("")
+    A("| Faktör | N | alfa vs EW | t | IC(tüm) | t(IC) | hüküm |")
+    A("|---|---|---|---|---|---|---|")
+    for ad, s in r["faktorler"].items():
+        e = s["alfa_ew"]
+        A(f"| `{ad}` | {e['n']} | {_s(e['ort'], 2, 'pp')} | {_s(e['t'])} | "
+          f"{_s(s['ic_tum']['ic_ort'], 3)} | {_s(s['ic_tum']['t'])} | {s['hukum']} |")
+    A("")
+
+    A("## KARAR")
+    A("")
+    o = k["olculen"]
+    A(f"Ölçülen (OOS): N={o['N']}, Δ={_s(o['delta'], 2, 'pp')}, t={_s(o['t'])} "
+      f"→ `{k['hukum']}`")
+    A("")
+    if k["gecti"]:
+        A("✅ **GEÇTİ.** Ön kayıttaki kural sağlandı: OOS'ta eşit-ağırlık tabana "
+          "göre POZİTİF `zayıf kanıt`. Faz 3-6 kurulur ve çıktı dili **ölçülmüş "
+          "zayıf kenar** üzerine oturur — \"doğrulandı\" değil, \"zayıf kanıt\".")
+    else:
+        A("🛑 **GEÇMEDİ.** Ön kayıttaki kural sağlanmadı ve **ikinci tur yok**. "
+          "Plan gereği doğrudan yeniden çerçeveleme: sistem \"izleme + risk "
+          "disiplini + haber/veto aracı\" olarak tamamlanır, kenar iddia etmez, "
+          "seviyeleri planlama geometrisi olarak sunar. Faz 3-6 yine kurulur; "
+          "değişen tek şey çıktının DİLİDİR.")
+    A("")
+    A(f"> Çoklu test muhasebesi: teşhis adımında {r['n_teshis_test']} karşılaştırma "
+      f"yapıldı, bu tur {r['n_test']} tane daha ekliyor. "
+      f"{stats.bonferroni_note(r['n_teshis_test'] + r['n_test'])}")
+    A("")
+    A("> Bu sistemde en güçlü hüküm `zayıf kanıt`tır; \"doğrulandı\" dalı YOKTUR.")
+    return "\n".join(L)
+
+
 def write(cfg: dict, ad: str, icerik: str) -> str:
     """Raporu `reports/` altına yazar ve yolu döner."""
     p = util.ensure_parent(f"{cfg['paths']['reports_dir']}/{ad}")

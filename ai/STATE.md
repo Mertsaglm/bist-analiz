@@ -4,7 +4,7 @@
 > KISA TUT: ~100 satırı aşınca eskiyi `ai/archive/STATE-YYYY-MM.md`'ye taşı.
 
 **Son güncelleme:** 2026-07-26
-**Aktif milestone:** 🛑 **Faz 2 kapısı KAPALI — karar Mert'te** (bkz. DECISIONS #007)
+**Aktif milestone:** Faz 3 — **yeniden çerçevelenmiş** kapsamda (bkz. DECISIONS #008)
 
 ## ✅ Tamamlananlar
 
@@ -49,10 +49,19 @@
   işarete kör kapı) — ikisi de sonucu değiştirdi. Ayrıntı: DECISIONS #007.
 - Rapor: `reports/olcum_2026-07-26.md`
 
+**Teşhis + ön kayıtlı revizyon turu #1** (2026-07-26)
+- `diagnose.py` + `revizyon.py` + CLI (`bist teshis`, `bist revizyon`)
+- Teşhis: ayrışma bug DEĞİL — sıralama bilgisinin **%79'u SMA200 kapısında**
+  kayboluyor (`ic_tum` 0.042 t=2.42 → `ic_uygun` 0.009 t=0.20). Enstrüman sağlam.
+- Ön kayıt koşudan ÖNCE mühürlendi: `docs/on-kayit-revizyon-01.md` sha `6677c296…`
+- **Revizyon GEÇMEDİ:** OOS N=21, Δ=+0.81pp, t=0.89 → `kenar yok` (çıta 1.0pp).
+  Yön düzeldi (−1.12pp → +0.81pp) ama çıtaya ulaşmadı. **İkinci tur yok.**
+- Ayrıca üçüncü bir işaret-körlüğü bulundu ve düzeltildi: `diagnose.verdict`
+  `ic>0` diye bakıyordu; IC=0.009 (t=0.20) "pozitif" sayılıyordu → artık t tabanlı.
+
 ## 🔨 Devam Edenler
-- **Karar bekliyor:** kapı kapalı. Üç seçenek Mert'e sunuldu —
-  (A) ön kayıtlı sınırlı revizyon turu, (B) "izleme + disiplin aracı" olarak
-  yeniden çerçeveleme, (C) dur. Plan gereği Faz 3-6'ya GEÇİLMEDİ.
+- **Yeniden çerçeveleme uygulanıyor.** Faz 3-6 kurulacak ama çıktı dili
+  "kenar iddiası" değil "planlama geometrisi + risk disiplini + haber/veto".
 
 ## 🧱 Bloklar / Bekleyenler
 - **EVDS_API_KEY yok** (`.env`). Makro katmanı kod olarak hazır ama veri boş;
@@ -60,13 +69,14 @@
   (uydurma yok). Anahtar girilince: `bist makro backfill`.
 
 ## 🎯 Sıradaki 3 İş
-1. **Mert'in kapı kararı** — A / B / C. Bu cevaplanmadan kod yazılmaz.
-2. (A seçilirse) **Ön kayıtlı revizyon turu.** Varyantlar ÖNCEDEN yazılır,
-   sonra koşulur, `bonferroni_note` uygulanır. Ölçümün işaret ettiği üçlü:
-   SMA200 kapısını kaldır · ana ufuk H=42 · kısa vadeli tersine dönüş işareti.
-   DoD: OOS'ta POZİTİF `zayıf kanıt` var mı — evet/hayır, tek turda.
-3. (Karar ne olursa olsun) **Faz 3-6 altyapısı** yine kurulacak; değişen tek şey
-   çıktının DİLİ: kenar iddiası mı, "planlama geometrisi + disiplin" mi.
+1. **Faz 3 — plan üretici + risk + rejim**, yeniden çerçevelenmiş dille.
+   DoD: geçerli plan menüsü, fiyatlar geçerli tick'te, stop [1.5,4.0]×ATR,
+   hedefler yalnız gerçek pivotlardan; her çıktıda "ölçülen kenar yok,
+   bu seviyeler planlama geometrisidir" ibaresi.
+2. **Faz 4 — journal + resolver + replay.** Kenar olmasa da bunlar değerli:
+   süreç ölçülür, IC zaman içinde izlenir, slippage ve hata taksonomisi birikir.
+3. **Faz 5 — LLM sınırı.** Yeniden çerçevelemede LLM'in veto + haber okuma
+   katmanı ASIL ürün: ölçemediğimiz ama sayısal olmayan bilginin yaşadığı yer.
 
 ## 📦 Backlog (şimdi değil, unutma da)
 - `data/*.sql` dump şu an **gitignore**'da (15 MB türev veri, 3 dakikada yeniden
@@ -74,8 +84,14 @@
   veritabanını sıfırdan kurar, arşivin repoda olması gerekir.
 - `Proje Yardımcısı/` klasöründe şablonun kendi README + `yeni-proje.sh`'si duruyor
   (Mert "kullanabilirsin" dedi, yerinde bırakıldı).
-- `volscaled_mom` faktörü ÖLÇÜLMEDİ — ağırlığı 0.10'da sabit; Faz 2 OOS'unda katkı
-  göstermezse 0'a düşür.
+- **`high52_prox` hipotezi** — revizyon koşusunda tek başına OOS'ta +1.61pp
+  (t=1.81), IC 0.113 (t=2.42) verdi, yani çıtayı geçen TEK satır. 34
+  karşılaştırma içinden sonucu görüp seçmek p-hacking olacağı için bugünkü
+  karara GİRMEDİ. Gelecekte AYRI ve ön kayıtlı bir tur hak ediyor.
+- `volscaled_mom` OOS'ta katkı göstermedi (−0.22pp, IC t=0.74) — ağırlığı
+  0'a düşürmek için de ön kayıt gerekir.
+- Evren BIST-100 tamamına genişletilirse kesitsel dağılım artar; OOS N de
+  2+ yıl sonra artacak. İkisi de aynı ön kaydın tekrar koşulmasını mümkün kılar.
 - 500 TL üstü fiyat adımı ölçülemedi (evrende gözlem yok) — bir hisse o banda
   girerse önce yeniden ölç.
 - ASTOR/EUPWR profilini 6 ayda bir yeniden doğrula (kısa geçmiş, yüksek vol).

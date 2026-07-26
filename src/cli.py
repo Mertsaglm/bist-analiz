@@ -197,6 +197,39 @@ def cmd_backtest(args) -> int:
     return 0 if sonuc["kapi"]["acik"] else 2
 
 
+# ---------------------------------------------------------------- teşhis
+def cmd_teshis(args) -> int:
+    cfg = _cfg()
+    con = db.connect(cfg)
+    from . import diagnose, report
+
+    print("Teşhis koşuyor (enstrüman doğrulaması + 5 kollu atıf)…\n")
+    t = diagnose.run(cfg, con)
+    h = diagnose.verdict(t)
+    metin = report.diagnose_report(cfg, t, h)
+    yol = report.write(cfg, f"teshis_{report.bugun()}.md", metin)
+    print(metin)
+    print(f"\n\nRapor yazıldı: {yol}")
+    con.close()
+    return 0
+
+
+# ---------------------------------------------------------------- revizyon
+def cmd_revizyon(args) -> int:
+    cfg = _cfg()
+    con = db.connect(cfg)
+    from . import report, revizyon
+
+    print("Ön kayıtlı revizyon turu #1 koşuyor…\n")
+    r = revizyon.run(cfg, con)
+    metin = report.revizyon_report(cfg, r)
+    yol = report.write(cfg, f"revizyon01_{report.bugun()}.md", metin)
+    print(metin)
+    print(f"\n\nRapor yazıldı: {yol}")
+    con.close()
+    return 0 if r["karar"]["gecti"] else 2
+
+
 # ---------------------------------------------------------------- db
 def cmd_db(args) -> int:
     cfg = _cfg()
@@ -252,6 +285,12 @@ def build_parser() -> argparse.ArgumentParser:
     bt.add_argument("--end", help="YYYY-MM-DD")
     bt.add_argument("--top-frac", type=float, dest="top_frac", help="uygun havuzun kaçta kaçı seçilsin (varsayılan 0.33)")
     bt.set_defaults(fn=cmd_backtest)
+
+    ts = sub.add_parser("teshis", help="kayıp atıfı — revizyon turu DEĞİL")
+    ts.set_defaults(fn=cmd_teshis)
+
+    rv = sub.add_parser("revizyon", help="ön kayıtlı revizyon turu #1")
+    rv.set_defaults(fn=cmd_revizyon)
 
     d = sub.add_parser("db", help="veritabanı dump/restore/durum")
     d.add_argument("alt", choices=["dump", "restore", "durum"])

@@ -6,6 +6,72 @@
 
 ---
 
+## #008 — 2026-07-26 — Teşhis + ön kayıtlı revizyon turu #1 GEÇMEDİ → proje yeniden çerçeveleniyor
+
+**Bağlam:** #007'de kapı kapandı. Üç farklı öneri geldi; değerlendirilip şu yol
+seçildi: önce **teşhis** (revizyon turu SAYILMAZ), sonra teşhisin işaret ettiği
+**tek** ön kayıtlı revizyon turu, başarısızlıkta ikinci tur yok.
+
+### Teşhis — ayrışma bir bug DEĞİL, kapının kendisi
+
+| Ölçüm | popülasyon | IC | t |
+|---|---|---|---|
+| `ic_tum` | kapısız tüm kesit | 0.042 | **2.42** |
+| `ic_uygun` | SMA200 kapısından geçen havuz | 0.009 | **0.20** |
+
+Sıralama bilgisinin **%79'u kapıda kayboluyor.** Enstrüman sağlam: seçim yönü
+tutarlılığı %96; sentetik testlerde mükemmel momentumda IC≈1, ters sinyalde IC≈−1.
+
+Atıf (referans −0.86pp'den tek-kol sapmalar): H=42 **+2.11pp** · SMA200 kapısı
+kapalı **+1.15pp** · genişlik %50 +0.75pp · evren 18 +0.59pp · maliyet %0 +0.30pp.
+
+IC ufukla **monoton** artıyor ve t(IC) beş ufkun hepsinde ≥2.2 —
+tek şanslı hücre değil, doz-cevap ilişkisi:
+H=5: 0.024 (t=2.88) · H=10: 0.027 (2.28) · H=20: 0.042 (2.42) ·
+H=42: 0.065 (2.61) · H=63: 0.064 (2.21).
+
+Ayrıca bulunan kurulum hatası: `high52_min_ufuk_gun=21` ve ana ufuk H=20 idi →
+**en güçlü faktörün ağırlığı sıfırlanmıştı** (`high52_prox`: IC 0.059 t=3.38).
+
+### Ön kayıtlı revizyon turu #1 — ve sonucu
+
+Ön kayıt koşudan ÖNCE yazılıp mühürlendi: `docs/on-kayit-revizyon-01.md`,
+sha256 `6677c296…`. İki değişiklik: SMA200 kapısı skorlama yolundan çıkar
+(likidite+veri kapıları kalır) · ana ufuk H=42.
+
+**Sonuç (OOS): N=21, Δ=+0.81pp, t=0.89 → `kenar yok`.**
+Çıta |Δ|≥1.0pp idi. **GEÇMEDİ.**
+
+Yön düzeldi (referans OOS −1.12pp → +0.81pp, yani +1.93pp iyileşme) ama ön
+kayıttaki çıtaya ulaşmadı.
+
+### Baştan çıkarıcı hücre — ve neden ona UYULMUYOR
+
+Aynı koşuda `high52_prox` tek başına OOS'ta **+1.61pp (t=1.81), IC 0.113
+(t=2.42)** → `zayıf kanıt: +1.6p` verdi. Çıtayı geçen tek satır bu.
+
+**Bu satıra göre karar VERİLMİYOR.** Sebep: 34 karşılaştırmanın içinden sonucu
+gördükten sonra en iyi hücreyi seçmek, ön kaydın engellemek için yazıldığı şeyin
+ta kendisidir. Ön kayıtlı konfigürasyon birleşik skordu ve o geçmedi.
+`high52_prox` **gelecekte ön kayıtlı bir tur için hipotez** olarak Backlog'a
+yazıldı — bugünün kararına girmiyor.
+
+**Karar:** Proje **yeniden çerçeveleniyor.** Sistem "izleme + risk disiplini +
+haber/veto aracı" olarak tamamlanır: kenar iddia etmez, seviyeleri planlama
+geometrisi olarak sunar. Faz 3-6 **yine kurulur** — değişen tek şey çıktının DİLİ.
+
+**Neden bu doğru karar:** ölçüm harness'i tam da bunun için LLM katmanından önce
+kuruldu ve iki turda üç kez kendi kendini düzeltti (dönem düşürme yanlılığı,
+işarete kör kapı, işarete kör tanı fonksiyonu). Sistem bugün kendi hakkında
+abartılı konuşamıyor — ürünün asıl değeri bu.
+
+**Tekrar gözden geçir:** (a) 2+ yıl daha veri biriktikten sonra OOS N artar ve
+aynı ön kayıt tekrar koşulabilir; (b) `high52_prox` için ayrı ve ön kayıtlı bir
+tur; (c) evren 67'den BIST-100 tamamına genişletilirse kesitsel dağılım artar.
+Üçü de YENİ ön kayıt ister — bu turun sonucu yeniden yorumlanmaz.
+
+---
+
 ## #007 — 2026-07-26 — Faz 2 KAPISI KAPALI: mevcut faktör seti bu evrende pozitif kenar üretmiyor
 
 **Bağlam:** Plan, LLM katmanına yatırım yapmadan önce faktörlerin ölçülebilir bir
