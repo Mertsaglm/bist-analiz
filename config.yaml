@@ -4,8 +4,8 @@
 # TÜM eşik / oran / URL / parametre BU DOSYADA. Koda sabit gömülmez.
 # Bir eşiği değiştirmek isteyen tek yere bakar.
 #
-# ⚠ "DOĞRULA:" ile işaretli bloklar Faz 1 DoD'sinde resmî kaynağa karşı
-#   teyit edilecek. Teyit edilene kadar bunlara dayanan çıktı "taslak"tır.
+# Sayıların yanındaki yorumlar GEREKÇEDİR: nereden geldiği, ölçüldü mü yoksa
+# varsayım mı. "TEYİT EDİLDİ" = doğrulandı; "VARSAYIM" / "ÖLÇÜLMEDİ" = henüz değil.
 # ============================================================================
 
 paths:
@@ -78,8 +78,8 @@ takvim:
   # holidays_tr.yaml YALNIZCA gelecek tarihler için (zaman bariyeri hesabı).
   turet_kaynak_endeks: "XU100"
   timezone: "Europe/Istanbul"
-  # DOĞRULA: BIST Pay Piyasası seans saatleri (2016'da öğle arası KALDIRILDI,
-  # sürekli işlem). Faz 1 DoD: borsaistanbul.com yayımlanmış seans saatleriyle teyit.
+  # TEYİT EDİLDİ 2026-07-26: emir toplama 09:40 başlar, sürekli işlem 10:00-18:00
+  # KESİNTİSİZ (öğle arası 2016'da kaldırıldı), kapanış seansı 18:10'da biter.
   seans:
     acilis_muzayede_baslangic: "09:40"
     surekli_islem_baslangic:   "10:00"
@@ -163,16 +163,26 @@ rejim:
 risk:
   pozisyon_basi_risk_pct: 1.0      # portföyün yüzde kaçı stop'ta kaybedilir
   maks_pozisyon_pct: 10.0
-  # DOĞRULA: BIST Pay Piyasası fiyat adımları. Faz 1 DoD: borsaistanbul.com
-  # yayımlanmış "fiyat adımı" tablosuyla teyit. Yuvarlanmamış fiyat = uygulanamaz plan.
+  # TEYİT EDİLDİ 2026-07-26 — web kaynağından değil, KENDİ VERİMİZDEN ölçüldü.
+  # Yöntem: her ticker'ın SON kurumsal işleminden sonraki barlar (bölünme düzeltmesi
+  # uygulanmamış, yani ham tick ızgarası korunmuş) → 4.372 bar, 2020-11 … 2026-07.
+  # Her fiyat bandında "tüm fiyatları tam bölen en büyük adım" arandı:
+  #     0-20 TL    1618 bar   1kr:%100  2kr:%51            → adım 0.01
+  #    20-50 TL    1435 bar   2kr:%100  5kr:%27            → adım 0.02
+  #    50-100 TL    294 bar   5kr:%100 10kr:%55            → adım 0.05
+  #   100-250 TL    525 bar  10kr:%100 25kr:%29            → adım 0.10
+  #   250-500 TL    500 bar  25kr:%100 50kr:%62            → adım 0.25
+  # Yuvarlanmamış fiyat = UYGULANAMAZ plan; bu tablo planlayıcının şartıdır.
   fiyat_adimlari:
-    - { ust_sinir: 19.99,   adim: 0.01 }
-    - { ust_sinir: 49.98,   adim: 0.02 }
-    - { ust_sinir: 99.95,   adim: 0.05 }
-    - { ust_sinir: 249.90,  adim: 0.10 }
-    - { ust_sinir: 499.75,  adim: 0.25 }
-    - { ust_sinir: 999.50,  adim: 0.50 }
-    - { ust_sinir: null,    adim: 1.00 }
+    - { ust_sinir: 19.99,   adim: 0.01 }   # ölçüldü
+    - { ust_sinir: 49.98,   adim: 0.02 }   # ölçüldü
+    - { ust_sinir: 99.95,   adim: 0.05 }   # ölçüldü
+    - { ust_sinir: 249.90,  adim: 0.10 }   # ölçüldü
+    - { ust_sinir: 499.75,  adim: 0.25 }   # ölçüldü
+    # ⚠ Aşağıdaki iki bant ÖLÇÜLEMEDİ — evrende 500 TL üstü fiyat gözlemi yok.
+    #   Örüntünün devamı varsayıldı. Bir hisse bu banda girerse önce yeniden ölç.
+    - { ust_sinir: 999.50,  adim: 0.50 }   # VARSAYIM
+    - { ust_sinir: null,    adim: 1.00 }   # VARSAYIM
   gunluk_fiyat_limiti_pct: 10.0    # ±%10 — ATR'ye göre %12 uzaktaki stop bir günde tetiklenemez
   # Gidiş-dönüş maliyet: komisyon + BSMV + spread. Ölçüm: maliyet kenarın ~1/3'ünü yiyor.
   islem_maliyeti_gidis_donus_pct: 0.30

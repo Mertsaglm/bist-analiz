@@ -11,11 +11,17 @@ __pycache__/
 # Kişisel — projeler arası ortak profil, repoya girmez (gold_tracking_system konvansiyonu)
 ai/PROFILE.md
 
-# Veri — SQLite git'e ham girmez; deterministik SQL dump'ı girer (src/dbdump.py)
+# Veri — SQLite git'e ham girmez (ikili, diff'lenmez)
 data/*.db
 data/*.db-wal
 data/*.db-shm
 data/backup/
+
+# Deterministik SQL dump (src/dbdump.py) — şimdilik git'e GİRMİYOR.
+# 15 MB türev veri; `bist veri backfill` ile ~3 dakikada yeniden üretiliyor.
+# Faz 8'de (GitHub Actions) bu satır kaldırılacak: orada arşivin repoda olması
+# gerekir çünkü Actions kendi veritabanını her koşuda sıfırdan kurar.
+data/*.sql
 
 # LLM çalıştırma çıktıları — girdi paketi (llm/in) izlenir, çıktı izlenmez
 llm/out/
@@ -23,3 +29,7 @@ llm/out/
 # Üretilen raporlar (arşivlenmek istenenler elle eklenir)
 reports/*.md
 !reports/.gitkeep
+
+# Loglar
+logs/*.log
+logs/*.log.*

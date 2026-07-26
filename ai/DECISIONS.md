@@ -6,6 +6,63 @@
 
 ---
 
+## #006 — 2026-07-26 — Yahoo BIST tatillerinde HAYALET bar üretiyor; ayıklama ölçütü üç koşulun birleşimi
+
+**Bağlam:** Veri kalite kapısı ilk çalıştırmada tüm 19 ticker'da aynı `bayat kapanış = 3`
+değerini verdi. Aynı sayının her isimde çıkması sistematik bir iz — araştırıldı.
+
+**Bulgu:** Yahoo, borsanın KAPALI olduğu günlerde de bar döndürüyor: hacim 0,
+`o=h=l=c=önceki kapanış`. Kurban Bayramı 2026-05-27/28/29 (holidays_tr.yaml'de
+tam gün tatil):
+
+```
+2026-05-26  o 297.50  h 298.00  l 295.25  c 296.75  v 11.744.557
+2026-05-27  o 296.75  h 296.75  l 296.75  c 296.75  v 0     ← hayalet
+2026-05-28  o 296.75  h 296.75  l 296.75  c 296.75  v 0     ← hayalet
+2026-05-29  o 296.75  h 296.75  l 296.75  c 296.75  v 0     ← hayalet
+```
+
+Zararı sessiz ve yaygın: ATR bastırılır, volatilite olduğundan düşük ölçülür,
+RSI/ADX bozulur, zaman bariyeri 4 güne kadar kayar.
+
+**Kritik ikinci bulgu:** `XU100.IS` bu hatadan ETKİLENMİYOR — 2026'nın hiçbir
+tatilinde endeks barı yok. Yani "geçmiş takvimi endeks barlarından türet" kararı
+(#—, `calendar_bist.py`) hem doğru hem de ayıklama için otoriter ölçüt sağlıyor.
+
+**Seçenekler:**
+- A) `v=0` olan barları sil → SASA'nın 113 gerçek seans günü de silinirdi
+- B) `o=h=l=c` olan barları sil → gerçek işlem durdurma günleri silinirdi
+- C) Endekste barı olmayan günleri sil → endeksin kendi boşlukları gerçek barları silerdi
+- D) Üçünün BİRLEŞİMİ
+
+**Karar:** D — `o=h=l=c` **VE** `v=0` **VE** o gün endekste bar yok.
+Ölçüm bu birleşimin kesinliğini doğruluyor (19 ticker × ~2946 bar):
+
+| | satır | sonuç |
+|---|---|---|
+| Üç koşul birlikte | **841** | silindi — tamamı gerçekten tatil günü |
+| Endekste yok ama bar gerçek | 142 | KORUNDU (endeksin kendi boşlukları) |
+| Gerçek seansta düz + sıfır hacim | 63 | KORUNDU (ASELS 13, KCHOL 15 — işlem durdurma) |
+
+Yalnız (C) kullanılsaydı 142, yalnız (A)+(B) kullanılsaydı 63 gerçek bar silinirdi.
+
+Endeksin son barından SONRASINA dokunulmaz: endeks bir gün gecikebilir ve o
+penceredeki hisse barları gerçektir (doğrulandı — THYAO 2026-07-24, hacim 23,4mn).
+
+**Doğrulama:** ayıklama sonrası sıfır-hacim oranı 18 ticker'da %1.2 → **%0.0**,
+bayat kapanış 3 → 1. SASA %45.2'de kaldı (onun sıfır hacimleri GERÇEK seans
+günlerinde — kapı onu doğru olarak elemeye devam ediyor).
+
+**Neden ayıklama boru hattının içinde:** `backfill()` ve `daily()` sonunda otomatik
+çağrılıyor, ayrı bir `bist veri temizle` komutuna bırakılmadı — LESSONS L-002
+("elle bir kere çalıştırılan script'ler sessizce donar").
+
+**Tekrar gözden geçir:** Yahoo bu davranışı düzeltirse ayıklama 0 satır siler ve
+zararsız hale gelir; kaldırmaya gerek yok. `tests/test_prices.py` tatil günlerinde
+bar olmadığını doğruluyor — regresyon olursa CI söyler.
+
+---
+
 ## #005 — 2026-07-26 — LLM hesaplanabilir hiçbir sayıyı üretmez
 
 **Bağlam:** Finans odaklı LLM sistemlerinde en büyük problem yanlış tahmin değil,
