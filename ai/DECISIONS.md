@@ -6,6 +6,67 @@
 
 ---
 
+## #007 — 2026-07-26 — Faz 2 KAPISI KAPALI: mevcut faktör seti bu evrende pozitif kenar üretmiyor
+
+**Bağlam:** Plan, LLM katmanına yatırım yapmadan önce faktörlerin ölçülebilir bir
+kenarı olup olmadığını sormayı şart koşuyordu: *"OOS'ta hiçbir faktör EW tabanına
+göre 'zayıf kanıt' seviyesine ulaşmıyorsa DUR."*
+
+### Ölçüm kurulumu
+67 hisselik ölçüm evreni, 2015-01 … 2026-07 (2.889 bar), H=20 işlem günü,
+örtüşmeyen pencere, giriş t+1, %0.30 gidiş-dönüş maliyet, OOS bölme 2023-01-01,
+116 dönem ölçüldü (15 dönem atlandı, raporlandı).
+
+### Sonuç — kapı KAPALI
+
+| | alfa vs EW | t | IC(tüm kesit) | t(IC) | hüküm |
+|---|---|---|---|---|---|
+| birleşik, tam | −0.86pp | −1.85 | 0.042 | 2.42 | kenar yok |
+| birleşik, in-sample | −1.00pp | −1.50 | 0.043 | 1.98 | kenar yok |
+| birleşik, **OOS** | −1.12pp | −1.76 | 0.049 | 1.76 | **zayıf kanıt: −1.1p** |
+
+OOS'ta POZİTİF `zayıf kanıt` üreten faktör YOK. `mom_6_1`, `mom_12_1` ve
+`birleşik` ters yönde kanıt üretiyor: seçtikleri isimler tabanın ALTINDA kalıyor.
+
+### Yol boyunca bulunan İKİ HARNESS HATASI (ikisi de sonucu değiştirdi)
+
+1. **Dönem düşürme = rejim seçme yanlılığı.** İlk sürüm `uygun < top_n` olan
+   dönemleri atlıyordu. Ölçüldü: 131 dönemin **62'si** düşüyordu ve düşenler
+   2016-2019 ile 2024-2025'in TAMAMI — yani ölçüm yalnız geniş boğa
+   dönemlerinde yapılıyordu. Düzeltme: dönem atılmaz, portföy küçülür;
+   atlananlar raporlanır.
+2. **İşarete kör kapı.** `edge_verdict` bir BÜYÜKLÜK hükmüdür (|fark|). Kapı
+   yalnız hükme baktığı için `mom_12_1` (−1.47pp, t=−2.64) kapıyı **AÇIYORDU** —
+   güvenilir biçimde kaybettiren bir faktör "kanıt" sayılıyordu. Düzeltme: kapı
+   pozitif işaret şartı arar; negatif kanıt ayrı ve değerli bulgu olarak raporlanır.
+   Regresyon testi: `tests/test_backtest.py::TestKapiIsareti`.
+
+### Üç ek bulgu (hepsi eyleme dönük)
+
+- **Kapılar ZARAR veriyor:** kapılı −0.86pp (t=−1.85) vs kapısız +0.29pp (t=1.17).
+  SMA200 kapısı sıralamadan ÖNCE elediği için skorun ayırt edeceği aralığı
+  daraltıyor; kalan havuzda momentum sıralaması tersine dönüyor.
+- **16 isimlik evrende ölçüm yapılamıyor:** dar evrende hiçbir faktör t>1.6
+  üretemedi; 67 isme çıkınca IC t'leri 2.0-3.4'e yükseldi. Plan bunu baştan
+  söylüyordu ("işlem evreni ≠ ölçüm evreni") — ilk uygulamada atlanmıştı.
+- **IC ile alfa ayrışıyor:** IC(tüm kesit) tutarlı biçimde POZİTİF
+  (0.035-0.059, t 2.0-3.4) ama dar seçimin alfası negatif. Yani zayıf bir
+  sıralama bilgisi VAR, seçim onu getiriye çeviremiyor.
+
+**Karar:** Faz 3-6'ya **geçilmiyor**. Plan gereği durup seçenekler Mert'e sunuluyor.
+
+**Neden bu bir başarısızlık değil:** ölçüm harness'i tam da bunun için, LLM
+katmanından ÖNCE inşa edildi. Faz 3-6 önce yapılsaydı bu bilgi haftalar sonra
+ve çok daha pahalıya gelecekti. *"Sayıların küçülmesi dürüstlüğün büyümesidir."*
+
+**Tekrar gözden geçir:** Ön kayıtlı (pre-registered) sınırlı bir revizyon turu
+sonrası — ölçümün İŞARET ETTİĞİ üç değişiklik: (1) SMA200 kapısını kaldır,
+(2) H=42 ufkunu ana ufuk yap, (3) kısa vadeli tersine dönüş işaretini test et.
+Turun kaç varyant içerdiği ÖNCEDEN yazılır ve `bonferroni_note` uygulanır;
+aksi halde "geçene kadar deneme" veri madenciliğidir.
+
+---
+
 ## #006 — 2026-07-26 — Yahoo BIST tatillerinde HAYALET bar üretiyor; ayıklama ölçütü üç koşulun birleşimi
 
 **Bağlam:** Veri kalite kapısı ilk çalıştırmada tüm 19 ticker'da aynı `bayat kapanış = 3`

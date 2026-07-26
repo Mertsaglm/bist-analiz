@@ -9,32 +9,34 @@ from tests.conftest import add_bars, add_index, add_universe
 
 
 class TestMigrations:
-    def test_yeni_db_taban_surumde(self, con):
-        assert migrations.current_version(con) == migrations.BASELINE_VERSION
+    def test_yeni_db_hedef_surumde(self, con):
+        """Yeni kurulan veritabanı TÜM migration'lar uygulanmış olarak açılır."""
+        assert migrations.current_version(con) == migrations.target_version()
 
     def test_apply_idempotent(self, con):
         v = migrations.current_version(con)
-        assert migrations.apply(con) == [] or True
-        migrations.apply(con)
-        assert migrations.current_version(con) == max(v, migrations.target_version())
+        assert migrations.apply(con) == []          # bekleyen yok
+        assert migrations.current_version(con) == v
 
     def test_sira_kopuksa_hata(self, con, monkeypatch):
         """Aradaki adım eksikse sessizce atlamaz — patlar.
 
         Sessiz atlama, farklı makinelerdeki veritabanlarının ayrışması demektir.
         """
+        kopuk = migrations.current_version(con) + 3
         monkeypatch.setattr(migrations, "MIGRATIONS",
-                            [(5, "kopuk", lambda c: None)])
+                            [(kopuk, "kopuk", lambda c: None)])
         with pytest.raises(RuntimeError, match="sırası kopuk"):
             migrations.apply(con)
 
     def test_migration_uygulanir_ve_surum_ilerler(self, con, monkeypatch):
+        sonraki = migrations.current_version(con) + 1
         monkeypatch.setattr(migrations, "MIGRATIONS", [
-            (2, "test kolonu", lambda c: c.execute(
+            (sonraki, "test kolonu", lambda c: c.execute(
                 "ALTER TABLE holdings ADD COLUMN test_kolon TEXT")),
         ])
-        assert migrations.apply(con) == ["v2: test kolonu"]
-        assert migrations.current_version(con) == 2
+        assert migrations.apply(con) == [f"v{sonraki}: test kolonu"]
+        assert migrations.current_version(con) == sonraki
         kolonlar = [r[1] for r in con.execute("PRAGMA table_info(holdings)")]
         assert "test_kolon" in kolonlar
 

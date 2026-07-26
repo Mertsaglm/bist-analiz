@@ -188,6 +188,49 @@ hisseler:
       Evrende bilerek tutuluyor — sıfır-hacim kapısının gerçekten elediğini
       canlı doğrulamak için. in_live=false, sinyal üretmez.
 
+# ==========================================================================
+# ÖLÇÜM EVRENİ — canlı sinyal üretmez, yalnız kalibrasyon/backtest içindir
+#
+# NEDEN AYRI: kesitsel sıralama, sıralanacak bir DAĞILIM ister. 16 isimle
+# "üst üçte bir" ≈ 3 isim demektir ve ölçüm gürültüde boğulur. Ölçüldü
+# (2026-07-26): 16 isimlik evrende hiçbir faktör kenar üretmedi, IC t≈1.0-1.6'da
+# takıldı. Plan bunu baştan söylüyordu: "işlem evreni ≠ ölçüm evreni".
+#
+# SEÇİM: ≥2000 bar (2015+), medyan günlük ciro ≥50mn TL, sıfır hacim <%3.
+# 88 aday tarandı, 67'si geçti (2026-07-26 canlı ölçüm).
+#
+# ⚠ SURVIVORSHIP BIAS: liste BUGÜNÜN likiditesine göre seçildi. 2015'te işlem
+#   görmeyen/likit olmayan isimler dışarıda, batmış/çıkmış isimler hiç yok.
+#   Bu, sonuçları stratejinin LEHİNE eğer. Düzeltilmiyor — büyüklüğü bilinmiyor,
+#   düzeltiyormuş gibi yapmak ölçümü sahtelemek olurdu. Raporda yazılı.
+# ==========================================================================
+olcum_evreni:
+  banka: [ISCTR, YKBNK, HALKB, VAKBN, SKBNK, ALBRK, TSKB]
+  ulasim: [PGSUS]
+  savunma: [OTKAR]
+  demir_celik: [ISDMR]
+  holding: [SAHOL, DOHOL, AGHOL, GLYHO, NTHOL, ALARK]
+  perakende: [MGROS, SOKM, MAVI, BERA]
+  gyo: [ISGYO, TRGYO]
+  telekom: [TTKOM]
+  otomotiv: [TOASO, DOAS, KARSN, TTRAK, JANTS]
+  kimya: [GUBRF, HEKTS, AKSA]
+  icecek: [AEFES, CCOLA]
+  gida: [ULKER, BANVT]
+  insaat: [TKFEN]
+  cimento: [OYAKC, CIMSA]
+  enerji: [ODAS, AKSEN, ZOREN, AYGAZ]
+  dayanikli_tuketim: [ARCLK, VESTL, VESBE]
+  boru_metal: [BRSAN]
+  ilac_saglik: [SELEC, ECILC]
+  makine: [EGEEN, TMSN]
+  spor: [TSPOR]
+
+# Ölçüm evreninden elenenler (ciro <50mn TL, 2026-07-26):
+#   INDES 45, KORDS 45, CEMTS 45, ASUZU 42, DEVA 37, BAGFS 33, YATAS 31,
+#   PARSN 28, KARTN 26, TATGD 25, PRKME 22, BRISA 21, KLMSN 20, PNSUT 17
+# Yahoo'da veri yok: TRKCM, IPEKE
+
 # --------------------------------------------------------------------------
 # Dışlananlar — gerekçesiyle (tekrar denenmesin diye)
 # --------------------------------------------------------------------------

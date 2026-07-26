@@ -4,7 +4,7 @@
 > KISA TUT: ~100 satırı aşınca eskiyi `ai/archive/STATE-YYYY-MM.md`'ye taşı.
 
 **Son güncelleme:** 2026-07-26
-**Aktif milestone:** Faz 2 — Ölçüm harness'i (projenin KAPISI)
+**Aktif milestone:** 🛑 **Faz 2 kapısı KAPALI — karar Mert'te** (bkz. DECISIONS #007)
 
 ## ✅ Tamamlananlar
 
@@ -39,8 +39,20 @@
 - `bist db dump` iki kez → **birebir aynı dosya** (sha 57df150f…) ✓
 - Seans saatleri ve fiyat adımları teyitli ✓
 
+**Faz 2 — ölçüm harness'i** (2026-07-26)
+- Modüller: `stats`, `indicators`, `factors`, `backtest`, `report` + CLI
+  (`bist gosterge`, `bist backtest`). **134 test geçiyor.**
+- Ölçüm evreni 67 hisseye çıkarıldı (`universe.yaml → olcum_evreni`); canlı
+  evren 18'de kaldı. 16 isimle kesitsel sıralama ÖLÇÜLEMİYOR.
+- **KAPI KAPALI** — OOS'ta pozitif kanıt yok; `bist backtest` çıkış kodu 2.
+- Yol boyunca iki harness hatası bulundu ve düzeltildi (dönem düşürme yanlılığı,
+  işarete kör kapı) — ikisi de sonucu değiştirdi. Ayrıntı: DECISIONS #007.
+- Rapor: `reports/olcum_2026-07-26.md`
+
 ## 🔨 Devam Edenler
-- _(yok — Faz 2'ye hazır)_
+- **Karar bekliyor:** kapı kapalı. Üç seçenek Mert'e sunuldu —
+  (A) ön kayıtlı sınırlı revizyon turu, (B) "izleme + disiplin aracı" olarak
+  yeniden çerçeveleme, (C) dur. Plan gereği Faz 3-6'ya GEÇİLMEDİ.
 
 ## 🧱 Bloklar / Bekleyenler
 - **EVDS_API_KEY yok** (`.env`). Makro katmanı kod olarak hazır ama veri boş;
@@ -48,15 +60,13 @@
   (uydurma yok). Anahtar girilince: `bist makro backfill`.
 
 ## 🎯 Sıradaki 3 İş
-1. **Faz 2 — ölçüm harness'i**: `stats` (edge_verdict, forward_returns_nonoverlap,
-   required_n, spearman), `indicators`, `levels` (look-ahead korumalı), `factors`,
-   `backtest.walk_forward` — DoD: rapor EW **ve** XU100 tabanlarını ayrı basıyor,
-   hüküm EW'ye göre; IC in-sample/OOS; maliyet duyarlılığı; her satırda `edge_verdict`
-2. **Faz 2 kabul testi**: harness ön ölçümleri yeniden üretmeli — 6-1 momentum, H=15,
-   %0.30 maliyet, EW tabana göre: ort ≈ +0.7…+0.9, t ≈ 1.8-1.9, N≈161
-3. **Faz 2 KAPISI**: OOS'ta hiçbir faktör EW tabanına göre "zayıf kanıt" seviyesine
-   ulaşmazsa **Faz 3-6'ya GEÇME** — evreni/ufku değiştir ya da projeyi "izleme +
-   disiplin aracı" olarak yeniden çerçevele
+1. **Mert'in kapı kararı** — A / B / C. Bu cevaplanmadan kod yazılmaz.
+2. (A seçilirse) **Ön kayıtlı revizyon turu.** Varyantlar ÖNCEDEN yazılır,
+   sonra koşulur, `bonferroni_note` uygulanır. Ölçümün işaret ettiği üçlü:
+   SMA200 kapısını kaldır · ana ufuk H=42 · kısa vadeli tersine dönüş işareti.
+   DoD: OOS'ta POZİTİF `zayıf kanıt` var mı — evet/hayır, tek turda.
+3. (Karar ne olursa olsun) **Faz 3-6 altyapısı** yine kurulacak; değişen tek şey
+   çıktının DİLİ: kenar iddiası mı, "planlama geometrisi + disiplin" mi.
 
 ## 📦 Backlog (şimdi değil, unutma da)
 - `data/*.sql` dump şu an **gitignore**'da (15 MB türev veri, 3 dakikada yeniden

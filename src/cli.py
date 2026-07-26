@@ -162,6 +162,41 @@ def cmd_makro(args) -> int:
     return 0
 
 
+# ---------------------------------------------------------------- gösterge
+def cmd_gosterge(args) -> int:
+    cfg = _cfg()
+    con = db.connect(cfg)
+    from . import indicators
+
+    r = indicators.compute_and_store(cfg, con, start=args.start)
+    toplam = sum(r["satir"].values())
+    bos = [t for t, n in r["satir"].items() if n == 0]
+    print(f"{r['set_version']}: {toplam:,} satır / {r['tickers']} ticker".replace(",", "."))
+    if bos:
+        print(f"Yetersiz bar nedeniyle atlanan: {', '.join(bos)}")
+    con.close()
+    return 0
+
+
+# ---------------------------------------------------------------- ölçüm
+def cmd_backtest(args) -> int:
+    cfg = _cfg()
+    con = db.connect(cfg)
+    from . import backtest, report
+
+    print("Ölçüm koşuyor (yürüyen-ileri, örtüşmeyen pencere)…\n")
+    sonuc = backtest.full_measurement(cfg, con, start=args.start, end=args.end,
+                                      top_frac=args.top_frac)
+    metin = report.backtest_report(cfg, sonuc)
+    yol = report.write(cfg, f"olcum_{sonuc['tarih']}.md", metin)
+
+    print(metin)
+    print(f"\n\nRapor yazıldı: {yol}")
+    con.close()
+    # Kapı kapalıysa çıkış kodu 2 — otomasyon bunu fark edebilsin.
+    return 0 if sonuc["kapi"]["acik"] else 2
+
+
 # ---------------------------------------------------------------- db
 def cmd_db(args) -> int:
     cfg = _cfg()
@@ -207,6 +242,16 @@ def build_parser() -> argparse.ArgumentParser:
     m = sub.add_parser("makro", help="TCMB EVDS")
     m.add_argument("alt", choices=["backfill", "gunluk", "durum"])
     m.set_defaults(fn=cmd_makro)
+
+    g = sub.add_parser("gosterge", help="göstergeleri hesapla ve dondur")
+    g.add_argument("--start", help="YYYY-MM-DD (varsayılan: tüm geçmiş)")
+    g.set_defaults(fn=cmd_gosterge)
+
+    bt = sub.add_parser("backtest", help="ÖLÇÜM harness'i — Faz 2 kapısı")
+    bt.add_argument("--start", help="YYYY-MM-DD")
+    bt.add_argument("--end", help="YYYY-MM-DD")
+    bt.add_argument("--top-frac", type=float, dest="top_frac", help="uygun havuzun kaçta kaçı seçilsin (varsayılan 0.33)")
+    bt.set_defaults(fn=cmd_backtest)
 
     d = sub.add_parser("db", help="veritabanı dump/restore/durum")
     d.add_argument("alt", choices=["dump", "restore", "durum"])

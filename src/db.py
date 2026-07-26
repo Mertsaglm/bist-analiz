@@ -92,6 +92,10 @@ CREATE TABLE IF NOT EXISTS indicator_daily (
     high_52w REAL, low_52w REAL, dist_high52_pct REAL,
     vol_ann_63 REAL, turnover_med_63 REAL,
     ret_21 REAL, ret_63 REAL, ret_126 REAL, ret_252 REAL,   -- c_tr üzerinden
+    -- Trend KAPISI toplam getiri uzayında: `c` üzerinden SMA200, pencerede
+    -- birikmiş temettü kadar yukarıda kalmış fiyatların ortalamasıdır ve
+    -- fiyatı sistematik olarak altında gösterir (bkz. migrations._m002).
+    sma50_tr REAL, sma200_tr REAL,
     computed_utc TEXT NOT NULL,
     PRIMARY KEY (ticker, date, set_version)
 );

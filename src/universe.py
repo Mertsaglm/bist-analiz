@@ -27,11 +27,12 @@ def sync(cfg: dict, con: sqlite3.Connection) -> dict:
     evrende kalır ve backtest ile canlı liste ayrışır.
     """
     data = load_yaml_universe(cfg)
-    hisseler = data.get("hisseler") or []
-
     rows = []
-    for h in hisseler:
+    gorulen: set[str] = set()
+
+    for h in (data.get("hisseler") or []):
         t = str(h["ticker"]).upper()
+        gorulen.add(t)
         rows.append((
             t,
             yf.yf_symbol(t, cfg),
@@ -43,6 +44,17 @@ def sync(cfg: dict, con: sqlite3.Connection) -> dict:
             (h.get("olcum") or {}).get("ilk_tarih"),
             h.get("not"),
         ))
+
+    # Ölçüm evreni: canlı sinyal ÜRETMEZ (in_live=0), yalnız kalibrasyona girer.
+    # Kesitsel sıralamanın sıralayacak bir dağılımı olsun diye var.
+    for sektor, liste in (data.get("olcum_evreni") or {}).items():
+        for ad in liste:
+            t = str(ad).upper()
+            if t in gorulen:            # canlı evrende zaten varsa oradaki kazanır
+                continue
+            gorulen.add(t)
+            rows.append((t, yf.yf_symbol(t, cfg), None, sektor, "olcum",
+                         0, 1, None, "yalnız ölçüm evreni"))
 
     cols = ["ticker", "yf_symbol", "name", "sector", "tier",
             "in_live", "in_measure", "listed_from", "notes"]
