@@ -6,6 +6,35 @@
 
 ---
 
+## L-006 — 2026-07-27 — Büyüklüğe bakıp anlamlılığa bakmamak; ve "kapı" fonksiyonlarının işaret körlüğü
+
+**Olay:** Tek bir oturumda AYNI kalıp DÖRT kez tekrarladı ve dördü de sistemi
+kendi lehine yanıltıyordu:
+
+1. `edge_verdict` bir BÜYÜKLÜK hükmü (|fark| ≥ eşik). Faz 2'nin kapı mantığı
+   yalnız hükme bakıyordu → `mom_12_1` (−1.47pp, t=−2.64) kapıyı **AÇTI**.
+   Güvenilir biçimde KAYBETTİREN bir faktör "kanıt" sayıldı.
+2. `diagnose.verdict` `ic_uygun > 0` diye kontrol ediyordu → IC=0.009 (t=0.20),
+   yani düpedüz sıfır, "pozitif" sayılıp yanlış tanı üretti.
+3. `ic_summary` IC hükmünü de `edge_verdict`e veriyordu → IC=0.057 / t=1.46
+   "zayıf kanıt" ilan edildi. IC için mutlak büyüklük anlamlı bir eşik DEĞİL.
+4. `llm_io._varyantlar` sayı biçimlerini YUVARLAYARAK üretiyordu → prose'daki
+   uydurma "47.3", "47" varyantını doğurup pakette 47.00 varsa HF-17'yi atladı.
+
+**Ders:** Bir eşik fonksiyonu yazarken iki soruyu AYRI sormak gerekiyor:
+"fark yeterince BÜYÜK mü?" ve "fark yeterince GÜVENİLİR mi (işaret + anlamlılık)?".
+Birini diğerinin yerine kullanmak, sonuç lehimize olduğunda fark edilmez —
+çünkü çıktı "iyi" görünür. Bu, bu projede tek başına en tehlikeli hata sınıfı:
+sistemin kendini kandırmasını sağlar ve kandırmayı fark edecek kimse yoktur.
+
+**Kural:** Bir "kapı"/"hüküm" fonksiyonu yazarken üçünü de açıkça yaz ve
+TESTİNİ KOY: (a) N yeterli mi, (b) İŞARET doğru yönde mi, (c) fark ANLAMLI mı.
+Farklı birimler (yüzde puan, korelasyon, olasılık) farklı eşik türü ister —
+bir birimde çalışan `edge_verdict`i başka birime taşıma. Ayrıca: bir denetim
+kuralı yazarken "bunu nasıl atlatırdım?" diye sor ve o kaçış yolunu teste çevir.
+
+---
+
 ## L-005 — 2026-07-26 — "Bilinen sorun" bilgisi bayatlar; inancı fixture testine çevir
 
 **Olay:** BIST veri kaynağı araştırmasında iki "bilinen sorun" bulundu: yfinance'in
