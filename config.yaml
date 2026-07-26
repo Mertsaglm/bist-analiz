@@ -200,6 +200,11 @@ planlayici:
   stop_yontemleri: [atr_2x, atr_2.5x, atr_3x, swing_low, sma_break_buffer]
   min_rr_t1: 1.5
   maks_plan_per_hisse: 3
+  # Giriş bandı fiyattan en fazla bu kadar ATR aşağıda olabilir.
+  # VAKA (2026-07-26): EUPWR fiyat ~90 TL iken 3 yıl önceki 32 TL seviyesi
+  # "destek retest" diye plan üretti (R:R 6.39) — tetiklenemez bir artefakt.
+  # Mutlak yüzde değil ATR ölçekli: volatil ve sakin hisse aynı kefeye konmasın.
+  maks_giris_uzakligi_atr: 3.0
   # Hedefler UYDURULMAZ — yalnız gerçek pivot/direnç seviyelerinden.
   # Geçerli seviye yoksa hedef üretilmez, plan üretilmez.
   hedef_kaynaklari: [pivot, yuksek_52h]

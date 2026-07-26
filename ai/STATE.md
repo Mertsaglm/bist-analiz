@@ -4,7 +4,7 @@
 > KISA TUT: ~100 satırı aşınca eskiyi `ai/archive/STATE-YYYY-MM.md`'ye taşı.
 
 **Son güncelleme:** 2026-07-26
-**Aktif milestone:** Faz 3 — **yeniden çerçevelenmiş** kapsamda (bkz. DECISIONS #008)
+**Aktif milestone:** Faz 4 — journal + resolver + replay
 
 ## ✅ Tamamlananlar
 
@@ -59,9 +59,28 @@
 - Ayrıca üçüncü bir işaret-körlüğü bulundu ve düzeltildi: `diagnose.verdict`
   `ic>0` diye bakıyordu; IC=0.009 (t=0.20) "pozitif" sayılıyordu → artık t tabanlı.
 
+**Faz 3 — plan üretici + risk + rejim** (2026-07-26)
+- Modüller: `risk`, `levels`, `regime`, `planner` + CLI (`bist plan`).
+  **214 test geçiyor.**
+- Her plan `validate_option`'dan geçiyor; tüm fiyatlar ölçülmüş tick ızgarasında;
+  stop [1.5,4.0]×ATR; hedefler YALNIZ gerçek pivot/52h zirvesinden.
+- Yeniden çerçeveleme uygulandı: her plan `uyari` alanında
+  "Ölçülen kenar yok (ADR #008) — planlama geometrisidir" taşıyor.
+- Yol boyunca üç kusur bulundu ve düzeltildi:
+  1. **EUPWR artefaktı:** fiyat ~90 TL iken 3 yıl önceki 32 TL seviyesi
+     "destek retest" planı üretiyordu (R:R 6.39). → `maks_giris_uzakligi_atr: 3.0`
+  2. **Yanıltıcı limit mesajı:** stop uzaklığı GİRİŞTEN, ulaşılabilirlik
+     BUGÜNKÜ FİYATTAN ölçülüyordu — iki referans tek cümlede (L-003).
+     → boşluk riski artık girişten ölçülüyor.
+  3. **"Plan yok" gerekçesi tek cümleye sıkışmıştı** — "zirvede, hedef yok" ile
+     "R:R yetmedi" farklı olgular. → `build_options` artık sebebi döndürüyor.
+- Ölçülen tasarım gerçeği: risk %1 + tavan %10 ile stop <%10 olan her planda
+  TAVAN BAĞLIYOR; volatilite hedeflemesi pratikte atıl, gerçekleşen risk
+  ~%0.6-0.9. Bilinçli muhafazakârlık olarak bırakıldı, koda not düşüldü.
+
 ## 🔨 Devam Edenler
-- **Yeniden çerçeveleme uygulanıyor.** Faz 3-6 kurulacak ama çıktı dili
-  "kenar iddiası" değil "planlama geometrisi + risk disiplini + haber/veto".
+- Faz 4: `journal`, `resolver` (üçlü bariyer, aynı gün stop kazanır), `holdings`,
+  `replay` (LLM'siz tam boru hattı).
 
 ## 🧱 Bloklar / Bekleyenler
 - **EVDS_API_KEY yok** (`.env`). Makro katmanı kod olarak hazır ama veri boş;
@@ -69,14 +88,15 @@
   (uydurma yok). Anahtar girilince: `bist makro backfill`.
 
 ## 🎯 Sıradaki 3 İş
-1. **Faz 3 — plan üretici + risk + rejim**, yeniden çerçevelenmiş dille.
-   DoD: geçerli plan menüsü, fiyatlar geçerli tick'te, stop [1.5,4.0]×ATR,
-   hedefler yalnız gerçek pivotlardan; her çıktıda "ölçülen kenar yok,
-   bu seviyeler planlama geometrisidir" ibaresi.
-2. **Faz 4 — journal + resolver + replay.** Kenar olmasa da bunlar değerli:
+1. **Faz 4 — journal + resolver + replay.** Kenar olmasa da bunlar değerli:
    süreç ölçülür, IC zaman içinde izlenir, slippage ve hata taksonomisi birikir.
-3. **Faz 5 — LLM sınırı.** Yeniden çerçevelemede LLM'in veto + haber okuma
+   DoD: replay 2024-2026 arası LLM'siz ~30 dönem üretiyor; üçlü bariyer elle
+   hesaplanmış fixture ile birebir; aynı gün stop+hedef vakasında STOP kazanıyor.
+2. **Faz 5 — LLM sınırı.** Yeniden çerçevelemede LLM'in veto + haber okuma
    katmanı ASIL ürün: ölçemediğimiz ama sayısal olmayan bilginin yaşadığı yer.
+   DoD: HF-01..HF-30'un her biri tek tek tetikleniyor.
+3. **Faz 6 — değerlendirme + rapor.** DoD: `bist degerlendir` ilk gün
+   "ölçüm yetersiz" demek ZORUNDA; sentetik-alfa testi bunu sabitliyor.
 
 ## 📦 Backlog (şimdi değil, unutma da)
 - `data/*.sql` dump şu an **gitignore**'da (15 MB türev veri, 3 dakikada yeniden

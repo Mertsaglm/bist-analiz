@@ -197,6 +197,45 @@ def cmd_backtest(args) -> int:
     return 0 if sonuc["kapi"]["acik"] else 2
 
 
+# ---------------------------------------------------------------- plan
+def cmd_plan(args) -> int:
+    cfg = _cfg()
+    con = db.connect(cfg)
+    from . import planner
+
+    asof = args.asof or db.scalar(con, "SELECT MAX(date) FROM bars_daily")
+    r = planner.build_menu(cfg, con, asof,
+                           tickers=[args.ticker.upper()] if args.ticker else None)
+    rj = r["rejim"]
+    print(f"Plan menüsü — {asof}  (zaman bariyeri {r['zaman_bariyeri']})")
+    print(f"Rejim: {rj['label']}  ·  nakit %{rj['cash_pct']:.0f}  ·  "
+          f"maks {rj['max_positions']} pozisyon  ·  boyut ×{rj['size_multiplier']}")
+    print(f"\n\u26a0 {r['uyari']}\n")
+
+    if not r["menu"]:
+        print("Geçerli plan üretilmedi.")
+    for t, opts in sorted(r["menu"].items()):
+        print(f"\n{t}")
+        for o in opts:
+            hedefler = ", ".join(f"{h['price']:.2f} (R:R {h['rr']})" for h in o.targets)
+            print(f"  [{o.plan_id}] {o.kind} · tetik {o.entry_trigger}")
+            print(f"     giriş {o.entry_low:.2f}–{o.entry_high:.2f} ({o.entry_zone_status})"
+                  f" · stop {o.stop_price:.2f} ({o.stop_method}, {o.stop_atr_multiple}×ATR)")
+            print(f"     hedefler: {hedefler}")
+            print(f"     boyut %{o.position_size_pct:.1f} · maks kayıp "
+                  f"%{o.max_loss_pct_of_portfolio:.2f} · {o.daily_limit_note}")
+    if r["atlanan"]:
+        print(f"\nPlan üretilmeyenler ({len(r['atlanan'])}):")
+        for t, neden in sorted(r["atlanan"].items()):
+            print(f"  {t:8} {neden}")
+
+    if args.kaydet:
+        n = sum(planner.store(cfg, con, o) for o in r["menu"].values())
+        print(f"\n{n} plan kaydedildi.")
+    con.close()
+    return 0
+
+
 # ---------------------------------------------------------------- teşhis
 def cmd_teshis(args) -> int:
     cfg = _cfg()
@@ -285,6 +324,12 @@ def build_parser() -> argparse.ArgumentParser:
     bt.add_argument("--end", help="YYYY-MM-DD")
     bt.add_argument("--top-frac", type=float, dest="top_frac", help="uygun havuzun kaçta kaçı seçilsin (varsayılan 0.33)")
     bt.set_defaults(fn=cmd_backtest)
+
+    pl = sub.add_parser("plan", help="deterministik plan menüsü")
+    pl.add_argument("ticker", nargs="?", help="tek hisse (varsayılan: tüm canlı evren)")
+    pl.add_argument("--asof", help="YYYY-MM-DD")
+    pl.add_argument("--kaydet", action="store_true", help="plan_options tablosuna yaz")
+    pl.set_defaults(fn=cmd_plan)
 
     ts = sub.add_parser("teshis", help="kayıp atıfı — revizyon turu DEĞİL")
     ts.set_defaults(fn=cmd_teshis)
