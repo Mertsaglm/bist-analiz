@@ -1,0 +1,209 @@
+# ============================================================================
+# İşlem evreni — 18 hisse
+#
+# TÜM sayılar 2026-07-26'da yfinance'ten CANLI ölçüldü (son 505 bar):
+#   medyan_tl_mn = medyan(Close × Volume) / 1e6
+#   vol_pct      = log getiri std × √252 × 100
+#   sifir_hacim_pct = Volume == 0 olan barların oranı
+# Hafızadan değil, ölçümden. Yeniden ölçmek için: bist evren tara
+#
+# in_live    = canlı sinyal evreninde mi
+# in_measure = ağırlık kalibrasyonuna (yavaş döngü backtest) girer mi
+#              ≥2000 bar (~8 yıl) gerektirir; kısa geçmişli isim ağırlık belirleyemez
+#
+# ⚠ SURVIVORSHIP BIAS: bu sabit bir listedir, nokta-zamanlı BIST-100 üyeliği değil.
+#   Backtest sonuçları bu eğilimi içerir. Düzeltiliyormuş gibi yapılmaz —
+#   büyüklüğü raporda yazılır (bkz. reports/backtest_*.md).
+# ============================================================================
+
+seciim_kriterleri:
+  - "medyan günlük işlem hacmi ≥ 200 mn TL (63g) — seviyelerin gerçek, slippage'ın küçük olması için"
+  - "≥2000 bar (~8 yıl) geçmiş → in_measure=1"
+  - "sıfır-hacim oranı (505 bar) < %5 — hacim tabanlı faktörlerin çöp üretmemesi için"
+  - "sektör başına maksimum 2 (bankalar tek blok sayılır)"
+  - "volatilite karması: düşük / orta / yüksek üçlüsü temsil edilsin"
+  - "veri çözülmeyen veya idari kontrol altındaki isimler dışarıda"
+
+hisseler:
+  # --- Çekirdek: kalite / likit (9) ---------------------------------------
+  - ticker: THYAO
+    sektor: ulasim
+    tier: cekirdek
+    in_live: true
+    in_measure: true
+    olcum: { bar: 6738, ilk_tarih: "2000-05-10", medyan_tl_mn: 9500, vol_pct: 31.6, sifir_hacim_pct: 0.6 }
+    not: "Evrenin en likit ismi"
+
+  - ticker: AKBNK
+    sektor: banka
+    tier: cekirdek
+    in_live: true
+    in_measure: true
+    olcum: { bar: 6738, ilk_tarih: "2000-05-10", medyan_tl_mn: 6015, vol_pct: 43.1, sifir_hacim_pct: 0.6 }
+    not: "Banka #1 — sektör tavanı 2"
+
+  - ticker: GARAN
+    sektor: banka
+    tier: cekirdek
+    in_live: true
+    in_measure: true
+    olcum: { bar: 6738, ilk_tarih: "2000-05-10", medyan_tl_mn: 3323, vol_pct: 38.6, sifir_hacim_pct: 0.6 }
+    not: "Banka #2 — sektör tavanı doldu"
+
+  - ticker: TUPRS
+    sektor: rafineri
+    tier: cekirdek
+    in_live: true
+    in_measure: true
+    olcum: { bar: 6738, ilk_tarih: "2000-05-10", medyan_tl_mn: 3322, vol_pct: 33.1, sifir_hacim_pct: 0.6 }
+    not: "Temettü ağır — ex-tarih kuralının canlı test vakası (2025-03-28: 7.78 TL)"
+
+  - ticker: EREGL
+    sektor: demir_celik
+    tier: cekirdek
+    in_live: true
+    in_measure: true
+    olcum: { bar: 6739, ilk_tarih: "2000-05-10", medyan_tl_mn: 4455, vol_pct: 36.3, sifir_hacim_pct: 0.6 }
+    not: "Emtia döngüsü"
+
+  - ticker: BIMAS
+    sektor: perakende
+    tier: cekirdek
+    in_live: true
+    in_measure: true
+    olcum: { bar: 5384, ilk_tarih: "2005-07-22", medyan_tl_mn: 2778, vol_pct: 36.9, sifir_hacim_pct: 1.0 }
+    not: "Savunmacı"
+
+  - ticker: KCHOL
+    sektor: holding
+    tier: cekirdek
+    in_live: true
+    in_measure: true
+    olcum: { bar: 6738, ilk_tarih: "2000-05-10", medyan_tl_mn: 4189, vol_pct: 34.8, sifir_hacim_pct: 0.6 }
+    not: "Endeks vekili"
+
+  - ticker: TCELL
+    sektor: telekom
+    tier: cekirdek
+    in_live: true
+    in_measure: true
+    olcum: { bar: 6693, ilk_tarih: "2000-07-12", medyan_tl_mn: 2164, vol_pct: 34.1, sifir_hacim_pct: 0.6 }
+    not: "Düşük beta"
+
+  - ticker: FROTO
+    sektor: otomotiv
+    tier: cekirdek
+    in_live: true
+    in_measure: true
+    olcum: { bar: 6739, ilk_tarih: "2000-05-10", medyan_tl_mn: 1282, vol_pct: 33.8, sifir_hacim_pct: 0.6 }
+    not: "2025-05-07 bedelsiz 10:1 — bölünme sürekliliği testinin fixture'ı"
+
+  # --- Sanayi / çeşitlendirme (3) -----------------------------------------
+  - ticker: ASELS
+    sektor: savunma
+    tier: sanayi
+    in_live: true
+    in_measure: true
+    olcum: { bar: 6738, ilk_tarih: "2000-05-10", medyan_tl_mn: 4888, vol_pct: 44.0, sifir_hacim_pct: 0.6 }
+    not: "Ayrı döngü, yüksek likidite"
+
+  - ticker: SISE
+    sektor: cam_sanayi
+    tier: sanayi
+    in_live: true
+    in_measure: true
+    olcum: { bar: 6738, ilk_tarih: "2000-05-10", medyan_tl_mn: 1438, vol_pct: 35.4, sifir_hacim_pct: 0.6 }
+
+  - ticker: ENKAI
+    sektor: insaat
+    tier: sanayi
+    in_live: true
+    in_measure: true
+    olcum: { bar: 6160, ilk_tarih: "2002-07-29", medyan_tl_mn: 827, vol_pct: 37.8, sifir_hacim_pct: 0.6 }
+    not: "Evrenin en düşük volatiliteli isimlerinden; farklı sektör"
+
+  # --- Fırsat / orta risk (4) ---------------------------------------------
+  - ticker: KRDMD
+    sektor: demir_celik
+    tier: firsat
+    in_live: true
+    in_measure: true
+    olcum: { bar: 6738, ilk_tarih: "2000-05-10", medyan_tl_mn: 1369, vol_pct: 42.5, sifir_hacim_pct: 0.6 }
+    not: "Yüksek beta EREGL eşleniği — demir-çelik sektör tavanı doldu"
+
+  - ticker: PETKM
+    sektor: kimya
+    tier: firsat
+    in_live: true
+    in_measure: true
+    olcum: { bar: 6738, ilk_tarih: "2000-05-10", medyan_tl_mn: 1062, vol_pct: 38.0, sifir_hacim_pct: 0.6 }
+
+  - ticker: EKGYO
+    sektor: gyo
+    tier: firsat
+    in_live: true
+    in_measure: true
+    olcum: { bar: 4011, ilk_tarih: "2010-12-02", medyan_tl_mn: 2702, vol_pct: 44.6, sifir_hacim_pct: 0.6 }
+    not: "Faiz duyarlı"
+
+  - ticker: TAVHL
+    sektor: ulasim
+    tier: firsat
+    in_live: true
+    in_measure: true
+    olcum: { bar: 4970, ilk_tarih: "2007-02-26", medyan_tl_mn: 626, vol_pct: 36.1, sifir_hacim_pct: 0.6 }
+    not: "THYAO ile korele ama farklı sürücü — ulaşım sektör tavanı doldu"
+
+  # --- Yüksek risk / momentum (2) -----------------------------------------
+  # Her ikisi de <4 yıl geçmişli → in_measure=false. Ağırlık kalibrasyonuna GİRMEZ.
+  # 6 ayda bir yeniden doğrula: bu profildeki isimler hızlı değişir.
+  - ticker: ASTOR
+    sektor: elektrik_ekipman
+    tier: yuksek_risk
+    in_live: true
+    in_measure: false
+    olcum: { bar: 878, ilk_tarih: "2023-01-18", medyan_tl_mn: 1593, vol_pct: 50.6, sifir_hacim_pct: 0.6 }
+    not: "Geçmiş 2023-01'den — kalibrasyona girmez"
+
+  - ticker: EUPWR
+    sektor: elektrik_ekipman
+    tier: yuksek_risk
+    in_live: true
+    in_measure: false
+    olcum: { bar: 817, ilk_tarih: "2023-04-20", medyan_tl_mn: 246, vol_pct: 53.7, sifir_hacim_pct: 0.6 }
+    not: "Geçmiş 2023-04'ten; evrenin en düşük likiditesi (246mn) — eşiğe en yakın isim, izle"
+
+# --------------------------------------------------------------------------
+# Kapıların canlı test vakası — evrende ama sinyal üretmez
+# --------------------------------------------------------------------------
+  - ticker: SASA
+    sektor: kimya
+    tier: test_vakasi
+    in_live: false
+    in_measure: false
+    olcum: { bar: 505, ilk_tarih: "-", medyan_tl_mn: null, vol_pct: null, sifir_hacim_pct: 23.2 }
+    not: >-
+      ÖLÇÜLDÜ 2026-07-26: 505 barın 117'sinde hacim SIFIR (%23.2). Karşılaştırma:
+      THYAO/EKGYO/ASTOR %0.6. Hacim tabanlı her faktör bu isimde sessizce çöp üretir.
+      Evrende bilerek tutuluyor — sıfır-hacim kapısının gerçekten elediğini
+      canlı doğrulamak için. in_live=false, sinyal üretmez.
+
+# --------------------------------------------------------------------------
+# Dışlananlar — gerekçesiyle (tekrar denenmesin diye)
+# --------------------------------------------------------------------------
+dislananlar:
+  - { ticker: KOZAL, neden: "yfinance'te 0 bar — 2026-07-26'da doğrulandı ('no price data found')" }
+  - { ticker: KOZAA, neden: "yfinance'te 0 bar — 2026-07-26'da doğrulandı" }
+  - { ticker: KONTR, neden: "volatilite ~%107 — bu kaldıraç swing planına uymuyor" }
+
+# Sektör tavanı (2) nedeniyle dışarıda kalanlar. Bir isim düşerse sırayla bunlar girer.
+yedekler:
+  - { ticker: ISCTR, sektor: banka,      not: "İlk yedek — likit ve sağlam" }
+  - { ticker: YKBNK, sektor: banka }
+  - { ticker: VAKBN, sektor: banka }
+  - { ticker: HALKB, sektor: banka }
+  - { ticker: MGROS, sektor: perakende }
+  - { ticker: PGSUS, sektor: ulasim }
+  - { ticker: SAHOL, sektor: holding }
+  - { ticker: TOASO, sektor: otomotiv }
+  - { ticker: CCOLA, sektor: icecek }

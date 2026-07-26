@@ -1,0 +1,25 @@
+# Ortam
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.DS_Store
+
+# Sırlar
+.env
+
+# Kişisel — projeler arası ortak profil, repoya girmez (gold_tracking_system konvansiyonu)
+ai/PROFILE.md
+
+# Veri — SQLite git'e ham girmez; deterministik SQL dump'ı girer (src/dbdump.py)
+data/*.db
+data/*.db-wal
+data/*.db-shm
+data/backup/
+
+# LLM çalıştırma çıktıları — girdi paketi (llm/in) izlenir, çıktı izlenmez
+llm/out/
+
+# Üretilen raporlar (arşivlenmek istenenler elle eklenir)
+reports/*.md
+!reports/.gitkeep

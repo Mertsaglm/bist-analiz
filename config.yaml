@@ -1,0 +1,257 @@
+# ============================================================================
+# BIST Analiz — Yapılandırma
+#
+# TÜM eşik / oran / URL / parametre BU DOSYADA. Koda sabit gömülmez.
+# Bir eşiği değiştirmek isteyen tek yere bakar.
+#
+# ⚠ "DOĞRULA:" ile işaretli bloklar Faz 1 DoD'sinde resmî kaynağa karşı
+#   teyit edilecek. Teyit edilene kadar bunlara dayanan çıktı "taslak"tır.
+# ============================================================================
+
+paths:
+  db: "data/bist.db"
+  db_dump: "data/bist.sql"
+  db_backup_dir: "data/backup"
+  universe_file: "universe.yaml"
+  holidays_file: "holidays_tr.yaml"
+  reports_dir: "reports"
+  llm_in_dir: "llm/in"
+  llm_out_dir: "llm/out"
+  llm_prompt_dir: "llm/prompt"
+  log_dir: "logs"
+
+# ----------------------------------------------------------------------------
+# Veri kaynakları
+# ----------------------------------------------------------------------------
+sources:
+  yf:
+    suffix: ".IS"                  # BIST sembolleri Yahoo'da THYAO.IS biçiminde
+    backfill_start: "2015-01-01"
+    # İki fiyat serisi ayrı saklanır — hangisinin ne için kullanıldığı kritik:
+    #   c     = auto_adjust=False Close  → bölünme düzeltmeli, temettü düzeltmesiz
+    #           SEVİYE / ATR / PLAN fiyatları buradan
+    #   c_tr  = Adj Close                → toplam getiri
+    #           GETİRİ / MOMENTUM / FAKTÖR buradan
+    # Ölçüm (2026-07-26): TUPRS 2025-03-28'de ham −%2.95, düzeltilmiş +%2.67.
+    # İkisi gerçekten ayrışıyor; yanlışını kullanmak sessizce bozar.
+    endeksler:
+      XU100: "XU100.IS"
+      XU030: "XU030.IS"
+      XBANK: "XBANK.IS"
+      XUSIN: "XUSIN.IS"
+    kur:
+      USDTRY: "USDTRY=X"
+    istek_arasi_saniye: 0.4        # Yahoo'yu dövmemek için
+    yeniden_deneme: 3
+
+  evds:
+    # gold_tracking_system'den birebir taşındı; 2026-07-07'de canlı keyle teyitli.
+    # 2024 sonrası yeni servis yolu (evds2/service/evds SPA'ya yönleniyor).
+    base: "https://evds3.tcmb.gov.tr/igmevdsms-dis"
+    # API key .env içinde EVDS_API_KEY. Key HEADER'da gönderilir (Nisan 2024 kuralı).
+    start_date: "01-01-2015"
+    series:
+      usdtry_sell:    "TP.DK.USD.S.YTL"       # günlük
+      tufe:           "TP.FE.OKTG01"          # aylık — TÜFE endeksi (2003=100)
+      aofm_politika:  "TP.APIFON4"            # günlük — AOFM, politika faizi vekili
+      mevduat_1yil:   "TP.TRY.MT06"           # haftalık
+      enf_bek_12ay:   "TP.ENFBEK.PKA12ENF"    # aylık — piyasa kat. 12 ay TÜFE beklentisi
+    # ÇALIŞMAYAN kodlar (HTTP 400) — tekrar denemeyin: TP.PY.P01, TP.APIFON1, TP.MEVDUATTL
+    backfill: [usdtry_sell, tufe, aofm_politika, mevduat_1yil, enf_bek_12ay]
+    gunluk_pencere_gun: 45
+    mevduat_stopaj_pct: 15.0
+
+  kap:
+    # Faz 7. KAP 308 yönlendirme döndürüyor — takip edilmeli.
+    enabled: false
+    base: "https://www.kap.org.tr"
+    disclosures_path: "/tr/api/disclosure/members/byCriteria"
+    user_agent: "bist-analiz/0.1 (kisisel arastirma)"
+
+# ----------------------------------------------------------------------------
+# İşlem takvimi
+# ----------------------------------------------------------------------------
+takvim:
+  # GEÇMİŞ işlem günleri XU100 bar tarihlerinden TÜRETİLİR — otoriter, sıfır bakım.
+  # Ölçüm (2026-07-26): 2026 YTD 138 bar / 147 iş günü; eksik 9 gün
+  # holidays_tr.yaml'deki 9 hafta-içi tatille BİREBİR aynı.
+  # holidays_tr.yaml YALNIZCA gelecek tarihler için (zaman bariyeri hesabı).
+  turet_kaynak_endeks: "XU100"
+  timezone: "Europe/Istanbul"
+  # DOĞRULA: BIST Pay Piyasası seans saatleri (2016'da öğle arası KALDIRILDI,
+  # sürekli işlem). Faz 1 DoD: borsaistanbul.com yayımlanmış seans saatleriyle teyit.
+  seans:
+    acilis_muzayede_baslangic: "09:40"
+    surekli_islem_baslangic:   "10:00"
+    surekli_islem_bitis:       "18:00"
+    kapanis_muzayede_bitis:    "18:10"
+
+# ----------------------------------------------------------------------------
+# Evren ve veri kalitesi kapıları
+# ----------------------------------------------------------------------------
+evren:
+  min_medyan_islem_hacmi_try: 200_000_000    # 63 günlük medyan, canlı evren eşiği
+  min_gecmis_gun_olcum: 2000                 # ~8 yıl → in_measure=1 olabilmek için
+  maks_sifir_hacim_orani: 0.05               # 252g. SASA vakası: 0.232 → elenmeli
+  maks_bar_bosluk_gun: 10
+  maks_bayat_kapanis_gun: 5                  # aynı kapanış üst üste kaç gün
+  aciklanamayan_sicrama_pct: 15.0            # |getiri| bu eşiğin üstü + kurumsal işlem yok → bayrak
+
+# ----------------------------------------------------------------------------
+# Göstergeler — tek kaynak, dondurulmuş, versiyonlu
+# ----------------------------------------------------------------------------
+gostergeler:
+  set_version: "core_indicators_v1"
+  sma: [20, 50, 200]
+  ema: [12, 26]
+  rsi_length: 14                   # Wilder yumuşatma
+  macd: { fast: 12, slow: 26, signal: 9 }
+  bollinger: { length: 20, std: 2.0 }
+  atr_length: 14                   # Wilder
+  adx_length: 14                   # Wilder
+  vol_pencere_gun: 63              # yıllıklaştırılmış volatilite
+  hacim_sma: 20
+  min_bar_hesap_icin: 250          # bu barın altında gösterge None döner — sessizce NaN DEĞİL
+
+seviyeler:
+  set_version: "levels_v1"
+  pivot_k: 5                       # fraktal sol/sağ bar
+  # LOOK-AHEAD KORUMASI: t anında yalnız confirm_idx <= t olan pivot kullanılır.
+  # Bir pivot k bar sonra bilinebilir. Bu gecikmeye uyulmazsa TÜM ölçüm geçersizdir.
+  pencere_bar: 500
+  yeniden_hesap_bar: 10            # seviyeler yavaş hareket eder; her gün kurmak O(n²) maliyet, sıfır bilgi
+  kumeleme_atr_carpani: 0.5        # bu kadar ATR içindeki pivotlar tek seviyeye toplanır
+  min_dokunus: 2
+
+# ----------------------------------------------------------------------------
+# Faktörler — 3 + 1 hipotez. Ölçülmemiş faktör eklenmez.
+# ----------------------------------------------------------------------------
+faktorler:
+  set_version: "factors_v1"
+  winsor_pct: [5, 95]
+  # ÖLÇÜLDÜ (2026-07-26, 2016-2026, eşit-ağırlık tabana göre, %0.30 maliyet):
+  # sektör nötralizasyonu KENARI DÜŞÜRÜYOR — 6-1 mom t: 1.86 → 0.62.
+  # BIST'te sektör momentumu sinyalin kendisi. Kod yolu var, VARSAYILAN KAPALI.
+  sektor_notr: false
+  agirliklar:
+    mom_6_1: 0.45          # +0.85pp/15g vs EW, t=1.86, N=161
+    mom_12_1: 0.30         # +0.94pp, t=1.82
+    high52_prox: 0.15      # H=42'de +2.06pp t=2.04 — H<21'de ağırlık 0'a çekilir
+    volscaled_mom: 0.10    # HİPOTEZ — ÖLÇÜLMEDİ. OOS'ta katkı yoksa 0'a düşer.
+  high52_min_ufuk_gun: 21  # zaman bariyeri bunun altındaysa high52_prox ağırlığı 0
+  kapilar:
+    sma200_tolerans: 0.02  # close < sma200*(1-tol) → uygun değil
+
+# ----------------------------------------------------------------------------
+# Piyasa rejimi — pozisyon boyutunu ve nakdi etkiler, FAKTÖR AĞIRLIKLARINI DEĞİL.
+# (Rejim-koşullu ağırlığın kenar taşıdığı ÖLÇÜLENE kadar.)
+# ----------------------------------------------------------------------------
+rejim:
+  esikler:
+    risk_on:    { xu100_sma200_farki_pct_min: 3.0,  genislik_sma50_ustu_pct_min: 60.0 }
+    risk_off:   { xu100_sma200_farki_pct_maks: -3.0, genislik_sma50_ustu_pct_maks: 35.0 }
+  politika:      # nakit %, maks pozisyon, boyut çarpanı
+    risk-on:    { nakit_pct: 20.0, maks_pozisyon: 6, boyut_carpani: 1.00 }
+    neutral:    { nakit_pct: 40.0, maks_pozisyon: 5, boyut_carpani: 0.85 }
+    transition: { nakit_pct: 55.0, maks_pozisyon: 4, boyut_carpani: 0.65 }
+    risk-off:   { nakit_pct: 80.0, maks_pozisyon: 2, boyut_carpani: 0.40 }
+  sektor_basi_maks_pozisyon: 2     # sektör kontrolü SKORDA değil, KISITTA
+
+# ----------------------------------------------------------------------------
+# Risk ve emir mekaniği
+# ----------------------------------------------------------------------------
+risk:
+  pozisyon_basi_risk_pct: 1.0      # portföyün yüzde kaçı stop'ta kaybedilir
+  maks_pozisyon_pct: 10.0
+  # DOĞRULA: BIST Pay Piyasası fiyat adımları. Faz 1 DoD: borsaistanbul.com
+  # yayımlanmış "fiyat adımı" tablosuyla teyit. Yuvarlanmamış fiyat = uygulanamaz plan.
+  fiyat_adimlari:
+    - { ust_sinir: 19.99,   adim: 0.01 }
+    - { ust_sinir: 49.98,   adim: 0.02 }
+    - { ust_sinir: 99.95,   adim: 0.05 }
+    - { ust_sinir: 249.90,  adim: 0.10 }
+    - { ust_sinir: 499.75,  adim: 0.25 }
+    - { ust_sinir: 999.50,  adim: 0.50 }
+    - { ust_sinir: null,    adim: 1.00 }
+  gunluk_fiyat_limiti_pct: 10.0    # ±%10 — ATR'ye göre %12 uzaktaki stop bir günde tetiklenemez
+  # Gidiş-dönüş maliyet: komisyon + BSMV + spread. Ölçüm: maliyet kenarın ~1/3'ünü yiyor.
+  islem_maliyeti_gidis_donus_pct: 0.30
+
+# ----------------------------------------------------------------------------
+# Plan üretici (deterministik menü)
+# ----------------------------------------------------------------------------
+planlayici:
+  # ÖLÇÜLDÜ: 6-1 mom, üst-6, %0.30 maliyet, EW tabana göre —
+  #   H=5:  −0.01pp t=−0.05   (kenar YOK)
+  #   H=15: +0.72pp t=1.82
+  #   H=21: +1.13pp t=2.07    ← bariyeri bandın ÜST ucuna koymak bedava iyileşme
+  zaman_bariyeri_gun: 20
+  stop_atr_bandi: [1.5, 4.0]       # dışındaysa plan geçersiz
+  stop_yontemleri: [atr_2x, atr_2.5x, atr_3x, swing_low, sma_break_buffer]
+  min_rr_t1: 1.5
+  maks_plan_per_hisse: 3
+  # Hedefler UYDURULMAZ — yalnız gerçek pivot/direnç seviyelerinden.
+  # Geçerli seviye yoksa hedef üretilmez, plan üretilmez.
+  hedef_kaynaklari: [pivot, yuksek_52h]
+
+# ----------------------------------------------------------------------------
+# LLM sınırı — LLM hesaplanabilir hiçbir sayıyı üretmez
+# ----------------------------------------------------------------------------
+llm:
+  bundle_version: "bist_bundle_v1"
+  output_schema_version: "bist_llm_v1"
+  enums:
+    signal: [strong_buy, buy, accumulate, hold, reduce, sell, avoid]
+    action: [plan_sec, plan_reddet, izle, islem_yok]
+    confidence: [yuksek, orta, dusuk]
+    veto_code: [haber_riski, kurumsal_islem, likidite_zayif, sektor_yogunlugu,
+                tez_zayif, veri_supheli, rejim_uyumsuz]
+    regime_agreement: [katiliyorum, katilmiyorum]
+    portfolio_action: [risk_azalt, koru, risk_artir]
+    tool: [claude-code, codex, antigravity, kiro, diger]
+  # confidence_p'yi KOD yazar; LLM enum verir. Sayısal güven LLM'den ASLA gelmez.
+  # Bu haritanın kendisi kalibre edilecek (Faz 6+, 2 yıl "ölçüm yetersiz" diyecek).
+  guven_olasilik: { yuksek: 0.65, orta: 0.50, dusuk: 0.38 }
+  min_prose_karakter: 80
+  strong_buy_min_yuzdelik: 70.0    # HF-22: LLM sıralamayı bu bandın ötesinde ezemez
+
+denetim:
+  # HF-17 taşıyıcı kol: prose'daki HER sayısal token bundle'da olmalı.
+  sayisal_beyaz_liste_yil: [1900, 2100]
+  sayisal_beyaz_liste_tamsayi_maks: 31        # gün sayıları, küçük sayımlar
+  ek_izinli_sayilar: [0, 1, 2, 3, 5, 10, 20, 50, 100]
+  ondalik_tolerans_basamak: 2
+
+# ----------------------------------------------------------------------------
+# Ölçüm — projenin epistemolojisi burada
+# ----------------------------------------------------------------------------
+olcum:
+  # BİRİNCİL TABAN: eşit-ağırlık, veri-kalite kapısından geçmiş canlı evren.
+  # ÖLÇÜLDÜ (2026-07-26, 29 likit isim, H=15, örtüşmeyen, N=175):
+  #   eşit-ağırlık sepet vs XU100 = +0.36pp, kazanma %60, t=2.89
+  # Yani SIFIR beceriyle XU100 yeniliyor. XU100'e göre alfa bunu sessizce içerir.
+  # XU100 raporda kalır ama YALNIZ iletişim amaçlı, "sermaye-ağırlık eğilimi içerir"
+  # etiketiyle. Hüküm daima EW tabana göre verilir.
+  birincil_taban: "esit_agirlik_evren"
+  ikincil_taban: "XU100"
+  ufuklar_gun: [5, 10, 15, 21, 42, 63]
+  ana_ufuk_gun: 20
+  # H=5'te ölçülen kenar SIFIR (−0.01pp, t=−0.05, N=485).
+  # "1 hafta" çerçevesi sunulur ama kalıcı bu etiketle ve skorlamaya girmeden.
+  kenarsiz_ufuklar: [5]
+  oos_split: "2023-01-01"
+  # gold_tracking_system'den taşınan hüküm kuralı:
+  # ZAYIF N, BÜYÜK FARKI EZER. En güçlü ifade "zayıf kanıt"tır — "doğrulandı" dalı YOKTUR.
+  zayif_n_esigi: 15
+  min_anlamli_fark_puan: 1.0
+  maliyet_duyarliligi_pct: [0.0, 0.15, 0.30, 0.50]
+
+rapor:
+  dil: "tr"
+  # ÖLÇÜLDÜ: alt kuyruk (−1.03pp) üst kuyruğun ~1.8 katı. Retail açığa satamaz →
+  # sistemin en savunulabilir ürünü "hangisini azalt", "ne al" değil. Rapor bununla BAŞLAR.
+  once_azalt_bolumu: true
+  uyari: >-
+    Bu bir karar destek aracıdır, yatırım tavsiyesi değildir. Kişisel ve deneysel
+    kullanım içindir. Ölçülen kenar zayıftır ve istatistiksel olarak doğrulanması
+    yıllar alır (bkz. required_n).
