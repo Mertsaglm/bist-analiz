@@ -236,6 +236,64 @@ def cmd_plan(args) -> int:
     return 0
 
 
+# ---------------------------------------------------------------- replay / journal
+def cmd_replay(args) -> int:
+    cfg = _cfg()
+    con = db.connect(cfg)
+    from . import replay
+
+    if args.sifirla:
+        r = replay.reset(cfg, con)
+        print(f"Replay temizlendi: {r['run']} run, {r['tahmin']} tahmin, "
+              f"{r['sonuc']} sonuç silindi (gerçek analiz kayıtlarına dokunulmadı)")
+        con.close()
+        return 0
+
+    print(f"Replay koşuyor: {args.start} … {args.end} (LLM YOK, vekil analist)\n")
+    r = replay.run(cfg, con, start=args.start, end=args.end,
+                   adim_gun=args.adim, top_n=args.top)
+    print(f"Dönem      : {r['donem']}")
+    print(f"Tahmin     : {r['tahmin']}   (plan üretilemeyen: {r['plan_yok']})")
+    print(f"Atlanan gün: {r['atlanan_gun']}")
+    c = r["cozum"]
+    print(f"\nÇözüm: {c['cozulen']} çözüldü, {c['hala_acik']} açık")
+    for k, v in sorted(c["dagilim"].items()):
+        print(f"  {k:16} {v}")
+    con.close()
+    return 0
+
+
+def cmd_journal(args) -> int:
+    cfg = _cfg()
+    con = db.connect(cfg)
+    from . import journal
+
+    if args.alt == "durum":
+        s = journal.summary(con)
+        print(f"Tahmin : {s['tahmin']}  (çözülen {s['cozulen']}, açık {s['acik']})")
+        print(f"Run    : {s['run']}")
+        print(f"Aralık : {s['ilk']} … {s['son']}")
+    elif args.alt == "acik":
+        for p in journal.open_predictions(con):
+            print(f"  {p['asof']}  {p['ticker']:8} {p['signal']:12} "
+                  f"bariyer {p['time_barrier_date']}")
+    con.close()
+    return 0
+
+
+def cmd_coz(args) -> int:
+    cfg = _cfg()
+    con = db.connect(cfg)
+    from . import resolver
+
+    r = resolver.resolve_open(cfg, con)
+    print(f"{r['cozulen']} tahmin çözüldü, {r['hala_acik']} hâlâ açık")
+    for k, v in sorted(r["dagilim"].items()):
+        print(f"  {k:16} {v}")
+    con.close()
+    return 0
+
+
 # ---------------------------------------------------------------- teşhis
 def cmd_teshis(args) -> int:
     cfg = _cfg()
@@ -330,6 +388,21 @@ def build_parser() -> argparse.ArgumentParser:
     pl.add_argument("--asof", help="YYYY-MM-DD")
     pl.add_argument("--kaydet", action="store_true", help="plan_options tablosuna yaz")
     pl.set_defaults(fn=cmd_plan)
+
+    rp = sub.add_parser("replay", help="LLM'siz tam boru hattı tekrarı")
+    rp.add_argument("--start", default="2024-01-01")
+    rp.add_argument("--end", default="2026-06-30")
+    rp.add_argument("--adim", type=int, help="kaç işlem günde bir (varsayılan: ufuk)")
+    rp.add_argument("--top", type=int, default=3, help="dönem başına kaç isim")
+    rp.add_argument("--sifirla", action="store_true", help="replay kayıtlarını sil")
+    rp.set_defaults(fn=cmd_replay)
+
+    jr = sub.add_parser("journal", help="tahmin günlüğü")
+    jr.add_argument("alt", choices=["durum", "acik"])
+    jr.set_defaults(fn=cmd_journal)
+
+    cz = sub.add_parser("coz", help="açık tahminleri çöz (üçlü bariyer)")
+    cz.set_defaults(fn=cmd_coz)
 
     ts = sub.add_parser("teshis", help="kayıp atıfı — revizyon turu DEĞİL")
     ts.set_defaults(fn=cmd_teshis)

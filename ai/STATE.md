@@ -4,7 +4,7 @@
 > KISA TUT: ~100 satırı aşınca eskiyi `ai/archive/STATE-YYYY-MM.md`'ye taşı.
 
 **Son güncelleme:** 2026-07-26
-**Aktif milestone:** Faz 4 — journal + resolver + replay
+**Aktif milestone:** Faz 5 — LLM sınırı + denetim
 
 ## ✅ Tamamlananlar
 
@@ -78,9 +78,24 @@
   TAVAN BAĞLIYOR; volatilite hedeflemesi pratikte atıl, gerçekleşen risk
   ~%0.6-0.9. Bilinçli muhafazakârlık olarak bırakıldı, koda not düşüldü.
 
+**Faz 4 — journal + resolver + replay** (2026-07-27)
+- Modüller: `journal`, `resolver`, `replay` + CLI (`bist replay`, `bist journal`,
+  `bist coz`). **248 test geçiyor.**
+- Boru hattı LLM OLMADAN uçtan uca koşuyor: `bist replay 2024-01-01 → 2026-06-30`
+  → 30 dönem, 28 tahmin, 28'i çözüldü, 0 açık.
+- Sonuç dağılımı: giris_olmadi 13 · hedef 5 · stop 5 · sure 4 · iptal_kurumsal 1
+- **%46'sı hiç tetiklenmemiş** — plan tasarımı hakkında gerçek bilgi (geri
+  çekilme girişleri sık sık dolmuyor).
+- ⚠ Replay'in ortalama alfası +3.62pp (N=14) BULGU DEĞİLDİR: vekil analistle,
+  `edge_verdict` çıtasının (N≥15) altında. Faz 6 buna "ölçüm yetersiz" diyecek.
+- Yol boyunca iki kusur: (1) journal hata mesajı FK ihlalini "değişmezlik
+  ihlali" diye raporluyordu (yine L-003) → ayrıştırıldı ve plan referansı
+  önceden doğrulanıyor; (2) `referans['close']` eksikse çıplak NOT NULL hatası
+  veriyordu → açık gerekçeli hata.
+
 ## 🔨 Devam Edenler
-- Faz 4: `journal`, `resolver` (üçlü bariyer, aynı gün stop kazanır), `holdings`,
-  `replay` (LLM'siz tam boru hattı).
+- Faz 5: `schema`, `llm_io` (bundle + bundle_sha + allowed_numeric_tokens),
+  `audit` (HF-01..HF-30), prompt şablonu.
 
 ## 🧱 Bloklar / Bekleyenler
 - **EVDS_API_KEY yok** (`.env`). Makro katmanı kod olarak hazır ama veri boş;
@@ -88,15 +103,12 @@
   (uydurma yok). Anahtar girilince: `bist makro backfill`.
 
 ## 🎯 Sıradaki 3 İş
-1. **Faz 4 — journal + resolver + replay.** Kenar olmasa da bunlar değerli:
-   süreç ölçülür, IC zaman içinde izlenir, slippage ve hata taksonomisi birikir.
-   DoD: replay 2024-2026 arası LLM'siz ~30 dönem üretiyor; üçlü bariyer elle
-   hesaplanmış fixture ile birebir; aynı gün stop+hedef vakasında STOP kazanıyor.
-2. **Faz 5 — LLM sınırı.** Yeniden çerçevelemede LLM'in veto + haber okuma
+1. **Faz 5 — LLM sınırı.** Yeniden çerçevelemede LLM'in veto + haber okuma
    katmanı ASIL ürün: ölçemediğimiz ama sayısal olmayan bilginin yaşadığı yer.
    DoD: HF-01..HF-30'un her biri tek tek tetikleniyor.
-3. **Faz 6 — değerlendirme + rapor.** DoD: `bist degerlendir` ilk gün
+2. **Faz 6 — değerlendirme + rapor.** DoD: `bist degerlendir` ilk gün
    "ölçüm yetersiz" demek ZORUNDA; sentetik-alfa testi bunu sabitliyor.
+3. **Faz 7-8 (opsiyonel):** KAP/haber katmanı, GitHub Actions + Telegram.
 
 ## 📦 Backlog (şimdi değil, unutma da)
 - `data/*.sql` dump şu an **gitignore**'da (15 MB türev veri, 3 dakikada yeniden

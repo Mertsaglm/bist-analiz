@@ -89,3 +89,13 @@ def add_universe(con: sqlite3.Connection, ticker: str, *, sector: str = "test",
         "(ticker,yf_symbol,name,sector,tier,in_live,in_measure) VALUES (?,?,?,?,?,?,?)",
         (ticker, f"{ticker}.IS", ticker, sector, tier, int(in_live), int(in_measure)))
     con.commit()
+
+
+def add_plan(con: sqlite3.Connection, plan_id: str, ticker: str = "TEST",
+             asof: str = "2024-01-02") -> None:
+    """Journal `plan_id` için FK doğrulaması yapar — testte planı önce sakla."""
+    con.execute(
+        "INSERT OR REPLACE INTO plan_options "
+        "(plan_id, asof, ticker, kind, payload, created_utc) VALUES (?,?,?,?,?,?)",
+        (plan_id, asof, ticker, "test", "{}", util.utc_now_iso()))
+    con.commit()
