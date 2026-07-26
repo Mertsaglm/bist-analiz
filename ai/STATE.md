@@ -4,7 +4,7 @@
 > KISA TUT: ~100 satırı aşınca eskiyi `ai/archive/STATE-YYYY-MM.md`'ye taşı.
 
 **Son güncelleme:** 2026-07-26
-**Aktif milestone:** Faz 6 — değerlendirme + rapor
+**Aktif milestone:** ✅ v1 TAMAM — Faz 0-6 bitti, sistem çalışır durumda
 
 ## ✅ Tamamlananlar
 
@@ -112,9 +112,20 @@
      da yeniden yazıyor; v3 `outcomes`'u silinmiş tabloya bağladı → `legacy_
      alter_table = ON` + onarım migration'ı v4. Testler yakaladı.
 
+**Faz 6 — değerlendirme + rapor** (2026-07-27)
+- Modüller: `evaluate` + rapor/CLI (`bist degerlendir`, `bist rapor`, `bist portfoy`).
+  **302 test geçiyor.**
+- **DoD karşılandı:** `bist degerlendir` N=14'te 3.62pp'ye rağmen
+  **"ölçüm yetersiz (N=14)"** diyor; sentetik-alfa testi bunu sabitliyor.
+- Günlük rapor **AZALT bölümüyle başlıyor** (ölçüm: alt kuyruk üst kuyruğun
+  1.8 katı; retail açığa satamaz → en savunulabilir çıktı "hangisini azalt").
+- İki kusur: (1) IC hükmü `edge_verdict` kullandığı için t=1.46'da bile
+  "zayıf kanıt" diyordu → `ic_verdict` ile ANLAMLILIĞA bakılıyor; (2)
+  `bist degerlendir` taze kurulumda panel yokken ÇÖKÜYORDU → "ölçülemez" bir
+  durum, hata değil.
+
 ## 🔨 Devam Edenler
-- Faz 6: `evaluate` (IC, eşleştirilmiş alfa, LLM katkısı, veto değeri,
-  boyutlandırma karşı-olgusu, Brier, hata taksonomisi) + değerlendirme raporu.
+- _(yok — v1 tamam)_
 
 ## 🧱 Bloklar / Bekleyenler
 - **EVDS_API_KEY yok** (`.env`). Makro katmanı kod olarak hazır ama veri boş;

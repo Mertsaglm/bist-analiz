@@ -385,6 +385,174 @@ def revizyon_report(cfg: dict, r: dict) -> str:
     return "\n".join(L)
 
 
+def evaluate_report(cfg: dict, e: dict) -> str:
+    """Değerlendirme raporu — HIZLI DÖNGÜ.
+
+    ⚠ Bu raporun en önemli davranışı ERKEN KENAR İDDİA ETMEMESİDİR. Her hüküm
+    `edge_verdict`ten geçer; ilk ~18 ay `ölçüm yetersiz` yazacaktır ve bu
+    doğru davranıştır. Erken kenar iddia ederse kod yalan söylüyordur
+    (`tests/test_evaluate.py::test_sahte_alfa_erken_kenar_iddia_etmez`).
+    """
+    L: list[str] = []
+    A = L.append
+    a, ic, llm, tax = e["alfa"], e["ic"], e["llm_katkisi"], e["taksonomi"]
+
+    A(f"# Değerlendirme Raporu — {bugun()}")
+    A("")
+    A(f"> {cfg['rapor']['uyari']}")
+    A("")
+    A(f"Kaynak: `{e['tool']}` · yılda ~{e['donem_yil']:.0f} bağımsız dönem üretiliyor")
+    A("")
+
+    A("## Ana metrikler")
+    A("")
+    A("| Metrik | N | değer | t | gerekli N | **HÜKÜM** |")
+    A("|---|---|---|---|---|---|")
+    A(f"| Eşleştirilmiş alfa (vs EW) | {a['n']} | {_s(a['ort'], 2, 'pp')} | "
+      f"{_s(a['t'])} | {_n(a['gerekli_n'])} | **{a['hukum']}** |")
+    A(f"| Dönem-içi IC (tüm kesit) | {ic['n_donem']} | {_s(ic['ic_ort'], 3)} | "
+      f"{_s(ic['t'])} | {_n(ic['gerekli_n'])} | **{ic['hukum']}** |")
+    A(f"| LLM katkısı (IC farkı) | {llm['n']} | {_s(llm['ort'], 3)} | "
+      f"{_s(llm['t'])} | {_n(llm['gerekli_n'])} | **{llm['hukum']}** |")
+    A("")
+    A(f"`gerekli N` = t=2'ye ulaşmak için gereken **bağımsız dönem** sayısı. "
+      f"Yıla çevirmek için {e['donem_yil']:.0f}'e böl.")
+    A("")
+    if a["xu100_ort"] is not None:
+        A(f"XU100'e göre alfa {_s(a['xu100_ort'], 2, 'pp')} — **karar için "
+          f"kullanılmaz**, sermaye-ağırlık eğilimi içerir (ADR #002).")
+        A("")
+
+    A("## Uygulanabilirlik (en hızlı ölçülen)")
+    A("")
+    sl = e["slippage"]
+    A(f"- **Slippage** (planlanan giriş vs gerçekleşen dolum): "
+      f"ort {_s(sl['ort'], 3, '%')} · N={sl['n']}")
+    A(f"- **Tetiklenmeme oranı:** %{_s(tax['tetiklenmeme_orani'], 1)} "
+      f"({tax['sonuc'].get('giris_olmadi', 0)}/{tax['toplam']} plan hiç dolmadı)")
+    A("")
+
+    A("## Sonuç ve hata dağılımı")
+    A("")
+    A("| Sonuç | n |   | Hata etiketi | n |")
+    A("|---|---|---|---|---|")
+    sonuclar = sorted(tax["sonuc"].items(), key=lambda x: -x[1])
+    hatalar = sorted(tax["hata_etiketi"].items(), key=lambda x: -x[1])
+    for i in range(max(len(sonuclar), len(hatalar))):
+        s1 = f"{sonuclar[i][0]} | {sonuclar[i][1]}" if i < len(sonuclar) else " | "
+        s2 = f"{hatalar[i][0]} | {hatalar[i][1]}" if i < len(hatalar) else " | "
+        A(f"| {s1} |  | {s2} |")
+    A("")
+
+    A("## Güven kalibrasyonu (Brier)")
+    A("")
+    b = e["brier"]
+    A(f"Brier skoru: {_s(b['brier'], 4)} · N={b['n']} · **{b['hukum']}**")
+    if b["kovalar"]:
+        A("")
+        A("| Güven | n | iddia edilen | gerçekleşen |")
+        A("|---|---|---|---|")
+        for k in b["kovalar"]:
+            A(f"| {k['seviye']} | {k['n']} | {_s(k['iddia'], 2)} | "
+              f"{_s(k['gerceklesen'], 2)} |")
+    A("")
+    A(f"> {b['not']}")
+    A("")
+
+    A("## Veto")
+    A("")
+    v = e["veto"]
+    A(f"- Veto sayısı: {v['veto_sayisi']}"
+      + (f" — {v['veto_kodlari']}" if v["veto_kodlari"] else ""))
+    A(f"- Seçilenlerin ortalama alfası: {_s(v['secilen_ort_alfa'], 2, 'pp')}")
+    A(f"> {v['not']}")
+    A("")
+
+    A("---")
+    A("")
+    A("### Bu raporun okunma kuralları")
+    A("")
+    A("- **`ölçüm yetersiz` bir sonuçtur, bir eksiklik değil.** Yanındaki büyük "
+      "yüzde bir bulgu DEĞİLDİR.")
+    A("- **Hüküm daima eşit-ağırlık evrene göre.** XU100 satırı bilgi içindir.")
+    A("- **En güçlü ifade `zayıf kanıt`tır.** Bu sistemde \"doğrulandı\" YOKTUR.")
+    A("- Ağırlıklar bu rapordan DEĞİŞMEZ — o yavaş döngünün işi (ADR #004).")
+    return "\n".join(L)
+
+
+def daily_report(cfg: dict, bundle: dict, *, holdings: dict | None = None) -> str:
+    """Günlük markdown rapor — **AZALT bölümüyle başlar.**
+
+    Ölçüldü (2026-07-26): alt kuyruk (−1.03pp) üst kuyruğun ~1.8 katı. Retail
+    olarak açığa satamazsın, dolayısıyla sistemin en savunulabilir çıktısı
+    "ne al" değil "elindekilerden hangisini azalt"tır. Rapor sırası bu ölçüme
+    göre seçildi; çoğu perakende araç bunu ters yapar.
+    """
+    L: list[str] = []
+    A = L.append
+    r = bundle["rejim"]
+    tutulan = holdings or {}
+
+    A(f"# BIST Günlük — {bundle['asof']}")
+    A("")
+    A(f"> ⚠ {bundle['uyari']}")
+    A(f"> {cfg['rapor']['uyari']}")
+    A("")
+    A(f"**Rejim: {r['etiket']}** · nakit %{r['pozisyon_politikasi']['nakit_pct']:.0f} "
+      f"· maks {r['pozisyon_politikasi']['maks_pozisyon']} pozisyon")
+    A("")
+
+    # --------------------------------------------------- 1) AZALT (önce)
+    A("## 1. Elindekiler — azaltma adayları")
+    A("")
+    if not tutulan:
+        A("_Portföyde kayıtlı pozisyon yok._ `bist portfoy ekle THYAO 100 312.5` "
+          "ile ekleyebilirsin — sistemin en savunulabilir çıktısı bu bölüm ve "
+          "neyi tuttuğunu bilmeden çalışamaz.")
+    else:
+        A("| Hisse | adet | kapanış | veri kalitesi | plan durumu |")
+        A("|---|---|---|---|---|")
+        ev = {e["ticker"]: e for e in bundle["evren"]}
+        for t, h in sorted(tutulan.items()):
+            e = ev.get(t, {})
+            kal = "OK" if (e.get("veri_kalitesi") or {}).get("ok", True) else "⚠ BOZUK"
+            durum = ("plan var" if e.get("plan_menusu")
+                     else (e.get("plan_yok_nedeni") or "evrende değil"))
+            A(f"| {t} | {h['qty']:.0f} | "
+              f"{_s((e.get('fiyat') or {}).get('kapanis'))} | {kal} | {durum} |")
+    A("")
+
+    # --------------------------------------------------- 2) plan menüsü
+    planli = [e for e in bundle["evren"] if e["plan_menusu"]]
+    A(f"## 2. Plan geometrisi ({len(planli)} hisse)")
+    A("")
+    A("_Bunlar **öneri değil**, ölçülmüş kurallarla üretilmiş plan iskeletleridir. "
+      "Kenar iddiası taşımazlar._")
+    A("")
+    for e in planli:
+        p = e["plan_menusu"][0]
+        t1 = p["targets"][0] if p["targets"] else {}
+        A(f"**{e['ticker']}** ({e['sektor']}) — kapanış {e['fiyat']['kapanis']}")
+        A(f"- `{p['plan_id']}` {p['kind']} · giriş {p['entry_low']}–{p['entry_high']} "
+          f"({p['entry_zone_status']}) · stop {p['stop_price']} "
+          f"({p['stop_atr_multiple']}×ATR)")
+        A(f"- T1 {t1.get('price')} (R:R {t1.get('rr')}, dayanak: {t1.get('basis')}) "
+          f"· boyut %{p['position_size_pct']} · maks kayıp "
+          f"%{p['max_loss_pct_of_portfolio']}")
+        A(f"- {p['daily_limit_note']}")
+        A("")
+
+    # --------------------------------------------------- 3) plan yok
+    planyok = [e for e in bundle["evren"] if not e["plan_menusu"]]
+    if planyok:
+        A(f"## 3. Plan üretilmeyenler ({len(planyok)})")
+        A("")
+        for e in planyok:
+            A(f"- **{e['ticker']}** — {e['plan_yok_nedeni']}")
+        A("")
+    return "\n".join(L)
+
+
 def write(cfg: dict, ad: str, icerik: str) -> str:
     """Raporu `reports/` altına yazar ve yolu döner."""
     p = util.ensure_parent(f"{cfg['paths']['reports_dir']}/{ad}")

@@ -28,6 +28,33 @@ Bu yüzden sistem **erken kenar iddia etmez**. `bist degerlendir` ilk ~18 ay
 Sistemin 2 yılda gerçekten ölçebildikleri: sürecin çalıştığı, **sıralama kalitesi (IC)**,
 uygulama slippage'ı, hata taksonomisi, ve felaket senaryosunun tespiti.
 
+## 🛑 Ölçüm sonucu: kenar bulunamadı — sistem yeniden çerçevelendi
+
+Faz 2'de kurulan ölçüm harness'i, kendi faktör setimizi kendi evrenimizde ölçtü
+ve **kapı kapandı** (ADR #007, #008):
+
+| | alfa vs eşit-ağırlık | t | IC (tüm kesit) | t |
+|---|---|---|---|---|
+| birleşik skor, tam dönem | −0.86pp | −1.85 | 0.042 | 2.42 |
+| birleşik skor, **OOS** | −1.12pp | −1.76 | 0.049 | 1.76 |
+
+Teşhis, ayrışmanın bir kurgu hatası olmadığını gösterdi: **sıralama bilgisinin
+%79'u SMA200 kapısında kayboluyor** (`ic_tum` 0.042 → `ic_uygun` 0.009).
+Teşhisin işaret ettiği tek ön kayıtlı revizyon turu (SMA200 kapısını kaldır +
+ufuk H=42) koşuldu — `docs/on-kayit-revizyon-01.md`, sha `6677c296…`, koşudan
+**önce** mühürlendi. Sonuç: **OOS N=21, Δ=+0.81pp, t=0.89 → `kenar yok`**.
+Çıta |Δ|≥1.0pp idi. İkinci tur yapılmadı.
+
+Aynı koşuda `high52_prox` tek başına OOS'ta +1.61pp (t=1.81) verdi — 34
+karşılaştırmanın çıtayı geçen tek satırı. **Buna göre karar verilmedi**;
+sonucu görüp en iyi hücreyi seçmek, ön kaydın engellemek için yazıldığı şey.
+Backlog'da ayrı bir tur hipotezi olarak duruyor.
+
+**Bu yüzden sistem "izleme + risk disiplini + haber/veto aracı"dır.**
+Kenar iddia etmez. Seviyeleri **planlama geometrisi** olarak sunar: fiyatın
+nereye gideceğini söylemez, girişin/stop'un/hedefin nereye konacağını söyler.
+Her plan ve her rapor bu ibareyi taşır.
+
 ## Ölçülmüş tasarım kararları
 
 Aşağıdakiler tahmin değil, ölçüm. Ayrıntı: `ai/DECISIONS.md`.
@@ -78,18 +105,41 @@ cp .env.example .env   # EVDS_API_KEY doldur (opsiyonel; yoksa makro satırları
 
 ## Kullanım
 
+**Kurulum (bir kez):**
+
 ```bash
-poetry run bist veri backfill        # 18 ticker × 10 yıl + endeksler + kur
-poetry run bist veri kalite          # ticker bazlı kalite raporu
-poetry run bist backtest             # ÖLÇÜM — hüküm satırını oku
-poetry run bist replay --start 2024-01-01 --end 2026-06-30   # LLM'siz tam boru hattı
+poetry run bist veri backfill        # 70 ticker × 10 yıl + endeksler + kur
+poetry run bist gosterge             # göstergeleri hesapla ve dondur
+poetry run bist veri kalite          # ticker bazlı kalite kapısı
+```
+
+**Günlük akış:**
+
+```bash
+poetry run bist veri gunluk          # fiyatları güncelle
 poetry run bist gunluk               # llm/in/<tarih>/ paketini yazar
-# → IDE'de prompt'u çalıştır, llm/out/<tarih>/analysis.json kaydet
-poetry run bist denetle              # HF-01..HF-30
+# → IDE'de llm/in/<tarih>/prompt.md çalıştır, llm/out/<tarih>/analysis.json kaydet
+poetry run bist denetle              # HF-01..HF-30 — geçmeyen journal'a giremez
 poetry run bist kaydet               # journal'a yaz
+poetry run bist rapor                # Türkçe markdown (AZALT bölümüyle başlar)
+```
+
+**Periyodik:**
+
+```bash
 poetry run bist coz                  # açık tahminleri çöz (üçlü bariyer)
 poetry run bist degerlendir          # IC, required_n, hüküm
-poetry run bist rapor                # Türkçe markdown
+poetry run bist backtest             # yavaş döngü — ölçüm harness'i
+poetry run bist teshis               # kayıp atıfı (revizyon turu DEĞİL)
+```
+
+**Geliştirme / doğrulama:**
+
+```bash
+poetry run bist replay --start 2024-01-01 --end 2026-06-30   # LLM'siz tam boru hattı
+poetry run bist plan THYAO           # tek hisse için plan menüsü
+poetry run bist portfoy ekle THYAO 100 312.5
+poetry run pytest -q                 # 302 test
 ```
 
 ## Proje yapısı

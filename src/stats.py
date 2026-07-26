@@ -227,13 +227,32 @@ def spearman(x: Sequence[float], y: Sequence[float]) -> float | None:
     return float(((ra - ra.mean()) * (rb - rb.mean())).mean() / (sa * sb))
 
 
-def ic_summary(ics: Sequence[float | None], weak_n: int = 15,
-               min_diff_p: float = 0.0) -> dict:
+T_ANLAMLI = 2.0
+
+
+def ic_verdict(ic_ort: float | None, n: int, t: float | None,
+               weak_n: int, t_esik: float = T_ANLAMLI) -> str:
+    """IC hükmü — BÜYÜKLÜĞE DEĞİL ANLAMLILIĞA bakar.
+
+    `edge_verdict` yüzde-puan farkları için yazıldı ve orada mutlak büyüklük
+    (|fark| ≥ 1.0p) anlamlı bir eşik. IC için öyle DEĞİL: IC=0.057 kulağa
+    büyük gelir ama t=1.46 ise gürültüdür. İlk sürüm `edge_verdict`i IC'ye
+    de uyguluyordu ve her pozitif IC'yi "zayıf kanıt" ilan ediyordu —
+    kapıdaki işaret körlüğünün aynısı, sadece başka kılıkta.
+    """
+    if ic_ort is None or n <= 0 or t is None:
+        return HUKUM_OLCUM_YOK
+    if n < weak_n:
+        return f"{HUKUM_YETERSIZ} (N={n})"
+    if abs(t) < t_esik:
+        return HUKUM_KENAR_YOK
+    return f"{HUKUM_ZAYIF_KANIT}: IC={ic_ort:+.3f}"
+
+
+def ic_summary(ics: Sequence[float | None], weak_n: int = 15) -> dict:
     """Dönem-içi IC serisinin özeti.
 
     `ic_ir` = ortalama IC / IC standart sapması (bilgi oranı).
-    `hukum` daima `edge_verdict` üzerinden — IC de bir "fark"tır ve zayıf N
-    onu da ezer.
     """
     a = _clean([i for i in ics if i is not None])
     if a.size == 0:
@@ -241,16 +260,15 @@ def ic_summary(ics: Sequence[float | None], weak_n: int = 15,
                 "t": None, "gerekli_n": None, "hukum": HUKUM_OLCUM_YOK}
     sd = float(a.std(ddof=1)) if a.size > 1 else None
     ort = float(a.mean())
+    t = t_stat(a)
     return {
         "n_donem": int(a.size),
         "ic_ort": ort,
         "ic_sd": sd,
         "ic_ir": (ort / sd) if sd else None,
-        "t": t_stat(a),
+        "t": t,
         "gerekli_n": required_n(ort, sd),
-        # IC için "fark" doğrudan IC'nin kendisidir (H0: IC=0).
-        "hukum": edge_verdict(ort * 100 if ort is not None else None,
-                              int(a.size), weak_n, min_diff_p),
+        "hukum": ic_verdict(ort, int(a.size), t, weak_n),
     }
 
 

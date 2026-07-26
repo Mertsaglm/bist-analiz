@@ -387,6 +387,62 @@ def cmd_coz(args) -> int:
     return 0
 
 
+# ---------------------------------------------------------------- değerlendirme
+def cmd_degerlendir(args) -> int:
+    cfg = _cfg()
+    con = db.connect(cfg)
+    from . import evaluate, report
+
+    e = evaluate.run(cfg, con, tool=args.tool)
+    metin = report.evaluate_report(cfg, e)
+    yol = report.write(cfg, f"degerlendirme_{report.bugun()}.md", metin)
+    print(metin)
+    print(f"\n\nRapor yazıldı: {yol}")
+    con.close()
+    return 0
+
+
+def cmd_rapor(args) -> int:
+    cfg = _cfg()
+    con = db.connect(cfg)
+    from . import journal, llm_io, report
+
+    asof = args.asof or db.scalar(con, "SELECT MAX(date) FROM bars_daily")
+    bundle = util.read_json(f"{cfg['paths']['llm_in_dir']}/{asof}/bundle.json")
+    if bundle is None:
+        print(f"Paket yok — önce `bist gunluk --asof {asof}`")
+        con.close()
+        return 1
+    metin = report.daily_report(cfg, bundle, holdings=journal.holdings(con))
+    yol = report.write(cfg, f"gunluk_{asof}.md", metin)
+    print(metin)
+    print(f"\n\nRapor yazıldı: {yol}")
+    con.close()
+    return 0
+
+
+def cmd_portfoy(args) -> int:
+    cfg = _cfg()
+    con = db.connect(cfg)
+    from . import journal
+
+    if args.alt == "ekle":
+        journal.set_holding(con, args.ticker, args.adet, args.maliyet)
+        print(f"{args.ticker.upper()}: {args.adet} adet kaydedildi.")
+    elif args.alt == "sil":
+        journal.set_holding(con, args.ticker, 0)
+        print(f"{args.ticker.upper()} silindi.")
+    elif args.alt == "listele":
+        h = journal.holdings(con)
+        if not h:
+            print("Portföyde kayıtlı pozisyon yok.")
+        for t, r in sorted(h.items()):
+            print(f"  {t:8} {r['qty']:>10.0f} adet  ort. maliyet "
+                  f"{r['avg_cost'] if r['avg_cost'] is not None else '—'}")
+    con.close()
+    return 0
+
+
 # ---------------------------------------------------------------- teşhis
 def cmd_teshis(args) -> int:
     cfg = _cfg()
@@ -508,6 +564,21 @@ def build_parser() -> argparse.ArgumentParser:
 
     cz = sub.add_parser("coz", help="açık tahminleri çöz (üçlü bariyer)")
     cz.set_defaults(fn=cmd_coz)
+
+    dg = sub.add_parser("degerlendir", help="hızlı döngü metrikleri")
+    dg.add_argument("--tool", help="yalnız bu araçtan gelen kayıtlar (ör. replay)")
+    dg.set_defaults(fn=cmd_degerlendir)
+
+    rp2 = sub.add_parser("rapor", help="günlük Türkçe markdown rapor")
+    rp2.add_argument("--asof", help="YYYY-MM-DD")
+    rp2.set_defaults(fn=cmd_rapor)
+
+    pf = sub.add_parser("portfoy", help="elle tutulan pozisyonlar")
+    pf.add_argument("alt", choices=["ekle", "sil", "listele"])
+    pf.add_argument("ticker", nargs="?")
+    pf.add_argument("adet", nargs="?", type=float, default=0.0)
+    pf.add_argument("maliyet", nargs="?", type=float)
+    pf.set_defaults(fn=cmd_portfoy)
 
     ts = sub.add_parser("teshis", help="kayıp atıfı — revizyon turu DEĞİL")
     ts.set_defaults(fn=cmd_teshis)
