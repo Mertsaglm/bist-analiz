@@ -443,6 +443,31 @@ def cmd_portfoy(args) -> int:
     return 0
 
 
+# ---------------------------------------------------------------- haber
+def cmd_haber(args) -> int:
+    cfg = _cfg()
+    con = db.connect(cfg)
+    from . import news
+
+    if args.alt == "cek":
+        r = news.sync(cfg, con, full=args.tam)
+        if r.get("atlandi"):
+            print("KAP kapalı (config.sources.kap.enabled)")
+        else:
+            print(f"{r['bildirim']} bildirim tarandı, {r['yazilan']} satır yazıldı "
+                  f"({r['ticker']} ticker) · başlangıç: {r['since']}")
+    elif args.alt == "durum":
+        s = news.summary(con)
+        print(f"Bildirim : {s['toplam']} ({s['ticker']} ticker)")
+        print(f"Aralık   : {s['ilk']} … {s['son']}")
+        print(f"Önem     : {s['onem']}  (HEURİSTİK — ölçülmedi, hesaba girmez)")
+    elif args.alt == "listele":
+        for h in news.bundle_view(con, args.ticker or "THYAO", limit=15):
+            print(f"  {h['tarih']}  {h['onem']:7} {h['baslik']}")
+    con.close()
+    return 0
+
+
 # ---------------------------------------------------------------- teşhis
 def cmd_teshis(args) -> int:
     cfg = _cfg()
@@ -579,6 +604,12 @@ def build_parser() -> argparse.ArgumentParser:
     pf.add_argument("adet", nargs="?", type=float, default=0.0)
     pf.add_argument("maliyet", nargs="?", type=float)
     pf.set_defaults(fn=cmd_portfoy)
+
+    hb = sub.add_parser("haber", help="KAP bildirimleri")
+    hb.add_argument("alt", choices=["cek", "durum", "listele"])
+    hb.add_argument("ticker", nargs="?")
+    hb.add_argument("--tam", action="store_true", help="artımlı değil tam çekim")
+    hb.set_defaults(fn=cmd_haber)
 
     ts = sub.add_parser("teshis", help="kayıp atıfı — revizyon turu DEĞİL")
     ts.set_defaults(fn=cmd_teshis)

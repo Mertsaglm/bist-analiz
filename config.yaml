@@ -62,8 +62,12 @@ sources:
     mevduat_stopaj_pct: 15.0
 
   kap:
-    # Faz 7. KAP 308 yönlendirme döndürüyor — takip edilmeli.
-    enabled: false
+    # ÖLÇÜLDÜ 2026-07-27: POST /tr/api/disclosure/members/byCriteria doğru
+    # başlıklarla (User-Agent + Referer) 200 ve JSON dönüyor. Planın
+    # "308 yönlendirme" notu YANLIŞ çıktı — yine L-005.
+    # KAP tek tier-1 kaynaktır: şirketin kendi resmî beyanı. Ana akım finans
+    # basını ve forumlar BİLEREK dışarıda — güvenilirlikleri ölçülmedi.
+    enabled: true
     base: "https://www.kap.org.tr"
     disclosures_path: "/tr/api/disclosure/members/byCriteria"
     user_agent: "bist-analiz/0.1 (kisisel arastirma)"

@@ -117,6 +117,7 @@ poetry run bist veri kalite          # ticker bazlı kalite kapısı
 
 ```bash
 poetry run bist veri gunluk          # fiyatları güncelle
+poetry run bist haber cek            # KAP bildirimleri (artımlı)
 poetry run bist gunluk               # llm/in/<tarih>/ paketini yazar
 # → IDE'de llm/in/<tarih>/prompt.md çalıştır, llm/out/<tarih>/analysis.json kaydet
 poetry run bist denetle              # HF-01..HF-30 — geçmeyen journal'a giremez
@@ -139,14 +140,14 @@ poetry run bist teshis               # kayıp atıfı (revizyon turu DEĞİL)
 poetry run bist replay --start 2024-01-01 --end 2026-06-30   # LLM'siz tam boru hattı
 poetry run bist plan THYAO           # tek hisse için plan menüsü
 poetry run bist portfoy ekle THYAO 100 312.5
-poetry run pytest -q                 # 302 test
+poetry run pytest -q                 # 329 test
 ```
 
 ## Proje yapısı
 
 ```
 config.yaml       TÜM eşik/oran/URL — koda sabit gömülmez
-universe.yaml     18 hisse + sektör + tier + canlı ölçülmüş metrikler
+universe.yaml     18 canlı hisse + 67 ölçüm evreni (canlı ölçülmüş metriklerle)
 holidays_tr.yaml  YALNIZCA gelecek tarihler (geçmiş takvim XU100 barlarından türetilir)
 
 AGENTS.md         AI yardımcı ("Usta") kanonik kuralları — araçtan bağımsız

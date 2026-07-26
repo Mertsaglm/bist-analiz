@@ -129,10 +129,40 @@ def _m004(con: sqlite3.Connection) -> None:
     """)
 
 
+def _m005(con: sqlite3.Connection) -> None:
+    """disclosures: (disclosure_id, ticker) bileşik anahtar + önem/özet kolonları.
+
+    Bir KAP bildirimi BİRDEN ÇOK hisseye ait olabilir (ör. holding + bağlı
+    ortaklık). Tek `disclosure_id` birincil anahtarı bunu temsil edemiyordu:
+    ya bildirim tek hisseye zorlanır ya da diğerleri sessizce düşerdi.
+    """
+    con.executescript("""
+        PRAGMA foreign_keys = OFF;
+        PRAGMA legacy_alter_table = ON;
+        DROP TABLE IF EXISTS disclosures;
+        CREATE TABLE disclosures (
+            disclosure_id TEXT NOT NULL,
+            ticker        TEXT NOT NULL,
+            published_utc TEXT NOT NULL,
+            tier          INTEGER NOT NULL,   -- 1 = KAP (resmî beyan)
+            importance    TEXT,               -- yuksek|orta|dusuk (HEURİSTİK, ölçülmedi)
+            title TEXT, summary TEXT, url TEXT, category TEXT, company TEXT,
+            fetched_utc TEXT NOT NULL,
+            PRIMARY KEY (disclosure_id, ticker)
+        );
+        CREATE INDEX IF NOT EXISTS idx_disc_ticker
+            ON disclosures(ticker, published_utc);
+        CREATE INDEX IF NOT EXISTS idx_disc_tarih ON disclosures(published_utc);
+        PRAGMA legacy_alter_table = OFF;
+        PRAGMA foreign_keys = ON;
+    """)
+
+
 MIGRATIONS: list[Migration] = [
     (2, "indicator_daily: sma50_tr / sma200_tr (trend kapısı toplam getiri uzayında)", _m002),
     (3, "predictions.score/rank/pct nullable — 'skorlanmadı' gerçek bir durumdur", _m003),
     (4, "v3'ün bozduğu outcomes FK'sını onar (legacy_alter_table tuzağı)", _m004),
+    (5, "disclosures: (disclosure_id, ticker) bileşik anahtar + önem/özet", _m005),
 ]
 
 BASELINE_VERSION = 1

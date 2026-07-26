@@ -4,7 +4,7 @@
 > KISA TUT: ~100 satırı aşınca eskiyi `ai/archive/STATE-YYYY-MM.md`'ye taşı.
 
 **Son güncelleme:** 2026-07-26
-**Aktif milestone:** ✅ v1 TAMAM — Faz 0-6 bitti, sistem çalışır durumda
+**Aktif milestone:** ✅ v1 TAMAM — Faz 0-7 bitti (KAP dahil), sistem çalışır durumda
 
 ## ✅ Tamamlananlar
 
@@ -124,8 +124,24 @@
   `bist degerlendir` taze kurulumda panel yokken ÇÖKÜYORDU → "ölçülemez" bir
   durum, hata değil.
 
+**Faz 7 — KAP/haber katmanı** (2026-07-27)
+- Modüller: `sources/kap`, `news` + CLI (`bist haber cek/durum/listele`).
+  **329 test geçiyor.**
+- **KAP ÇALIŞIYOR** — plandaki "308 yönlendirme" notu YANLIŞ çıktı (yine L-005):
+  `POST /tr/api/disclosure/members/byCriteria` doğru başlıklarla 200 + JSON.
+  İlk çekim: 2000 bildirim tarandı → 204 satır, 49 ticker, 2026-07-13…07-25.
+- Ölçülen kayıt yapısı: `stockCodes` GÜVENİLİR, `relatedStocks` çoğunlukla null.
+  `disclosureIndex` benzersiz id → `kap-<idx>`; tarih "GG.AA.YYYY SS:DD:SS".
+- Şema düzeltmesi (migration v5): bir bildirim BİRDEN ÇOK hisseye ait olabilir
+  → `(disclosure_id, ticker)` bileşik anahtar.
+- **Haber SAYIYA ÇEVRİLMİYOR.** Duygu skoru yok, ağırlık yok. `importance`
+  bir heuristik ETİKET; her yerde "ölçülmedi, hesaba girmez" yazıyor ve bir
+  test habere sayısal alan sızmasını engelliyor.
+- Artımlı çekim: son bildirim tarihinden 2 gün geriye taşarak çeker (KAP geç
+  yayımlanan bildirim içeriyor); `disclosure_id` PK tekrarları eler.
+
 ## 🔨 Devam Edenler
-- _(yok — v1 tamam)_
+- _(yok — v1 tamam, Faz 8 opsiyonel)_
 
 ## 🧱 Bloklar / Bekleyenler
 - **EVDS_API_KEY yok** (`.env`). Makro katmanı kod olarak hazır ama veri boş;

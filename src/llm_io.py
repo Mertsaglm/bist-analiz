@@ -155,7 +155,7 @@ def bundle_sha(bundle: dict) -> str:
 
 def build_bundle(cfg: dict, con: sqlite3.Connection, asof: str) -> dict:
     """Analistin göreceği her şey. Paket dışında hiçbir girdi yoktur."""
-    from . import indicators, macro, prices, universe
+    from . import indicators, macro, news, prices, universe
     from dataclasses import asdict
 
     from . import factors
@@ -176,6 +176,12 @@ def build_bundle(cfg: dict, con: sqlite3.Connection, asof: str) -> dict:
                                    kalite=kalite)
     fmap = {r["ticker"]: r for _, r in fdf.iterrows()} if not fdf.empty else {}
     wh = factors.weights_hash(cfg)
+
+    # Hisse başına "en son ne zaman analiz ettik" — haber taraması bu andan
+    # ileriye bakar. Kullanıcının şartı: aynı haberler tekrar taranmasın.
+    son_analiz = {r["ticker"]: r["son"] for r in db.fetch_all(
+        con, "SELECT ticker, MAX(created_utc) son FROM predictions "
+             "WHERE asof < ? GROUP BY ticker", (asof,))}
 
     evren = []
     for t in universe.live(con):
@@ -211,7 +217,10 @@ def build_bundle(cfg: dict, con: sqlite3.Connection, asof: str) -> dict:
                 {"prediction_id": p["prediction_id"], "asof": p["asof"],
                  "signal": p["signal"], "bariyer": p["time_barrier_date"]}
                 for p in acik if p["ticker"] == t],
-            "haberler": [],       # Faz 7 (KAP)
+            # Son analizden BU YANA çıkan bildirimler — aynı haber tekrar
+            # taranmaz. Sayıya çevrilmez; analist ham başlığı görür ve
+            # yorumunu news_refs ile kaynağa bağlar (HF-28 uydurmayı yakalar).
+            "haberler": news.bundle_view(con, t, since=son_analiz.get(t)),
         })
 
     bundle = {
@@ -306,6 +315,15 @@ def render_context(bundle: dict) -> str:
         if e["acik_tahminler"]:
             L.append(f"📌 Açık tahmin: " + ", ".join(
                 f"{a['signal']} (bariyer {a['bariyer']})" for a in e["acik_tahminler"]))
+        if e["haberler"]:
+            L.append("")
+            L.append("**KAP bildirimleri** (son analizden bu yana):")
+            for h in e["haberler"]:
+                L.append(f"- `{h['id']}` · {h['tarih']} · önem: {h['onem']} — "
+                         f"{h['baslik']}"
+                         + (f" — {h['ozet']}" if h.get("ozet") else ""))
+            L.append("")
+            L.append("_Önem etiketi HEURİSTİKTİR, ölçülmedi; hiçbir hesaba girmez._")
         if e["plan_menusu"]:
             L.append("")
             L.append("| plan_id | tür | giriş | stop | T1 (R:R) | boyut% |")

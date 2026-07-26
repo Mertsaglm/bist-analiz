@@ -2,7 +2,7 @@
   "bundle_version": "bist_bundle_v1",
   "asof": "2026-07-24",
   "karar_gunu": "2026-08-21",
-  "generated_utc": "2026-07-26T21:17:41+00:00",
+  "generated_utc": "2026-07-26T21:44:30+00:00",
   "uyari": "Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir.",
   "takvim": {
     "son_kapali_seans": "2026-07-24",
@@ -246,7 +246,35 @@
       "plan_menusu": [],
       "plan_yok_nedeni": "2 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
       "acik_tahminler": [],
-      "haberler": []
+      "haberler": [
+        {
+          "id": "kap-1636211",
+          "tarih": "2026-07-23 18:13",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "dusuk",
+          "baslik": "Bağımsız Denetim Kuruluşunun Belirlenmesi",
+          "ozet": "Sürdürülebilirlik Güvence Denetimi Kuruluşunun Belirlenmesi Hakkında",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1636211"
+        },
+        {
+          "id": "kap-1635127",
+          "tarih": "2026-07-20 18:15",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "İhale Süreci / Sonucu",
+          "ozet": "TEİAŞ İhalesi",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1635127"
+        },
+        {
+          "id": "kap-1632417",
+          "tarih": "2026-07-13 13:03",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Yeni İş İlişkisi",
+          "ozet": "Yeni İş İlişkisi",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1632417"
+        }
+      ]
     },
     {
       "ticker": "BIMAS",
@@ -432,7 +460,35 @@
       "plan_menusu": [],
       "plan_yok_nedeni": "3 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
       "acik_tahminler": [],
-      "haberler": []
+      "haberler": [
+        {
+          "id": "kap-1636318",
+          "tarih": "2026-07-24 09:30",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Kurumsal Yönetim İlkelerine Uyum Derecelendirmesi",
+          "ozet": "Kurumsal Yönetim İlkelerine Uyum Derecelendirme Raporu ve Notu",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1636318"
+        },
+        {
+          "id": "kap-1636246",
+          "tarih": "2026-07-23 18:31",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "XS2861686041 ISIN Kodlu Tahvilin 4.Kupon Ödemesi",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1636246"
+        },
+        {
+          "id": "kap-1635535",
+          "tarih": "2026-07-21 21:30",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Kredi Derecelendirmesi",
+          "ozet": "Moody's Kredi Derecelendirme Notu",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1635535"
+        }
+      ]
     },
     {
       "ticker": "EUPWR",
@@ -563,7 +619,17 @@
       "plan_menusu": [],
       "plan_yok_nedeni": "1 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
       "acik_tahminler": [],
-      "haberler": []
+      "haberler": [
+        {
+          "id": "kap-1632921",
+          "tarih": "2026-07-13 19:15",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Finansal Takvim",
+          "ozet": "2026 2.Çeyrek Finansal Takvim",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1632921"
+        }
+      ]
     },
     {
       "ticker": "GARAN",
@@ -657,7 +723,17 @@
       "plan_menusu": [],
       "plan_yok_nedeni": "3 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
       "acik_tahminler": [],
-      "haberler": []
+      "haberler": [
+        {
+          "id": "kap-1634245",
+          "tarih": "2026-07-16 18:28",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Finansal Takvim",
+          "ozet": "2026 2. Çeyrek Finansal Takvim",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1634245"
+        }
+      ]
     },
     {
       "ticker": "KRDMD",
@@ -741,7 +817,26 @@
       ],
       "plan_yok_nedeni": null,
       "acik_tahminler": [],
-      "haberler": []
+      "haberler": [
+        {
+          "id": "kap-1636626",
+          "tarih": "2026-07-24 18:17",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "İhracat Faaliyeti Hk",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1636626"
+        },
+        {
+          "id": "kap-1636624",
+          "tarih": "2026-07-24 18:17",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Bilgilendirme",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1636624"
+        }
+      ]
     },
     {
       "ticker": "PETKM",
@@ -976,7 +1071,17 @@
       ],
       "plan_yok_nedeni": null,
       "acik_tahminler": [],
-      "haberler": []
+      "haberler": [
+        {
+          "id": "kap-1635667",
+          "tarih": "2026-07-22 13:15",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Şirket Genel Bilgi Formu",
+          "ozet": null,
+          "url": "https://www.kap.org.tr/tr/Bildirim/1635667"
+        }
+      ]
     },
     {
       "ticker": "TAVHL",
@@ -1209,7 +1314,17 @@
       ],
       "plan_yok_nedeni": null,
       "acik_tahminler": [],
-      "haberler": []
+      "haberler": [
+        {
+          "id": "kap-1636239",
+          "tarih": "2026-07-23 18:25",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Finansal Takvim",
+          "ozet": "2. Çeyrek 2026 Finansal Sonuç Açıklaması Takvimi",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1636239"
+        }
+      ]
     },
     {
       "ticker": "THYAO",
@@ -1493,5 +1608,5 @@
     "Bir planı beğenmiyorsan `plan_reddet` + `veto_code` kullan — bu gerçek bir karardır ve performansı ölçülür.",
     "Bu sistemde ÖLÇÜLEN KENAR YOKTUR (ADR #008). Seviyeler planlama geometrisidir; yön iddiası üretme."
   ],
-  "bundle_sha": "fcb8d139b370bb32c8dc67223dccee703e96bd70e01dbc9c1a237bc2a653f45c"
+  "bundle_sha": "636ca4a4d9e47b00fa954a2b400435133078b7968042d3309066c7489750b8ad"
 }
