@@ -171,7 +171,9 @@ CREATE TABLE IF NOT EXISTS predictions (
     asof   TEXT NOT NULL,
     ticker TEXT NOT NULL,
     -- --- deterministik alanlar: KOD yazar, LLM ASLA ---
-    score REAL NOT NULL, rank INTEGER NOT NULL, pct REAL NOT NULL,
+    -- NULL kabul eder: "bu isim skorlanmadı" GERÇEK bir durumdur (ölçüm evreni
+    -- dışı isimler). NOT NULL bırakmak bilinmeyeni sayıya çevirmeye zorlardı.
+    score REAL, rank INTEGER, pct REAL,
     factor_set_version TEXT NOT NULL, weights_hash TEXT NOT NULL,
     indicator_set_version TEXT NOT NULL, regime TEXT NOT NULL,
     plan_id TEXT REFERENCES plan_options(plan_id),

@@ -236,6 +236,99 @@ def cmd_plan(args) -> int:
     return 0
 
 
+# ---------------------------------------------------------------- LLM sınırı
+def cmd_gunluk(args) -> int:
+    cfg = _cfg()
+    con = db.connect(cfg)
+    from . import llm_io
+
+    asof = args.asof or db.scalar(con, "SELECT MAX(date) FROM bars_daily")
+    print(f"Paket hazırlanıyor — {asof}\n")
+    bundle = llm_io.build_bundle(cfg, con, asof)
+    yollar = llm_io.write_bundle(cfg, bundle)
+    planli = sum(1 for e in bundle["evren"] if e["plan_menusu"])
+    print(f"  evren        : {len(bundle['evren'])} hisse ({planli} tanesinde plan var)")
+    print(f"  rejim        : {bundle['rejim']['etiket']}")
+    print(f"  bundle_sha   : {bundle['bundle_sha'][:16]}…")
+    for k, v in yollar.items():
+        print(f"  {k:12} : {v}")
+    print(f"\nŞimdi IDE'de {yollar['prompt']} dosyasını çalıştır ve çıktıyı\n"
+          f"llm/out/{asof}/analysis.json olarak kaydet. Sonra: bist denetle")
+    con.close()
+    return 0
+
+
+def cmd_denetle(args) -> int:
+    cfg = _cfg()
+    con = db.connect(cfg)
+    from . import audit, llm_io
+
+    asof = args.asof or db.scalar(con, "SELECT MAX(date) FROM bars_daily")
+    bundle = util.read_json(f"{cfg['paths']['llm_in_dir']}/{asof}/bundle.json")
+    if bundle is None:
+        print(f"Paket yok: llm/in/{asof}/bundle.json — önce `bist gunluk`")
+        con.close()
+        return 1
+    try:
+        out = llm_io.read_output(cfg, asof)
+    except FileNotFoundError as e:
+        print(e)
+        con.close()
+        return 1
+
+    bulgular = audit.audit(cfg, bundle, out, con)
+    print(audit.format_report(bulgular))
+    con.close()
+    return 0 if not audit.hard_fails(bulgular) else 2
+
+
+def cmd_kaydet(args) -> int:
+    cfg = _cfg()
+    con = db.connect(cfg)
+    from . import audit, journal, llm_io, planner
+
+    asof = args.asof or db.scalar(con, "SELECT MAX(date) FROM bars_daily")
+    bundle = util.read_json(f"{cfg['paths']['llm_in_dir']}/{asof}/bundle.json")
+    out = llm_io.read_output(cfg, asof)
+    bulgular = audit.audit(cfg, bundle, out, con)
+    sert = audit.hard_fails(bulgular)
+    if sert:
+        print(audit.format_report(bulgular))
+        print("\n🛑 Sert hata var — journal'a YAZILMADI.")
+        con.close()
+        return 2
+
+    # Planlar journal FK'sı için önce saklanır
+    menu = planner.build_menu(cfg, con, asof)
+    for opts in menu["menu"].values():
+        planner.store(cfg, con, opts)
+
+    run_id = journal.create_run(cfg, con, asof=asof, tool=out.get("tool", "diger"),
+                                bundle_sha=bundle["bundle_sha"],
+                                output_path=f"llm/out/{asof}/analysis.json")
+    plan_map = {p["plan_id"]: p for ps in planner.load_for_date(cfg, con, asof).values()
+                for p in ps}
+    ev = {e["ticker"]: e for e in bundle["evren"]}
+    n = 0
+    for st in out["stocks"]:
+        t = st["ticker"]
+        plan = plan_map.get(st.get("selected_plan_id")) or {}
+        analist = {k: v for k, v in st.items() if k in journal.ANALIST_ALANLARI}
+        journal.record(cfg, con, run_id=run_id, asof=asof, ticker=t,
+                       analist=analist, plan=plan,
+                       faktor=llm_io.faktor_to_journal(ev[t].get("faktorler")),
+                       regime=bundle["rejim"]["etiket"],
+                       referans={"close": ev[t]["fiyat"]["kapanis"],
+                                 "atr14": ev[t]["gostergeler"].get("atr14")})
+        n += 1
+    print(f"✅ {n} tahmin journal'a yazıldı (run {run_id}).")
+    if bulgular:
+        print(f"\n{len(bulgular)} uyarı:")
+        print(audit.format_report(bulgular))
+    con.close()
+    return 0
+
+
 # ---------------------------------------------------------------- replay / journal
 def cmd_replay(args) -> int:
     cfg = _cfg()
@@ -388,6 +481,18 @@ def build_parser() -> argparse.ArgumentParser:
     pl.add_argument("--asof", help="YYYY-MM-DD")
     pl.add_argument("--kaydet", action="store_true", help="plan_options tablosuna yaz")
     pl.set_defaults(fn=cmd_plan)
+
+    gn = sub.add_parser("gunluk", help="LLM girdi paketini hazırla")
+    gn.add_argument("--asof", help="YYYY-MM-DD")
+    gn.set_defaults(fn=cmd_gunluk)
+
+    dn = sub.add_parser("denetle", help="analist çıktısını HF-01..HF-30 ile denetle")
+    dn.add_argument("--asof", help="YYYY-MM-DD")
+    dn.set_defaults(fn=cmd_denetle)
+
+    kd = sub.add_parser("kaydet", help="denetimden geçen çıktıyı journal'a yaz")
+    kd.add_argument("--asof", help="YYYY-MM-DD")
+    kd.set_defaults(fn=cmd_kaydet)
 
     rp = sub.add_parser("replay", help="LLM'siz tam boru hattı tekrarı")
     rp.add_argument("--start", default="2024-01-01")

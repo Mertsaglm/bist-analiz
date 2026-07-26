@@ -4,7 +4,7 @@
 > KISA TUT: ~100 satırı aşınca eskiyi `ai/archive/STATE-YYYY-MM.md`'ye taşı.
 
 **Son güncelleme:** 2026-07-26
-**Aktif milestone:** Faz 5 — LLM sınırı + denetim
+**Aktif milestone:** Faz 6 — değerlendirme + rapor
 
 ## ✅ Tamamlananlar
 
@@ -93,9 +93,28 @@
   önceden doğrulanıyor; (2) `referans['close']` eksikse çıplak NOT NULL hatası
   veriyordu → açık gerekçeli hata.
 
+**Faz 5 — LLM sınırı + denetim** (2026-07-27)
+- Modüller: `schema`, `llm_io`, `audit` + CLI (`bist gunluk/denetle/kaydet`).
+  **289 test geçiyor.**
+- Boru hattı tam: `gunluk` → paket (bundle.json + context.md + prompt.md) →
+  IDE'de analiz → `denetle` (HF-01..HF-30) → `kaydet` (journal).
+- **DoD karşılandı:** her HF kodu tek tek tetiklendi (30 test). Canlı doğrulama:
+  plan_id uydur → HF-12 · sayı uydur → HF-17 · sha boz → HF-02 · sayısal güven → HF-09.
+- Yol boyunca DÖRT kusur bulundu ve düzeltildi:
+  1. **HF-17'de gerçek delik:** `_varyantlar` yuvarlayarak biçim üretiyordu,
+     uydurma "47.3" değeri "47" varyantı doğurup pakette 47.00 varsa denetimi
+     ATLIYORDU → artık yalnız değeri değiştirmeyen biçimler.
+  2. `build_bundle` faktör skorlarını pakete hiç koymuyordu → HF-22 üretimde
+     ASLA ateşlenemezdi, `bist kaydet` NOT NULL ile patlıyordu.
+  3. Paket Türkçe anahtar (`skor`), journal İngilizce (`score`) bekliyordu →
+     tek yerde eşleme (`llm_io.faktor_to_journal`).
+  4. **Migration tuzağı:** SQLite `ALTER TABLE RENAME` diğer tabloların FK'sını
+     da yeniden yazıyor; v3 `outcomes`'u silinmiş tabloya bağladı → `legacy_
+     alter_table = ON` + onarım migration'ı v4. Testler yakaladı.
+
 ## 🔨 Devam Edenler
-- Faz 5: `schema`, `llm_io` (bundle + bundle_sha + allowed_numeric_tokens),
-  `audit` (HF-01..HF-30), prompt şablonu.
+- Faz 6: `evaluate` (IC, eşleştirilmiş alfa, LLM katkısı, veto değeri,
+  boyutlandırma karşı-olgusu, Brier, hata taksonomisi) + değerlendirme raporu.
 
 ## 🧱 Bloklar / Bekleyenler
 - **EVDS_API_KEY yok** (`.env`). Makro katmanı kod olarak hazır ama veri boş;
@@ -103,10 +122,7 @@
   (uydurma yok). Anahtar girilince: `bist makro backfill`.
 
 ## 🎯 Sıradaki 3 İş
-1. **Faz 5 — LLM sınırı.** Yeniden çerçevelemede LLM'in veto + haber okuma
-   katmanı ASIL ürün: ölçemediğimiz ama sayısal olmayan bilginin yaşadığı yer.
-   DoD: HF-01..HF-30'un her biri tek tek tetikleniyor.
-2. **Faz 6 — değerlendirme + rapor.** DoD: `bist degerlendir` ilk gün
+1. **Faz 6 — değerlendirme + rapor.** DoD: `bist degerlendir` ilk gün
    "ölçüm yetersiz" demek ZORUNDA; sentetik-alfa testi bunu sabitliyor.
 3. **Faz 7-8 (opsiyonel):** KAP/haber katmanı, GitHub Actions + Telegram.
 
