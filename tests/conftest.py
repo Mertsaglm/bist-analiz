@@ -12,7 +12,10 @@
 
 from __future__ import annotations
 
+import json
+import math
 import sqlite3
+from datetime import date, timedelta
 from pathlib import Path
 
 import pytest
@@ -20,14 +23,67 @@ import pytest
 from src import db, util
 
 
+# --------------------------------------------------------------- güvenlik ağı
+@pytest.fixture(autouse=True)
+def gercek_dbye_yazma_korumasi(monkeypatch):
+    """`pytest` kullanıcının GERÇEK veritabanına YAZAMAZ — yapısal güvence.
+
+    ⚠ Bu bir süs değil, yaşanmış bir olayın kilidi: `real_con` fixture'ının ilk
+    sürümü `db.connect(real_cfg)` çağırıyordu ve şemayı uygulayıp MIGRATION'LARI
+    İLERLETİYORDU. `pytest` koşmak, kullanıcının veritabanını sessizce
+    değiştiriyordu (2026-07-27 denetimi: v6 migration'ı elle koşulmadan önce bir
+    test koşusunda uygulanmıştı).
+
+    O olay `real_con`'u salt-okunur yaparak kapatıldı — ama düzeltme TEK BİR
+    ÇAĞRI YERİNDEYDİ. Bir sonraki testi yazan kişinin (ya da modelin) aynı
+    tuzağa yeniden düşmesini engelleyen hiçbir şey yoktu. Bu fixture o boşluğu
+    kapatır: hangi test olursa olsun, gerçek `paths.db` dosyasına YAZILABİLİR
+    bir bağlantı açmaya çalışmak testi patlatır.
+
+    Salt-okunur (`readonly=True`) bağlantılar serbesttir — gerçek veri testleri
+    veri KAYNAĞININ davranışını ölçer ve bunun için okumak yeterlidir.
+    """
+    gercek = db.db_path(util.load_config()).resolve()
+    orijinal = db.connect
+
+    def korumali(cfg_: dict, *, readonly: bool = False):
+        if not readonly and db.db_path(cfg_).resolve() == gercek:
+            raise RuntimeError(
+                f"TEST GERÇEK VERİTABANINA YAZMAYA ÇALIŞTI: {gercek}\n"
+                "Testler `cfg` fixture'ını kullanır (veritabanı tmp_path'te). "
+                "Gerçek veriyi okumak için `real_con` (salt-okunur) var. "
+                "Bu koruma tests/conftest.py içinde tanımlıdır ve "
+                "KALDIRILMAMALIDIR — bkz. oradaki gerekçe.")
+        return orijinal(cfg_, readonly=readonly)
+
+    monkeypatch.setattr(db, "connect", korumali)
+    yield
+
+
 @pytest.fixture
 def cfg(tmp_path: Path) -> dict:
-    """Gerçek config, ama veritabanı ve dump geçici dizinde."""
+    """Gerçek config, ama YAZILAN HER YOL geçici dizinde.
+
+    ⚠ İlk sürüm yalnız `db` / `db_dump` / `log_dir`'i yönlendiriyordu. Yani
+    `llm_in_dir`, `llm_out_dir` ve `reports_dir` GERÇEK proje dizinlerini
+    gösteriyordu ve `write_bundle` / `report.write` çağıran her test
+    kullanıcının repo'suna dosya bırakıyordu (ölçüldü: `llm/in/<tarih>/` ve
+    `llm/out/<tarih>/` klasörleri test koşusundan sonra ortaya çıkıyordu).
+
+    Bu, `real_con`'un salt-okunur yapılmasıyla kapatılan aynı sınıf hatanın
+    dosya sistemi hâliydi: bir test suite'inin yan etkisi olmaz.
+
+    Okunan girdiler (`universe_file`, `holidays_file`) BİLEREK gerçek kalır —
+    o dosyaların içeriği testin konusudur.
+    """
     c = util.load_config(fresh=True)
     c = {**c, "paths": {**c["paths"],
                         "db": str(tmp_path / "test.db"),
                         "db_dump": str(tmp_path / "test.sql"),
-                        "log_dir": str(tmp_path / "logs")}}
+                        "log_dir": str(tmp_path / "logs"),
+                        "llm_in_dir": str(tmp_path / "llm" / "in"),
+                        "llm_out_dir": str(tmp_path / "llm" / "out"),
+                        "reports_dir": str(tmp_path / "reports")}}
     return c
 
 
@@ -45,11 +101,21 @@ def real_cfg() -> dict:
 
 @pytest.fixture
 def real_con(real_cfg: dict):
-    """Proje veritabanı. Yoksa/boşsa test atlanır."""
+    """Proje veritabanı — **SALT OKUNUR**. Yoksa/boşsa test atlanır.
+
+    ⚠ İlk sürüm `db.connect(real_cfg)` çağırıyordu; o da şemayı uygulayıp
+    MIGRATION'LARI İLERLETİYORDU. Yani `pytest` koşmak, kullanıcının gerçek
+    veritabanını sessizce değiştiriyordu — bir test suite'inden beklenecek en
+    son şey. (2026-07-27 denetiminde fark edildi: v6 migration'ı, ben onu
+    elle koşmadan önce bir test koşusunda uygulanmıştı.)
+
+    Salt-okunur bağlantı ayrıca testin niyetini de doğru anlatıyor: bunlar
+    veri KAYNAĞININ davranışını ölçer, veriyi kurmaz.
+    """
     p = db.db_path(real_cfg)
     if not p.exists():
         pytest.skip(f"Proje veritabanı yok ({p}) — önce `bist veri backfill`")
-    c = db.connect(real_cfg)
+    c = db.connect(real_cfg, readonly=True)
     n = c.execute("SELECT COUNT(*) FROM bars_daily").fetchone()[0]
     if n == 0:
         c.close()
@@ -99,3 +165,182 @@ def add_plan(con: sqlite3.Connection, plan_id: str, ticker: str = "TEST",
         "(plan_id, asof, ticker, kind, payload, created_utc) VALUES (?,?,?,?,?,?)",
         (plan_id, asof, ticker, "test", "{}", util.utc_now_iso()))
     con.commit()
+
+
+def add_indicator(con: sqlite3.Connection, cfg: dict, ticker: str, tarih: str,
+                  **degerler) -> None:
+    """`indicator_daily`'ye tek satır. Verilmeyen kolonlar NULL kalır.
+
+    Kesitsel her oranın PAYDASI bu tablodur (bkz. db.SCHEMA yorumu): burada
+    satırı olmayan ticker `factors._panel` ve `regime.breadth` JOIN'lerinde
+    sessizce düşer. Testlerin paydayı bilinçli daraltıp genişletebilmesi için
+    bu yardımcı gerekiyor.
+    """
+    cols = ["ticker", "date", "set_version", "computed_utc", *degerler]
+    vals = [ticker, tarih, cfg["gostergeler"]["set_version"], util.utc_now_iso(),
+            *degerler.values()]
+    ph = ",".join("?" * len(cols))
+    con.execute(f"INSERT OR REPLACE INTO indicator_daily ({','.join(cols)}) "
+                f"VALUES ({ph})", vals)
+    con.commit()
+
+
+def add_quality(con: sqlite3.Connection, ticker: str, tarih: str, *,
+                ok: bool = True, zero_vol: float | None = 0.0,
+                reasons: list[str] | None = None, bars: int = 252) -> None:
+    """`data_quality`'ye tek satır — kalite kapısının açık/kapalı hâlini kurar."""
+    con.execute(
+        "INSERT OR REPLACE INTO data_quality "
+        "(ticker,date,bars_252,zero_vol_ratio_252,max_gap_days,stale_close_days,"
+        " unexplained_jump,ok,reasons) VALUES (?,?,?,?,?,?,?,?,?)",
+        (ticker, tarih, bars, zero_vol, 3, 1, 0, 1 if ok else 0,
+         json.dumps(reasons if reasons is not None else ([] if ok else ["test"]))))
+    con.commit()
+
+
+def is_gunleri(n: int, baslangic: str = "2023-01-02") -> list[str]:
+    """`n` ardışık HAFTA İÇİ gün (ISO). Takvim testleri için değil, seri kurmak için."""
+    d = date.fromisoformat(baslangic)
+    out: list[str] = []
+    while len(out) < n:
+        if d.weekday() < 5:
+            out.append(d.isoformat())
+        d += timedelta(days=1)
+    return out
+
+
+def kur_sentetik_evren(cfg: dict, con: sqlite3.Connection, *, n_ticker: int = 6,
+                       n_bar: int = 320, kalite: bool = True,
+                       asof_geri: int = 0) -> str:
+    """Uçtan uca testler için ÇALIŞAN bir sentetik kurulum. `asof` döner.
+
+    Kurulan: evren + barlar + XU100 endeksi + hesaplanmış göstergeler
+    (+ istenirse kalite kaydı). Bu, `llm_io.build_bundle`'ın gerçekten
+    üretilebildiği en küçük dünyadır — planlayıcı, faktörler, rejim, seviyeler
+    ve haber katmanının tamamı bunun üzerinde koşar.
+
+    Neden gerekli: bu projenin en pahalı hatalarının çoğu TEK MODÜLDE değil,
+    modüller arası varsayımda çıktı (paket faktör skorunu taşımıyordu → HF-22
+    hiç ateşlenemiyor ve `bist kaydet` NOT NULL ile patlıyordu). O sınıfı
+    yakalayan tek şey uçtan uca kurulumdur.
+
+    Sektörler ikili gruplanır (`sek0, sek0, sek1, sek1, …`) — sektör tavanı
+    kontrollerinin tetiklenebilir olması için.
+
+    `asof_geri > 0`: `asof` son bardan bu kadar bar GERİYE alınır, yani seride
+    "gelecek" barlar kalır. Resolver'ı (üçlü bariyer) çalıştırabilmenin tek
+    yolu bu — bariyer tarihine kadar barın var olması gerekir. Look-ahead
+    riski yok: hesaplayan her fonksiyon `date <= asof` süzüyor.
+    """
+    from src import indicators, prices
+
+    tarihler: list[str] = []
+    for i in range(n_ticker):
+        t = chr(ord("A") + i) * 3
+        add_universe(con, t, sector=f"sek{i // 2}")
+        rows = bar_serisi(n_bar, fiyat=100.0 + 10 * i, gunluk_egim=0.0015,
+                          dalga=4.0 + i, periyot=15 + i)
+        add_bars(con, t, rows)
+        tarihler = [r[0] for r in rows]
+
+    now = util.utc_now_iso()
+    con.executemany(
+        "INSERT OR REPLACE INTO index_daily (symbol,date,o,h,l,c,ingested_utc) "
+        "VALUES (?,?,?,?,?,?,?)",
+        [(("XU100"), d, 100.0 + i * 0.1, 100.0 + i * 0.1, 100.0 + i * 0.1,
+          100.0 + i * 0.1, now) for i, d in enumerate(tarihler)])
+    con.commit()
+
+    indicators.compute_and_store(cfg, con)
+    asof = tarihler[-1 - asof_geri]
+    if kalite:
+        prices.assess_quality(cfg, con, asof=asof)
+    return asof
+
+
+# Prose'da SAYI YOK: HF-17 paketteki sayılara izin verse de testin amacı denetimi
+# sayı tartışmasına sokmak değil. Ticker adı gövdeye giriyor çünkü HF-27 (şablon
+# tez) prose'u SAYILARI SOYARAK hash'ler — aynı cümleyi farklı sayılarla
+# tekrarlamak yine şablondur.
+GECERLI_PROSE = {
+    "thesis": ("{t} için taşıyıcı gerekçe: kesitsel sıralamadaki yeri ve trend "
+               "kapısından geçmesi birlikte değerlendirildi; plan geometrisi "
+               "kabul edilebilir görünüyor ve pozisyon disiplini korunabilir."),
+    "counter_scenario": ("{t} tarafında karşı senaryo: sıralamanın ileri getiriyle "
+                         "ilişkisiz olması ve geri çekilmenin hiç gelmemesi; bu "
+                         "durumda plan tetiklenmez ve tez kendiliğinden düşer."),
+    "key_risk": ("{t} ana riski: sektör yoğunlaşması ve haber akışının plan "
+                 "penceresine denk gelmesi; likidite daralırsa stop mesafesi "
+                 "gerçekleşen kayıptan küçük kalabilir."),
+    "falsifier": ("{t} günlük kapanışı destek seviyesinin altına inerse ve hacim "
+                  "ortalamanın altında kalırsa tez düşer; beş işlem günü içinde "
+                  "gözlemlenebilir bir olaydır."),
+}
+
+
+def analist_ciktisi(bundle: dict, *, plan_secilen: str | None = None,
+                    tool: str = "claude-code") -> dict:
+    """Denetimden GEÇMESİ gereken, elle kurulmuş geçerli analist çıktısı.
+
+    Kasten sade: `strong_buy` yok (HF-22 yüzdelik bandı ister), `sell` yok
+    (HF-21 holdings ister), boğa sinyaliyle çelişen aksiyon yok (HF-20).
+    Bir denetim kuralını test etmek isteyen, buradan bir alanı BOZARAK başlar.
+    """
+    from src import schema
+
+    stocks = []
+    for e in bundle["evren"]:
+        t = e["ticker"]
+        sec = plan_secilen == t and bool(e["plan_menusu"])
+        stocks.append({
+            "ticker": t,
+            "signal": "buy" if sec else "hold",
+            "action": "plan_sec" if sec else "izle",
+            "selected_plan_id": e["plan_menusu"][0]["plan_id"] if sec else None,
+            "veto_code": None,
+            "confidence": "orta" if sec else "dusuk",
+            **{k: v.format(t=t) for k, v in GECERLI_PROSE.items()},
+            "news_refs": [],
+            "news_reading": None,
+        })
+    return {
+        "schema_version": schema.OUTPUT_SCHEMA_VERSION,
+        "asof": bundle["asof"],
+        "bundle_sha": bundle["bundle_sha"],
+        "tool": tool,
+        "market_view": {
+            "regime_agreement": "katiliyorum",
+            "regime_note": ("Rejim tespiti makul; geniş tabanlı bir zayıflık "
+                            "görünmüyor ama kenar iddiası da yok."),
+            "portfolio_action": "koru",
+        },
+        "stocks": stocks,
+        "not_covered": [],
+        "analyst_notes": "",
+    }
+
+
+def bar_serisi(n: int, *, baslangic: str = "2023-01-02", fiyat: float = 100.0,
+               gunluk_egim: float = 0.0, dalga: float = 0.0, periyot: int = 20,
+               hacim: float = 5_000_000.0, temettu_verimi: float = 0.0
+               ) -> list[tuple]:
+    """DETERMİNİSTİK sentetik bar serisi — `add_bars` biçiminde.
+
+    Rastgelelik YOK (`math.sin` ile dalga): aynı çağrı daima aynı seriyi verir,
+    yoksa gösterge testleri arada bir patlayan testlere dönüşür.
+
+    `temettu_verimi > 0` iken `c_tr` ham `c`'den AYRIŞIR — hangi göstergenin
+    hangi seriden beslendiğini (bkz. indicators.py başlığı) test etmenin tek
+    yolu bu ayrışmayı kurmaktır.
+    """
+    rows = []
+    for i, d in enumerate(is_gunleri(n, baslangic)):
+        taban = fiyat * (1.0 + gunluk_egim) ** i
+        c = taban + dalga * math.sin(2 * math.pi * i / periyot)
+        o = c * 0.998
+        h = c * 1.010
+        low = c * 0.990
+        c_tr = c * (1.0 + temettu_verimi) ** i
+        rows.append((d, round(o, 4), round(h, 4), round(low, 4), round(c, 4),
+                     hacim, round(c_tr, 4)))
+    return rows

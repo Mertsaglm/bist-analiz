@@ -1,9 +1,15 @@
 # Usta — Taşınabilir AI Mühendislik Yardımcısı
 
-Bu repo, farklı AI kodlama araçlarında (**Claude Code, Cursor, Antigravity,
+Bu klasör, farklı AI kodlama araçlarında (**Claude Code, Cursor, Antigravity,
 VS Code eklentileri, Copilot...**) aynı şekilde çalışan kişisel bir
 "usta/yol gösteren" sistemidir. Sır şu: her şey düz markdown, hiçbir aracın
 özel özelliğine bağımlılık yok.
+
+> Bu şablon **kullanımda test edildi.** BIST Analiz projesi baştan sona bu
+> sistemle kuruldu; aşağıdaki her kural gerçek bir hatadan doğdu. Yeni
+> maddeler (`/denetle`, doküman çürümesi kuralları, ön kayıt disiplini,
+> **kuralı teste devretme**) 2026-07-27'de yapılan bağımsız bir denetimin ve
+> onu izleyen "kurallar bizden sonra da yaşasın" turunun sonucudur.
 
 ## Yapı
 
@@ -19,9 +25,23 @@ proje/
 │   ├── DECISIONS.md                 ← Karar günlüğü (ADR): ne, neden, ne zaman tekrar bak
 │   ├── PROFILE.md                   ← Mert'in profili ve kısıtları (projeler arası ORTAK)
 │   ├── LESSONS.md                   ← Geçmiş hatalardan dersler (anti-pattern listesi)
-│   └── archive/                     ← STATE şişince eski içerik buraya
-└── yeni-proje.sh                    ← Şablonu yeni bir projeye kopyalar
+│   └── archive/README.md            ← STATE şişince eski içerik buraya
+├── docs/                            ← ÖN KAYITLAR: koşudan önce mühürlenir, DEĞİŞTİRİLMEZ
+└── Proje Yardımcısı/
+    ├── README.md                    ← bu dosya
+    └── yeni-proje.sh                ← şablonu yeni bir projeye kopyalar
 ```
+
+⚠ **Kural dosyaları KÖKTE, script alt klasörde.** Bu ayrım bilinçli: hiçbir IDE
+alt klasördeki AGENTS.md'yi okumaz (L-004), ama `yeni-proje.sh` bir araç olduğu
+için kökü kalabalıklaştırmasın diye ayrı durur. Script bu yüzden kaynağı kendi
+klasörü değil **bir üstü** olarak çözer — bu satır güncellenmediği için script
+bir dönem hiç çalışmadı ve kimse fark etmedi (L-002).
+
+**`docs/` neden var:** Bir ölçüm/deney yapmadan önce "neyi değiştiriyorum,
+geçme şartı ne" yazılır ve dosyanın sha256'sı alınır. Sonucu gördükten sonra
+çıtayı indirmek, ölçüm yapan her projede en kolay ve en pahalı kendini
+kandırma yoludur. Ön kayıt onu **imkânsız** kılar.
 
 ## Nasıl çalışır?
 
@@ -46,21 +66,128 @@ bu yüzden her araçta çalışırlar. Sohbete yazman yeterli:
 | `/kapat` | Oturumda yapılanları STATE.md'ye yazar, kapanış özeti verir |
 | `/ders <olay>` | Yaşanan bir hatadan ders çıkarıp LESSONS.md'ye ekler |
 | `/ogret <konu>` | Konuyu sade, benzetmeli, öğretici şekilde anlatır |
+| **`/denetle`** | Projeyi DIŞ göz gibi denetler: kod ↔ doküman ↔ config ↔ **verinin gerçek içeriği**. Önce raporlar, sonra düzeltir |
+
+### `/denetle` neden ayrı bir ritüel?
+
+Gerçek bir denetimde bulunan **kritik hataların hepsinde kod DOĞRUYDU.**
+Bozulan şey kodun varsaydığı VERİ DURUMUYDU ve hiçbiri hata fırlatmıyordu:
+
+- Bir tablo 70 satır bekliyordu, 19 vardı → oranlar sessizce 16 isim üzerinden
+  hesaplanıyor, çıktı hâlâ "geçerli" görünüyordu.
+- Bir filtre "son analizden bu yana" diyordu ama duvar saatini kullanıyordu →
+  47 gerçek kayıt sessizce gizlendi.
+- Bir kalite kapısı tam tarih eşleşmesi arıyordu → veri bir gün ilerleyince
+  kapı kapandı ve dört tüketici de "kayıt yok"u "sorun yok" okudu.
+
+Bunların hiçbiri kod okuyarak görülemez. `/denetle` bu yüzden **veritabanının
+gerçek içeriğine bakmakla başlar.** Ayrıntılı protokol: AGENTS.md bölüm 11.
+
+## Şablonun taşıdığı altı sert kural
+
+Bunlar AGENTS.md'de yazılı ve her projeye taşınır:
+
+**1. Payda birinci sınıf çıktıdır.** Bir oran/sıralama/yüzdelik üreten her
+fonksiyon paydayı da döndürsün ve çıktıya yazsın. "%31 genişlik" ile "5/16 =
+%31 genişlik" farklı iki cümledir; ikincisi yanlış olduğunda fark edilir.
+
+**2. "Veri yok" asla "sorun yok"a çevrilmez.** Eksik kaydın varsayılanı
+olumsuz olsun. Bir dış kaynak hatası boş listeye düşüyorsa, çağıran taraf
+"bugün haber yok" ile "kaynağa ulaşılamadı"yı ayırt EDEMEZ.
+
+**3. Yorum bir iddiadır.** "Şu kolon şunu ölçer" yazdığında, o iddianın kodda
+karşılığı olduğunu doğrula. Denetimde bulunan en pahalı yanılgılar kod hatası
+değil, **doğru görünen ama karşılığı olmayan yorumlardı** — üç ayrı dosya bir
+ölçümün yapıldığını söylüyordu, ölçüm hiç yapılmıyordu.
+
+**4. Yeşil test, doğrulanmış gerçek değil; kayda geçmiş bir inançtır.**
+`tick_size(1000) == 1.00` testi aylarca yeşil kaldı — ölçünce doğru cevabın
+2.50 olduğu görüldü. Test bir VARSAYIMI sabitliyordu. Bir varsayımı test
+ederken yanına **"bu ölçüldü mü, ne zaman?"** yaz; ölçülmediyse test onu
+korumaya değil, görünür kılmaya yarasın.
+
+**5. Dış kaynağın sınırını ölç, tahmin etme.** "90 gün iste" dedik, kaynak
+14 gün döndürdü — hata vermeden. Bir API'den geniş bir aralık isterken
+**döneni istenene karşı doğrula**; doymuşsa böl. Sabit bir dilim boyutu
+seçmek de yetmez: hacim mevsimlik olabilir, doymayı gözleyip tepki ver.
+
+**6. Yorum bir niyettir, test bir sözleşmedir.** Yukarıdaki beş kural da dahil,
+yalnızca yorumda duran bir kuralın ömrü **onu hatırlayan kişinin ömrü kadardır**
+— ve o kişi çoğu zaman sen olmayacaksın (farklı bir model, farklı bir araç, ya
+da aylar sonraki sen). Bir kural yazdıktan sonra sor: *bunu koşulabilir hale
+getirebilir miyim?* "Bu eşik düşürülmemeli" bir dilek; `assert esik >= 15` bir
+sözleşme — eşiği değiştirmeyi yasaklamaz, **görünür** kılar. Ayrıntı:
+AGENTS.md bölüm 12.
+
+## Kuralı nasıl teste devredersin? (dile bağlı değil)
+
+Şablon Python'a bağlı değil; aşağıdaki dört sınıf her projede karşılığı olan
+şeylerdir. Test aracı ne olursa olsun (pytest, vitest, `bats`, hatta bir
+`make check` script'i) mantık aynı:
+
+| Sınıf | Ne yapar | Neyi engeller |
+|---|---|---|
+| **Eşik zemini** | Kararlaştırılmış eşiklerin altına inilemez | Sonucu görüp çıtayı indirmek |
+| **Yapı eşliği** | Koddaki alan/kolon listesi ↔ şema birebir | Bir alanın kayıp sessizce yanlış yere yazılması |
+| **Doküman ↔ kod** | Belgelerdeki her komut/anahtar/dosya yolu gerçekten var mı | Ölü referans, bayat komut adı |
+| **Yan etkisizlik** | Testler gerçek veriye/çıktı klasörüne dokunmaz | Test koşmanın kullanıcı verisini değiştirmesi |
+
+Ve testleri **üç ayrı soruya** böl — birini diğerinin yerine koyma:
+
+- **Sözleşme:** kodun VARSAYDIĞI yapı ayakta mı?
+- **Mekanizma:** doğru girdiden / doğru paydadan mı besleniyor?
+- **Uçtan uca:** zincir gerçekten koşuyor mu?
+
+Üçüncüsü en pahalı hataların yeridir: her modül kendi başına doğrudur, kırılan
+şey **aralarındaki varsayımdır** — ve birim testleri onu görmez.
+
+⚠ Hedef kapsam yüzdesi değil. Kapsam "kod çalıştı" der, "kural tutuyor" demez.
+Her satırı değil, **her KURALI** test et.
+
+## Denetim düzeltirken düşülen beş tuzak
+
+Denetim raporu yazmak kolay; düzeltmeleri kapatmak asıl iş. Bunların hepsi
+gerçekte yaşandı ve AGENTS.md bölüm 11'de yazılı:
+
+1. **Düzeltme yeni hata doğurur.** Bir kapıyı sıkılaştırmak, o kapıyı
+   kullanan başka bir hattın tamamını eledi (0 çıktı). Her düzeltmeden sonra
+   ETKİLENEN HATTI uçtan uca koş — test yeşil diye geçme.
+2. **Kontrol listesini kodla doğrula.** "Yaptım" demek yetmez. Ama naif metin
+   araması **kendi yorumlarını yakalar**: koda mı yoruma mı baktığını ayır.
+3. **Yeni ölçüm yeni bulgu doğurur.** Bir kararı uygularken çıkan sürprizi
+   "kapsam dışı" diye geçme — asıl bulgu o olabilir.
+4. **Eski testler eski varsayımı korur.** Düzeltme sonrası kırmızıya dönen
+   test, çoğu zaman düzeltmenin yanlış olduğunu değil, **testin yanlış
+   olduğunu** gösterir. Hangisi olduğuna ölçerek karar ver.
+5. **Tek çağrı yerini düzeltmek kuralı uygulamak değildir — simetriğini ara.**
+   Bir fixture salt-okunur yapıldı ama aynı hatanın bir sonraki testte
+   tekrarlanmasını engelleyen hiçbir şey yoktu; bir alan için None koruması
+   yazıldı, simetriği olan alan için yazılmadı. Düzeltme iki iştir:
+   (a) bu çağrı yerini kapat, (b) **aynı hatanın bir daha yapılamayacağı yeri**
+   kapat.
 
 ## Yeni projeye başlarken
 
 ```bash
+cd "Proje Yardımcısı"
 ./yeni-proje.sh ~/Desktop/YeniProjem
 ```
 
-Script şablonu kopyalar ve STATE'i sıfırlar. Sonra tek yapman gereken:
+Script kural dosyalarını **köke** kopyalar, `PROJECT.md`'yi BOŞ ŞABLON olarak
+kurar ve STATE'i sıfırlar. Sonunda ürettiği her dosyayı tek tek doğrular:
+eksik dosya, boş dosya ya da AGENTS.md'ye yönlenmeyen bir köprü bulursa
+**durur** — çünkü sessiz eksik kopya, kural sisteminin hiç devreye girmemesi
+demektir ve kendiliğinden hata vermez.
+
+Sonra tek yapman gereken:
+
 1. Yeni klasörü AI aracında açıp `/baslat` yazmak.
 2. Gerisi Usta'da: PROJECT.md boş olduğunu görür, sana proje fikrini sorar,
    turlar halinde sorularla projeyi anlar, anladığını sana onaylatır ve
    PROJECT.md'yi **kendisi doldurur**. Sen sadece anlatırsın.
 
-`ai/PROFILE.md` projeler arası ortaktır — bir yerde güncellediğinde
-diğer projelere de kopyalamayı unutma (tek doğruluk kaynağı bu repo olsun).
+`ai/PROFILE.md` ve `ai/LESSONS.md` projeler arası ortaktır — bir yerde
+güncellediğinde bu şablona da geri taşı, tek doğruluk kaynağı burası olsun.
 
 ## Araç uyumluluğu notları
 
@@ -74,3 +201,9 @@ diğer projelere de kopyalamayı unutma (tek doğruluk kaynağı bu repo olsun).
 
 Her araçta geçerli son çare: sohbetin ilk mesajına şunu yaz →
 **"AGENTS.md'yi oku ve oradaki kurallara göre çalış."**
+
+⚠ **Kural dosyaları KÖKTE durmalı.** Hiçbir IDE alt klasördeki AGENTS.md'yi
+otomatik okumaz; yanlış yerdeki doğru dosya yok hükmündedir ve hata da
+vermez, sadece sessizce devreye girmez (LESSONS L-004). Kurduktan sonra
+`/durum` yazıp gerçekten yüklendiğini **test et** — dosyanın varlığını görmek
+yeterli değil.

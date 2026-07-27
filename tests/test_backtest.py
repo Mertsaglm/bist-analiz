@@ -201,3 +201,31 @@ class TestWeightsHash:
         assert kisa["high52_prox"] == 0.0
         assert uzun["high52_prox"] > 0.0
         assert sum(kisa.values()) == pytest.approx(1.0)
+
+
+class TestAgirlikParmakIzi:
+    """⚠ REGRESYON KİLİDİ (2026-07-27 denetimi).
+
+    `weights_hash` yalnız HAM config ağırlıklarını hashliyordu; gerçekte
+    kullanılan `effective_weights(cfg, horizon)` ise `h < high52_min_ufuk_gun`
+    iken `high52_prox`'u sıfırlayıp yeniden normalize ediyor. Sonuç: H=20 ve
+    H=42 MADDİ olarak farklı skor üretirken parmak izleri AYNIYDI — yani
+    "ağırlık değişince çatallanır" mekanizması sessizce çalışmıyordu.
+    """
+
+    def test_ufuk_degisince_parmak_izi_DEGISIR(self, cfg):
+        import copy
+        from src import factors
+        c42 = copy.deepcopy(cfg)
+        c42["planlayici"]["zaman_bariyeri_gun"] = 42
+        assert factors.effective_weights(cfg) != factors.effective_weights(c42)
+        assert factors.weights_hash(cfg) != factors.weights_hash(c42), \
+            "farklı etkin ağırlıklar aynı parmak izini üretiyor"
+
+    def test_ayni_ayar_ayni_parmak_izi(self, cfg):
+        from src import factors
+        assert factors.weights_hash(cfg, 20) == factors.weights_hash(cfg, 20)
+
+    def test_ufuk_argumani_imzaya_giriyor(self, cfg):
+        from src import factors
+        assert factors.weights_hash(cfg, 20) != factors.weights_hash(cfg, 42)

@@ -27,6 +27,7 @@ kalır ve `news_refs` ile kaynağa bağlanır (HF-28 uydurma id'yi yakalar).
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 
 import requests
@@ -38,6 +39,7 @@ log = logging.getLogger(__name__)
 TIMEOUT = 30
 BASE = "https://www.kap.org.tr"
 ENDPOINT = "/tr/api/disclosure/members/byCriteria"
+TZ = "Europe/Istanbul"          # KAP damgaları yerel saattir
 
 # Önem sınıflandırması — HEURİSTİK, ölçülmedi. Amacı sıralama/gösterim,
 # ağırlıklandırma değil. Analist ham başlığı da görür.
@@ -49,8 +51,20 @@ _DUSUK = ("devre kesici", "tipe dönüşüm", "genel kurul toplantı çağrısı
           "yatırımcı sunumu", "faaliyet raporu", "sürdürülebilirlik")
 
 
-def available() -> bool:
-    return True          # anahtar gerektirmiyor
+@dataclass(frozen=True, slots=True)
+class FetchSonuc:
+    """KAP çekiminin sonucu — `hata` None DEĞİLSE `kayitlar` güvenilmezdir."""
+    kayitlar: list[dict]
+    hata: str | None = None
+    tickersiz: int = 0
+    atlanan_aralik: str | None = None
+    # API'nin döndürdüğü HAM kayıt sayısı (normalize/filtre öncesi). Kırpılma
+    # tespiti buna bakar: yanıt tavana dayandıysa pencere doymuştur.
+    kayitlar_ham: int | None = None
+
+    @property
+    def ok(self) -> bool:
+        return self.hata is None
 
 
 def _headers(cfg: dict) -> dict:
@@ -63,14 +77,24 @@ def _headers(cfg: dict) -> dict:
 
 
 def _parse_dt(s: str | None) -> str | None:
-    """'25.07.2026 17:25:43' → ISO. Sıralanabilirlik şart (bkz. util.to_iso_date)."""
+    """'25.07.2026 17:25:43' (İSTANBUL YEREL) → `+00:00` ekli UTC ISO.
+
+    ⚠ KAP damgaları İstanbul saatidir; kolonun adı `published_utc`. İlk sürüm
+    bunları naif biçimde yazıyordu, yani adı UTC içeriği yerel bir alan üretiyordu.
+    Sonra o alan `predictions.created_utc` (gerçek UTC, `+00:00` ekli) ile METİN
+    olarak karşılaştırılıyordu → 3 saatlik sessiz kayma + farklı uzunluktaki
+    dizelerin yanlış sıralanması. Dönüşüm burada, tek yerde yapılır.
+    """
     if not s:
         return None
     try:
-        return datetime.strptime(s.strip(), "%d.%m.%Y %H:%M:%S").isoformat()
+        ham = datetime.strptime(s.strip(), "%d.%m.%Y %H:%M:%S")
     except ValueError:
         iso = util.to_iso_date(s.split(" ")[0])
-        return f"{iso}T00:00:00" if iso else None
+        if not iso:
+            return None
+        ham = datetime.fromisoformat(f"{iso}T00:00:00")
+    return util.to_utc_iso(ham, assume_tz=TZ)
 
 
 def importance(subject: str | None, summary: str | None,
@@ -87,8 +111,16 @@ def importance(subject: str | None, summary: str | None,
     return "orta"
 
 
-def fetch(cfg: dict, *, from_date: str, to_date: str) -> list[dict]:
-    """Tarih aralığındaki bildirimler. Hata → boş liste (asla istisna)."""
+def fetch(cfg: dict, *, from_date: str, to_date: str) -> "FetchSonuc":
+    """Tarih aralığındaki bildirimler. İstisna FIRLATMAZ, ama HATAYI GİZLEMEZ.
+
+    ⚠ Neden `(kayitlar, hata)` döndürüyor: ilk sürüm her istisnada sessizce boş
+    liste veriyordu. O zaman "bugün bildirim yok" ile "KAP'a ulaşılamadı" aynı
+    çıktıya düşüyor, `bist haber cek` 0 koduyla bitiyor ve pakete her hisse için
+    `haberler: []` yazılıyordu. ADR #008 sonrası haber/veto sistemin kalan ana
+    ürünü olduğu için bu ayrımın taşınması ŞART (bkz. LESSONS L-002 deseni:
+    sessiz bozulma alarm üretmez).
+    """
     kcfg = cfg["sources"]["kap"]
     url = kcfg.get("base", BASE) + kcfg.get("disclosures_path", ENDPOINT)
     body = {"fromDate": from_date, "toDate": to_date, "disclosureClass": "",
@@ -100,11 +132,24 @@ def fetch(cfg: dict, *, from_date: str, to_date: str) -> list[dict]:
         ham = r.json()
     except Exception as e:                                       # noqa: BLE001
         log.warning("KAP çekilemedi (%s … %s): %s", from_date, to_date, e)
-        return []
+        return FetchSonuc([], f"{type(e).__name__}: {e}", 0)
     if not isinstance(ham, list):
         log.warning("KAP beklenmeyen yanıt tipi: %s", type(ham).__name__)
-        return []
-    return [n for n in (_normalize(x) for x in ham) if n]
+        return FetchSonuc([], f"beklenmeyen yanıt tipi: {type(ham).__name__}", 0)
+
+    kayitlar, tickersiz = [], 0
+    for x in ham:
+        n = _normalize(x)
+        if n is None:
+            continue
+        # `stockCodes` boşsa bildirim hiçbir hisseye bağlanamaz ve `news.store`
+        # onu sessizce düşürür (piyasa geneli duyurular). Düşmesi doğru, ama
+        # SAYILMASI şart: "0 satır yazıldı" ile "hepsi hissesizdi" farklı olgular.
+        if not n["tickers"]:
+            tickersiz += 1
+            continue
+        kayitlar.append(n)
+    return FetchSonuc(kayitlar, None, tickersiz, kayitlar_ham=len(ham))
 
 
 def _normalize(x: dict) -> dict | None:
@@ -131,19 +176,96 @@ def _normalize(x: dict) -> dict | None:
 
 
 def fetch_incremental(cfg: dict, *, since: str | None, until: str | None = None,
-                      overlap_days: int = 2, max_days: int = 90) -> list[dict]:
-    """`since`'den bugüne YENİ bildirimler.
+                      overlap_days: int = 2, tam_gun: int | None = None,
+                      parca_gun: int | None = None) -> FetchSonuc:
+    """`since`'den bugüne YENİ bildirimler — PARÇA PARÇA çekilir.
 
     `overlap_days` kadar geriye taşarak çeker: KAP geç yayımlanan (`isLate`)
     bildirimler içeriyor ve tam sınırdan başlamak onları kaçırırdı. Tekrarları
     `disclosure_id` birincil anahtarı eler — üst üste çekmek zararsızdır.
+
+    ⚠⚠ **KAP GENİŞ PENCEREYİ SESSİZCE KIRPIYOR.** ÖLÇÜLDÜ (2026-07-27,
+    canlı API): dar pencereler birebir doğru dönüyor, geniş pencereler
+    ~1578 kayıtta doyuyor ve YALNIZ EN YENİ kısmı veriyor:
+
+           7 gün istendi →  931 kayıt, 07-20…07-27   tam
+          14 gün istendi → 1578 kayıt, 07-13…07-27   tam
+          21 gün istendi → 1578 kayıt, 07-13…07-27   ⚠ KIRPILDI
+          90 gün istendi → 1578 kayıt, 07-13…07-27   ⚠ KIRPILDI
+        (2026-05-01…05-10 ayrıca birebir döndü → `fromDate` ÇALIŞIYOR,
+         sorun pencere genişliği.)
+
+    Yani tek istekle 90 gün istemek, 76 gününü sessizce kaybetmek demekti —
+    hiçbir hata da vermeden. `evds.fetch_series_chunked` aynı tuzağı aynı
+    çözümle aşıyor (LESSONS L-005: inancı ölçüme çevir).
+
+    Bu yüzden aralık `parca_gun`'lük dilimlere bölünür ve HER DİLİM ayrıca
+    kırpılma açısından denetlenir: dönen en eski kayıt istenen başlangıçtan
+    yeniyse o dilim eksiktir ve `atlanan_aralik`'ta rapor edilir.
     """
+    kcfg = cfg["sources"]["kap"]
+    if tam_gun is None:
+        tam_gun = int(kcfg.get("tam_cekim_gun", 90))
+    if parca_gun is None:
+        parca_gun = int(kcfg.get("parca_gun", 7))
+    doyma_esigi = int(kcfg.get("doyma_esigi", 1400))
+
     bitis = util.parse_date(until) if until else date.today()
     if since:
         bas = (util.parse_date(since) or bitis) - timedelta(days=overlap_days)
     else:
-        bas = bitis - timedelta(days=30)
-    if (bitis - bas).days > max_days:
-        bas = bitis - timedelta(days=max_days)
-        log.info("KAP penceresi %d güne kırpıldı", max_days)
-    return fetch(cfg, from_date=bas.isoformat(), to_date=bitis.isoformat())
+        # Tam çekim: `tam_cekim_gun` kadar geriye. Config'ten okunur çünkü
+        # "ne kadar geriye" bir ürün kararıdır, koda gömülecek bir sabit değil.
+        bas = bitis - timedelta(days=tam_gun)
+    if bas > bitis:
+        bas = bitis
+
+    tekil: dict[str, dict] = {}
+    durum = {"tickersiz": 0, "hata": None, "kirpilan": []}
+
+    def cek(a: date, b: date, derinlik: int = 0) -> None:
+        """Bir aralığı çeker; DOYDUYSA ikiye bölüp kendini tekrar çağırır.
+
+        ⚠ Sabit dilim genişliği KIRILGAN. Bildirim hacmi mevsimlik: Temmuz'da
+        7 gün 931 kayıt, Mayıs'ta (bilanço sezonu) aynı 7 gün tavanı (2000)
+        aşıyor. Sabit bir sayı seçmek, yoğun haftalarda sessizce veri
+        kaybetmek demek. Doymayı GÖZLEYİP tepki vermek, tahmin etmekten
+        güvenli — `parca_gun` yalnız bir başlangıç değeridir.
+        """
+        s = fetch(cfg, from_date=a.isoformat(), to_date=b.isoformat())
+        if not s.ok:
+            durum["hata"] = durum["hata"] or s.hata   # ilk hatayı taşı, devam et
+            return
+        durum["tickersiz"] += s.tickersiz
+        ham = s.kayitlar_ham if s.kayitlar_ham is not None else len(s.kayitlar)
+        for k in s.kayitlar:
+            tekil[k["disclosure_id"]] = k
+
+        # KIRPILMA ÖLÇÜTÜ: "ilk gün boş" DEĞİL, "yanıt tavana dayandı".
+        # Bildirimsiz bir gün (tatil) tamamen normaldir ve ilk sürümde yanlış
+        # alarm veriyordu (2026-05-05 → 05-06: o gün gerçekten bildirim yoktu).
+        tarihler = sorted(k["published_utc"][:10] for k in s.kayitlar)
+        doydu = ham >= doyma_esigi and tarihler and tarihler[0] > a.isoformat()
+        if not doydu:
+            return
+        if a == b or derinlik >= 6:
+            # Tek güne indik ve hâlâ doyuyor → bu günün tamamı alınamıyor.
+            durum["kirpilan"].append(f"{a.isoformat()}…{tarihler[0]}")
+            log.warning("KAP: %s tek başına tavanı aşıyor (%d kayıt) — "
+                        "o günün tamamı alınamadı", a, ham)
+            return
+        orta = a + (b - a) // 2
+        log.info("KAP dilimi doydu (%d kayıt, %s…%s) — ikiye bölünüyor",
+                 ham, a, b)
+        cek(a, orta, derinlik + 1)
+        cek(orta + timedelta(days=1), b, derinlik + 1)
+
+    p_bas = bas
+    while p_bas <= bitis:
+        p_son = min(p_bas + timedelta(days=parca_gun - 1), bitis)
+        cek(p_bas, p_son)
+        p_bas = p_son + timedelta(days=1)
+
+    kayitlar = [tekil[k] for k in sorted(tekil)]
+    atlanan = " · ".join(durum["kirpilan"]) if durum["kirpilan"] else None
+    return FetchSonuc(kayitlar, durum["hata"], durum["tickersiz"], atlanan)

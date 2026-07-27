@@ -6,6 +6,217 @@
 
 ---
 
+## #011 — 2026-07-27 — Kuralları teste devret: proje kendi disiplinini kendi zorlar
+
+**Bağlam:** Claude Code aboneliği bitiyor. Projeye bundan sonra daha zayıf
+modeller (ya da aylar sonra bu bağlamı unutmuş biri) dokunacak. Somut soru şu:
+*bu projenin kurallarını hatırlayan kimse kalmadığında ne olur?*
+
+Cevap acıydı: kuralların neredeyse tamamı **yorumda yazılıydı, hiçbir yerde
+zorlanmıyordu.** Bir model `zayif_n_esigi`'ni 15'ten 5'e çekse, `min_rr_t1`'i
+1.2 yapsa, `outcomes` tablosuna bir kolon eklese ya da rejim politikasının
+yönünü ters çevirse — suite yeşil kalırdı. Bu, denetimde bulunan hata sınıfının
+tam olarak aynısı: **doğru görünen ama karşılığı olmayan savunma.**
+
+**Seçenekler:**
+- A) Dokümanı güçlendir (AGENTS.md'ye "şunu yapma" maddeleri ekle)
+  → sıfır maliyet, sıfır zorlama. Okuyan uyar, okumayan uymaz.
+- B) Kapsamı artır (satır kapsaması hedefi koy)
+  → yanlış metrik: kapsam "kod çalıştı" der, "kural tutuyor" demez.
+- C) **Kuralları koşulabilir sözleşmelere çevir** → üç katmanlı test mimarisi.
+
+**Karar:** C.
+
+    Sözleşme   — kodun VARSAYDIĞI yapı ayakta mı? (`tests/test_sozlesme.py`)
+    Mekanizma  — doğru seriden/paydadan mı besleniyor? (modül başına)
+    Uçtan uca  — zincir gerçekten koşuyor mu? (`tests/test_uctan_uca.py`)
+
+Sıfır testi olan on üç modül kapsandı (`cli`, `report`, `indicators`, `factors`,
+`regime`, `macro`, `universe`, `llm_io`, `diagnose`, `replay`, `sources/yf`,
+`sources/evds`, `logging_setup`).
+
+**Neden bu üçlü:** Bu projede bulunan en pahalı hatalar tek modülde değil,
+**modüller arası varsayımda** çıktı — ve hepsi birim testlerinden geçiyordu
+(paket faktör skorunu taşımıyordu, kalite kaydı eksikken dört tüketici de
+"sorun yok" okuyordu, kalite kapısı sıkılaşınca replay'in tamamı elenmişti).
+Bu sınıfı yakalayan tek şey uçtan uca kurulumdur; ama uçtan uca test de yapının
+kaymasını görmez — onu sözleşme katmanı tutar.
+
+**İki yapısal karar:**
+
+1. **Eşikler artık zemine sahip.** `zayif_n_esigi ≥ 15`, `min_anlamli_fark_puan
+   ≥ 1.0`, `min_rr_t1 ≥ 1.5`, `islem_maliyeti ≥ 0.30`, beyaz liste tavanı ≤ 31,
+   ve rejim politikasının defansiflik yönü monoton. Gevşetmek isteyen bir testi
+   de değiştirmek zorunda — yani karar GÖRÜNÜR olur.
+   *Bu bir yasak değil, bir sürtünme:* ön kayıt disiplininin (§`docs/`) günlük
+   hayattaki karşılığı.
+2. **Doküman tutarlılığı makineye devredildi.** Belgelerdeki her `bist <komut>`,
+   `config.<blok>.<anahtar>` atfı, dosya yolu ve `HF-xx` kodu koda karşı
+   doğrulanıyor; ön kayıt mührünün sha256'sı testle korunuyor.
+
+**Yan ürün — üç gerçek kırılganlık test yazarken çıktı** (üçü de düzeltildi):
+`diagnose.verdict`'te sıfıra bölme; `diagnose.run`'da `0.0 or -1e9` tuzağı
+(etkisi sıfır olan kol en kötü kol gibi sıralanıyordu); `ic_uygun` için None
+koruması yokluğu (`ic_tum`'da vardı — savunma simetriğinde atlanmıştı).
+
+**Ayrıca `pytest` yan etkisiz hale getirildi.** Ölçüldü: `cfg` fixture'ı yalnız
+veritabanını geçici dizine yönlendiriyordu; `llm_in_dir`/`llm_out_dir`/
+`reports_dir` GERÇEK repoyu gösteriyordu ve `write_bundle` çağıran bir test
+kullanıcının klasörüne dosya bırakıyordu. Artık hem yazılan her yol geçici, hem
+de gerçek veritabanına yazılabilir bağlantı açan test hata veriyor.
+
+**Tekrar gözden geçir:**
+- Bir eşik zemini gerçek bir işi engelliyorsa — o zaman zemin yanlıştır, ama
+  değişikliğin gerekçesi ADR'ye yazılır ve test aynı commit'te güncellenir.
+- Faz 8'de (GitHub Actions) suite CI'da koşacak; koşu süresi anlamlı biçimde
+  büyürse pahalı ölçüm testleri (`test_report`, `test_diagnose`) ayrı bir
+  markere alınır.
+- Yeni bir tablo/kolon eklenirse `KOLON_SOZLESMESI` listesine de eklenmeli;
+  eklenmezse test o tabloyu hiç görmez (kapsam sessizce daralır).
+
+---
+
+## #010 — 2026-07-27 — Denetim sonrası dört karar; ve KAP'ın sessiz kırpması
+
+**Bağlam:** #009'un düzeltmeleri dört açık soru bıraktı. Dördü de burada
+karara bağlandı; biri yol boyunca yeni bir veri kaynağı tuzağı ortaya çıkardı.
+
+### 1. Replay yeniden koşuldu ✅
+
+Journal'daki 28 kayıt, doğrulanmış İKİ hatası olan kodla üretilmişti (R:R'ı
+şişiren kümeleme + karşı-olgu diye `ret_pct`'in kopyası). Tutmak, her gelecek
+değerlendirmede iki uyumsuz kod sürümünü karıştırmak olurdu. Veri sentetik
+(vekil analist) ve `reset` yalnız `tool='replay'`'e dokunuyor.
+**Sonuç:** 20 tahmin, tetiklenmeme %35.0 (önce %46.4), boyutlandırma
+karşı-olgusu −0.22pp (t=−2.51) — **ilk kez sıfırdan farklı**.
+
+### 2. `min_rr_t1` DEĞİŞTİRİLMEDİ ✅
+
+Dürüst seviyelerle 18 isimden 4'ü çıtayı geçiyor (önce 9). Değiştirmedim:
+(a) plan SAYISI bir kalite metriği değil — ADR #008'e göre kenar iddiası yok;
+(b) eldeki tek kanıt yeni ayarın LEHİNE (tetiklenmeme %46→%35, yani daha az
+ama daha GERÇEKLEŞEBİLİR plan); (c) sonucu görüp çıta indirmek bu projede
+yasaklanmış tek hareket.
+**Ön kayıt yazıldı:** `docs/on-kayit-seviye-02.md` — tetikleyici koşullar ve
+geçme şartı SONUÇ GÖRÜLMEDEN sabitlendi. O koşullar oluşmadan koşulmaz.
+
+### 3. KAP geçmişi 90 gün — ve yol boyunca bir tuzak bulundu ⚠
+
+Karar: 90 gün. Gerekçe: haber katmanının değeri İLERİYE dönük (karar anında
+veto); geçmiş KAP'ın hiçbir tüketicisi yok, hiçbir ölçüm onu okumuyor, pakette
+hisse başına zaten `limit=8` var.
+
+**Ama uygulanırken ölçüldü ki KAP GENİŞ PENCEREYİ SESSİZCE KIRPIYOR:**
+
+```
+ 7 gün istendi →  931 kayıt, 07-20…07-27   tam
+14 gün istendi → 1578 kayıt, 07-13…07-27   tam
+21 gün istendi → 1578 kayıt, 07-13…07-27   ⚠ KIRPILDI
+90 gün istendi → 1578 kayıt, 07-13…07-27   ⚠ KIRPILDI
+(2026-05-01…05-10 birebir döndü → `fromDate` ÇALIŞIYOR, sorun genişlik.)
+```
+
+Yani tek istekle 90 gün istemek 76 gününü **hata vermeden** kaybetmekti —
+`evds.fetch_series_chunked`'in aştığı tuzağın aynısı, başka kaynakta.
+
+Çözüm iki aşamalı oldu, ikincisi de ölçümden doğdu:
+1. Aralık `parca_gun` (7) dilimlere bölündü → 209 → 1753 bildirim.
+2. Ama Mayıs (bilanço sezonu) haftası **2000 kayıtla tavanı aştı**: bildirim
+   hacmi MEVSİMLİK, sabit dilim genişliği kırılgan. → Doyan dilim kendini
+   **ikiye bölüyor** (`cek()` özyinelemeli). Tek gün bile doyarsa itiraf
+   ediliyor, sessiz kalınmıyor.
+   **Sonuç:** 1837 bildirim, 70 ticker, 2026-04-28…07-27, sıfır boşluk.
+
+Ayrıca bir yanlış alarm düzeltildi: "dilimin ilk günü boş" kırpılma DEĞİLDİR
+(tatil olabilir). Ölçüt artık "yanıt kayıt tavanına dayandı".
+
+### 4. `bist degerlendir` kaynak ayrımı ✅
+
+Katı red fazla sert, sessiz karıştırma ise #009'un düzelttiği hata sınıfı.
+**Karar:** tek kaynak varsa koş ve HANGİSİ olduğunu bas; birden çok kaynak
+varsa DUR ve listeyle birlikte `--tool` iste (`KaynakKarisik`, çıkış kodu 2).
+`replay` VEKİL bir analisttir; alfası gerçek LLM kayıtlarıyla aynı potaya
+girmez.
+
+**Tekrar gözden geçir:** (a) `on-kayit-seviye-02.md`'deki tetikleyicilerden
+biri oluşursa o tur koşulur; (b) KAP dilim bölme derinliği 6'yı aşarsa
+(tek gün bile doyuyorsa) sayfalama (pagination) desteği araştırılmalı.
+
+---
+
+## #009 — 2026-07-27 — Payda birinci sınıf çıktıdır; "veri yok" ile "sorun yok" hiçbir yerde aynı değere düşmez
+
+**Bağlam:** Bağımsız bir denetim (salt-okunur, gerçek veriyle) bir kritik ve
+beş yüksek şiddetli bulgu çıkardı. Hepsinin ortak imzası aynıydı: kod doğru,
+veri sessizce dar ya da bayat, çıktı hâlâ "geçerli" görünüyor. Ayrıntı
+`ai/LESSONS.md` L-007'de; en somut ikisi:
+
+- Canlı evrende bildirimi olan 14 hissenin 8'inde **47 KAP bildirimi**
+  pakete hiç girmiyordu (haber penceresi `created_utc`'ye dayanıyordu).
+- Rejim, 67 isimlik evren yerine **16 isimle** hesaplanan %31 genişlikle
+  `risk-off` diyor ve nakdi %90'a çıkarıyordu — XU100 SMA200'ünün %9.7
+  üstündeyken.
+
+**Karar — üç kural, kodda zorlanır:**
+
+1. **Payda çıktının parçasıdır.** Oran/sıralama/yüzdelik üreten her fonksiyon
+   paydayı da döndürür ve pakete yazar: `kesit.{istenen, skorlanan, uygun}`,
+   `rejim.{genislik_n, genislik_istenen_n}`. Payda beklenenin %80'inin altına
+   düşerse `log.warning`.
+2. **Bilinmeyen, olumluya çevrilmez.** Kalite kaydı yoksa `ok=False,
+   "kalite değerlendirilmedi"`; KAP çekilemediyse `haber_taramasi.ok=False`
+   ve çıkış kodu ≠0. "Boş liste" ile "bakılmadı" ayrı alanlarda taşınır.
+3. **Zaman referansı ANALİZ GÜNÜDÜR, duvar saati değil.** Journal'a ne zaman
+   yazıldığı hiçbir filtreye girmez; `asof` girer. Dış kaynaktan gelen her
+   damga yerel saatiyle birlikte alınır ve tek yerde UTC'ye çevrilir.
+
+**Ayrıca kabul edilen sınırlar (gizlenmiyor, yazılıyor):**
+
+- **HF-17 küçük tamsayı ve yuvarlak yüzdelere karşı geçirgen.** Ölçüldü:
+  −50..+50 tamsayıların %56'sı izinli, iki ondalıklı uydurma fiyatların %0.5'i.
+  Beyaz listeler bilinçli; sınır README + `config.denetim` yorumunda yazılı.
+  `format_report` artık "temiz" derken bu sınırı da basıyor.
+- **R:R planlar arasında kıyaslanabilir değil.** Hedef sabit, eşitsizlik girişi
+  aşağı iterek/stop'u daraltarak sağlanıyor; ölçüldü, planların %46'sı hiç
+  tetiklenmiyor. `rr_secim` + `elenen_adaylar` alanlarıyla görünür kılındı.
+  Bu bir düzeltme DEĞİL, bir ifşadır — mekanizmayı değiştirmek ön kayıt ister.
+
+**Düzeltmeler sonrası CANLI ÖLÇÜM (2026-07-27, gerçek veri):**
+
+| ölçüm | önce | sonra |
+|---|---|---|
+| pakete giren KAP bildirimi | 12 | **45** (AKBNK/GARAN/EKGYO 0→8) |
+| kesitsel skor evreni | 16 isim | **67** (uygun 10 → 27) |
+| piyasa genişliği paydası | 16 | **67** (%31.25 → %32.84) |
+| rejim etiketi | risk-off | **risk-off** — eşik yine aşılmadı |
+| replay tetiklenmeme oranı | %46.4 | **%35.0** |
+| boyutlandırma karşı-olgusu | tanım gereği 0 | **−0.22pp, t=−2.51** |
+
+Rejim etiketinin değişmemesi, endişenin yersiz olduğunu göstermez: karar
+16 isimlik bir paydayla veriliyordu ve doğru cevaba **şans eseri** denk geldi.
+
+**Beklenmeyen bulgu — küme düzeltmesi R:R'ı düşürdü.** `levels._cluster`
+tek-bağlantı zinciri, toleransın **2.9-16.2 KATI** arasında yayılan kümeler
+üretiyordu. Asıl zarar hedefin uydurulması değil, **R:R'ın ŞİŞMESİYDİ**:
+geniş zincir fiyatın hemen üstündeki gerçek direnci yutup kümenin ortalamasını
+yukarı taşıyor, planlayıcı da "en yakın direnç" diye o uzak ortalamayı alıyordu.
+
+    TCELL  fiyat 103.70 → en yakın direnç 116.30 (eski) / 103.92 (yeni)  −3.6×ATR
+    SISE   fiyat  43.42 →                   47.83 /  44.20              −2.8×ATR
+    PETKM  fiyat  22.02 →                   24.35 /  22.12              −2.6×ATR
+
+Yani `min_rr_t1 ≥ 1.5` çıtası, olmayan bir mesafeyle aşılıyordu. Düzeltme
+sonrası 18 canlı isimden yalnız 4'ü çıtayı geçiyor (önce 9). **Eşik
+DEĞİŞTİRİLMEDİ** — sonucu görüp gevşetmek bu projede yasaklanmış tek hareket
+(`docs/on-kayit-revizyon-01.md` §5). Karar ön kayıt bekliyor.
+
+**Tekrar gözden geçir:** (a) gerçek LLM kayıtları N≥15'e ulaşınca
+`sizing_counterfactual` artık gerçek bir sayı ürettiği için rejim
+boyutlandırması İLK KEZ ölçülebilir olacak; (b) `min_rr_t1` / `min_dokunus` /
+`kumeleme_atr_carpani` üçlüsü ön kayıtlı tek bir turda birlikte ölçülmeli.
+
+---
+
 ## #008 — 2026-07-26 — Teşhis + ön kayıtlı revizyon turu #1 GEÇMEDİ → proje yeniden çerçeveleniyor
 
 **Bağlam:** #007'de kapı kapandı. Üç farklı öneri geldi; değerlendirilip şu yol

@@ -194,7 +194,12 @@ def score_at(p: Panel, feat: dict, cfg: dict, t: int, *,
         # bir faktör (ölçüm tersini söylediğinde meşru bir kullanım) kendini
         # paydada götürür ve skorun işaretini geri çevirirdi.
         payda = np.where(var, payda + abs(agirlik), payda)
-    return np.where(payda > 0, skor / payda, np.nan)
+    # `np.where` İKİ DALI DA hesaplar: payda=0 olan isimlerde 0/0 yapılır ve
+    # numpy uyarı basar. Sonuç doğru (o hücreler zaten NaN'a gidiyor) ama uyarı
+    # `bist backtest` / `bist teshis` çıktısını kirletir ve GERÇEK uyarıları
+    # gözden kaçırtır. Bastırılan şey bir hata değil, beklenen bir hücre.
+    with np.errstate(invalid="ignore", divide="ignore"):
+        return np.where(payda > 0, skor / payda, np.nan)
 
 
 # ============================================================ yürüyen ileri

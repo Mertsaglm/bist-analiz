@@ -30,6 +30,12 @@ log = logging.getLogger(__name__)
 # 1.234,56 · 1234.56 · 1,234.56 · 42 · -3.5 · %12
 _SAYI = re.compile(r"[-+]?\d{1,3}(?:[.,]\d{3})+(?:[.,]\d+)?|[-+]?\d+(?:[.,]\d+)?")
 
+# ISO tarih / zaman damgası kalıpları — izinli sayı toplanırken MASKELENİR.
+# 2026-07-24 · 2026-07-24T21:04:50+00:00 · 21:04:50
+_TARIH_MASKESI = re.compile(
+    r"\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}(?::\d{2})?(?:[+-]\d{2}:\d{2}|Z)?)?"
+    r"|\b\d{2}:\d{2}(?::\d{2})?\b")
+
 
 def _kanonik(deger: float, basamak: int = 2) -> str:
     return f"{round(float(deger), basamak):.{basamak}f}"
@@ -84,9 +90,17 @@ def _parse_sayi(s: str) -> float | None:
 
 
 def numeric_tokens(text: str | None) -> set[str]:
-    """Prose'daki sayısal token'lar, kanonik biçimde."""
+    """Prose'daki sayısal token'lar, kanonik biçimde.
+
+    Tarih/saat kalıpları burada da MASKELENİR — `_sayilari_topla` ile simetrik
+    olmak zorunda. Aksi halde analistin meşru olarak yazdığı bir tarih
+    ("bariyer 2026-08-21'e kadar") HF-17'yi patlatır ve denetim, sayı
+    uydurmayı değil takvim yazmayı cezalandırır. `YYYY-AA-GG` kalıbı bir fiyat
+    ya da yüzde ifade edemez, dolayısıyla maskelemek kaçış yolu açmaz.
+    """
     if not text:
         return set()
+    text = _TARIH_MASKESI.sub(" ", text)
     out: set[str] = set()
     for m in _SAYI.finditer(text):
         ham = m.group(0)
@@ -114,8 +128,19 @@ def _sayilari_topla(obj, out: set[float]) -> None:
         for v in obj:
             _sayilari_topla(v, out)
     elif isinstance(obj, str):
-        # Paket içindeki metinlere gömülü sayılar da izinlidir
-        for m in _SAYI.finditer(obj):
+        # Paket içindeki metinlere gömülü sayılar da izinlidir — AMA önce
+        # TARİH/SAAT kalıpları maskelenir.
+        #
+        # ⚠ ÖLÇÜLDÜ (2026-07-27 denetimi): "2026-07-24" dizesinde `_SAYI`
+        # regex'i `2026`, `-07`, `-24` yakalıyordu → paketteki her tarih
+        # izinli listeye −7, −24 gibi NEGATİF TAMSAYILAR enjekte ediyordu.
+        # Sonuç: prose'daki uydurma "%-7 geriledi" denetimden temiz geçiyordu
+        # ve hangi negatif sayının geçtiği o günkü TAKVİME bağlıydı. Bu bir
+        # tasarım tercihi değil, kazara yan etkiydi.
+        #
+        # Tarihin kendisi zaten `sayisal_beyaz_liste_yil` ve küçük tamsayı
+        # listesiyle karşılanıyor; buradan ayrıca sayı türetmeye gerek yok.
+        for m in _SAYI.finditer(_TARIH_MASKESI.sub(" ", obj)):
             v = _parse_sayi(m.group(0))
             if v is not None:
                 out.add(v)
@@ -172,16 +197,47 @@ def build_bundle(cfg: dict, con: sqlite3.Connection, asof: str) -> dict:
     # hem de journal `score` kolonunu doldurabilsin diye. İlk sürümde eksikti;
     # sonucu HF-22 (sıralamayı ezme kontrolü) üretimde HİÇ ateşlenemiyordu ve
     # `bist kaydet` NOT NULL hatasıyla patlıyordu. Testle yakalandı.
-    fdf = factors.compute_for_date(cfg, con, asof, universe.measure(con),
-                                   kalite=kalite)
+    olcum_ev = universe.measure(con)
+    fdf = factors.compute_for_date(cfg, con, asof, olcum_ev, kalite=kalite)
     fmap = {r["ticker"]: r for _, r in fdf.iterrows()} if not fdf.empty else {}
     wh = factors.weights_hash(cfg)
+    # Skor tablosu DONDURULUR: journal'daki `score` hangi kesitten geldiyse o
+    # kesit sonradan yeniden kurulabilmeli (`factor_daily` uzun süre boştu).
+    factors.store(cfg, con, fdf)
 
-    # Hisse başına "en son ne zaman analiz ettik" — haber taraması bu andan
-    # ileriye bakar. Kullanıcının şartı: aynı haberler tekrar taranmasın.
-    son_analiz = {r["ticker"]: r["son"] for r in db.fetch_all(
-        con, "SELECT ticker, MAX(created_utc) son FROM predictions "
-             "WHERE asof < ? GROUP BY ticker", (asof,))}
+    # PAYDAYI GÖRÜNÜR KIL. `yuzdelik` bir SIRALAMADIR ve sıralamanın anlamı
+    # tamamen kaç isim üzerinde yapıldığına bağlıdır. Ölçüldü (2026-07-27):
+    # `indicator_daily` 70 ticker'ın 19'unu kapsıyordu, dolayısıyla 67 isimlik
+    # ölçüm evreni istenmesine rağmen kesit 16 isme düşüyordu — ve hiçbir yerde
+    # yazmıyordu. "pct=100" o gün "67'de birinci" değil "10'da birinci"ydi.
+    # Projenin kuralı "verisi gelmeyen gösterge PAYDADAN DÜŞER"; paydanın
+    # düştüğünü SÖYLEMEK de o kuralın parçası.
+    kesit = {
+        "istenen": len(olcum_ev),
+        "skorlanan": int(len(fdf)),
+        "uygun": int(fdf["eligible"].sum()) if not fdf.empty else 0,
+        "not": ("`yuzdelik` YALNIZ 'uygun' sütunundaki isimler arasında "
+                "hesaplanır; 'istenen' ile 'skorlanan' arasındaki fark, "
+                "göstergesi hesaplanmamış isimlerdir (`bist gosterge`)."),
+    }
+
+    # Hisse başına "en son HANGİ GÜN için analiz ettik" — haber taraması o
+    # günün SONUNDAN ileriye bakar. Kullanıcının şartı: aynı haber tekrar
+    # taranmasın.
+    #
+    # ⚠ `created_utc` KULLANILMAZ. O, kaydın diske yazıldığı duvar saatidir.
+    # `bist replay` 2024-2026'nın tamamını tek seferde yazdığında her hissenin
+    # `created_utc`'si "şimdi" olur ve `published_utc > since` HİÇBİR haberi
+    # geçirmez. Ölçüldü (2026-07-27 denetimi): canlı evrende bildirimi olan 14
+    # hissenin 8'inde 47 gerçek KAP bildirimi sessizce gizlenmişti — üstelik
+    # ADR #008 sonrası haber/veto sistemin kalan ANA ÜRÜNÜ. Referans daima
+    # analizin ASOF GÜNÜDÜR; journal'a ne zaman yazıldığı ilgisizdir.
+    tz = cfg["takvim"]["timezone"]
+    son_analiz = {r["ticker"]: util.local_day_end_utc_iso(r["son"], tz)
+                  for r in db.fetch_all(
+                      con, "SELECT ticker, MAX(asof) son FROM predictions "
+                           "WHERE asof < ? GROUP BY ticker", (asof,))}
+    haber_durumu = news.kaynak_durumu(con, asof)
 
     evren = []
     for t in universe.live(con):
@@ -209,18 +265,20 @@ def build_bundle(cfg: dict, con: sqlite3.Connection, asof: str) -> dict:
                              "sma20", "sma50", "sma200", "bb_pctb")},
             "faktorler": _faktor_ozeti(fmap.get(t), wh),
             "likidite": {"medyan_gunluk_tl": ind.get("turnover_med_63")},
-            "veri_kalitesi": {"ok": (kalite.get(t) or {}).get("ok", True),
-                              "uyarilar": (kalite.get(t) or {}).get("reasons", [])},
+            # `prices.quality_for` eksik kaydı "OK" DEĞİL "değerlendirilmedi"
+            # sayar — bkz. oradaki gerekçe.
+            "veri_kalitesi": prices.quality_for(kalite, t),
             "plan_menusu": planlar,
             "plan_yok_nedeni": menu["atlanan"].get(t),
             "acik_tahminler": [
                 {"prediction_id": p["prediction_id"], "asof": p["asof"],
                  "signal": p["signal"], "bariyer": p["time_barrier_date"]}
                 for p in acik if p["ticker"] == t],
-            # Son analizden BU YANA çıkan bildirimler — aynı haber tekrar
+            # Son analiz GÜNÜNDEN bu yana çıkan bildirimler — aynı haber tekrar
             # taranmaz. Sayıya çevrilmez; analist ham başlığı görür ve
             # yorumunu news_refs ile kaynağa bağlar (HF-28 uydurmayı yakalar).
             "haberler": news.bundle_view(con, t, since=son_analiz.get(t)),
+            "haber_tarama_baslangici": son_analiz.get(t),
         })
 
     bundle = {
@@ -232,10 +290,17 @@ def build_bundle(cfg: dict, con: sqlite3.Connection, asof: str) -> dict:
         "takvim": {"son_kapali_seans": asof,
                    "zaman_bariyeri_tarihi": menu["zaman_bariyeri"],
                    "islem_gunu_sayisi": int(cfg["planlayici"]["zaman_bariyeri_gun"])},
+        # Kesitin GENİŞLİĞİ ve haber taramasının SAĞLIĞI pakete girer: ikisi de
+        # "boş/None" değerlerin nasıl okunacağını belirler. Bunlar olmadan
+        # analist "haber yok" ile "bakılmadı"yı ayırt edemez (bkz. news.kaynak_durumu).
+        "kesit": kesit,
+        "haber_taramasi": haber_durumu,
         "rejim": {
             "etiket": rej["label"],
             "xu100_sma200_farki_pct": rej.get("xu100_vs_sma200_pct"),
             "genislik_sma50_ustu_pct": rej.get("breadth_above_sma50_pct"),
+            "genislik_n": rej.get("breadth_n"),
+            "genislik_istenen_n": rej.get("breadth_istenen_n"),
             "xu100_vol_yillik_21g": rej.get("xu100_vol_ann_21"),
             "makro": macro.context(cfg, con, asof),
             "pozisyon_politikasi": {

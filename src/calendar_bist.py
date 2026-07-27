@@ -141,9 +141,10 @@ class BistCalendar:
     def session_state(self, ts_utc: datetime | None = None) -> str:
         """'kapali'|'acilis_muzayede'|'surekli_islem'|'kapanis_muzayede'|'sonrasi'
 
-        ⚠ Saatler config'ten okunur ve config'te DOĞRULA: notu var — BIST 2016'da
-        hisse senedinde öğle arasını kaldırdı (sürekli işlem), ama tam dakikalar
-        Faz 1 DoD'sinde resmî kaynağa karşı teyit edilecek. Koda gömülmez.
+        Saatler config'ten okunur, koda gömülmez. Faz 1 DoD'sinde TEYİT EDİLDİ
+        (2026-07-26): 09:40 emir toplama · 10:00-18:00 KESİNTİSİZ sürekli işlem
+        (öğle arası 2016'da kaldırıldı) · 18:10 kapanış seansı bitişi.
+        Gerekçe `config.takvim.seans` yorumunda.
         """
         ts = (ts_utc or util.utc_now()).astimezone(self.tz)
         if not self.is_trading_day(ts.date()):

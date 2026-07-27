@@ -82,13 +82,18 @@ def exit_price_for(bar: dict, kind: str, stop: float, target: float | None) -> f
 
 
 # ---------------------------------------------------------------- giriş
-def entry_fill(bars: pd.DataFrame, *, entry_low: float, entry_high: float,
-               trigger: str) -> tuple[str, float] | None:
+def entry_fill(bars: pd.DataFrame, *, entry_low: float,
+               entry_high: float) -> tuple[str, float] | None:
     """Giriş gerçekleşti mi, ne zaman ve hangi fiyattan?
 
     Dolum daima bandın ÜST ucundan — bandın içindeki en kötü fiyat.
     Gerçekleşmezse None; sonuç `giris_olmadi` olur ve Brier'a GİRMEZ
     (ne kazanç ne kayıp — bir tahmin değil, gerçekleşmemiş bir plan).
+
+    Not: `trigger` parametresi KALDIRILDI. Hiç kullanılmıyordu ve çağıran
+    taraf oraya yanlışlıkla `plan_id` geçiriyordu — kimse fark etmiyordu
+    çünkü değer okunmuyordu. Kullanılmayan bir parametre, ileride onu
+    okuyacak kişiye yanlış veri sunan bir tuzaktır.
     """
     for r in bars.itertuples(index=False):
         if float(r.l) <= entry_high:
@@ -114,12 +119,12 @@ def resolve_prediction(cfg: dict, con: sqlite3.Connection, pred: dict) -> dict |
         return None
     bars = bars.iloc[1:].reset_index(drop=True)      # asof barı hariç → giriş t+1
 
+    # Zaman bariyerine ulaşılıp ulaşılmadığı aşağıda iki yerde kullanılır
+    # (dolum yoksa `giris_olmadi`, bariyer vurulmadıysa `sure`). Buradaki
+    # eski `if bars.empty: return None` bloğu ERİŞİLEMEZDİ: `len(bars) < 2`
+    # kontrolü zaten dönmüş oluyordu.
     son_veri = db.scalar(con, "SELECT MAX(date) FROM bars_daily WHERE ticker = ?",
                          (ticker,))
-    if son_veri is None or son_veri < bariyer_tarih:
-        # Zaman bariyerine henüz ulaşılmadı ve bariyer de vurulmadıysa açık kalır
-        if bars.empty:
-            return None
 
     # --- kurumsal işlem penceresi ---
     ex = db.fetch_one(
@@ -134,8 +139,7 @@ def resolve_prediction(cfg: dict, con: sqlite3.Connection, pred: dict) -> dict |
         return _outcome(pred, IPTAL_VERI, resolved_date=bariyer_tarih,
                         error_tag="plan_eksik")
 
-    dolum = entry_fill(bars, entry_low=e_low, entry_high=e_high,
-                       trigger=pred.get("plan_id") or "")
+    dolum = entry_fill(bars, entry_low=e_low, entry_high=e_high)
     if dolum is None:
         if son_veri and son_veri >= bariyer_tarih:
             return _outcome(pred, GIRIS_OLMADI, resolved_date=bariyer_tarih,
@@ -199,12 +203,35 @@ def _outcome(pred: dict, resolution: str, *, resolved_date: str,
         out["ret_pct_gross"] = round(brut, 4)
         out["ret_pct"] = round(brut - maliyet, 4)
         out["hit"] = 1 if out["ret_pct"] > 0 else 0
+
         # Boyutlandırma KARŞI-OLGUSU: rejim boyutlandırması işe yaradı mı?
-        # Bu kolon olmadan rejim katmanı ölçülemez, inanç olarak kalır.
-        boyut = pred.get("position_size_pct") or 0.0
-        out["ret_pct_equal_size"] = out["ret_pct"]
-        if boyut:
-            out["ret_pct_equal_size"] = round(out["ret_pct"], 4)
+        #
+        # ⚠ İlk sürüm bu kolona `ret_pct`'i AYNEN yazıyordu (iki dalda da aynı
+        # değer), yani karşı-olgu HİÇ hesaplanmıyordu ve
+        # `evaluate.sizing_counterfactual` tanım gereği sıfır fark buluyordu.
+        # Üstelik burada, `db.SCHEMA`'da ve `regime.py`'de üç ayrı yorum
+        # ölçülüyormuş izlenimi veriyordu → rejim katmanı ölçülemeden inanç
+        # olarak kalıyordu (2026-07-27 denetimi).
+        #
+        # Doğru karşı-olgu PORTFÖY KATKISIDIR, hisse getirisi değil: aynı işlem
+        # SABİT referans boyutla açılsaydı portföye kaç puan katardı?
+        #
+        #     ret_pct_equal_size = ret_pct × referans_boyut / 100
+        #     gerçekleşen katkı  = ret_pct × position_size_pct / 100
+        #                          (`predictions`'ta zaten saklı → şema değişmez)
+        #
+        # `evaluate.sizing_counterfactual` ikisinin farkını alır. Referans
+        # boyut `maks_pozisyon_pct`'tir: rejim çarpanı ve tier indirimi
+        # UYGULANMAMIŞ, yani "hiç boyutlandırma yapmasaydık" hali.
+        boyut = pred.get("position_size_pct")
+        ref_boyut = float(cfg["risk"]["maks_pozisyon_pct"]) if cfg else None
+        if boyut and ref_boyut:
+            out["ret_pct_equal_size"] = round(out["ret_pct"] * ref_boyut / 100.0, 4)
+        else:
+            # Boyut bilinmiyorsa karşı-olgu ÖLÇÜLEMEZ. `ret_pct`'i kopyalayıp
+            # "fark sıfır" demek, bilinmeyeni sayıya çevirmek olurdu.
+            out["ret_pct_equal_size"] = None
+
         # Slippage: planlanan giriş (bandın üstü) vs gerçekleşen dolum
         if pred.get("entry_high"):
             out["slippage_pct"] = round(
@@ -245,10 +272,21 @@ def _ew_return(con: sqlite3.Connection, cfg: dict | None, a: str, b: str) -> flo
 
     Ölçüldü (ADR #002): eşit-ağırlık sepet XU100'ü sıfır beceriyle yeniyor.
     XU100'e göre alfa o bedava üstünlüğü sessizce içerir.
+
+    ⚠ EVREN NOKTA-ZAMANLI OLMALI. İlk sürüm `universe.live(con)` ile ÇÖZÜM
+    ANINDAKİ listeyi kullanıyordu; `universe.sync` ise YAML'dan silinen ismi
+    tablodan da siliyor. Yani evren bir kez değişince GEÇMİŞ tahminlerin
+    birincil metriği (`alpha_vs_ew`) sessizce kayıyor ve eski/yeni satırlar
+    farklı tabanlara göre yazılmış karışık bir seri oluşturuyordu.
+    `backtest.py` bu tuzağı biliyor ve raporunda survivorship uyarısı basıyor;
+    resolver'ın da aynı disipline ihtiyacı vardı.
+
+    Çözüm: pencereyi o tarihte GERÇEKTEN BARI OLAN isimlerle kur. Bugün
+    listede olmayan bir isim geçmişte tabana dahildi ve dahil kalmalı.
     """
     from . import universe
 
-    tickers = universe.live(con)
+    tickers = _ew_evreni(con, a)
     if not tickers:
         return None
     ph = ",".join("?" * len(tickers))
@@ -262,6 +300,20 @@ def _ew_return(con: sqlite3.Connection, cfg: dict | None, a: str, b: str) -> flo
     if len(ortak) < 3:
         return None
     return float(np.mean([(son[t] / bas[t] - 1) * 100 for t in ortak]))
+
+
+def _ew_evreni(con: sqlite3.Connection, tarih: str) -> list[str]:
+    """`tarih` gününde taban çizgisine giren isimler — NOKTA-ZAMANLI.
+
+    Bugünkü `in_live` listesi geçmişe uygulanamaz (bkz. `_ew_return`). Ölçüt:
+    o gün fiyat barı olan ve ölçüm evrenine ait isimler. Bu, listeden sonradan
+    çıkarılan bir ismi geçmişte tabanda TUTAR — survivorship'in tersi yön.
+    """
+    return [r["ticker"] for r in db.fetch_all(
+        con,
+        "SELECT DISTINCT b.ticker FROM bars_daily b "
+        "  JOIN universe u ON u.ticker = b.ticker "
+        " WHERE b.date = ? AND u.in_measure = 1 ORDER BY b.ticker", (tarih,))]
 
 
 def _error_tag(out: dict, resolution: str) -> str | None:

@@ -129,8 +129,15 @@ def daily(cfg: dict, con: sqlite3.Connection,
     for t in tickers:
         sonuc[t] = _store_bars(con, t, yf.fetch_bars(t, cfg, start=start))
     temiz = purge_phantom_bars(cfg, con)
+    # Kalite kapısı boru hattının PARÇASI — elle çalıştırılan adım bırakılmaz.
+    # LESSONS L-002: "bir kere elle çalıştırdım, gerisi otomatik" varsayımı
+    # yanlıştır; bağlı olmayan script donar ve hiçbir hata fırlatmaz. Burada
+    # donması, kalite kapısının sessizce kapanması demekti (bkz. quality_map).
+    kalite = assess_quality(cfg, con, tickers=tickers)
     return {"tickers": len(tickers), "bars": sonuc, "start": start,
-            "hayalet_silinen": temiz["silinen"]}
+            "hayalet_silinen": temiz["silinen"],
+            "kalite_degerlendirilen": len(kalite),
+            "kalite_gecmeyen": sum(1 for r in kalite if not r["ok"])}
 
 
 def sync_indices(cfg: dict, con: sqlite3.Connection, start: str | None = None) -> dict:
@@ -196,11 +203,6 @@ def index_series(con: sqlite3.Connection, symbol: str, *, start: str | None = No
     return pd.read_sql_query(sql + " ORDER BY date", con, params=params)
 
 
-def last_date(con: sqlite3.Connection, ticker: str) -> str | None:
-    return db.scalar(con, "SELECT MAX(date) FROM bars_daily WHERE ticker = ?",
-                     (ticker.upper(),))
-
-
 def action_dates(con: sqlite3.Connection, ticker: str) -> set[str]:
     return {r["date"] for r in db.fetch_all(
         con, "SELECT date FROM corporate_actions WHERE ticker = ?", (ticker.upper(),))}
@@ -208,8 +210,15 @@ def action_dates(con: sqlite3.Connection, ticker: str) -> set[str]:
 
 # ---------------------------------------------------------------- kalite kapısı
 def assess_quality(cfg: dict, con: sqlite3.Connection, asof: str | None = None,
-                   tickers: list[str] | None = None) -> list[dict]:
-    """Ticker bazlı veri kalitesi. `data_quality` tablosuna yazar ve döner."""
+                   tickers: list[str] | None = None,
+                   store: bool = True) -> list[dict]:
+    """Ticker bazlı veri kalitesi. Sonuçları döner; `store` ise tabloya yazar.
+
+    `store=False`: yalnız ÖLÇ, yazma. Salt-okunur bir bağlantıyla (ör. gerçek
+    veri testleri) kapının hâlâ çalıştığını doğrulamak için gerekli — aksi
+    halde `pytest` koşmak kullanıcının `data_quality` tablosunu sessizce
+    değiştiriyordu (2026-07-27 denetimi).
+    """
     from . import universe
 
     ev = cfg["evren"]
@@ -224,14 +233,15 @@ def assess_quality(cfg: dict, con: sqlite3.Connection, asof: str | None = None,
         r["date"] = asof
         sonuc.append(r)
 
-    db.upsert_many(
-        con, "data_quality",
-        ["ticker", "date", "bars_252", "zero_vol_ratio_252", "max_gap_days",
-         "stale_close_days", "unexplained_jump", "ok", "reasons"],
-        [(r["ticker"], r["date"], r["bars_252"], r["zero_vol_ratio_252"],
-          r["max_gap_days"], r["stale_close_days"], r["unexplained_jump"],
-          1 if r["ok"] else 0, util.json_dump(r["reasons"], pretty=False))
-         for r in sonuc])
+    if store:
+        db.upsert_many(
+            con, "data_quality",
+            ["ticker", "date", "bars_252", "zero_vol_ratio_252", "max_gap_days",
+             "stale_close_days", "unexplained_jump", "ok", "reasons"],
+            [(r["ticker"], r["date"], r["bars_252"], r["zero_vol_ratio_252"],
+              r["max_gap_days"], r["stale_close_days"], r["unexplained_jump"],
+              1 if r["ok"] else 0, util.json_dump(r["reasons"], pretty=False))
+             for r in sonuc])
     return sonuc
 
 
@@ -283,11 +293,56 @@ def _max_run(mask: pd.Series) -> int:
     return best
 
 
+KALITE_YOK = {"ok": False, "uyarilar": ["kalite değerlendirilmedi"],
+              "reasons": ["kalite_degerlendirilmedi"], "degerlendirildi": False}
+
+
 def quality_map(con: sqlite3.Connection, asof: str) -> dict[str, dict]:
-    """{ticker: kalite kaydı} — `reasons` JSON'dan listeye çözülmüş halde."""
-    rows = db.fetch_all(con, "SELECT * FROM data_quality WHERE date = ?", (asof,))
-    return {r["ticker"]: {**r, "ok": bool(r["ok"]), "reasons": _loads(r["reasons"])}
-            for r in rows}
+    """{ticker: `asof`'a kadarki EN SON kalite kaydı}.
+
+    ⚠ İlk sürüm `WHERE date = ?` ile TAM EŞLEŞME arıyordu. `assess_quality`
+    yalnız `bist veri kalite` ile koştuğu ve `bist veri gunluk` onu çağırmadığı
+    için, fiyat verisi bir gün ilerlediğinde bu sorgu BOŞ dönüyordu — ve dört
+    tüketicinin dördü de "kayıt yok"u "sorun yok" diye okuyordu (planner kapıyı
+    atlıyor, paket `ok: true` yazıyor, HF-16 ateşlenmiyor, `eligibility_gates`
+    tüm kalite bloğunu geçiyordu). Yani kapı, fark edilmeden kapanıyordu.
+    Ölçüldü (2026-07-27): `quality_map('2026-07-27')` → 0 kayıt.
+
+    Artık `date <= asof` içindeki en son değerlendirme kullanılır ve kaydın
+    YAŞI (`yas_gun`) taşınır; çağıran taraf bayatlığı görebilir.
+    """
+    rows = db.fetch_all(
+        con,
+        "SELECT q.* FROM data_quality q "
+        " JOIN (SELECT ticker, MAX(date) d FROM data_quality "
+        "        WHERE date <= ? GROUP BY ticker) s "
+        "   ON s.ticker = q.ticker AND s.d = q.date",
+        (asof,))
+    d_asof = util.parse_date(asof)
+    out = {}
+    for r in rows:
+        d_q = util.parse_date(r["date"])
+        out[r["ticker"]] = {
+            **r, "ok": bool(r["ok"]), "reasons": _loads(r["reasons"]),
+            "degerlendirildi": True,
+            "yas_gun": (d_asof - d_q).days if (d_asof and d_q) else None,
+        }
+    return out
+
+
+def quality_for(kalite: dict[str, dict], ticker: str) -> dict:
+    """Pakete/rapora giren kalite görünümü. **Eksik kayıt "OK" DEĞİLDİR.**
+
+    Projenin kuralı: "verisi gelmeyen gösterge paydadan düşer — uydurma
+    yapılmaz". Bilinmeyen bir kaliteyi `ok: true` diye sunmak tam olarak
+    uydurmaktır ve SASA vakasının (505 barın %23.2'sinde sıfır hacim) plana
+    girmesine izin verirdi.
+    """
+    r = kalite.get(ticker)
+    if not r:
+        return dict(KALITE_YOK)
+    return {"ok": bool(r["ok"]), "uyarilar": list(r.get("reasons") or []),
+            "degerlendirildi": True, "yas_gun": r.get("yas_gun")}
 
 
 def _loads(s) -> list:

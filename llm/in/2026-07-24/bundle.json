@@ -2,17 +2,31 @@
   "bundle_version": "bist_bundle_v1",
   "asof": "2026-07-24",
   "karar_gunu": "2026-08-21",
-  "generated_utc": "2026-07-26T21:44:30+00:00",
+  "generated_utc": "2026-07-27T10:10:56+00:00",
   "uyari": "Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir.",
   "takvim": {
     "son_kapali_seans": "2026-07-24",
     "zaman_bariyeri_tarihi": "2026-08-21",
     "islem_gunu_sayisi": 20
   },
+  "kesit": {
+    "istenen": 67,
+    "skorlanan": 67,
+    "uygun": 27,
+    "not": "`yuzdelik` YALNIZ 'uygun' sütunundaki isimler arasında hesaplanır; 'istenen' ile 'skorlanan' arasındaki fark, göstergesi hesaplanmamış isimlerdir (`bist gosterge`)."
+  },
+  "haber_taramasi": {
+    "ok": true,
+    "son_bildirim": "2026-07-27T09:01:42+00:00",
+    "gecikme_gun": -3,
+    "not": null
+  },
   "rejim": {
     "etiket": "risk-off",
     "xu100_sma200_farki_pct": 9.704086894033214,
-    "genislik_sma50_ustu_pct": 31.25,
+    "genislik_sma50_ustu_pct": 32.83582089552239,
+    "genislik_n": 67,
+    "genislik_istenen_n": 67,
     "xu100_vol_yillik_21g": 17.140594604819157,
     "makro": {},
     "pozisyon_politikasi": {
@@ -44,10 +58,10 @@
         "bb_pctb": 0.28630637626004335
       },
       "faktorler": {
-        "skor": -0.1157,
+        "skor": 0.0362,
         "sira": null,
         "yuzdelik": null,
-        "weights_hash": "b52dd5e3d43f",
+        "weights_hash": "4a547ff26723",
         "mom_6_1": 8.0782,
         "mom_12_1": 23.678,
         "zirve_yakinlik": -27.7005,
@@ -63,12 +77,88 @@
       },
       "veri_kalitesi": {
         "ok": true,
-        "uyarilar": []
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
       },
       "plan_menusu": [],
       "plan_yok_nedeni": "2 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
       "acik_tahminler": [],
-      "haberler": []
+      "haberler": [
+        {
+          "id": "kap-1636133",
+          "tarih": "2026-07-23 13:42",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "Yurtdışı Piyasalara Tahvil İhracı",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1636133"
+        },
+        {
+          "id": "kap-1636014",
+          "tarih": "2026-07-23 11:21",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "Yurtdışı Piyasalara Tahvil İhracı",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1636014"
+        },
+        {
+          "id": "kap-1636013",
+          "tarih": "2026-07-23 11:20",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "İhraç Tavanına İlişkin Bildirim",
+          "ozet": "Yurt İçi Borçlanma Aracı İhracı İçin Genel Müdürlüğe Yetki Verilmesi",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1636013"
+        },
+        {
+          "id": "kap-1636011",
+          "tarih": "2026-07-23 11:20",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "İhraç Tavanına İlişkin Bildirim",
+          "ozet": "Yurt İçi Borçlanma Aracı İhracı İçin Genel Müdürlüğe Yetki Verilmesi",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1636011"
+        },
+        {
+          "id": "kap-1636010",
+          "tarih": "2026-07-23 11:20",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "İhraç Tavanına İlişkin Bildirim",
+          "ozet": "Yurt İçi Borçlanma Aracı İhracı İçin Genel Müdürlüğe Yetki Verilmesi",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1636010"
+        },
+        {
+          "id": "kap-1635742",
+          "tarih": "2026-07-22 13:17",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Şirket Genel Bilgi Formu",
+          "ozet": null,
+          "url": "https://www.kap.org.tr/tr/Bildirim/1635742"
+        },
+        {
+          "id": "kap-1634988",
+          "tarih": "2026-07-20 13:54",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "US00971YAL48 ISIN Kodlu Tahvilin Kupon Ödemesi",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1634988"
+        },
+        {
+          "id": "kap-1634987",
+          "tarih": "2026-07-20 13:53",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "XS2842188687 ISIN Kodlu Tahvilin Kupon Ödemesi",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1634987"
+        }
+      ],
+      "haber_tarama_baslangici": "2024-09-24T20:59:59+00:00"
     },
     {
       "ticker": "ASELS",
@@ -92,10 +182,10 @@
         "bb_pctb": 0.6949108774372494
       },
       "faktorler": {
-        "skor": 0.9594,
-        "sira": 4.0,
-        "yuzdelik": 66.6667,
-        "weights_hash": "b52dd5e3d43f",
+        "skor": 1.0017,
+        "sira": 9.0,
+        "yuzdelik": 69.2308,
+        "weights_hash": "4a547ff26723",
         "mom_6_1": 16.2975,
         "mom_12_1": 104.3133,
         "zirve_yakinlik": -15.5,
@@ -109,99 +199,145 @@
       },
       "veri_kalitesi": {
         "ok": true,
-        "uyarilar": []
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
       },
       "plan_menusu": [
         {
           "plan_id": "ASELS-2026-07-24-A",
           "ticker": "ASELS",
           "asof": "2026-07-24",
-          "kind": "sma20_geri_cekilme",
-          "entry_low": 364.0,
-          "entry_high": 371.5,
-          "entry_trigger": "pullback_to_sma20",
-          "stop_price": 346.0,
-          "stop_method": "swing_low",
-          "stop_atr_multiple": 1.54,
-          "targets": [
-            {
-              "price": 412.0,
-              "rr": 1.59,
-              "atr_distance": 2.44,
-              "basis": "pivot@2026-07-06 (2 dokunuş)"
-            },
-            {
-              "price": 450.0,
-              "rr": 3.08,
-              "atr_distance": 4.74,
-              "basis": "52 hafta zirvesi"
-            }
-          ],
-          "rr_at_t1": 1.59,
-          "time_barrier_days": 20,
-          "time_barrier_date": "2026-08-21",
-          "position_size_pct": 5.83,
-          "max_loss_pct_of_portfolio": 0.4,
-          "entry_zone_status": "above_zone",
-          "daily_limit_note": "stop girişten %6.9 uzakta; girildikten sonra tek günde tetiklenebilir (boşluk riski var)",
-          "ex_date_in_window": null,
-          "invalidations": [
-            "SMA50 (381.45) altına günlük kapanış",
-            "347.84 desteğinin altına kapanış",
-            "hacim 20 günlük ortalamanın %50 altına inerse tez zayıflar"
-          ],
-          "notes": [
-            "1 direnç, 3 destek seviyesi kullanıldı"
-          ],
-          "uyari": "Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir."
-        },
-        {
-          "plan_id": "ASELS-2026-07-24-B",
-          "ticker": "ASELS",
-          "asof": "2026-07-24",
           "kind": "destek_retest",
-          "entry_low": 346.0,
-          "entry_high": 353.25,
+          "entry_low": 349.75,
+          "entry_high": 357.0,
           "entry_trigger": "support_retest",
-          "stop_price": 320.0,
+          "stop_price": 323.75,
           "stop_method": "atr_2x",
           "stop_atr_multiple": 2.01,
           "targets": [
             {
               "price": 412.0,
-              "rr": 1.77,
-              "atr_distance": 3.54,
+              "rr": 1.65,
+              "atr_distance": 3.32,
               "basis": "pivot@2026-07-06 (2 dokunuş)"
             },
             {
               "price": 450.0,
-              "rr": 2.91,
-              "atr_distance": 5.84,
+              "rr": 2.8,
+              "atr_distance": 5.61,
               "basis": "52 hafta zirvesi"
             }
           ],
-          "rr_at_t1": 1.77,
+          "rr_at_t1": 1.65,
           "time_barrier_days": 20,
           "time_barrier_date": "2026-08-21",
-          "position_size_pct": 4.25,
+          "position_size_pct": 4.29,
           "max_loss_pct_of_portfolio": 0.4,
           "entry_zone_status": "above_zone",
-          "daily_limit_note": "stop girişten %9.4 uzakta; girildikten sonra tek günde tetiklenebilir (boşluk riski var)",
+          "daily_limit_note": "stop girişten %9.3 uzakta; girildikten sonra tek günde tetiklenebilir (boşluk riski var)",
           "ex_date_in_window": null,
           "invalidations": [
             "SMA50 (381.45) altına günlük kapanış",
-            "347.84 desteğinin altına kapanış",
+            "351.67 desteğinin altına kapanış",
             "hacim 20 günlük ortalamanın %50 altına inerse tez zayıflar"
           ],
           "notes": [
             "1 direnç, 3 destek seviyesi kullanıldı"
+          ],
+          "rr_secim": "3. giriş bandı (destek_retest), stop atr_2x",
+          "elenen_adaylar": [
+            "dogrudan/atr_2x: R:R 0.95 < 1.5",
+            "dogrudan/atr_2.5x: R:R 0.77 < 1.5",
+            "dogrudan/atr_3x: R:R 0.64 < 1.5",
+            "dogrudan/swing_low: R:R 1.04 < 1.5",
+            "dogrudan/sma_break_buffer: 1.09×ATR ∉ [1.5,4.0]",
+            "sma20_geri_cekilme/atr_2x: R:R 1.22 < 1.5",
+            "sma20_geri_cekilme/atr_2.5x: R:R 0.98 < 1.5",
+            "sma20_geri_cekilme/atr_3x: R:R 0.81 < 1.5",
+            "sma20_geri_cekilme/swing_low: 1.31×ATR ∉ [1.5,4.0]",
+            "sma20_geri_cekilme/sma_break_buffer: 0.56×ATR ∉ [1.5,4.0]"
           ],
           "uyari": "Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir."
         }
       ],
       "plan_yok_nedeni": null,
       "acik_tahminler": [],
-      "haberler": []
+      "haberler": [
+        {
+          "id": "kap-1635301",
+          "tarih": "2026-07-21 09:58",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Finansal Takvim",
+          "ozet": "Finansal Takvim",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1635301"
+        },
+        {
+          "id": "kap-1631439",
+          "tarih": "2026-07-10 07:53",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Yeni İş İlişkisi",
+          "ozet": "Sözleşme İmzalanması",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1631439"
+        },
+        {
+          "id": "kap-1621738",
+          "tarih": "2026-06-30 06:22",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Devreye Alınan Yatırımlarımız Hakkında",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1621738"
+        },
+        {
+          "id": "kap-1617528",
+          "tarih": "2026-06-16 06:15",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Yeni İş İlişkisi",
+          "ozet": "Sözleşme İmzalanması",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1617528"
+        },
+        {
+          "id": "kap-1616972",
+          "tarih": "2026-06-15 06:15",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Yeni İş İlişkisi",
+          "ozet": "Sözleşme İmzalanması",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1616972"
+        },
+        {
+          "id": "kap-1616715",
+          "tarih": "2026-06-12 12:27",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Süresi İçinde Kaydileştirilmeyen Paylarla İlgili Yatırımcı Tazmin Merkezi Başvuruları Hakkında Duyuru",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1616715"
+        },
+        {
+          "id": "kap-1612829",
+          "tarih": "2026-06-04 06:15",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Yeni İş İlişkisi",
+          "ozet": "Sözleşme İmzalanması",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1612829"
+        },
+        {
+          "id": "kap-1611291",
+          "tarih": "2026-06-01 06:17",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Yeni İş İlişkisi",
+          "ozet": "Sözleşme İmzalanması",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1611291"
+        }
+      ],
+      "haber_tarama_baslangici": "2026-03-02T20:59:59+00:00"
     },
     {
       "ticker": "ASTOR",
@@ -228,7 +364,7 @@
         "skor": null,
         "sira": null,
         "yuzdelik": null,
-        "weights_hash": "b52dd5e3d43f",
+        "weights_hash": "4a547ff26723",
         "kapilar": {
           "uygun": false,
           "nedenler": [
@@ -241,7 +377,9 @@
       },
       "veri_kalitesi": {
         "ok": true,
-        "uyarilar": []
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
       },
       "plan_menusu": [],
       "plan_yok_nedeni": "2 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
@@ -249,7 +387,7 @@
       "haberler": [
         {
           "id": "kap-1636211",
-          "tarih": "2026-07-23 18:13",
+          "tarih": "2026-07-23 15:13",
           "kaynak": "KAP (resmî beyan)",
           "onem": "dusuk",
           "baslik": "Bağımsız Denetim Kuruluşunun Belirlenmesi",
@@ -258,7 +396,7 @@
         },
         {
           "id": "kap-1635127",
-          "tarih": "2026-07-20 18:15",
+          "tarih": "2026-07-20 15:15",
           "kaynak": "KAP (resmî beyan)",
           "onem": "orta",
           "baslik": "İhale Süreci / Sonucu",
@@ -267,14 +405,60 @@
         },
         {
           "id": "kap-1632417",
-          "tarih": "2026-07-13 13:03",
+          "tarih": "2026-07-13 10:03",
           "kaynak": "KAP (resmî beyan)",
           "onem": "orta",
           "baslik": "Yeni İş İlişkisi",
           "ozet": "Yeni İş İlişkisi",
           "url": "https://www.kap.org.tr/tr/Bildirim/1632417"
+        },
+        {
+          "id": "kap-1627788",
+          "tarih": "2026-07-08 07:42",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Yeni İş İlişkisi",
+          "ozet": "Yeni İş İlişkisi",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1627788"
+        },
+        {
+          "id": "kap-1627416",
+          "tarih": "2026-07-07 16:01",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Kar Payı Dağıtım İşlemlerine İlişkin Bildirim",
+          "ozet": "2025 Yılı Kar Payı Dağıtımı Hakkında Yönetim Kurulu Teklifi",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1627416"
+        },
+        {
+          "id": "kap-1627415",
+          "tarih": "2026-07-07 16:01",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "dusuk",
+          "baslik": "Genel Kurul İşlemlerine İlişkin Bildirim",
+          "ozet": "2025 Yılı Olağan Genel Kurul Toplantı Çağrısı",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1627415"
+        },
+        {
+          "id": "kap-1623500",
+          "tarih": "2026-07-03 06:46",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "İhale Süreci / Sonucu",
+          "ozet": "TEİAŞ İhalesi",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1623500"
+        },
+        {
+          "id": "kap-1623322",
+          "tarih": "2026-07-02 15:38",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Kayıtlı Sermaye Tavanı İşlemlerine İlişkin Bildirim",
+          "ozet": "Kayıtlı Sermaye Tavanı Artırımı ve Geçerlilik Süresinin Uzatılmasına İlişkin T.C. Ticaret Bakanlığı Onayı",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1623322"
         }
-      ]
+      ],
+      "haber_tarama_baslangici": null
     },
     {
       "ticker": "BIMAS",
@@ -287,8 +471,8 @@
         "dusuk_52h": 241.625
       },
       "gostergeler": {
-        "rsi14": 49.416144888372074,
-        "macd_hist": 1.4901318370603613,
+        "rsi14": 49.41614488837221,
+        "macd_hist": 1.4901318370602326,
         "atr14": 12.298529426645347,
         "atr_pct": 3.2343272653899664,
         "adx14": 20.255966054192537,
@@ -298,10 +482,10 @@
         "bb_pctb": 0.5506252105754742
       },
       "faktorler": {
-        "skor": 1.0005,
-        "sira": 3.0,
-        "yuzdelik": 77.7778,
-        "weights_hash": "b52dd5e3d43f",
+        "skor": 0.7031,
+        "sira": 11.0,
+        "yuzdelik": 61.5385,
+        "weights_hash": "4a547ff26723",
         "mom_6_1": 21.0782,
         "mom_12_1": 53.1127,
         "zirve_yakinlik": -10.5294,
@@ -315,12 +499,88 @@
       },
       "veri_kalitesi": {
         "ok": true,
-        "uyarilar": []
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
       },
       "plan_menusu": [],
       "plan_yok_nedeni": "3 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
       "acik_tahminler": [],
-      "haberler": []
+      "haberler": [
+        {
+          "id": "kap-1636648",
+          "tarih": "2026-07-24 15:48",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Payların Geri Alınmasına İlişkin Bildirim",
+          "ozet": "24 Temmuz 2026 Tarihli Pay Geri Alım İşlemleri",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1636648"
+        },
+        {
+          "id": "kap-1636283",
+          "tarih": "2026-07-23 16:33",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Payların Geri Alınmasına İlişkin Bildirim",
+          "ozet": "23 Temmuz 2026 Tarihli Pay Geri Alım İşlemleri",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1636283"
+        },
+        {
+          "id": "kap-1635533",
+          "tarih": "2026-07-21 17:32",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Payların Geri Alınmasına İlişkin Bildirim",
+          "ozet": "21 Temmuz 2026 Tarihli Pay Geri Alım İşlemleri",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1635533"
+        },
+        {
+          "id": "kap-1634671",
+          "tarih": "2026-07-17 16:49",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Payların Geri Alınmasına İlişkin Bildirim",
+          "ozet": "17 Temmuz 2026 Tarihli Pay Geri Alım İşlemleri",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1634671"
+        },
+        {
+          "id": "kap-1632922",
+          "tarih": "2026-07-13 16:16",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Payların Geri Alınmasına İlişkin Bildirim",
+          "ozet": "13 Temmuz 2026 Tarihli Pay Geri Alım İşlemleri",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1632922"
+        },
+        {
+          "id": "kap-1632046",
+          "tarih": "2026-07-10 15:39",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Payların Geri Alınmasına İlişkin Bildirim",
+          "ozet": "10 Temmuz 2026 Tarihli Pay Geri Alım İşlemleri",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1632046"
+        },
+        {
+          "id": "kap-1631306",
+          "tarih": "2026-07-09 17:00",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Payların Geri Alınmasına İlişkin Bildirim",
+          "ozet": "9 Temmuz 2026 Tarihli Pay Geri Alım İşlemleri",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1631306"
+        },
+        {
+          "id": "kap-1630125",
+          "tarih": "2026-07-08 17:20",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Payların Geri Alınmasına İlişkin Bildirim",
+          "ozet": "8 Temmuz 2026 Tarihli Pay Geri Alım İşlemleri",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1630125"
+        }
+      ],
+      "haber_tarama_baslangici": "2024-03-26T20:59:59+00:00"
     },
     {
       "ticker": "EKGYO",
@@ -344,10 +604,10 @@
         "bb_pctb": -0.13758227165839884
       },
       "faktorler": {
-        "skor": -0.9884,
+        "skor": -0.5043,
         "sira": null,
         "yuzdelik": null,
-        "weights_hash": "b52dd5e3d43f",
+        "weights_hash": "4a547ff26723",
         "mom_6_1": -6.4616,
         "mom_12_1": 8.7568,
         "zirve_yakinlik": -31.3422,
@@ -363,12 +623,88 @@
       },
       "veri_kalitesi": {
         "ok": true,
-        "uyarilar": []
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
       },
       "plan_menusu": [],
       "plan_yok_nedeni": "2 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
       "acik_tahminler": [],
-      "haberler": []
+      "haberler": [
+        {
+          "id": "kap-1636545",
+          "tarih": "2026-07-24 14:00",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "İstanbul Eyüpsultan Göktürk 1. Etap Kesin Kabulü",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1636545"
+        },
+        {
+          "id": "kap-1636005",
+          "tarih": "2026-07-23 10:57",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Konya Meram 2. Etap İhale İlanı",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1636005"
+        },
+        {
+          "id": "kap-1635773",
+          "tarih": "2026-07-22 14:04",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Şirket Genel Bilgi Formu",
+          "ozet": null,
+          "url": "https://www.kap.org.tr/tr/Bildirim/1635773"
+        },
+        {
+          "id": "kap-1635409",
+          "tarih": "2026-07-21 13:36",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "İstanbul Esenler Atışalanı Kuzey 1. Etap İhalesi 2. Oturum Tarihi",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1635409"
+        },
+        {
+          "id": "kap-1635406",
+          "tarih": "2026-07-21 13:35",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Ankara Gölbaşı Taşpınar Sözleşme İmzalanması",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1635406"
+        },
+        {
+          "id": "kap-1634714",
+          "tarih": "2026-07-17 19:30",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Damla Kent Projesi Gayrimenkul Sertifikası İnşaat İlerlemesi ve Asli Edim Gerçekleşmeleri",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1634714"
+        },
+        {
+          "id": "kap-1634713",
+          "tarih": "2026-07-17 19:30",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Değerleme Raporu",
+          "ozet": "Damla Kent Gayrimenkul Değerleme Raporu",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1634713"
+        },
+        {
+          "id": "kap-1634712",
+          "tarih": "2026-07-17 18:06",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "2026 2. Çeyrek Satış Raporu",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1634712"
+        }
+      ],
+      "haber_tarama_baslangici": "2025-08-13T20:59:59+00:00"
     },
     {
       "ticker": "ENKAI",
@@ -393,9 +729,9 @@
       },
       "faktorler": {
         "skor": 0.2432,
-        "sira": 5.0,
-        "yuzdelik": 55.5556,
-        "weights_hash": "b52dd5e3d43f",
+        "sira": 16.0,
+        "yuzdelik": 42.3077,
+        "weights_hash": "4a547ff26723",
         "mom_6_1": 10.5366,
         "mom_12_1": 36.2933,
         "zirve_yakinlik": -22.3097,
@@ -409,12 +745,70 @@
       },
       "veri_kalitesi": {
         "ok": true,
-        "uyarilar": []
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
       },
       "plan_menusu": [],
       "plan_yok_nedeni": "2 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
       "acik_tahminler": [],
-      "haberler": []
+      "haberler": [
+        {
+          "id": "kap-1614200",
+          "tarih": "2026-06-08 06:28",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Yatırımcı Tazmin Merkezi Başvurularına İlişkin Duyuru",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1614200"
+        },
+        {
+          "id": "kap-1603563",
+          "tarih": "2026-05-08 15:15",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Kurumsal Yönetim İlkelerine Uyum Derecelendirmesi",
+          "ozet": "Kurumsal Yönetim İlkelerine Uyum Derecelendirmesi Sözleşmesi",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1603563"
+        },
+        {
+          "id": "kap-1603556",
+          "tarih": "2026-05-08 15:14",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Kâr Payı Avansı Dağıtmama Kararı",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1603556"
+        },
+        {
+          "id": "kap-1603551",
+          "tarih": "2026-05-08 15:13",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Sorumluluk Beyanı (Konsolide)",
+          "ozet": "Sorumluluk Beyanı 31.03.2026",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1603551"
+        },
+        {
+          "id": "kap-1603547",
+          "tarih": "2026-05-08 15:13",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "dusuk",
+          "baslik": "Faaliyet Raporu (Konsolide)",
+          "ozet": "Faaliyet Raporu 31.03.2026",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1603547"
+        },
+        {
+          "id": "kap-1603543",
+          "tarih": "2026-05-08 15:12",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Finansal Rapor",
+          "ozet": null,
+          "url": "https://www.kap.org.tr/tr/Bildirim/1603543"
+        }
+      ],
+      "haber_tarama_baslangici": "2025-01-17T20:59:59+00:00"
     },
     {
       "ticker": "EREGL",
@@ -438,10 +832,10 @@
         "bb_pctb": 0.8105926355824558
       },
       "faktorler": {
-        "skor": 1.7742,
-        "sira": 1.0,
-        "yuzdelik": 100.0,
-        "weights_hash": "b52dd5e3d43f",
+        "skor": 1.4939,
+        "sira": 5.0,
+        "yuzdelik": 84.6154,
+        "weights_hash": "4a547ff26723",
         "mom_6_1": 52.3065,
         "mom_12_1": 49.7155,
         "zirve_yakinlik": -4.0355,
@@ -455,7 +849,9 @@
       },
       "veri_kalitesi": {
         "ok": true,
-        "uyarilar": []
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
       },
       "plan_menusu": [],
       "plan_yok_nedeni": "3 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
@@ -463,7 +859,7 @@
       "haberler": [
         {
           "id": "kap-1636318",
-          "tarih": "2026-07-24 09:30",
+          "tarih": "2026-07-24 06:30",
           "kaynak": "KAP (resmî beyan)",
           "onem": "orta",
           "baslik": "Kurumsal Yönetim İlkelerine Uyum Derecelendirmesi",
@@ -472,7 +868,7 @@
         },
         {
           "id": "kap-1636246",
-          "tarih": "2026-07-23 18:31",
+          "tarih": "2026-07-23 15:31",
           "kaynak": "KAP (resmî beyan)",
           "onem": "orta",
           "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
@@ -481,14 +877,60 @@
         },
         {
           "id": "kap-1635535",
-          "tarih": "2026-07-21 21:30",
+          "tarih": "2026-07-21 18:30",
           "kaynak": "KAP (resmî beyan)",
           "onem": "orta",
           "baslik": "Kredi Derecelendirmesi",
           "ozet": "Moody's Kredi Derecelendirme Notu",
           "url": "https://www.kap.org.tr/tr/Bildirim/1635535"
+        },
+        {
+          "id": "kap-1614893",
+          "tarih": "2026-06-08 15:12",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Yatırımcı Tazmin Merkezi'ne Başvuru Süresi Hakkında Duyuru",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1614893"
+        },
+        {
+          "id": "kap-1610422",
+          "tarih": "2026-05-22 12:30",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Kurumsal Yönetim İlkelerine Uyum Derecelendirmesi",
+          "ozet": "Kurumsal Yönetim İlkelerine Uyum Derecelendirme Sözleşmesi'nin Yenilenmesi",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1610422"
+        },
+        {
+          "id": "kap-1608801",
+          "tarih": "2026-05-19 16:42",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Kredi Derecelendirmesi",
+          "ozet": "Fitch Kredi Derecelendirme Notu",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1608801"
+        },
+        {
+          "id": "kap-1598433",
+          "tarih": "2026-04-28 19:37",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Şirket Genel Bilgi Formu",
+          "ozet": null,
+          "url": "https://www.kap.org.tr/tr/Bildirim/1598433"
+        },
+        {
+          "id": "kap-1598432",
+          "tarih": "2026-04-28 19:37",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Tüzel Kişi Yönetim Kurulu Üye Temsilcisi Değişiklikleri ve Yönetim Kurulu Üyelerinin Görev Dağılımı",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1598432"
         }
-      ]
+      ],
+      "haber_tarama_baslangici": null
     },
     {
       "ticker": "EUPWR",
@@ -515,7 +957,7 @@
         "skor": null,
         "sira": null,
         "yuzdelik": null,
-        "weights_hash": "b52dd5e3d43f",
+        "weights_hash": "4a547ff26723",
         "kapilar": {
           "uygun": false,
           "nedenler": [
@@ -528,7 +970,9 @@
       },
       "veri_kalitesi": {
         "ok": true,
-        "uyarilar": []
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
       },
       "plan_menusu": [
         {
@@ -560,18 +1004,101 @@
           "ex_date_in_window": null,
           "invalidations": [
             "SMA50 (84.56) altına günlük kapanış",
-            "32.40 desteğinin altına kapanış",
+            "44.33 desteğinin altına kapanış",
             "hacim 20 günlük ortalamanın %50 altına inerse tez zayıflar"
           ],
           "notes": [
-            "0 direnç, 1 destek seviyesi kullanıldı"
+            "0 direnç, 3 destek seviyesi kullanıldı"
+          ],
+          "rr_secim": "2. giriş bandı (sma20_geri_cekilme), stop atr_2x",
+          "elenen_adaylar": [
+            "dogrudan/atr_2x: R:R 0.68 < 1.5",
+            "dogrudan/atr_2.5x: R:R 0.55 < 1.5",
+            "dogrudan/atr_3x: R:R 0.46 < 1.5",
+            "dogrudan/swing_low: 9.54×ATR ∉ [1.5,4.0]",
+            "dogrudan/sma_break_buffer: R:R 0.65 < 1.5",
+            "dogrudan/sma_break_buffer: R:R 0.47 < 1.5"
           ],
           "uyari": "Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir."
         }
       ],
       "plan_yok_nedeni": null,
       "acik_tahminler": [],
-      "haberler": []
+      "haberler": [
+        {
+          "id": "kap-1632310",
+          "tarih": "2026-07-13 07:34",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "İhale Süreci / Sonucu",
+          "ozet": "İhale Sonucu Hakkında",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1632310"
+        },
+        {
+          "id": "kap-1621602",
+          "tarih": "2026-06-29 15:11",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Esas Sözleşme",
+          "ozet": "Güncel Esas Sözleşme Hak.",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1621602"
+        },
+        {
+          "id": "kap-1621159",
+          "tarih": "2026-06-26 15:02",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Bağımsız Denetim Kuruluşunun Belirlenmesi",
+          "ozet": "Bağımsız Denetim Kuruluşunun Tescili",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1621159"
+        },
+        {
+          "id": "kap-1621154",
+          "tarih": "2026-06-26 14:54",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Kayıtlı Sermaye Tavanı İşlemlerine İlişkin Bildirim",
+          "ozet": "Kayıtlı Sermaye Tavanı Esas Sözleşme Madde Tadilinin Tescili Hakkında",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1621154"
+        },
+        {
+          "id": "kap-1621146",
+          "tarih": "2026-06-26 14:49",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Genel Kurul İşlemlerine İlişkin Bildirim",
+          "ozet": "2025 Yılı Olağan Genel Kurul Kararlarının Tescili Hakkında",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1621146"
+        },
+        {
+          "id": "kap-1619903",
+          "tarih": "2026-06-23 15:11",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Kurumsal yatırımcılara hızlandırılmış talep toplama yöntemiyle yapılan satışın takasının tamamlanması",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1619903"
+        },
+        {
+          "id": "kap-1618962",
+          "tarih": "2026-06-19 11:12",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "İhale Süreci / Sonucu",
+          "ozet": "İhale Sonucu Hakkında",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1618962"
+        },
+        {
+          "id": "kap-1618961",
+          "tarih": "2026-06-19 11:11",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Kayıtlı Sermaye Tavanı İşlemlerine İlişkin Bildirim",
+          "ozet": "Kayıtlı Sermaye Tavan Artırımı İçin Genel Kurul Onayı Hakkında",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1618961"
+        }
+      ],
+      "haber_tarama_baslangici": null
     },
     {
       "ticker": "FROTO",
@@ -584,8 +1111,8 @@
         "dusuk_52h": 78.44999694824219
       },
       "gostergeler": {
-        "rsi14": 34.171125369730234,
-        "macd_hist": -0.05624619318622126,
+        "rsi14": 34.17112536971291,
+        "macd_hist": -0.0562461931889231,
         "atr14": 2.037297455902649,
         "atr_pct": 2.578857539117277,
         "adx14": 40.61296265317535,
@@ -595,10 +1122,10 @@
         "bb_pctb": 0.042733939997248595
       },
       "faktorler": {
-        "skor": -1.3084,
+        "skor": -0.7921,
         "sira": null,
         "yuzdelik": null,
-        "weights_hash": "b52dd5e3d43f",
+        "weights_hash": "4a547ff26723",
         "mom_6_1": -13.7734,
         "mom_12_1": 2.0756,
         "zirve_yakinlik": -41.6544,
@@ -614,7 +1141,9 @@
       },
       "veri_kalitesi": {
         "ok": true,
-        "uyarilar": []
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
       },
       "plan_menusu": [],
       "plan_yok_nedeni": "1 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
@@ -622,14 +1151,78 @@
       "haberler": [
         {
           "id": "kap-1632921",
-          "tarih": "2026-07-13 19:15",
+          "tarih": "2026-07-13 16:15",
           "kaynak": "KAP (resmî beyan)",
           "onem": "orta",
           "baslik": "Finansal Takvim",
           "ozet": "2026 2.Çeyrek Finansal Takvim",
           "url": "https://www.kap.org.tr/tr/Bildirim/1632921"
+        },
+        {
+          "id": "kap-1624116",
+          "tarih": "2026-07-03 15:30",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Faaliyetlerin Kısmen veya Tamamen Durdurulması ya da İmkansız Hale Gelmesi",
+          "ozet": "2026 Yıllık İzin Uygulaması",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1624116"
+        },
+        {
+          "id": "kap-1623398",
+          "tarih": "2026-07-02 16:27",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Şirket Genel Bilgi Formu",
+          "ozet": null,
+          "url": "https://www.kap.org.tr/tr/Bildirim/1623398"
+        },
+        {
+          "id": "kap-1622206",
+          "tarih": "2026-07-01 06:15",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Finansal Duran Varlık Edinimi",
+          "ozet": "Koç Finansman A.Ş. paylarının satın alma işleminin tamamlanması",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1622206"
+        },
+        {
+          "id": "kap-1621199",
+          "tarih": "2026-06-26 15:20",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Üst Düzey Organizasyon Değişikliği",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1621199"
+        },
+        {
+          "id": "kap-1617911",
+          "tarih": "2026-06-16 17:10",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Süresi İçinde Kaydileştirilmeyen Paylara İlişkin Yatırımcı Tazmin Merkezi Başvuruları Hakkında Açıklama",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1617911"
+        },
+        {
+          "id": "kap-1617463",
+          "tarih": "2026-06-15 16:07",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Kurumsal Yönetim İlkelerine Uyum Derecelendirmesi",
+          "ozet": "Kurumsal Yönetim İlkelerine Uyum Derecelendirme Notu",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1617463"
+        },
+        {
+          "id": "kap-1610749",
+          "tarih": "2026-05-22 15:40",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Koç Finansman A.Ş Paylarının Satın Alımına İlişkin Rekabet Kurulu Onayı",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1610749"
         }
-      ]
+      ],
+      "haber_tarama_baslangici": null
     },
     {
       "ticker": "GARAN",
@@ -653,10 +1246,10 @@
         "bb_pctb": 0.2567982673912849
       },
       "faktorler": {
-        "skor": -0.8702,
+        "skor": -0.4151,
         "sira": null,
         "yuzdelik": null,
-        "weights_hash": "b52dd5e3d43f",
+        "weights_hash": "4a547ff26723",
         "mom_6_1": -1.6339,
         "mom_12_1": 4.1153,
         "zirve_yakinlik": -25.7513,
@@ -672,12 +1265,88 @@
       },
       "veri_kalitesi": {
         "ok": true,
-        "uyarilar": []
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
       },
       "plan_menusu": [],
       "plan_yok_nedeni": "2 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
       "acik_tahminler": [],
-      "haberler": []
+      "haberler": [
+        {
+          "id": "kap-1636615",
+          "tarih": "2026-07-24 15:10",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "Yurtdışı Piyasalara Tahvil İhracı SPK Onayı",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1636615"
+        },
+        {
+          "id": "kap-1636519",
+          "tarih": "2026-07-24 13:24",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "Yurtdışı Piyasalara Tahvil İhracı SPK Onayı",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1636519"
+        },
+        {
+          "id": "kap-1636202",
+          "tarih": "2026-07-23 15:10",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "Yurtdışı Piyasalara Tahvil İhracı SPK Onayı",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1636202"
+        },
+        {
+          "id": "kap-1635989",
+          "tarih": "2026-07-23 10:12",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "Yurtdışı Piyasalara Tahvil İhracı SPK Onayı / İhraç Türü düzeltimi",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1635989"
+        },
+        {
+          "id": "kap-1635988",
+          "tarih": "2026-07-23 10:11",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "Yurtdışı Piyasalara Tahvil İhracı SPK Onayı",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1635988"
+        },
+        {
+          "id": "kap-1635501",
+          "tarih": "2026-07-21 15:11",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "Yurtdışı Piyasalara Tahvil İhracı SPK Onayı",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1635501"
+        },
+        {
+          "id": "kap-1635125",
+          "tarih": "2026-07-20 15:13",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "Yurtdışı Piyasalara Tahvil İhracı SPK Onayı",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1635125"
+        },
+        {
+          "id": "kap-1634570",
+          "tarih": "2026-07-17 15:11",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Tahsili gecikmiş alacak portföy satışı hk.",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1634570"
+        }
+      ],
+      "haber_tarama_baslangici": "2024-09-24T20:59:59+00:00"
     },
     {
       "ticker": "KCHOL",
@@ -701,10 +1370,10 @@
         "bb_pctb": 0.6665053640757207
       },
       "faktorler": {
-        "skor": -0.4434,
-        "sira": 10.0,
-        "yuzdelik": 0.0,
-        "weights_hash": "b52dd5e3d43f",
+        "skor": -0.165,
+        "sira": 24.0,
+        "yuzdelik": 11.5385,
+        "weights_hash": "4a547ff26723",
         "mom_6_1": 2.7277,
         "mom_12_1": 17.36,
         "zirve_yakinlik": -13.7495,
@@ -718,7 +1387,9 @@
       },
       "veri_kalitesi": {
         "ok": true,
-        "uyarilar": []
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
       },
       "plan_menusu": [],
       "plan_yok_nedeni": "3 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
@@ -726,14 +1397,78 @@
       "haberler": [
         {
           "id": "kap-1634245",
-          "tarih": "2026-07-16 18:28",
+          "tarih": "2026-07-16 15:28",
           "kaynak": "KAP (resmî beyan)",
           "onem": "orta",
           "baslik": "Finansal Takvim",
           "ozet": "2026 2. Çeyrek Finansal Takvim",
           "url": "https://www.kap.org.tr/tr/Bildirim/1634245"
+        },
+        {
+          "id": "kap-1622205",
+          "tarih": "2026-07-01 06:15",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Finansal Duran Varlık Satışı",
+          "ozet": "Koç Finansman A.Ş. paylarının satışı işleminin tamamlanması",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1622205"
+        },
+        {
+          "id": "kap-1616897",
+          "tarih": "2026-06-12 15:15",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Süresi İçinde Kaydileştirilmeyen Paylara İlişkin Yatırımcı Tazmin Merkezi Başvuruları Hakkında Açıklama",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1616897"
+        },
+        {
+          "id": "kap-1611273",
+          "tarih": "2026-05-29 10:18",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Kredi Derecelendirmesi",
+          "ozet": "Kredi Derecelendirmesi",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1611273"
+        },
+        {
+          "id": "kap-1603641",
+          "tarih": "2026-05-08 15:30",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Şirket Genel Bilgi Formu",
+          "ozet": null,
+          "url": "https://www.kap.org.tr/tr/Bildirim/1603641"
+        },
+        {
+          "id": "kap-1603638",
+          "tarih": "2026-05-08 15:30",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Finansal raporların açıklanması",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1603638"
+        },
+        {
+          "id": "kap-1603573",
+          "tarih": "2026-05-08 15:16",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Sorumluluk Beyanı (Konsolide)",
+          "ozet": "Sorumluluk Beyanı",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1603573"
+        },
+        {
+          "id": "kap-1603571",
+          "tarih": "2026-05-08 15:16",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "dusuk",
+          "baslik": "Faaliyet Raporu (Konsolide)",
+          "ozet": "01.01.2026-31.03.2026 Faaliyet Raporu",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1603571"
         }
-      ]
+      ],
+      "haber_tarama_baslangici": null
     },
     {
       "ticker": "KRDMD",
@@ -757,10 +1492,10 @@
         "bb_pctb": 0.7136385907484506
       },
       "faktorler": {
-        "skor": 1.6327,
-        "sira": 2.0,
-        "yuzdelik": 88.8889,
-        "weights_hash": "b52dd5e3d43f",
+        "skor": 1.1287,
+        "sira": 7.0,
+        "yuzdelik": 76.9231,
+        "weights_hash": "4a547ff26723",
         "mom_6_1": 39.5189,
         "mom_12_1": 49.4845,
         "zirve_yakinlik": -10.2128,
@@ -774,7 +1509,9 @@
       },
       "veri_kalitesi": {
         "ok": true,
-        "uyarilar": []
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
       },
       "plan_menusu": [
         {
@@ -812,6 +1549,15 @@
           "notes": [
             "0 direnç, 3 destek seviyesi kullanıldı"
           ],
+          "rr_secim": "2. giriş bandı (sma20_geri_cekilme), stop atr_2x",
+          "elenen_adaylar": [
+            "dogrudan/atr_2x: R:R 1.32 < 1.5",
+            "dogrudan/atr_2.5x: R:R 1.06 < 1.5",
+            "dogrudan/atr_3x: R:R 0.88 < 1.5",
+            "dogrudan/swing_low: R:R 0.76 < 1.5",
+            "dogrudan/sma_break_buffer: 1.46×ATR ∉ [1.5,4.0]",
+            "dogrudan/sma_break_buffer: 1.39×ATR ∉ [1.5,4.0]"
+          ],
           "uyari": "Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir."
         }
       ],
@@ -820,7 +1566,7 @@
       "haberler": [
         {
           "id": "kap-1636626",
-          "tarih": "2026-07-24 18:17",
+          "tarih": "2026-07-24 15:17",
           "kaynak": "KAP (resmî beyan)",
           "onem": "orta",
           "baslik": "Özel Durum Açıklaması (Genel)",
@@ -829,14 +1575,69 @@
         },
         {
           "id": "kap-1636624",
-          "tarih": "2026-07-24 18:17",
+          "tarih": "2026-07-24 15:17",
           "kaynak": "KAP (resmî beyan)",
           "onem": "orta",
           "baslik": "Özel Durum Açıklaması (Genel)",
           "ozet": "Bilgilendirme",
           "url": "https://www.kap.org.tr/tr/Bildirim/1636624"
+        },
+        {
+          "id": "kap-1622675",
+          "tarih": "2026-07-01 15:13",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "İhracat Faaliyeti Hk",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1622675"
+        },
+        {
+          "id": "kap-1622085",
+          "tarih": "2026-06-30 15:21",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Süresi İçinde Kaydileştirilmeyen Paylara İlişkin Yatırımcı Tazmin Merkezi Başvuruları Hakkında Açıklama",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1622085"
+        },
+        {
+          "id": "kap-1621229",
+          "tarih": "2026-06-26 16:27",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "İhracat Faaliyeti Hk",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1621229"
+        },
+        {
+          "id": "kap-1619893",
+          "tarih": "2026-06-23 15:05",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Amerika Birleşik Devletleri merkezli Amsted Rail Company, Inc. ile Ana Tedarik ve Yeniden Satış Sözleşmesi İmzalanması",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1619893"
+        },
+        {
+          "id": "kap-1619892",
+          "tarih": "2026-06-23 15:02",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Satış Duyurusu Hk.",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1619892"
+        },
+        {
+          "id": "kap-1618845",
+          "tarih": "2026-06-19 06:38",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "İhracat Faaliyeti Hk.",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1618845"
         }
-      ]
+      ],
+      "haber_tarama_baslangici": null
     },
     {
       "ticker": "PETKM",
@@ -860,10 +1661,10 @@
         "bb_pctb": 0.8626580905772572
       },
       "faktorler": {
-        "skor": -0.1794,
-        "sira": 8.0,
-        "yuzdelik": 22.2222,
-        "weights_hash": "b52dd5e3d43f",
+        "skor": 0.0233,
+        "sira": 19.0,
+        "yuzdelik": 30.7692,
+        "weights_hash": "4a547ff26723",
         "mom_6_1": 11.7748,
         "mom_12_1": 11.5186,
         "zirve_yakinlik": -21.5253,
@@ -877,56 +1678,88 @@
       },
       "veri_kalitesi": {
         "ok": true,
-        "uyarilar": []
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
       },
-      "plan_menusu": [
+      "plan_menusu": [],
+      "plan_yok_nedeni": "3 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
+      "acik_tahminler": [],
+      "haberler": [
         {
-          "plan_id": "PETKM-2026-07-24-A",
-          "ticker": "PETKM",
-          "asof": "2026-07-24",
-          "kind": "sma20_geri_cekilme",
-          "entry_low": 19.9,
-          "entry_high": 20.32,
-          "entry_trigger": "pullback_to_sma20",
-          "stop_price": 18.59,
-          "stop_method": "atr_2x",
-          "stop_atr_multiple": 2.0,
-          "targets": [
-            {
-              "price": 24.36,
-              "rr": 2.34,
-              "atr_distance": 4.68,
-              "basis": "pivot@2026-06-03 (4 dokunuş)"
-            },
-            {
-              "price": 28.06,
-              "rr": 4.47,
-              "atr_distance": 8.97,
-              "basis": "52 hafta zirvesi"
-            }
-          ],
-          "rr_at_t1": 2.34,
-          "time_barrier_days": 20,
-          "time_barrier_date": "2026-08-21",
-          "position_size_pct": 4.7,
-          "max_loss_pct_of_portfolio": 0.4,
-          "entry_zone_status": "above_zone",
-          "daily_limit_note": "stop girişten %8.5 uzakta; girildikten sonra tek günde tetiklenebilir (boşluk riski var)",
-          "ex_date_in_window": null,
-          "invalidations": [
-            "SMA50 (21.29) altına günlük kapanış",
-            "21.93 desteğinin altına kapanış",
-            "hacim 20 günlük ortalamanın %50 altına inerse tez zayıflar"
-          ],
-          "notes": [
-            "1 direnç, 3 destek seviyesi kullanıldı"
-          ],
-          "uyari": "Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir."
+          "id": "kap-1630457",
+          "tarih": "2026-07-09 08:22",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Master Plan Hakkında Gelişmeler",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1630457"
+        },
+        {
+          "id": "kap-1625474",
+          "tarih": "2026-07-06 16:28",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Şirket Genel Bilgi Formu",
+          "ozet": null,
+          "url": "https://www.kap.org.tr/tr/Bildirim/1625474"
+        },
+        {
+          "id": "kap-1625473",
+          "tarih": "2026-07-06 16:28",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Yeni atama hakkında",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1625473"
+        },
+        {
+          "id": "kap-1614115",
+          "tarih": "2026-06-05 16:26",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Yatırımcı Tazmin Merkezine Başvuru Süresi Hakkında Duyuru",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1614115"
+        },
+        {
+          "id": "kap-1614114",
+          "tarih": "2026-06-05 16:26",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Şirket Genel Bilgi Formu",
+          "ozet": null,
+          "url": "https://www.kap.org.tr/tr/Bildirim/1614114"
+        },
+        {
+          "id": "kap-1612151",
+          "tarih": "2026-06-02 15:16",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Kolaylaştırılmış Birleşme Nedeniyle Çoğunluk Doğrudan Hissedar Değişikliği",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1612151"
+        },
+        {
+          "id": "kap-1612150",
+          "tarih": "2026-06-02 15:16",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Şirket Genel Bilgi Formu",
+          "ozet": null,
+          "url": "https://www.kap.org.tr/tr/Bildirim/1612150"
+        },
+        {
+          "id": "kap-1608927",
+          "tarih": "2026-05-20 10:31",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Esas Sözleşme",
+          "ozet": "Esas Sözleşme",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1608927"
         }
       ],
-      "plan_yok_nedeni": null,
-      "acik_tahminler": [],
-      "haberler": []
+      "haber_tarama_baslangici": null
     },
     {
       "ticker": "SISE",
@@ -950,10 +1783,10 @@
         "bb_pctb": 0.3891988772819295
       },
       "faktorler": {
-        "skor": 0.1256,
-        "sira": 6.0,
-        "yuzdelik": 44.4444,
-        "weights_hash": "b52dd5e3d43f",
+        "skor": 0.2009,
+        "sira": 17.0,
+        "yuzdelik": 38.4615,
+        "weights_hash": "4a547ff26723",
         "mom_6_1": 14.5016,
         "mom_12_1": 21.5057,
         "zirve_yakinlik": -19.7412,
@@ -967,121 +1800,88 @@
       },
       "veri_kalitesi": {
         "ok": true,
-        "uyarilar": []
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
       },
-      "plan_menusu": [
-        {
-          "plan_id": "SISE-2026-07-24-A",
-          "ticker": "SISE",
-          "asof": "2026-07-24",
-          "kind": "dogrudan",
-          "entry_low": 43.2,
-          "entry_high": 43.42,
-          "entry_trigger": "direct",
-          "stop_price": 40.8,
-          "stop_method": "atr_2x",
-          "stop_atr_multiple": 2.0,
-          "targets": [
-            {
-              "price": 47.84,
-              "rr": 1.69,
-              "atr_distance": 3.38,
-              "basis": "pivot@2026-06-19 (2 dokunuş)"
-            },
-            {
-              "price": 49.16,
-              "rr": 2.19,
-              "atr_distance": 4.39,
-              "basis": "pivot@2026-04-27 (3 dokunuş)"
-            },
-            {
-              "price": 50.6,
-              "rr": 2.74,
-              "atr_distance": 5.49,
-              "basis": "pivot@2026-03-24 (2 dokunuş)"
-            }
-          ],
-          "rr_at_t1": 1.69,
-          "time_barrier_days": 20,
-          "time_barrier_date": "2026-08-21",
-          "position_size_pct": 6.63,
-          "max_loss_pct_of_portfolio": 0.4,
-          "entry_zone_status": "in_zone",
-          "daily_limit_note": "stop girişten %6.0 uzakta; girildikten sonra tek günde tetiklenebilir (boşluk riski var)",
-          "ex_date_in_window": null,
-          "invalidations": [
-            "SMA50 (45.27) altına günlük kapanış",
-            "41.06 desteğinin altına kapanış",
-            "hacim 20 günlük ortalamanın %50 altına inerse tez zayıflar"
-          ],
-          "notes": [
-            "3 direnç, 3 destek seviyesi kullanıldı"
-          ],
-          "uyari": "Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir."
-        },
-        {
-          "plan_id": "SISE-2026-07-24-B",
-          "ticker": "SISE",
-          "asof": "2026-07-24",
-          "kind": "destek_retest",
-          "entry_low": 40.84,
-          "entry_high": 41.68,
-          "entry_trigger": "support_retest",
-          "stop_price": 39.06,
-          "stop_method": "atr_2x",
-          "stop_atr_multiple": 2.0,
-          "targets": [
-            {
-              "price": 47.84,
-              "rr": 2.35,
-              "atr_distance": 4.71,
-              "basis": "pivot@2026-06-19 (2 dokunuş)"
-            },
-            {
-              "price": 49.16,
-              "rr": 2.85,
-              "atr_distance": 5.72,
-              "basis": "pivot@2026-04-27 (3 dokunuş)"
-            },
-            {
-              "price": 50.6,
-              "rr": 3.4,
-              "atr_distance": 6.82,
-              "basis": "pivot@2026-03-24 (2 dokunuş)"
-            }
-          ],
-          "rr_at_t1": 2.35,
-          "time_barrier_days": 20,
-          "time_barrier_date": "2026-08-21",
-          "position_size_pct": 6.36,
-          "max_loss_pct_of_portfolio": 0.4,
-          "entry_zone_status": "above_zone",
-          "daily_limit_note": "stop girişten %6.3 uzakta; girildikten sonra tek günde tetiklenebilir (boşluk riski var)",
-          "ex_date_in_window": null,
-          "invalidations": [
-            "SMA50 (45.27) altına günlük kapanış",
-            "41.06 desteğinin altına kapanış",
-            "hacim 20 günlük ortalamanın %50 altına inerse tez zayıflar"
-          ],
-          "notes": [
-            "3 direnç, 3 destek seviyesi kullanıldı"
-          ],
-          "uyari": "Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir."
-        }
-      ],
-      "plan_yok_nedeni": null,
+      "plan_menusu": [],
+      "plan_yok_nedeni": "2 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
       "acik_tahminler": [],
       "haberler": [
         {
           "id": "kap-1635667",
-          "tarih": "2026-07-22 13:15",
+          "tarih": "2026-07-22 10:15",
           "kaynak": "KAP (resmî beyan)",
           "onem": "orta",
           "baslik": "Şirket Genel Bilgi Formu",
           "ozet": null,
           "url": "https://www.kap.org.tr/tr/Bildirim/1635667"
+        },
+        {
+          "id": "kap-1618334",
+          "tarih": "2026-06-17 15:30",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Mersin Tarsus Kaplamalı Cam Hattı Yatırımının Tamamlanması",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1618334"
+        },
+        {
+          "id": "kap-1615630",
+          "tarih": "2026-06-10 05:59",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Süresi İçinde Kaydileştirilmeyen Paylarla İlgili Yatırımcı Tazmin Merkezi Başvuruları Hakkında Duyuru",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1615630"
+        },
+        {
+          "id": "kap-1614642",
+          "tarih": "2026-06-08 13:02",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Şirket Genel Bilgi Formu",
+          "ozet": null,
+          "url": "https://www.kap.org.tr/tr/Bildirim/1614642"
+        },
+        {
+          "id": "kap-1613678",
+          "tarih": "2026-06-05 11:38",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Yönetici Sorumluluk Sigortası",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1613678"
+        },
+        {
+          "id": "kap-1611022",
+          "tarih": "2026-05-25 12:28",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Şirket Genel Bilgi Formu",
+          "ozet": null,
+          "url": "https://www.kap.org.tr/tr/Bildirim/1611022"
+        },
+        {
+          "id": "kap-1610722",
+          "tarih": "2026-05-22 15:32",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "ABD Stockton Liman Projesinin Sonlandırılması",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1610722"
+        },
+        {
+          "id": "kap-1610703",
+          "tarih": "2026-05-22 15:23",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "dusuk",
+          "baslik": "Sürdürülebilirlik Raporu",
+          "ozet": "TSRS Uyumlu 2025 Sürdürülebilirlik Raporu",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1610703"
         }
-      ]
+      ],
+      "haber_tarama_baslangici": null
     },
     {
       "ticker": "TAVHL",
@@ -1105,10 +1905,10 @@
         "bb_pctb": 0.16640207959272416
       },
       "faktorler": {
-        "skor": -1.1801,
+        "skor": -0.6309,
         "sira": null,
         "yuzdelik": null,
-        "weights_hash": "b52dd5e3d43f",
+        "weights_hash": "4a547ff26723",
         "mom_6_1": -10.9557,
         "mom_12_1": 8.7287,
         "zirve_yakinlik": -29.6748,
@@ -1124,62 +1924,79 @@
       },
       "veri_kalitesi": {
         "ok": true,
-        "uyarilar": []
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
       },
-      "plan_menusu": [
+      "plan_menusu": [],
+      "plan_yok_nedeni": "2 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
+      "acik_tahminler": [],
+      "haberler": [
         {
-          "plan_id": "TAVHL-2026-07-24-A",
-          "ticker": "TAVHL",
-          "asof": "2026-07-24",
-          "kind": "destek_retest",
-          "entry_low": 235.5,
-          "entry_high": 240.4,
-          "entry_trigger": "support_retest",
-          "stop_price": 221.4,
-          "stop_method": "atr_2x",
-          "stop_atr_multiple": 2.01,
-          "targets": [
-            {
-              "price": 270.25,
-              "rr": 1.57,
-              "atr_distance": 3.16,
-              "basis": "pivot@2026-06-02 (17 dokunuş)"
-            },
-            {
-              "price": 291.25,
-              "rr": 2.68,
-              "atr_distance": 5.38,
-              "basis": "pivot@2026-05-07 (5 dokunuş)"
-            },
-            {
-              "price": 310.75,
-              "rr": 3.7,
-              "atr_distance": 7.44,
-              "basis": "pivot@2026-06-16 (5 dokunuş)"
-            }
-          ],
-          "rr_at_t1": 1.57,
-          "time_barrier_days": 20,
-          "time_barrier_date": "2026-08-21",
-          "position_size_pct": 5.06,
-          "max_loss_pct_of_portfolio": 0.4,
-          "entry_zone_status": "above_zone",
-          "daily_limit_note": "stop girişten %7.9 uzakta; girildikten sonra tek günde tetiklenebilir (boşluk riski var)",
-          "ex_date_in_window": null,
-          "invalidations": [
-            "SMA50 (270.62) altına günlük kapanış",
-            "236.76 desteğinin altına kapanış",
-            "hacim 20 günlük ortalamanın %50 altına inerse tez zayıflar"
-          ],
-          "notes": [
-            "3 direnç, 1 destek seviyesi kullanıldı"
-          ],
-          "uyari": "Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir."
+          "id": "kap-1632386",
+          "tarih": "2026-07-13 09:27",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Yatırımcı Bülteni (Haziran 2026)",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1632386"
+        },
+        {
+          "id": "kap-1630730",
+          "tarih": "2026-07-09 12:13",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Finansal Takvim",
+          "ozet": "2026 İkinci Çeyrek Finansal Takvimi",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1630730"
+        },
+        {
+          "id": "kap-1615275",
+          "tarih": "2026-06-09 10:55",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Yatırımcı Bülteni (Mayıs 2026)",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1615275"
+        },
+        {
+          "id": "kap-1614665",
+          "tarih": "2026-06-08 13:06",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "İhale Süreci / Sonucu",
+          "ozet": "Kuveyt Uluslararası Havalimanı Terminal 2 İşletme ve Bakım Hizmeti İhalesi",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1614665"
+        },
+        {
+          "id": "kap-1614251",
+          "tarih": "2026-06-08 07:12",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "Yurt Dışı Tahvil 5. Kupon Ödemesi",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1614251"
+        },
+        {
+          "id": "kap-1606680",
+          "tarih": "2026-05-13 11:13",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "dusuk",
+          "baslik": "TSRS Uyumlu Sürdürülebilirlik Raporu",
+          "ozet": "2025 Raporu",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1606680"
+        },
+        {
+          "id": "kap-1604678",
+          "tarih": "2026-05-11 13:21",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Yatırımcı Bülteni (Nisan 2026)",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1604678"
         }
       ],
-      "plan_yok_nedeni": null,
-      "acik_tahminler": [],
-      "haberler": []
+      "haber_tarama_baslangici": "2025-01-17T20:59:59+00:00"
     },
     {
       "ticker": "TCELL",
@@ -1203,10 +2020,10 @@
         "bb_pctb": -0.012333632462362317
       },
       "faktorler": {
-        "skor": -0.343,
+        "skor": -0.1031,
         "sira": null,
         "yuzdelik": null,
-        "weights_hash": "b52dd5e3d43f",
+        "weights_hash": "4a547ff26723",
         "mom_6_1": 4.3478,
         "mom_12_1": 19.2082,
         "zirve_yakinlik": -19.9846,
@@ -1222,109 +2039,88 @@
       },
       "veri_kalitesi": {
         "ok": true,
-        "uyarilar": []
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
       },
-      "plan_menusu": [
-        {
-          "plan_id": "TCELL-2026-07-24-A",
-          "ticker": "TCELL",
-          "asof": "2026-07-24",
-          "kind": "dogrudan",
-          "entry_low": 103.1,
-          "entry_high": 103.7,
-          "entry_trigger": "direct",
-          "stop_price": 96.8,
-          "stop_method": "atr_2x",
-          "stop_atr_multiple": 2.01,
-          "targets": [
-            {
-              "price": 116.3,
-              "rr": 1.83,
-              "atr_distance": 3.68,
-              "basis": "pivot@2026-06-17 (2 dokunuş)"
-            },
-            {
-              "price": 129.7,
-              "rr": 3.77,
-              "atr_distance": 7.58,
-              "basis": "52 hafta zirvesi"
-            }
-          ],
-          "rr_at_t1": 1.83,
-          "time_barrier_days": 20,
-          "time_barrier_date": "2026-08-21",
-          "position_size_pct": 6.01,
-          "max_loss_pct_of_portfolio": 0.4,
-          "entry_zone_status": "in_zone",
-          "daily_limit_note": "stop girişten %6.7 uzakta; girildikten sonra tek günde tetiklenebilir (boşluk riski var)",
-          "ex_date_in_window": null,
-          "invalidations": [
-            "SMA50 (109.18) altına günlük kapanış",
-            "97.70 desteğinin altına kapanış",
-            "hacim 20 günlük ortalamanın %50 altına inerse tez zayıflar"
-          ],
-          "notes": [
-            "1 direnç, 2 destek seviyesi kullanıldı"
-          ],
-          "uyari": "Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir."
-        },
-        {
-          "plan_id": "TCELL-2026-07-24-B",
-          "ticker": "TCELL",
-          "asof": "2026-07-24",
-          "kind": "destek_retest",
-          "entry_low": 97.2,
-          "entry_high": 99.2,
-          "entry_trigger": "support_retest",
-          "stop_price": 92.3,
-          "stop_method": "atr_2x",
-          "stop_atr_multiple": 2.01,
-          "targets": [
-            {
-              "price": 116.3,
-              "rr": 2.48,
-              "atr_distance": 4.99,
-              "basis": "pivot@2026-06-17 (2 dokunuş)"
-            },
-            {
-              "price": 129.7,
-              "rr": 4.42,
-              "atr_distance": 8.9,
-              "basis": "52 hafta zirvesi"
-            }
-          ],
-          "rr_at_t1": 2.48,
-          "time_barrier_days": 20,
-          "time_barrier_date": "2026-08-21",
-          "position_size_pct": 5.75,
-          "max_loss_pct_of_portfolio": 0.4,
-          "entry_zone_status": "above_zone",
-          "daily_limit_note": "stop girişten %7.0 uzakta; girildikten sonra tek günde tetiklenebilir (boşluk riski var)",
-          "ex_date_in_window": null,
-          "invalidations": [
-            "SMA50 (109.18) altına günlük kapanış",
-            "97.70 desteğinin altına kapanış",
-            "hacim 20 günlük ortalamanın %50 altına inerse tez zayıflar"
-          ],
-          "notes": [
-            "1 direnç, 2 destek seviyesi kullanıldı"
-          ],
-          "uyari": "Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir."
-        }
-      ],
-      "plan_yok_nedeni": null,
+      "plan_menusu": [],
+      "plan_yok_nedeni": "2 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
       "acik_tahminler": [],
       "haberler": [
         {
           "id": "kap-1636239",
-          "tarih": "2026-07-23 18:25",
+          "tarih": "2026-07-23 15:25",
           "kaynak": "KAP (resmî beyan)",
           "onem": "orta",
           "baslik": "Finansal Takvim",
           "ozet": "2. Çeyrek 2026 Finansal Sonuç Açıklaması Takvimi",
           "url": "https://www.kap.org.tr/tr/Bildirim/1636239"
+        },
+        {
+          "id": "kap-1620406",
+          "tarih": "2026-06-24 16:30",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "TRFTCEL62621 Finansman Bonosu İtfası",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1620406"
+        },
+        {
+          "id": "kap-1620405",
+          "tarih": "2026-06-24 16:30",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "TRFTCEL62613 Finansman Bonosu İtfası",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1620405"
+        },
+        {
+          "id": "kap-1620134",
+          "tarih": "2026-06-24 10:10",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "Finansman Bonosu İhracı",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1620134"
+        },
+        {
+          "id": "kap-1620133",
+          "tarih": "2026-06-24 10:08",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "Finansman Bonosu İhracı",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1620133"
+        },
+        {
+          "id": "kap-1619746",
+          "tarih": "2026-06-23 11:28",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "İhraç Belgesi",
+          "ozet": "Yurt İçinde Borçlanma Aracı İhracına İlişkin SPK Onayı",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1619746"
+        },
+        {
+          "id": "kap-1619362",
+          "tarih": "2026-06-22 13:32",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "İhraç Tavanına İlişkin Bildirim",
+          "ozet": "Yurt İçinde Borçlanma Aracı İhracına İlişkin SPK Onayı",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1619362"
+        },
+        {
+          "id": "kap-1619301",
+          "tarih": "2026-06-22 10:00",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Uzun Vadeli Kredi Sözleşmesine İlişkin Güncelleme",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1619301"
         }
-      ]
+      ],
+      "haber_tarama_baslangici": null
     },
     {
       "ticker": "THYAO",
@@ -1348,10 +2144,10 @@
         "bb_pctb": 0.02880635829392974
       },
       "faktorler": {
-        "skor": -0.2382,
-        "sira": 9.0,
-        "yuzdelik": 11.1111,
-        "weights_hash": "b52dd5e3d43f",
+        "skor": -0.015,
+        "sira": 22.0,
+        "yuzdelik": 19.2308,
+        "weights_hash": "4a547ff26723",
         "mom_6_1": 9.8056,
         "mom_12_1": 11.4078,
         "zirve_yakinlik": -12.2363,
@@ -1365,62 +2161,88 @@
       },
       "veri_kalitesi": {
         "ok": true,
-        "uyarilar": []
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
       },
-      "plan_menusu": [
+      "plan_menusu": [],
+      "plan_yok_nedeni": "2 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
+      "acik_tahminler": [],
+      "haberler": [
         {
-          "plan_id": "THYAO-2026-07-24-A",
-          "ticker": "THYAO",
-          "asof": "2026-07-24",
-          "kind": "destek_retest",
-          "entry_low": 286.75,
-          "entry_high": 292.75,
-          "entry_trigger": "support_retest",
-          "stop_price": 275.0,
-          "stop_method": "atr_2x",
-          "stop_atr_multiple": 2.01,
-          "targets": [
-            {
-              "price": 324.75,
-              "rr": 1.8,
-              "atr_distance": 3.62,
-              "basis": "pivot@2026-07-01 (4 dokunuş)"
-            },
-            {
-              "price": 333.5,
-              "rr": 2.3,
-              "atr_distance": 4.61,
-              "basis": "pivot@2026-06-19 (4 dokunuş)"
-            },
-            {
-              "price": 339.5,
-              "rr": 2.63,
-              "atr_distance": 5.29,
-              "basis": "pivot@2025-03-14 (2 dokunuş)"
-            }
-          ],
-          "rr_at_t1": 1.8,
-          "time_barrier_days": 20,
-          "time_barrier_date": "2026-08-21",
-          "position_size_pct": 6.6,
-          "max_loss_pct_of_portfolio": 0.4,
-          "entry_zone_status": "above_zone",
-          "daily_limit_note": "stop girişten %6.1 uzakta; girildikten sonra tek günde tetiklenebilir (boşluk riski var)",
-          "ex_date_in_window": null,
-          "invalidations": [
-            "SMA50 (315.59) altına günlük kapanış",
-            "288.36 desteğinin altına kapanış",
-            "hacim 20 günlük ortalamanın %50 altına inerse tez zayıflar"
-          ],
-          "notes": [
-            "3 direnç, 2 destek seviyesi kullanıldı"
-          ],
-          "uyari": "Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir."
+          "id": "kap-1630629",
+          "tarih": "2026-07-09 11:19",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Kredi Derecelendirmesi",
+          "ozet": "Fitch Kredi Derecelendirme Notu",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1630629"
+        },
+        {
+          "id": "kap-1629952",
+          "tarih": "2026-07-08 16:07",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Haziran 2026 Trafik Sonuçları",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1629952"
+        },
+        {
+          "id": "kap-1622775",
+          "tarih": "2026-07-02 06:32",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Kredi Derecelendirmesi",
+          "ozet": "Moody's Kredi Derecelendirme Notu",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1622775"
+        },
+        {
+          "id": "kap-1617478",
+          "tarih": "2026-06-15 17:09",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Yeni Hat Açılışı",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1617478"
+        },
+        {
+          "id": "kap-1615692",
+          "tarih": "2026-06-10 07:13",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Mayıs 2026 Trafik Sonuçları",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1615692"
+        },
+        {
+          "id": "kap-1615687",
+          "tarih": "2026-06-10 07:10",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Süresi İçinde Kaydileştirilmeyen Paylarla İlgili Yatırımcı Tazmin Merkezi Başvuruları Hakkında Duyuru",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1615687"
+        },
+        {
+          "id": "kap-1613157",
+          "tarih": "2026-06-04 12:53",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Air Europa Yatırım Süreci Güncellemesi - 5",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1613157"
+        },
+        {
+          "id": "kap-1603784",
+          "tarih": "2026-05-08 17:39",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Nisan 2026 Trafik Sonuçları",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1603784"
         }
       ],
-      "plan_yok_nedeni": null,
-      "acik_tahminler": [],
-      "haberler": []
+      "haber_tarama_baslangici": null
     },
     {
       "ticker": "TUPRS",
@@ -1433,8 +2255,8 @@
         "dusuk_52h": 159.1999969482422
       },
       "gostergeler": {
-        "rsi14": 74.49777977694944,
-        "macd_hist": 5.248594437794733,
+        "rsi14": 74.49777977694775,
+        "macd_hist": 5.2485944377948766,
         "atr14": 9.407678215378418,
         "atr_pct": 3.0920881562459877,
         "adx14": 50.967653591677596,
@@ -1444,10 +2266,10 @@
         "bb_pctb": 0.7999580961658259
       },
       "faktorler": {
-        "skor": -0.0687,
-        "sira": 7.0,
-        "yuzdelik": 33.3333,
-        "weights_hash": "b52dd5e3d43f",
+        "skor": 0.0228,
+        "sira": 20.0,
+        "yuzdelik": 26.9231,
+        "weights_hash": "4a547ff26723",
         "mom_6_1": 1.2974,
         "mom_12_1": 42.1573,
         "zirve_yakinlik": -4.9961,
@@ -1461,7 +2283,9 @@
       },
       "veri_kalitesi": {
         "ok": true,
-        "uyarilar": []
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
       },
       "plan_menusu": [
         {
@@ -1499,12 +2323,95 @@
           "notes": [
             "0 direnç, 3 destek seviyesi kullanıldı"
           ],
+          "rr_secim": "2. giriş bandı (destek_retest), stop atr_2x",
+          "elenen_adaylar": [
+            "dogrudan/atr_2x: R:R 0.84 < 1.5",
+            "dogrudan/atr_2.5x: R:R 0.67 < 1.5",
+            "dogrudan/atr_3x: R:R 0.57 < 1.5",
+            "dogrudan/swing_low: R:R 0.59 < 1.5",
+            "dogrudan/sma_break_buffer: 4.36×ATR ∉ [1.5,4.0]",
+            "dogrudan/sma_break_buffer: 6.22×ATR ∉ [1.5,4.0]"
+          ],
           "uyari": "Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir."
         }
       ],
       "plan_yok_nedeni": null,
       "acik_tahminler": [],
-      "haberler": []
+      "haberler": [
+        {
+          "id": "kap-1635135",
+          "tarih": "2026-07-20 15:16",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "TRSTPRS72614 ISIN Kodlu Tahvilin 8. Kupon Ödemesi ve İtfası",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1635135"
+        },
+        {
+          "id": "kap-1634755",
+          "tarih": "2026-07-20 05:25",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "TRSTPRS72614 ISIN Kodlu Tahvilin 8. Kupon Faiz Oranının Belirlenmesi",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1634755"
+        },
+        {
+          "id": "kap-1632022",
+          "tarih": "2026-07-10 15:16",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Finansal Takvim",
+          "ozet": "2026 2. Çeyrek Finansal Takvim",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1632022"
+        },
+        {
+          "id": "kap-1617405",
+          "tarih": "2026-06-15 15:16",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Süresi İçinde Kaydileştirilmeyen Paylara İlişkin Yatırımcı Tazmin Merkezi Başvuruları Hakkında Açıklama",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1617405"
+        },
+        {
+          "id": "kap-1605173",
+          "tarih": "2026-05-11 15:22",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "TRSTPRS82613 ISIN Kodlu Tahvilin 7. Kupon Ödemesi",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1605173"
+        },
+        {
+          "id": "kap-1603965",
+          "tarih": "2026-05-11 05:24",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "TRSTPRS82613 ISIN Kodlu Tahvilin 7. Kupon Faiz Oranının Belirlenmesi",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1603965"
+        },
+        {
+          "id": "kap-1603566",
+          "tarih": "2026-05-08 15:15",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Şirket Genel Bilgi Formu",
+          "ozet": null,
+          "url": "https://www.kap.org.tr/tr/Bildirim/1603566"
+        },
+        {
+          "id": "kap-1603560",
+          "tarih": "2026-05-08 15:15",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Yatırımcı İlişkileri ve Kurumsal Risk Grup Direktörü Ataması",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1603560"
+        }
+      ],
+      "haber_tarama_baslangici": "2026-02-02T20:59:59+00:00"
     }
   ],
   "portfoy": {
@@ -1559,8 +2466,7 @@
     "plan_ids": {
       "AKBNK": [],
       "ASELS": [
-        "ASELS-2026-07-24-A",
-        "ASELS-2026-07-24-B"
+        "ASELS-2026-07-24-A"
       ],
       "ASTOR": [],
       "BIMAS": [],
@@ -1576,23 +2482,11 @@
       "KRDMD": [
         "KRDMD-2026-07-24-A"
       ],
-      "PETKM": [
-        "PETKM-2026-07-24-A"
-      ],
-      "SISE": [
-        "SISE-2026-07-24-A",
-        "SISE-2026-07-24-B"
-      ],
-      "TAVHL": [
-        "TAVHL-2026-07-24-A"
-      ],
-      "TCELL": [
-        "TCELL-2026-07-24-A",
-        "TCELL-2026-07-24-B"
-      ],
-      "THYAO": [
-        "THYAO-2026-07-24-A"
-      ],
+      "PETKM": [],
+      "SISE": [],
+      "TAVHL": [],
+      "TCELL": [],
+      "THYAO": [],
       "TUPRS": [
         "TUPRS-2026-07-24-A"
       ]
@@ -1608,5 +2502,5 @@
     "Bir planı beğenmiyorsan `plan_reddet` + `veto_code` kullan — bu gerçek bir karardır ve performansı ölçülür.",
     "Bu sistemde ÖLÇÜLEN KENAR YOKTUR (ADR #008). Seviyeler planlama geometrisidir; yön iddiası üretme."
   ],
-  "bundle_sha": "636ca4a4d9e47b00fa954a2b400435133078b7968042d3309066c7489750b8ad"
+  "bundle_sha": "7c98b97b76b461c94e9192188122129e85b0d6c3e18256c89790045d92dbbf94"
 }

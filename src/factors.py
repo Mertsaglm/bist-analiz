@@ -36,11 +36,24 @@ FACTOR_COLS = (
 )
 
 
-def weights_hash(cfg: dict) -> str:
+def weights_hash(cfg: dict, horizon_days: int | None = None) -> str:
     """Skoru üreten AYAR SETİNİN parmak izi.
 
     Ağırlık değiştiğinde geçmiş satırlar geçersiz olmaz — ÇATALLANIR. Yavaş
     döngü (ağırlık kalibrasyonu) bu sayede eski ölçümleri bozmadan çalışabilir.
+
+    ⚠ İMZAYA UFUK DA GİRER. İlk sürüm yalnız HAM config ağırlıklarını
+    hashliyordu; oysa gerçekte kullanılan `effective_weights(cfg, horizon)` ve
+    o, `h < high52_min_ufuk_gun` iken `high52_prox`'u sıfırlayıp yeniden
+    normalize ediyor. Ölçüldü (2026-07-27):
+
+        H=20 → {mom_6_1 0.529, mom_12_1 0.353, high52_prox 0.0,  volscaled 0.118}
+        H=42 → {mom_6_1 0.450, mom_12_1 0.300, high52_prox 0.15, volscaled 0.100}
+        weights_hash: İKİSİ DE b52dd5e3d43f
+
+    Yani `zaman_bariyeri_gun`'ü 20→42 yapmak skoru MADDİ olarak değiştiriyor
+    ama parmak izi aynı kalıyordu → çatallanma mekanizması sessizce çalışmıyor,
+    `factor_daily` birincil anahtarı eski satırın üstüne yazıyordu.
     """
     f = cfg["faktorler"]
     imza = {
@@ -49,6 +62,9 @@ def weights_hash(cfg: dict) -> str:
         "winsor": list(f["winsor_pct"]),
         "high52_min_ufuk": f["high52_min_ufuk_gun"],
         "set_version": f["set_version"],
+        # Ham ağırlık değil, GERÇEKTEN UYGULANAN ağırlık imzaya girer.
+        "etkin_agirliklar": {k: round(v, 6) for k, v in
+                             sorted(effective_weights(cfg, horizon_days).items())},
     }
     return hashlib.sha1(util.json_dump(imza, canonical=True).encode()).hexdigest()[:12]
 
@@ -134,7 +150,12 @@ def eligibility_gates(row: pd.Series, kalite: dict | None, cfg: dict,
     elif ciro < float(ev["min_medyan_islem_hacmi_try"]):
         nedenler.append("likidite_zayif")
 
-    if kalite is not None:
+    # ⚠ `kalite is None` "sorun yok" DEĞİL "değerlendirilmedi" demektir ve
+    # ELEYİCİDİR. İlk sürüm bu bloğu tamamen atlıyordu; `bist veri kalite`
+    # koşulmayan her gün kalite kapısı sessizce devre dışı kalıyordu.
+    if kalite is None:
+        nedenler.append("kalite_degerlendirilmedi")
+    else:
         if not kalite.get("ok", False):
             nedenler.append("veri_kalitesi")
         zv = kalite.get("zero_vol_ratio_252")
@@ -185,7 +206,12 @@ def cross_sectional_scores(raw: pd.DataFrame, uygunluk: dict[str, tuple],
     # Eksik faktörü 0 saymak yerine PAYDADAN DÜŞ — "verisi gelmeyen gösterge
     # paydadan düşer" (gold ölçüm kültürü). Aksi halde eksik veri sessizce
     # nötr oy olur ve skoru sıfıra doğru çeker.
-    out["score"] = np.where(agirlik_toplam > 0, skor / agirlik_toplam, np.nan)
+    #
+    # `np.where` iki dalı da hesapladığı için paydası sıfır olan isimlerde 0/0
+    # yapılır; sonuç doğru (NaN) ama numpy uyarı basar ve o uyarı gerçek
+    # uyarıları gözden kaçırtır (bkz. `backtest.score_at`'te aynı gerekçe).
+    with np.errstate(invalid="ignore", divide="ignore"):
+        out["score"] = np.where(agirlik_toplam > 0, skor / agirlik_toplam, np.nan)
 
     out["eligible"] = [uygunluk.get(t, (False, ["bilinmiyor"]))[0] for t in out["ticker"]]
     out["gate_reasons"] = [util.json_dump(uygunluk.get(t, (False, ["bilinmiyor"]))[1],
@@ -223,7 +249,18 @@ def compute_for_date(cfg: dict, con: sqlite3.Connection, asof: str,
 
     panel = _panel(con, cfg, asof, tickers)
     if panel.empty:
+        log.warning("%s: %d ticker istendi, gösterge bulunan YOK — "
+                    "kesitsel skor üretilemiyor (`bist gosterge`)", asof, len(tickers))
         return pd.DataFrame()
+    # PAYDAYI SÖYLE. Eksik gösterge JOIN'de sessizce satır düşürür; kesit
+    # daralır ama `pct` yine 0-100 arasına yayılır, yani sıralamanın anlamı
+    # değişir ve hiçbir yerde yazmaz. Ölçüldü (2026-07-27): 67 isim istenip
+    # 16 isimle skorlanıyordu.
+    if len(panel) < len(tickers):
+        log.warning("%s: kesit DAR — %d ticker istendi, %d tanesinin göstergesi "
+                    "var. `yuzdelik` bu dar kesit üzerinden hesaplanacak; "
+                    "tamamlamak için `bist gosterge`.",
+                    asof, len(tickers), len(panel))
 
     raw = raw_factors(panel)
     birlesik = panel.merge(raw, on="ticker")

@@ -11,14 +11,15 @@
 paths:
   db: "data/bist.db"
   db_dump: "data/bist.sql"
-  db_backup_dir: "data/backup"
   universe_file: "universe.yaml"
   holidays_file: "holidays_tr.yaml"
   reports_dir: "reports"
   llm_in_dir: "llm/in"
   llm_out_dir: "llm/out"
-  llm_prompt_dir: "llm/prompt"
   log_dir: "logs"
+  # KALDIRILDI (2026-07-27 denetimi): `db_backup_dir` ve `llm_prompt_dir`
+  # tanımlıydı ama kodda HİÇ okunmuyordu. Okunmayan bir config anahtarı,
+  # onu değiştiren kişiye "bunu ayarladım" hissi veren sessiz bir yalandır.
 
 # ----------------------------------------------------------------------------
 # Veri kaynakları
@@ -67,10 +68,38 @@ sources:
     # "308 yönlendirme" notu YANLIŞ çıktı — yine L-005.
     # KAP tek tier-1 kaynaktır: şirketin kendi resmî beyanı. Ana akım finans
     # basını ve forumlar BİLEREK dışarıda — güvenilirlikleri ölçülmedi.
+    #
+    # ⚠ KAP damgaları İSTANBUL YEREL SAATİDİR; `disclosures.published_utc`
+    # kolonuna yazılmadan önce UTC'ye çevrilir (`kap._parse_dt`, migration v6).
+    # İlk sürüm naif bırakıyordu → `predictions.created_utc` ile metin
+    # karşılaştırmasında 3 saatlik sessiz kayma.
+    #
+    # ⚠ `bist haber cek` ÇIKIŞ KODU: 0 temiz · 1 aralık atlandı · 2 KAP hatası.
+    # Boş haber listesi "bildirim yok" anlamına GELMEZ; pakette
+    # `haber_taramasi.ok` alanına bak.
     enabled: true
     base: "https://www.kap.org.tr"
     disclosures_path: "/tr/api/disclosure/members/byCriteria"
     user_agent: "bist-analiz/0.1 (kisisel arastirma)"
+    # Tam çekimde (`--tam`) kaç gün geriye gidilir.
+    # KARAR (2026-07-27): 90 gün. Haber katmanının değeri İLERİYE dönüktür —
+    # karar anında veto. Geçmiş KAP'ın hiçbir tüketicisi yok; hiçbir ölçüm
+    # onu okumuyor ve pakette hisse başına zaten `limit=8` var. Daha derin
+    # çekim repoyu şişirir, hiçbir soruyu cevaplamaz.
+    tam_cekim_gun: 90
+    # ⚠ Tek istekte istenen dilim genişliği. KAP GENİŞ PENCEREYİ SESSİZCE
+    # KIRPIYOR — ölçüldü (2026-07-27, canlı API):
+    #     7 gün →  931 kayıt, tam       14 gün → 1578 kayıt, tam
+    #    21 gün → 1578 kayıt, KIRPIK    90 gün → 1578 kayıt, KIRPIK
+    # Yani ~1578'de doyup yalnız EN YENİ kısmı veriyor. 7 gün, 14'lük
+    # doyma sınırına iki kat pay bırakır. Dilim yine de kırpılırsa
+    # `bist haber cek` bunu ATLANAN ARALIK olarak basar ve 1 döner.
+    parca_gun: 7
+    # Bir dilim bu kadar kayıt döndürdüyse yanıt TAVANA DAYANMIŞ demektir.
+    # Ölçülen tavan ~1578; 1400 güvenli pay bırakır. Yalnız bu eşik AŞILDIĞINDA
+    # ve dönen en eski kayıt istenen başlangıçtan yeniyse "kırpıldı" denir —
+    # aksi halde bildirimsiz bir gün (tatil) yanlış alarm üretiyordu.
+    doyma_esigi: 1400
 
 # ----------------------------------------------------------------------------
 # İşlem takvimi
@@ -183,10 +212,24 @@ risk:
     - { ust_sinir: 99.95,   adim: 0.05 }   # ölçüldü
     - { ust_sinir: 249.90,  adim: 0.10 }   # ölçüldü
     - { ust_sinir: 499.75,  adim: 0.25 }   # ölçüldü
-    # ⚠ Aşağıdaki iki bant ÖLÇÜLEMEDİ — evrende 500 TL üstü fiyat gözlemi yok.
-    #   Örüntünün devamı varsayıldı. Bir hisse bu banda girerse önce yeniden ölç.
-    - { ust_sinir: 999.50,  adim: 0.50 }   # VARSAYIM
-    - { ust_sinir: null,    adim: 1.00 }   # VARSAYIM
+    # ⚠ ESKİ NOT YANLIŞTI: "evrende 500 TL üstü fiyat gözlemi yok" deniyordu.
+    # Faz 2'de ölçüm evreni 67 isme çıkınca bu iddia geçersiz oldu ama not
+    # güncellenmedi (2026-07-27 denetimi). Şimdi ÖLÇÜLDÜ — yöntem aynı:
+    # son kurumsal işlemden SONRAKİ barlarda ardışık FARKLI fiyatların
+    # en küçük farkı (ham tick ızgarası korunmuş).
+    #
+    #   500-1000 TL · 1.345 farklı fiyat · BRSAN GUBRF MGROS OTKAR TTRAK
+    #       en küçük fark 0.10 (gürültü) · baskın 0.50 %68.5 · 1.00 %11.7
+    #       · 1.50 %3.5 → hepsi 0.50'nin katı  → VARSAYIM DOĞRULANDI
+    #
+    #   1000+ TL · 735 farklı fiyat · YALNIZ EGEEN
+    #       en küçük fark **2.50** · 2.50 %55.7 · 5.00 %22.0 · 7.50 %10.1
+    #       · 10.00 %5.1 · 12.50 %2.7 → hepsi 2.50'nin katı, 1.00 HİÇ YOK
+    #       → VARSAYIM (1.00) **YANLIŞTI**, düzeltildi.
+    - { ust_sinir: 999.50,  adim: 0.50 }   # ÖLÇÜLDÜ 2026-07-27
+    # ⚠ TEK İSİMLE ölçüldü (EGEEN). Bandın tamamını temsil ettiği varsayımı
+    # sürüyor; ikinci bir isim bu banda girerse yeniden ölç.
+    - { ust_sinir: null,    adim: 2.50 }   # ÖLÇÜLDÜ 2026-07-27 (tek isim)
   gunluk_fiyat_limiti_pct: 10.0    # ±%10 — ATR'ye göre %12 uzaktaki stop bir günde tetiklenemez
   # Gidiş-dönüş maliyet: komisyon + BSMV + spread. Ölçüm: maliyet kenarın ~1/3'ünü yiyor.
   islem_maliyeti_gidis_donus_pct: 0.30
@@ -236,6 +279,21 @@ llm:
 
 denetim:
   # HF-17 taşıyıcı kol: prose'daki HER sayısal token bundle'da olmalı.
+  #
+  # ⚠ BU KOLUN GERÇEK GÜCÜ ÖLÇÜLDÜ (2026-07-27, canlı paket, 1054 izinli token):
+  #     -50..+50 tamsayılar          → %56'sı izinli
+  #     ±20 aralığı, 1 ondalık       → %15'i izinli
+  #     100-120 aralığı, 2 ondalık   → %0.5'i izinli
+  # Yani tasarlandığı hata modunda ("hedef 324.75 TL") ÇALIŞIYOR; prose'un
+  # doğal kaydında ("%20 potansiyel") ÇALIŞMIYOR. Bu, aşağıdaki beyaz
+  # listelerin BİLİNÇLİ sonucudur — küçük tamsayıları yasaklamak modeli
+  # anlamsız dolambaçlara iterdi. Sınır README'de de yazılı; gizlenmiyor.
+  #
+  # Aynı denetimde KAZARA bir sızıntı bulundu ve kapatıldı: paketteki ISO
+  # tarihler ("2026-07-24") regex'te -07 / -24 olarak yakalanıyor ve izinli
+  # listeye NEGATİF TAMSAYI enjekte ediyordu; hangi negatif sayının geçtiği
+  # o günkü TAKVİME bağlıydı. Artık tarih kalıpları maskeleniyor
+  # (`llm_io._TARIH_MASKESI`).
   sayisal_beyaz_liste_yil: [1900, 2100]
   sayisal_beyaz_liste_tamsayi_maks: 31        # gün sayıları, küçük sayımlar
   ek_izinli_sayilar: [0, 1, 2, 3, 5, 10, 20, 50, 100]

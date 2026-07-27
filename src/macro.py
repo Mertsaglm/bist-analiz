@@ -11,7 +11,7 @@ from __future__ import annotations
 import logging
 import sqlite3
 
-from . import db
+from . import db, util
 from .sources import evds
 
 log = logging.getLogger(__name__)
@@ -64,7 +64,14 @@ def _latest(con: sqlite3.Connection, code: str, asof: str | None = None
 
 
 def _cpi_yoy(con: sqlite3.Connection, code: str, asof: str | None = None) -> float | None:
-    """TÜFE ENDEKSİNDEN yıllık enflasyon. Endeks kullanılır, 'oran' serisi değil."""
+    """TÜFE ENDEKSİNDEN yıllık enflasyon. Endeks kullanılır, 'oran' serisi değil.
+
+    ⚠ Karşılaştırma TARİHE göre yapılır, satır sayısına göre DEĞİL. İlk sürüm
+    `rows[-13]`'ü "12 ay önce" sayıyordu; seride tek bir eksik ay varsa o
+    varsayım bozulur ve enflasyon SESSİZCE yanlış bir pencereden hesaplanır.
+    """
+    from datetime import date as _date
+
     sql = "SELECT date, value FROM evds_daily WHERE series_code = ? AND value IS NOT NULL"
     params: list = [code]
     if asof:
@@ -72,8 +79,25 @@ def _cpi_yoy(con: sqlite3.Connection, code: str, asof: str | None = None) -> flo
     rows = con.execute(sql + " ORDER BY date", params).fetchall()
     if len(rows) < 13:
         return None
-    son, yil_once = rows[-1][1], rows[-13][1]
-    if not yil_once:
+
+    son_tarih, son = rows[-1][0], rows[-1][1]
+    d_son = util.parse_date(son_tarih)
+    if d_son is None or not son:
+        return None
+    try:
+        hedef = d_son.replace(year=d_son.year - 1)
+    except ValueError:                       # 29 Şubat
+        hedef = d_son.replace(year=d_son.year - 1, day=28)
+
+    # Hedefe en yakın (ve ondan büyük olmayan) gözlem; 45 günden uzaksa ölçme.
+    aday = [(util.parse_date(d), v) for d, v in rows]
+    onceki = [(d, v) for d, v in aday if d is not None and d <= hedef and v]
+    if not onceki:
+        return None
+    d_ref, yil_once = onceki[-1]
+    if abs((hedef - d_ref).days) > 45:
+        log.info("TÜFE YoY ölçülemedi: %s için 12 ay öncesine en yakın gözlem "
+                 "%s (%d gün sapma)", son_tarih, d_ref, (hedef - d_ref).days)
         return None
     return (son / yil_once - 1.0) * 100.0
 

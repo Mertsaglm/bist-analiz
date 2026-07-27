@@ -10,6 +10,21 @@ tablosundan okunur.
 Ama şemada alan olmaması yalnız YAPISAL sızıntıyı durdurur. Asıl hata modu
 metinseldir: modelin tez cümlesine *"324 TL civarında bir hedef makul"*
 yazması. Onu HF-17 durdurur (bkz. `audit.py`) — taşıyıcı kol odur.
+
+⚠ HF-17'NİN GERÇEK GÜCÜ ÖLÇÜLDÜ (2026-07-27, canlı paket, 1054 izinli token):
+
+    -50..+50 tamsayılar        → %56'sı izinli
+    ±20 aralığı, 1 ondalık     → %15'i izinli
+    100-120 aralığı, 2 ondalık → %0.5'i izinli
+
+Yani tasarlandığı hata modunda ("hedef 324.75 TL") ÇALIŞIYOR, ama prose'un
+doğal kaydında ("%20 potansiyel") GEÇİRGEN. Bu, `config.denetim` beyaz
+listelerinin bilinçli sonucu — "fiziksel olarak imkânsız kılar" demek YANLIŞ
+olurdu ve bir zamanlar bu dosya öyle diyordu. Sınır README'de de yazılı.
+
+Aşağıdaki alan listeleri artık **HF-31 tarafından ZORLANIYOR** (`audit.py`).
+Uzun süre hiçbir yerden referans edilmiyorlardı: belgelenmiş ama var olmayan
+bir savunmaydılar.
 """
 
 from __future__ import annotations
@@ -33,6 +48,8 @@ TOP_ALANLARI = {"schema_version", "asof", "bundle_sha", "tool",
 
 # ⚠ Bu alanlardan HERHANGİ BİRİ çıktıda görünürse model sayı üretmeye
 # çalışıyordur. Liste savunma amaçlı geniş tutulmuştur.
+# ZORLAYAN: `audit.audit` → HF-31. (2026-07-27'ye kadar hiçbir yerde kontrol
+# edilmiyordu; yani bu uyarı bir savunmayı DEĞİL, bir niyeti anlatıyordu.)
 YASAK_SAYISAL_ALANLAR = {
     "entry", "entry_low", "entry_high", "entry_price", "stop", "stop_price",
     "stop_loss", "target", "targets", "t1", "t2", "t3", "t1_price", "t2_price",

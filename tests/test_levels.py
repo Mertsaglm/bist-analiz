@@ -149,3 +149,55 @@ class TestGercekVeri:
         assert all(d <= sinir for d in erken_tarihler), (
             "erken asof, gelecekteki bir pivotu kullanmış")
         assert gec is not None
+
+
+class TestKumeGenisligi:
+    """⚠ REGRESYON KİLİDİ (2026-07-27 denetimi).
+
+    `_cluster` tek-bağlantı (single linkage) yapıyordu: yeni pivot kümenin
+    SON üyesiyle karşılaştırılıyordu. Ardışık farkların her biri ≤ tolerans
+    olan bir zincir toplamda N × tolerans kadar yayılabilir ve kümenin
+    ORTALAMASI hiçbir gerçek pivotun bulunmadığı bir fiyata düşebilir —
+    `planner`'ın "hedefler UYDURULMAZ" kuralının sessiz ihlali.
+    """
+
+    def _piv(self, fiyatlar):
+        return [lv.Pivot(i, f"2024-01-{i+1:02d}", p, "tepe", i)
+                for i, p in enumerate(fiyatlar)]
+
+    def test_zincir_tek_kumeye_TOPLANMAZ(self):
+        # 10.0 → 10.9 → 11.8 → 12.7: ardışık farklar 0.9 ≤ 1.0 ama
+        # toplam yayılım 2.7 — tek küme olsaydı ortalama 11.35 çıkardı ve
+        # o fiyatta HİÇBİR pivot yok.
+        kumeler = lv._cluster(self._piv([10.0, 10.9, 11.8, 12.7]), 1.0, 1)
+        assert len(kumeler) > 1, "tek-bağlantı zinciri hâlâ tek küme üretiyor"
+        for k in kumeler:
+            assert k.spread <= 1.0 + 1e-9, f"küme toleranstan geniş: {k.spread}"
+
+    def test_gercekten_yakin_pivotlar_toplanir(self):
+        kumeler = lv._cluster(self._piv([10.0, 10.2, 10.4]), 1.0, 2)
+        assert len(kumeler) == 1 and kumeler[0].touches == 3
+
+    def test_spread_tasiniyor(self):
+        k = lv._cluster(self._piv([10.0, 10.4]), 1.0, 2)[0]
+        assert abs(k.spread - 0.4) < 1e-9
+
+
+class TestSaklama:
+    """`levels_daily` artık gerçekten yazılıyor (uzun süre boştu). Yazılan bir
+    tablonun OKUYUCUSU da olmalı; `load` o okuyucudur ve burada sabitlenir."""
+
+    def test_gidis_donus(self, cfg, con):
+        sev = [lv.Level(90.0, "destek", 3, "2024-01-01", "2024-02-01", 10, 0.4),
+               lv.Level(110.0, "direnc", 2, "2024-01-05", "2024-03-01", 12, 0.0)]
+        lv.store(cfg, con, "AAA", "2024-03-05", sev)
+        geri = lv.load(cfg, con, "AAA", "2024-03-05")
+        assert geri == sev, "seviyeler kayıptan sonra birebir geri gelmiyor"
+
+    def test_spread_de_saklaniyor(self, cfg, con):
+        lv.store(cfg, con, "AAA", "2024-03-05",
+                 [lv.Level(90.0, "destek", 3, "a", "b", 10, 0.75)])
+        assert lv.load(cfg, con, "AAA", "2024-03-05")[0].spread == 0.75
+
+    def test_kayit_yoksa_bos_liste(self, cfg, con):
+        assert lv.load(cfg, con, "YOK", "2024-03-05") == []

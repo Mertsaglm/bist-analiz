@@ -13,7 +13,8 @@
 #
 # ⚠ SURVIVORSHIP BIAS: bu sabit bir listedir, nokta-zamanlı BIST-100 üyeliği değil.
 #   Backtest sonuçları bu eğilimi içerir. Düzeltiliyormuş gibi yapılmaz —
-#   büyüklüğü raporda yazılır (bkz. reports/backtest_*.md).
+#   büyüklüğü ölçüm raporunda yazılır (`bist backtest` → reports/olcum_*.md;
+#   reports/ gitignore'dadır, komutla yeniden üretilir).
 # ============================================================================
 
 seciim_kriterleri:

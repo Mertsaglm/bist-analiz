@@ -179,18 +179,6 @@ def open_predictions(con: sqlite3.Connection, asof: str | None = None) -> list[d
     return db.fetch_all(con, sql + " ORDER BY p.asof, p.ticker", params)
 
 
-def resolved(con: sqlite3.Connection, *, start: str | None = None,
-             end: str | None = None) -> list[dict]:
-    sql = ("SELECT p.*, o.* FROM predictions p "
-           "JOIN outcomes o ON o.prediction_id = p.prediction_id WHERE 1=1")
-    params: list = []
-    if start:
-        sql += " AND p.asof >= ?"; params.append(start)
-    if end:
-        sql += " AND p.asof <= ?"; params.append(end)
-    return db.fetch_all(con, sql + " ORDER BY p.asof, p.ticker", tuple(params))
-
-
 def summary(con: sqlite3.Connection) -> dict:
     return {
         "tahmin": db.scalar(con, "SELECT COUNT(*) FROM predictions") or 0,

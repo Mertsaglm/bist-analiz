@@ -104,7 +104,13 @@ def run(cfg: dict, con: sqlite3.Connection) -> dict:
             "ic_tum": r["ic_tum"]["ic_ort"], "ic_uygun": r["ic"]["ic_ort"],
             "hukum": r["hukum"],
         })
-    atif.sort(key=lambda x: -(x["delta"] or -1e9))
+    # ⚠ `x["delta"] or -1e9` YAZMA. Python'da `0.0 or -1e9` → `-1e9` olduğu için
+    # ETKİSİ TAM SIFIR olan bir kol, en kötü kol gibi listenin dibine düşerdi.
+    # "Fark yok" ile "en çok zarar veren" iki farklı bulgudur ve rapor bu
+    # sırayla okunuyor (L-003: iki farklı olguyu aynı yerde gösterme).
+    # Ölçülemeyen kollar (`delta is None`) en sona alınır — bilinmeyen bir
+    # değeri sıralamaya sokmak, onu bir sayıya çevirmek olurdu.
+    atif.sort(key=lambda x: -(x["delta"] if x["delta"] is not None else -1e9))
 
     # ---------------------------------------------------------- 3) IC × ufuk
     # Sıralama bilgisi hangi ufukta yaşıyor? Kapısız, tüm kesit.
@@ -148,20 +154,55 @@ def verdict(t: dict) -> dict:
     ic_t, t_t = e["ic_tum"]["ic_ort"], (e["ic_tum"]["t"] or 0.0)
     ic_u, t_u = e["ic_uygun"]["ic_ort"], (e["ic_uygun"]["t"] or 0.0)
 
+    # `ic_u` None OLABİLİR ve bu erişilebilir bir durumdur: kapılı havuz her
+    # dönem 3 isimden aza düşerse `ic_summary` boş liste alır → `ic_ort` None,
+    # `t` None (→ t_u 0.0). Yani tam da "kapı bilgiyi yok ediyor" dalının uç
+    # hâli, o dalın metnini biçimlendirirken TypeError verirdi. `ic_t` için
+    # yazılan koruma `ic_u` için yazılmamıştı — savunmayı bir yerde uygulayıp
+    # simetriğinde atlamak bu projede tekrarlayan bir kalıp (bkz. LESSONS L-007).
+    def _f3(x) -> str:
+        return "—" if x is None else f"{x:.3f}"
+
+    if ic_t is None:
+        return {"tani": "olculemedi",
+                "aciklama": ("IC hiç hesaplanamadı — panelde yeterli dönem yok. "
+                             "Bu bir teşhis değil, ölçüm eksikliğidir."),
+                "baskin_kol": t["atif"][0] if t["atif"] else None}
+
     if e["secim_yonu_dogru_oran"] < 0.9:
         tani = "kurgu_hatasi"
         aciklama = ("Seçim yönü skorla tutarsız — sıralama ters uygulanıyor. "
                     "Revizyon konuşulmadan önce bu düzeltilmeli.")
+    elif t_t <= -T_ANLAMLI:
+        # ⚠ TERS SİNYAL, "bilgi yok" DEĞİLDİR — DEĞERLİ bir bulgudur.
+        # İlk sürüm `t_t < T_ANLAMLI` diyordu ve güçlü NEGATİF bir IC'yi
+        # (ör. t=−3, yani skor kesiti güvenilir biçimde TERS sıralıyor)
+        # "sıralama bilgisi yok" diye etiketliyordu. Bu, L-006'daki işaret
+        # körlüğünün ayna görüntüsü: büyüklük anlamlı, yön yok sayılıyor.
+        tani = "siralama_TERS"
+        aciklama = (f"Skor kesiti ANLAMLI biçimde TERS sıralıyor "
+                    f"(IC={_f3(ic_t)}, t={t_t:.2f}). Bu bilgisizlik değil, "
+                    "ters işaretli bilgidir. Ağırlığın işaretini çevirmek "
+                    "MEŞRU bir hipotezdir — ama ön kayıtsız yapılamaz, "
+                    "çünkü sonucu görüp işaret seçmek p-hacking'in ta kendisidir.")
     elif t_t < T_ANLAMLI:
         tani = "siralama_bilgisi_yok"
         aciklama = (f"Skor kapısız tüm kesitte bile sıralayamıyor "
-                    f"(IC={ic_t:.3f}, t={t_t:.2f}). Uygulama düzeltmeleri bunu kurtarmaz.")
+                    f"(IC={_f3(ic_t)}, t={t_t:.2f}). Uygulama düzeltmeleri bunu kurtarmaz.")
     elif t_u < T_ANLAMLI:
         tani = "kapi_bilgiyi_yok_ediyor"
+        # Kaybolan bilgi ORANI ancak `ic_t` sıfırdan farklıyken tanımlıdır.
+        # Gerçek veride bu dala girmek `t_t >= 2` gerektirir ve `t = ort/(sd/√n)`
+        # olduğu için ortalama sıfır olamaz — yani bölme güvenlidir. Ama
+        # "güvenli çünkü buraya gelinemez" bir savunma DEĞİLDİR: varsayım
+        # bozulduğu gün ZeroDivisionError, teşhis komutunu ortasında çökertir.
+        # Oran hesaplanamıyorsa uydurulmaz, cümleden düşer.
+        kayip = (f"bilginin %{(1 - (ic_u or 0) / ic_t) * 100:.0f}'i kapıda kayboluyor"
+                 if ic_t else "kapıdan sonra ölçülebilir bilgi kalmıyor")
         aciklama = (
-            f"Sıralama bilgisi TÜM kesitte anlamlı (IC={ic_t:.3f}, t={t_t:.2f}) ama "
-            f"kapının bıraktığı havuzun İÇİNDE yok oluyor (IC={ic_u:.3f}, t={t_u:.2f}) — "
-            f"bilginin %{(1 - (ic_u or 0) / ic_t) * 100:.0f}'i kapıda kayboluyor. "
+            f"Sıralama bilgisi TÜM kesitte anlamlı (IC={_f3(ic_t)}, t={t_t:.2f}) ama "
+            f"kapının bıraktığı havuzun İÇİNDE yok oluyor (IC={_f3(ic_u)}, "
+            f"t={t_u:.2f}) — {kayip}. "
             "Ayrışma bir kurgu hatası DEĞİL: kapı, skorun ayırt edeceği aralığı "
             "zaten kesip atıyor. SMA200 filtresi düşük momentumlu isimleri "
             "eliyor — yani skorun sıralayacağı varyansın kaynağını.")

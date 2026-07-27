@@ -33,8 +33,14 @@ from . import db, levels as lv, risk, util
 UYARI = ("Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, "
          "yön iddiası değildir.")
 
+# ⚠ `breakout_above_resistance` KALDIRILDI (2026-07-27 denetimi). `build_options`
+# onu hiç üretmiyordu ve `resolver.entry_fill` doluma DAİMA aşağıdan bakıyor
+# (`r.l <= entry_high`). Yani listede duran bir kırılım tetikleyicisi, birinin
+# onu üretmesi halinde SESSİZCE TERS yönde doldurulurdu. Desteklenmeyen bir
+# değeri "izinli" listesinde tutmak, ileride onu kullanacak kişiye kurulmuş
+# bir tuzaktır.
 ENTRY_TRIGGERS = ("direct", "pullback_to_sma20", "pullback_to_sma50",
-                  "support_retest", "breakout_above_resistance")
+                  "support_retest")
 STOP_METHODS = ("atr_2x", "atr_2.5x", "atr_3x", "swing_low", "sma_break_buffer")
 
 
@@ -61,6 +67,11 @@ class PlanOption:
     ex_date_in_window: str | None
     invalidations: list[str] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
+    # R:R'ın hangi giriş bandı / stop yöntemi kombinasyonuyla sağlandığı ve
+    # ondan önce hangi adayların elendiği. R:R planlar arası kıyaslanabilir
+    # bir sayı DEĞİLDİR; bu iki alan farkı görünür kılar (bkz. build_options).
+    rr_secim: str = ""
+    elenen_adaylar: list[str] = field(default_factory=list)
     uyari: str = UYARI
 
 
@@ -99,6 +110,10 @@ def build_options(cfg: dict, *, ticker: str, asof: str, bars: pd.DataFrame,
     Sebebi döndürmek şart: "plan yok" tek bir olgu değil. "Zirvede olduğu için
     hedef yok" ile "R:R yetmedi" tamamen farklı iki durumdur ve aynı cümleyle
     raporlamak okuyanı yanıltır (L-003).
+
+    `ex_date`: `build_menu` bunu ZATEN önceden eleyip buraya hiç gelmiyor;
+    parametre doğrudan çağıran yollar (replay, testler) için korunur ve
+    `PlanOption.ex_date_in_window` alanına yazılır.
     """
     p = cfg["planlayici"]
     fiyat = float(bars["c"].iloc[-1])
@@ -148,8 +163,9 @@ def build_options(cfg: dict, *, ticker: str, asof: str, bars: pd.DataFrame,
         bantlar.append(("destek_retest", d * 0.995, min(d * 1.015, fiyat),
                         "support_retest"))
 
-    onceki_kapanis = float(bars["c"].iloc[-2]) if len(bars) > 1 else fiyat
     secenekler: list[PlanOption] = []
+    # R:R'ın NASIL sağlandığı kaydedilir — bkz. aşağıdaki uyarı.
+    elenen: list[str] = []
 
     for i, (kind, ham_low, ham_high, trigger) in enumerate(bantlar):
         if ham_low >= ham_high or ham_low <= 0:
@@ -166,6 +182,7 @@ def build_options(cfg: dict, *, ticker: str, asof: str, bars: pd.DataFrame,
             katsayi = risk.stop_atr_multiple(e_high, stop, atr)
             alt, ust = p["stop_atr_bandi"]
             if katsayi is None or not (alt <= katsayi <= ust):
+                elenen.append(f"{kind}/{yontem}: {katsayi}×ATR ∉ [{alt},{ust}]")
                 continue
 
             hedefler = []
@@ -178,8 +195,11 @@ def build_options(cfg: dict, *, ticker: str, asof: str, bars: pd.DataFrame,
                     "atr_distance": round((hp - e_high) / atr, 2),
                     "basis": dayanak})
             if not hedefler:
+                elenen.append(f"{kind}/{yontem}: girişin üstünde hedef yok")
                 continue
             if (hedefler[0]["rr"] or 0) < float(p["min_rr_t1"]):
+                elenen.append(f"{kind}/{yontem}: R:R {hedefler[0]['rr']} < "
+                              f"{p['min_rr_t1']}")
                 continue
 
             boyut = risk.position_size_pct(
@@ -211,9 +231,23 @@ def build_options(cfg: dict, *, ticker: str, asof: str, bars: pd.DataFrame,
                        if bosluk_riski else
                        f"tek günde tetiklenemez — ±%"
                        f"{cfg['risk']['gunluk_fiyat_limiti_pct']:.0f} marj dışında")),
-                ex_date_in_window=None,
+                ex_date_in_window=ex_date,
                 invalidations=_invalidations(sma50, destekler),
                 notes=[f"{len(direncler)} direnç, {len(destekler)} destek seviyesi kullanıldı"],
+                # ⚠ R:R BİR SONUÇ DEĞİL, BİR SEÇİM ÜRÜNÜ. Hedef sabittir (en
+                # yakın gerçek direnç); giriş ve stop ise seçilir. Döngü
+                # `dogrudan → sma20_geri_cekilme → destek_retest` sırasıyla
+                # ilerler ve R:R ≥ min_rr_t1 sağlayan İLK kombinasyonda durur.
+                # Yani eşitsizlik, GİRİŞİ AŞAĞI İTEREK ve/veya STOP'U
+                # DARALTARAK çözülür.
+                #
+                # Ölçüldü (2026-07-24): 12 planın 10'u `above_zone` — yani
+                # gerçekleşmesi bir geri çekilmeye bağlı. Replay'de tetiklenmeme
+                # oranı %46.4. İki planın R:R'ı bu yüzden KIYASLANABİLİR DEĞİL:
+                # biri stop daraltarak, diğeri girişi %8 aşağı çekerek elde
+                # edilmiş olabilir. Aşağıdaki alan bunu görünür kılar.
+                rr_secim=f"{i + 1}. giriş bandı ({kind}), stop {yontem}",
+                elenen_adaylar=list(elenen),
             ))
             break      # her giriş bandı için TEK stop yöntemi — menü şişmesin
 
@@ -287,12 +321,20 @@ def store(cfg: dict, con: sqlite3.Connection, opts: list[PlanOption]) -> int:
 
 
 def build_menu(cfg: dict, con: sqlite3.Connection, asof: str,
-               tickers: list[str] | None = None) -> dict:
+               tickers: list[str] | None = None,
+               kalite: dict[str, dict] | None = None) -> dict:
     """Tüm canlı evren için plan menüsü. Plan üretilemeyenler GEREKÇESİYLE döner.
 
     "Plan yok" bir hata değil, geçerli bir çıktıdır ve sebebi yazılır —
     sessizce boş liste döndürmek, kullanıcıya "bakmadım" ile "baktım, uygun
     değil"i aynı şey gibi gösterir.
+
+    `kalite`: verilmezse `data_quality` tablosundan (asof'a kadarki en son
+    kayıt) okunur. GEÇMİŞE dönük koşan çağıranlar (replay) o güne ait kaliteyi
+    kendileri hesaplayıp buradan geçirmelidir — tablo yalnız bugünü tutar ve
+    eksik kayıt artık ELEYİCİDİR. Bu parametre olmadan replay'in tamamı
+    "kalite değerlendirilmedi" diye elenir (ölçüldü: 30 dönem × 3 isim = 90
+    plan_yok, 0 tahmin).
     """
     from . import indicators, prices, regime as rj, universe
     from .calendar_bist import BistCalendar
@@ -300,8 +342,11 @@ def build_menu(cfg: dict, con: sqlite3.Connection, asof: str,
     tickers = tickers or universe.live(con)
     cal = BistCalendar(cfg, con)
     rej = rj.classify(cfg, con, asof)
+    # Rejim kararı DONDURULUR: "o gün neden risk-off dedik?" sorusunun cevabı
+    # girdileriyle birlikte saklanmazsa cevaplanamaz (bkz. regime.store).
+    rj.store(cfg, con, rej)
     snap = indicators.snapshot(con, asof, cfg)
-    kalite = prices.quality_map(con, asof)
+    kalite = prices.quality_map(con, asof) if kalite is None else kalite
     tiers = universe.tier_map(con)
     H = int(cfg["planlayici"]["zaman_bariyeri_gun"])
     bariyer = cal.add_trading_days(asof, H).isoformat()
@@ -314,9 +359,12 @@ def build_menu(cfg: dict, con: sqlite3.Connection, asof: str,
         if not ind:
             atlanan[t] = "gösterge yok"
             continue
-        k = kalite.get(t)
-        if k and not k["ok"]:
-            atlanan[t] = "veri kalitesi: " + "; ".join(k["reasons"])
+        # Eksik kalite kaydı "sorun yok" DEĞİLDİR — `quality_for` onu
+        # `ok=False, kalite değerlendirilmedi` olarak döndürür. Aksi halde
+        # `bist veri kalite` koşulmayan her gün kapı sessizce kapanırdı.
+        k = prices.quality_for(kalite, t)
+        if not k["ok"]:
+            atlanan[t] = "veri kalitesi: " + "; ".join(k["uyarilar"])
             continue
 
         bars = prices.bars(con, t, end=asof)
@@ -330,6 +378,9 @@ def build_menu(cfg: dict, con: sqlite3.Connection, asof: str,
             continue
 
         sev = lv.build_levels(bars, cfg, atr=ind.get("atr14"))
+        # Seviyeler de dondurulur: plan hangi geometriye dayandıysa o geometri
+        # sonradan denetlenebilmeli (`levels_daily` uzun süre boş kalmıştı).
+        lv.store(cfg, con, t, asof, sev)
         opts, neden = build_options(cfg, ticker=t, asof=asof, bars=bars, ind=ind,
                                     seviyeler=sev, regime=rej, tier=tiers.get(t),
                                     time_barrier_date=bariyer)

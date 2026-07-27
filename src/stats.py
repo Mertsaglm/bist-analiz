@@ -104,16 +104,6 @@ def dist_stats(values: Sequence[float], weak_n: int = 15) -> dict:
     }
 
 
-def paired_stats(diffs: Sequence[float], weak_n: int = 15) -> dict:
-    """Eşleştirilmiş farkların özeti.
-
-    Eşleştirme kritik: aynı dönemde 'seçilen − seçilmeyen' alındığında piyasa
-    faktörü TAM OLARAK sadeleşir. Ölçüm: eşleştirilmemiş getiri sd'si ~%15-20,
-    eşleştirilmiş ~%5-6. Bu, gereken N'i ~9 kat azaltır.
-    """
-    return dist_stats(diffs, weak_n)
-
-
 # ============================================================ ileri getiri
 def forward_returns_nonoverlap(dates: Sequence[str], prices: Sequence[float],
                                signal_idx: Sequence[int], horizon: int

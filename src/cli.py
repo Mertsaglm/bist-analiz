@@ -58,6 +58,9 @@ def cmd_veri(args) -> int:
         r = prices.daily(cfg, con)
         print(f"{r['tickers']} hisse güncellendi ({r['start']} sonrası); "
               f"{r['hayalet_silinen']} hayalet bar ayıklandı")
+        print(f"Kalite kapısı otomatik koştu: {r['kalite_degerlendirilen']} "
+              f"ticker, {r['kalite_gecmeyen']} tanesi geçemedi "
+              f"(ayrıntı: `bist veri kalite`)")
 
     elif args.alt == "temizle":
         r = prices.purge_phantom_bars(cfg, con)
@@ -393,7 +396,12 @@ def cmd_degerlendir(args) -> int:
     con = db.connect(cfg)
     from . import evaluate, report
 
-    e = evaluate.run(cfg, con, tool=args.tool)
+    try:
+        e = evaluate.run(cfg, con, tool=args.tool)
+    except evaluate.KaynakKarisik as hata:
+        print(f"🛑 {hata}")
+        con.close()
+        return 2
     metin = report.evaluate_report(cfg, e)
     yol = report.write(cfg, f"degerlendirme_{report.bugun()}.md", metin)
     print(metin)
@@ -413,7 +421,12 @@ def cmd_rapor(args) -> int:
         print(f"Paket yok — önce `bist gunluk --asof {asof}`")
         con.close()
         return 1
-    metin = report.daily_report(cfg, bundle, holdings=journal.holdings(con))
+    # Analistin o güne ait kayıtları rapora GİRER. Yoksa rapor bunu açıkça
+    # yazar; sessizce deterministik katmanı "rapor" diye sunmaz.
+    analiz = db.fetch_all(
+        con, "SELECT * FROM predictions WHERE asof = ? ORDER BY ticker", (asof,))
+    metin = report.daily_report(cfg, bundle, holdings=journal.holdings(con),
+                                analiz=analiz)
     yol = report.write(cfg, f"gunluk_{asof}.md", metin)
     print(metin)
     print(f"\n\nRapor yazıldı: {yol}")
@@ -449,23 +462,178 @@ def cmd_haber(args) -> int:
     con = db.connect(cfg)
     from . import news
 
+    kod = 0
     if args.alt == "cek":
-        r = news.sync(cfg, con, full=args.tam)
+        r = news.sync(cfg, con, full=args.tam, gun=args.gun)
         if r.get("atlandi"):
             print("KAP kapalı (config.sources.kap.enabled)")
         else:
             print(f"{r['bildirim']} bildirim tarandı, {r['yazilan']} satır yazıldı "
                   f"({r['ticker']} ticker) · başlangıç: {r['since']}")
+            if r.get("tickersiz"):
+                print(f"  {r['tickersiz']} bildirim hisseye bağlı değildi "
+                      f"(piyasa geneli) — yazılmadı")
+            # ⚠ "0 bildirim" ile "çekilemedi" AYNI ÇIKTIYA DÜŞEMEZ.
+            if r.get("atlanan_aralik"):
+                print(f"  ⚠ ATLANAN ARALIK: {r['atlanan_aralik']} — bu boşluk "
+                      f"bir daha çekilmez; kapatmak için `bist haber cek --tam`")
+                kod = 1
+            if r.get("hata"):
+                print(f"  🛑 KAP HATASI: {r['hata']}\n"
+                      f"     Bu bir 'haber yok' durumu DEĞİL. Paketteki boş "
+                      f"haber listelerine güvenme.")
+                kod = 2
     elif args.alt == "durum":
         s = news.summary(con)
+        asof = db.scalar(con, "SELECT MAX(date) FROM bars_daily") or ""
+        d = news.kaynak_durumu(con, asof) if asof else {"ok": None, "not": None}
         print(f"Bildirim : {s['toplam']} ({s['ticker']} ticker)")
         print(f"Aralık   : {s['ilk']} … {s['son']}")
         print(f"Önem     : {s['onem']}  (HEURİSTİK — ölçülmedi, hesaba girmez)")
+        print(f"Sağlık   : {'TAZE' if d['ok'] else 'BAYAT/YOK'}"
+              + (f" — {d['not']}" if d.get("not") else ""))
+        if d["ok"] is False:
+            kod = 1
     elif args.alt == "listele":
         for h in news.bundle_view(con, args.ticker or "THYAO", limit=15):
             print(f"  {h['tarih']}  {h['onem']:7} {h['baslik']}")
     con.close()
+    return kod
+
+
+# ---------------------------------------------------------------- sağlık
+def cmd_saglik(args) -> int:
+    """Sessiz bozulmaya karşı ön uçuş kontrolü.
+
+    2026-07-27 denetiminin ürettiği risk listesi elle koşulacak SQL'ler olarak
+    kalırsa koşulmaz (LESSONS L-002). Hepsi burada, tek komutta. Çıkış kodu:
+    0 temiz · 1 uyarı var · 2 en az bir KRİTİK kontrol düştü.
+    """
+    cfg = _cfg()
+    con = db.connect(cfg, readonly=True)
+    from . import news, universe
+
+    asof = db.scalar(con, "SELECT MAX(date) FROM bars_daily")
+    bulgular: list[tuple[str, str, str]] = []          # (seviye, ad, mesaj)
+
+    def ekle(seviye, ad, tamam, mesaj):
+        bulgular.append(("OK" if tamam else seviye, ad, mesaj))
+
+    # 1) Gösterge kapsaması — kesitsel her oranın PAYDASI
+    n_bar = db.scalar(con, "SELECT COUNT(DISTINCT ticker) FROM bars_daily") or 0
+    n_ind = db.scalar(con, "SELECT COUNT(DISTINCT ticker) FROM indicator_daily") or 0
+    ekle("KRİTİK", "gösterge kapsaması", n_ind >= n_bar,
+         f"{n_ind}/{n_bar} ticker" + ("" if n_ind >= n_bar else " → `bist gosterge`"))
+
+    # 2) Gösterge tazeliği
+    son_ind = db.scalar(con, "SELECT MAX(date) FROM indicator_daily")
+    ekle("KRİTİK", "gösterge tazeliği", son_ind == asof,
+         f"gösterge {son_ind} · bar {asof}"
+         + ("" if son_ind == asof else " → `bist gosterge`"))
+
+    # 3) Kalite kapısı açık mı
+    son_kal = db.scalar(con, "SELECT MAX(date) FROM data_quality")
+    ekle("KRİTİK", "kalite kapısı", son_kal == asof,
+         f"kalite {son_kal} · bar {asof}"
+         + ("" if son_kal == asof else " → `bist veri kalite`"))
+
+    # 4) Haber katmanı sağlığı
+    hd = news.kaynak_durumu(con, asof) if asof else {"ok": False, "not": "veri yok"}
+    ekle("KRİTİK", "haber katmanı", bool(hd["ok"]),
+         hd.get("not") or f"son bildirim {hd.get('son_bildirim')}")
+
+    # 5) Tick ızgarası — açık uçlu bant TEK İSİMLE ölçüldü (EGEEN, 2.50 TL).
+    # İkinci bir isim o banda GERÇEKTEN girerse (son kurumsal işlemden sonraki
+    # ham barlarla) ölçüm tekrarlanmalı; split-düzeltmeli eski fiyatlar ham
+    # ızgarada değildir ve yanlış alarm üretir.
+    ust = max((b["ust_sinir"] or 0) for b in cfg["risk"]["fiyat_adimlari"][:-1])
+    asan = db.fetch_all(
+        con,
+        "SELECT b.ticker, MAX(b.c) m FROM bars_daily b "
+        "  JOIN (SELECT ticker, MAX(date) d FROM corporate_actions GROUP BY ticker) k "
+        "    ON k.ticker = b.ticker AND b.date > k.d "
+        " WHERE b.c > ? GROUP BY b.ticker ORDER BY m DESC", (ust,))
+    ekle("UYARI", "tick ızgarası", len(asan) <= 1,
+         f"açık uçlu bant (>{ust:.2f} TL) {len(asan)} isimle ölçülü: "
+         + (", ".join(f"{r['ticker']}={r['m']:.0f}" for r in asan) or "gözlem yok")
+         + ("" if len(asan) <= 1 else " → ikinci isim girdi, YENİDEN ÖLÇ"))
+
+    # 6) Journal kaynak karışıklığı
+    arac = {r["tool"]: r["n"] for r in db.fetch_all(
+        con, "SELECT r.tool, COUNT(*) n FROM predictions p "
+             " JOIN llm_runs r ON r.run_id = p.run_id GROUP BY r.tool")}
+    ekle("UYARI", "journal kaynağı", len(arac) <= 1,
+         f"{arac or 'kayıt yok'}"
+         + ("" if len(arac) <= 1 else " → `bist degerlendir --tool ...` şart"))
+
+    # 7) Evren ↔ taban çizgisi tutarlılığı
+    n_out = db.scalar(con, "SELECT COUNT(*) FROM outcomes "
+                           "WHERE alpha_vs_ew IS NOT NULL") or 0
+    ekle("BİLGİ", "EW tabanlı sonuç", True,
+         f"{n_out} kayıt · evren {len(universe.live(con))} canlı / "
+         f"{len(universe.measure(con))} ölçüm")
+
+    # 8) Şema sürümü
+    sv = con.execute("PRAGMA user_version").fetchone()[0]
+    from . import migrations
+    ekle("KRİTİK", "şema sürümü", sv == migrations.target_version(),
+         f"v{sv} / hedef v{migrations.target_version()}")
+
+    kritik = [b for b in bulgular if b[0] == "KRİTİK"]
+    uyari = [b for b in bulgular if b[0] == "UYARI"]
+    isaret = {"OK": "✓", "KRİTİK": "🛑", "UYARI": "⚠", "BİLGİ": "·"}
+    print(f"Sağlık kontrolü — {asof}\n")
+    for seviye, ad, mesaj in bulgular:
+        print(f"  {isaret[seviye]} {ad:22} {mesaj}")
+    print()
+    if kritik:
+        print(f"🛑 {len(kritik)} KRİTİK kontrol düştü — sessiz yanlış sonuç riski var.")
+    elif uyari:
+        print(f"⚠ {len(uyari)} uyarı.")
+    else:
+        print("✅ Tüm kontroller temiz.")
+    con.close()
+    return 2 if kritik else (1 if uyari else 0)
+
+
+# ---------------------------------------------------------------- seviye ölçümü
+def cmd_seviye(args) -> int:
+    """Seviyeye yakınlığın YÖN üstünlüğü var mı? — ölçüm, iddia değil.
+
+    `levels.measure_level_edge` yazılmıştı ama HİÇBİR YERDEN çağrılmıyordu
+    (2026-07-27 denetimi). Ölçüm kültürü olan bir projede koşulmayan bir ölçüm
+    harness'i, silinmesi değil BAĞLANMASI gereken bir eksiktir: seviyeler
+    planlayıcının temeli ve yön üstünlükleri hâlâ ölçülmedi.
+    """
+    cfg = _cfg()
+    con = db.connect(cfg)
+    from . import levels as lv, prices as pr, universe
+
+    H = int(cfg["olcum"]["ana_ufuk_gun"])
+    tickers = [args.ticker.upper()] if args.ticker else universe.live(con)
+    print(f"Seviye kenarı ölçülüyor — H={H}, örtüşmeyen pencere, "
+          f"{len(tickers)} hisse\n")
+    print(f"{'ticker':<8}{'destek N':>10}{'Δ medyan':>11}{'hüküm':>26}"
+          f"{'direnç N':>10}{'Δ medyan':>11}{'hüküm':>26}")
+    print("-" * 102)
+    for t in tickers:
+        bars = pr.bars(con, t)
+        r = lv.measure_level_edge(cfg, bars, horizon=H)
+        if r.get("not"):
+            print(f"{t:<8}{r['not']:>10}")
+            continue
+        d, k = r["destek"], r["direnc"]
+        print(f"{t:<8}{d['n']:>10}{_f2(d['fark']):>11}{d['hukum']:>26}"
+              f"{k['n']:>10}{_f2(k['fark']):>11}{k['hukum']:>26}")
+    print("\n⚠ Bu tablo bir KENAR İDDİASI DEĞİLDİR. Hüküm `edge_verdict`ten "
+          "geçer ve bu sistemde 'doğrulandı' dalı yoktur. Tek tek 'en iyi' "
+          "satıra bakma — çoklu test.")
+    con.close()
     return 0
+
+
+def _f2(x) -> str:
+    return "—" if x is None else f"{x:+.2f}pp"
 
 
 # ---------------------------------------------------------------- teşhis
@@ -567,7 +735,7 @@ def build_parser() -> argparse.ArgumentParser:
     gn.add_argument("--asof", help="YYYY-MM-DD")
     gn.set_defaults(fn=cmd_gunluk)
 
-    dn = sub.add_parser("denetle", help="analist çıktısını HF-01..HF-30 ile denetle")
+    dn = sub.add_parser("denetle", help="analist çıktısını HF-01..HF-31 ile denetle")
     dn.add_argument("--asof", help="YYYY-MM-DD")
     dn.set_defaults(fn=cmd_denetle)
 
@@ -609,7 +777,17 @@ def build_parser() -> argparse.ArgumentParser:
     hb.add_argument("alt", choices=["cek", "durum", "listele"])
     hb.add_argument("ticker", nargs="?")
     hb.add_argument("--tam", action="store_true", help="artımlı değil tam çekim")
+    hb.add_argument("--gun", type=int,
+                    help="tam çekimde kaç gün geriye (varsayılan: "
+                         "config.sources.kap.tam_cekim_gun)")
     hb.set_defaults(fn=cmd_haber)
+
+    sg = sub.add_parser("saglik", help="ön uçuş kontrolü — sessiz bozulma taraması")
+    sg.set_defaults(fn=cmd_saglik)
+
+    sv = sub.add_parser("seviye", help="seviye yakınlığının yön üstünlüğünü ÖLÇ")
+    sv.add_argument("ticker", nargs="?", help="tek hisse (varsayılan: canlı evren)")
+    sv.set_defaults(fn=cmd_seviye)
 
     ts = sub.add_parser("teshis", help="kayıp atıfı — revizyon turu DEĞİL")
     ts.set_defaults(fn=cmd_teshis)

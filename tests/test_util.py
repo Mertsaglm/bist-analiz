@@ -71,27 +71,3 @@ class TestJson:
 
     def test_olmayan_dosya_default_doner(self, tmp_path):
         assert util.read_json(tmp_path / "yok.json", default={"d": 1}) == {"d": 1}
-
-
-class TestSayi:
-    @pytest.mark.parametrize("girdi,beklenen", [
-        ("1.234,56", 1234.56),
-        ("45,71", 45.71),
-        ("1234.56", 1234.56),
-        ("%12,5", 12.5),
-        ("1.234,56 TL", 1234.56),
-        (42, 42.0),
-        (None, None),
-        ("", None),
-        ("abc", None),
-    ])
-    def test_tr_sayi(self, girdi, beklenen):
-        assert util.parse_tr_number(girdi) == beklenen
-
-    def test_pct_sifir_paydada_none(self):
-        """Payda 0 → None, 0 DEĞİL. 0 döndürmek 'değişim yok' anlamına gelir
-        ve bu, 'hesaplanamadı'dan tamamen farklıdır."""
-        assert util.pct(10, 0) is None
-        assert util.pct(10, None) is None
-        assert util.pct(None, 10) is None
-        assert util.pct(110, 100) == pytest.approx(10.0)

@@ -6,6 +6,93 @@
 
 ---
 
+## L-008 — 2026-07-27 — Bir düzeltmeyi tek çağrı yerinde yapmak, kuralı uygulamak DEĞİLDİR
+
+**Olay:** Kapsamlı bir test turu yazılırken, daha önce "kapatıldı" sayılmış üç
+savunmanın **simetriğinin açık kaldığı** görüldü. Üçü de aynı kalıp:
+
+1. `real_con` fixture'ı salt-okunur yapılmıştı (pytest kullanıcının
+   veritabanını değiştiriyordu). Ama düzeltme TEK ÇAĞRI YERİNDEYDİ — yeni bir
+   testin aynı tuzağa düşmesini engelleyen hiçbir şey yoktu.
+2. Aynı fixture veritabanını geçici dizine yönlendiriyordu ama
+   `llm_in_dir`/`llm_out_dir`/`reports_dir`'i yönlendirmiyordu. Sonuç: paket
+   üreten her test kullanıcının repo'suna klasör bırakıyordu — ölçüldü,
+   `llm/in/<tarih>/` gerçekten oluşuyordu.
+3. `diagnose.verdict` `ic_tum` için None koruması yazmıştı, simetriği olan
+   `ic_uygun` için yazmamıştı. Üstelik erişilebilir bir durumdu: kapılı havuz
+   her dönem 3 isimden aza düşerse tam da "kapı bilgiyi yok ediyor" tanısının
+   metni `TypeError` ile patlıyordu.
+
+Aynı turda ikinci bir sınıf daha çıktı: **kural yorumda yazılı, hiçbir yerde
+zorlanmıyor.** `zayif_n_esigi`'ni 15'ten 5'e çekmek, `min_rr_t1`'i indirmek,
+rejim politikasının yönünü ters çevirmek — hiçbiri testi kırmıyordu. Oysa
+bunların hepsi projenin yazılı kararlarıydı.
+
+**Ders:** Bir hatayı düzeltmek iki ayrı iştir ve ikincisi genellikle atlanır:
+(a) bu çağrı yerini düzelt, (b) **aynı hatanın bir daha yapılamayacağı yeri**
+düzelt. Yalnız (a) yapıldığında kural, onu hatırlayan kişinin ömrü kadar yaşar.
+Bu proje için o ömür artık ölçülebilir biçimde kısa: bağlamı taşımayan bir
+model ya da aylar sonraki sen.
+
+Ve şu ayrım net: **yorum bir niyettir, test bir zorlamadır.** "Bu eşik
+düşürülmemeli" cümlesi bir dilek; `assert esik >= 15` bir sözleşme.
+
+**Kural:** Bir savunma yazdıktan sonra üç soruyu sor:
+- **Simetriği var mı?** (`ic_tum` korunduysa `ic_uygun` de korunmalı; `db`
+  yönlendirildiyse `reports_dir` de.) Aynı kalıbın diğer örneklerini ARA.
+- **Bir sonraki kişi bunu bilmeden bozabilir mi?** Bozabiliyorsa savunma
+  değil, not almışsın demektir.
+- **Kuralı koşulabilir hale getirebilir miyim?** Getirebiliyorsan getir —
+  eşik zeminleri, kolon↔şema eşliği ve doküman atıfları bu şekilde
+  teste devredildi (ADR #011).
+
+---
+
+## L-007 — 2026-07-27 — Kod doğru, VERİ sessizce dar: paydayı yazmayan her oran yalan söyleyebilir
+
+**Olay:** Bağımsız bir denetim, birbirinden habersiz görünen ama aynı sınıftan
+olan dört hata buldu. Dördünde de kod doğruydu; bozulan şey kodun VARSAYDIĞI
+veri durumuydu ve hiçbiri hata fırlatmıyordu:
+
+1. **Haber katmanı kör.** Paket, "son analizden bu yana çıkan haberler"i
+   `MAX(created_utc)` ile belirliyordu. `created_utc` kaydın DİSKE YAZILDIĞI
+   andır. `bist replay` 2024-2026'yı tek seferde yazınca her hissenin
+   damgası "şimdi" oldu ve `published_utc > since` hiçbir şeyi geçirmedi.
+   Bildirimi olan 14 hissenin 8'inde **47 gerçek KAP bildirimi** gizlendi —
+   üstelik ADR #008 sonrası haber/veto sistemin kalan ana ürünü.
+2. **Kesit 67 yerine 16 isim.** `bist gosterge` Faz 1'de 19 ticker için
+   koşulmuştu; Faz 2'de ölçüm evreni 67'ye çıktı ama göstergeler yeniden
+   hesaplanmadı (backtest onlara ihtiyaç duymuyor, kimse fark etmedi).
+   `factors._panel` ve `regime.breadth` `indicator_daily`'ye JOIN atıyor;
+   eksik ticker sessizce satır üretmiyor. Sonuç: `pct=100` "67'de birinci"
+   değil "10'da birinci" demekti — ve **rejim 5/16 = %31 genişlikle risk-off**
+   dedi, XU100 SMA200'ünün %9.7 ÜSTÜNDEYKEN. Nakit önerisi %90'a çıktı.
+3. **Kalite kapısı sessizce kapanıyor.** `quality_map` TAM TARİH eşleşmesi
+   arıyordu; `assess_quality` ise yalnız elle koşuyordu. Fiyat bir gün
+   ilerleyince sorgu boş döndü ve dört tüketicinin dördü de "kayıt yok"u
+   "sorun yok" diye okudu — paket `veri_kalitesi: ok=true` yazdı.
+4. **HF-22 evrenin %44'ünde ölü.** `yuzdelik` yalnız kapıdan geçen isimlerde
+   dolar; kontrol `if pct is not None and pct < esik` diyordu. Yani sıralama
+   koruması tam da kapının ELEDİĞİ isimlerde atlanıyordu.
+
+**Ders:** Bu projede en pahalı hata sınıfı mantık hatası değil, **"kod doğru
+ama veri sessizce dar/bayat"**. Ortak imza şu: bir oran ya da sıralama
+üretiliyor, PAYDASI hiçbir yerde yazmıyor, ve payda düştüğünde çıktı hâlâ
+"geçerli" görünüyor. `edge_verdict` disiplini paya uygulanmış ama paydaya hiç
+uygulanmamıştı. Ayrıca L-002 ("elle çalıştırılan script donar") doğru
+çıkarılmış ama YENİ tablolara uygulanmamıştı — ders bir kere öğrenilip
+bırakılmıyor, her yeni veri kaynağında tekrar sorulması gerekiyor.
+
+**Kural:** Bir oran, sıralama ya da yüzdelik üreten her fonksiyon **paydayı da
+döndürsün ve çıktıya yazsın** (`kesit.istenen/skorlanan`, `rejim.genislik_n`).
+Payda beklenenin %80'inin altına düşerse `log.warning`. "Kayıt yok" durumu
+ASLA "sorun yok"a çevrilmesin — varsayılan `ok=False, "değerlendirilmedi"`
+olsun. Ve yeni bir tablo/kaynak eklerken üç soruyu birlikte sor:
+(a) bunu kim, ne sıklıkla besliyor? (b) beslenmezse ÇIKTI nasıl görünür?
+(c) o görünüm "veri yok" ile "sorun yok"u ayırt ediyor mu?
+
+---
+
 ## L-006 — 2026-07-27 — Büyüklüğe bakıp anlamlılığa bakmamak; ve "kapı" fonksiyonlarının işaret körlüğü
 
 **Olay:** Tek bir oturumda AYNI kalıp DÖRT kez tekrarladı ve dördü de sistemi

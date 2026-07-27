@@ -1,4 +1,11 @@
-"""Denetim — HF-01..HF-30. Geçmeyen çıktı journal'a GİREMEZ.
+"""Denetim — HF-01..HF-31. Geçmeyen çıktı journal'a GİREMEZ.
+
+⚠ Yukarıdaki aralık elle yazılır ve BAYATLAYABİLİR: HF-31 eklendikten sonra
+dört ayrı yer (bu dosya, `cli.py`, `README.md`, `ai/PROJECT.md`) üst ucu
+30'da bırakmaya devam etti — yani 31 sert kontrol varken kullanıcıya 30
+diye anlatılıyordu. Otorite `all_codes()`tir;
+`tests/test_dokuman.py::test_yazili_HF_ARALIGI_gercek_kod_sayisiyla_ayni`
+artık yazılı aralığı koda karşı doğruluyor.
 
 Her kontrol `(bundle, out, con, cfg)`'nin saf fonksiyonudur ve her birinin
 tek bir testi vardır (`tests/test_audit.py`).
@@ -6,7 +13,15 @@ tek bir testi vardır (`tests/test_audit.py`).
 **HF-17 taşıyıcı koldur.** Şemada fiyat alanı olmaması yalnız YAPISAL sızıntıyı
 durdurur; asıl hata modu metinseldir — modelin tez cümlesine *"324 TL civarında
 bir hedef makul"* yazması. HF-17 prose'daki her sayısal token'ı pakete karşı
-doğrular, yani modelin uydurduğu sayıyı fiziksel olarak imkânsız kılar.
+doğrular.
+
+⚠ AMA "imkânsız kılar" DEMEK YANLIŞ — bu dosya bir zamanlar öyle diyordu.
+ÖLÇÜLDÜ (2026-07-27, canlı paket, 1054 izinli token): iki ondalıklı uydurma
+fiyatların %99.5'i yakalanıyor, ama −50..+50 tamsayıların **%56'sı serbest**.
+Sebep `config.denetim` beyaz listeleri (0-31 tamsayı, yıllar,
+`ek_izinli_sayilar`) — bilinçli bir tercih, ama sonucu bilmek şart:
+*"AKBNK %20 potansiyel taşıyor"* denetimden temiz geçer. `format_report`
+"temiz" derken bunu da basar.
 
 Tasarım kararı: uyarılar (`W-xx`) hiçbir şeyi engellemez ama rapora girer.
 Her şeyi sert hata yapmak modeli işlemez hale getirir; hiçbir şeyi yapmamak
@@ -49,7 +64,11 @@ def hard_fails(findings: list[Finding]) -> list[Finding]:
 
 def format_report(findings: list[Finding]) -> str:
     if not findings:
-        return "✅ Denetim temiz — 30 sert kontrolün hiçbiri patlamadı."
+        return (f"✅ Denetim temiz — {len(all_codes())} sert kontrolün hiçbiri "
+                "patlamadı.\n"
+                "   ⚠ HF-17 küçük tamsayılara ve yuvarlak yüzdelere karşı "
+                "GEÇİRGENDİR (config.denetim beyaz listeleri); prose'daki "
+                "\"%20 potansiyel\" gibi ifadeler denetlenmez.")
     L = []
     sert = hard_fails(findings)
     L.append(f"{'🛑' if sert else '⚠️'} {len(sert)} sert hata, "
@@ -163,6 +182,7 @@ def audit(cfg: dict, bundle: dict, out: dict, con: sqlite3.Connection | None = N
 
     # ---------------------------------------------- sayısal sızıntı (17-19)
     izinli_sayilar = llm_io.allowed_numeric_tokens(bundle, cfg)
+    izinli_yuzdeler = _yuzde_tokenlari(bundle, cfg)
     for s in stocks:
         t = s.get("ticker")
         for alan in schema.STOCK_PROSE:
@@ -175,14 +195,31 @@ def audit(cfg: dict, bundle: dict, out: dict, con: sqlite3.Connection | None = N
                     "HF-17", SERT, t,
                     f"`{alan}` içinde PAKETTE OLMAYAN sayı — model sayı uydurmuş",
                     sorted(kacak)[:5], "yalnız paketteki sayılar"))
-            if _FIYAT_KALIBI.search(metin) and kacak:
-                f.append(Finding("HF-18", SERT, t,
-                                 f"`{alan}` içinde izinsiz fiyat ifadesi"))
+            # HF-18/19 HF-17'DEN BAĞIMSIZ olmalı. İlk sürümde ikisi de
+            # `kacak` boş değilse ateşleniyordu — yani HF-17 zaten patlamışken
+            # aynı olguyu tekrar raporluyorlardı ve TEK BAŞLARINA hiç
+            # ateşlenemiyorlardı. "30 sert kontrol" gerçekte 28'di.
+            #
+            # Ayrı bir olguyu yakalamaları gerekiyordu ve şimdi yakalıyorlar:
+            # sayı paketten gelse BİLE, ona fiyat/yüzde ANLAMI yüklemek
+            # uydurmadır. Paketteki 95.00 bir stop fiyatıdır; "%95 olasılık"
+            # ya da "hedef 95.00 TL" diye yazmak o sayıyı başka bir büyüklüğe
+            # çevirir ve denetim bunu görmelidir.
+            for m in _FIYAT_KALIBI.finditer(metin):
+                if not _fiyat_alani_ile_tutarli(m.group(0), ev_map.get(t, {}), cfg):
+                    f.append(Finding(
+                        "HF-18", SERT, t,
+                        f"`{alan}` içinde plandan GELMEYEN fiyat ifadesi — "
+                        "sayı pakette olsa bile ona fiyat anlamı yüklenemez",
+                        m.group(0), "yalnız plan/gösterge fiyatları"))
+                    break
             for m in _YUZDE_KALIBI.finditer(metin):
                 tok = llm_io.numeric_tokens(m.group(0))
-                if tok and not (tok & izinli_sayilar):
-                    f.append(Finding("HF-19", SERT, t,
-                                     f"`{alan}` içinde izinsiz yüzde", m.group(0)))
+                if tok and not (tok & izinli_yuzdeler):
+                    f.append(Finding(
+                        "HF-19", SERT, t,
+                        f"`{alan}` içinde pakette YÜZDE olarak bulunmayan oran",
+                        m.group(0), "yalnız paketteki yüzde alanları"))
                     break
     if mv.get("regime_note"):
         kacak = llm_io.numeric_tokens(mv["regime_note"]) - izinli_sayilar
@@ -209,7 +246,20 @@ def audit(cfg: dict, bundle: dict, out: dict, con: sqlite3.Connection | None = N
         if s.get("signal") == "strong_buy":
             pct = ((ev_map.get(t, {}).get("faktorler") or {}).get("yuzdelik"))
             esik = float(D["strong_buy_min_yuzdelik"])
-            if pct is not None and pct < esik:
+            # ⚠ `pct is None` İZİN DEĞİL, SERT HATADIR. İlk sürüm `if pct is not
+            # None and pct < esik` diyordu; `yuzdelik` ise YALNIZ kapıdan geçen
+            # isimlerde doluyor. Yani kontrol tam da kapının ELEDİĞİ isimlerde
+            # atlanıyordu. Ölçüldü (2026-07-27): canlı evrenin 18 isminden
+            # 8'inde `yuzdelik: None` → HF-22 hiç ateşlenemiyordu, üstelik
+            # altısı SMA200/likidite kapısının eledikleriydi.
+            # Skorlanmamış ya da elenmiş bir isimde `strong_buy` zaten meşru değil.
+            if pct is None:
+                f.append(Finding(
+                    "HF-22", SERT, t,
+                    "strong_buy ama hisse SKORLANMADI/ELENDİ — sıralamadaki "
+                    "yeri bilinmeyen isme en güçlü sinyal verilemez",
+                    None, f">= {esik}"))
+            elif pct < esik:
                 f.append(Finding("HF-22", SERT, t,
                                  "strong_buy ama skor yüzdeliği bandın altında",
                                  pct, f">= {esik}"))
@@ -264,6 +314,40 @@ def audit(cfg: dict, bundle: dict, out: dict, con: sqlite3.Connection | None = N
                              "ŞABLON tez: aynı prose birden çok hissede",
                              tickerlar))
 
+    # ---------------------------------------------- yapısal sızıntı (31)
+    # `schema.py` bu listeleri "savunma amaçlı geniş tutulmuştur" diye
+    # tanımlıyordu ama HİÇBİR YERDE kontrol edilmiyorlardı (2026-07-27
+    # denetimi: 5 sabit, 0 referans). Yani belgelenen savunma yoktu.
+    #
+    # Zarar sınırlıydı (`journal.ANALIST_ALANLARI` fazla anahtarı yok sayar)
+    # ama SİNYAL kayboluyordu: modelin şemayı genişletmeye çalıştığı fark
+    # edilmiyordu — `journal.py`'nin açıkça istediğinin tersi.
+    for s in stocks:
+        t = s.get("ticker")
+        fazla = set(s) - schema.STOCK_ALANLARI
+        sayisal = fazla & schema.YASAK_SAYISAL_ALANLAR
+        if sayisal:
+            f.append(Finding("HF-31", SERT, t,
+                             "çıktıda YASAK sayısal alan — model hesaplanabilir "
+                             "bir sayı üretmeye çalışıyor", sorted(sayisal),
+                             "yalnız enum + prose"))
+        elif fazla:
+            f.append(Finding("HF-31", SERT, t,
+                             "şema dışı alan — sessizce yok saymak, modelin "
+                             "şemayı genişletmeye çalıştığını gizlerdi",
+                             sorted(fazla), sorted(schema.STOCK_ALANLARI)))
+        eksik_alan = schema.STOCK_ZORUNLU - set(s)
+        if eksik_alan:
+            f.append(Finding("HF-31", SERT, t, "zorunlu alan eksik",
+                             sorted(eksik_alan), sorted(schema.STOCK_ZORUNLU)))
+    for ad, kume, deger in (("market_view", schema.MARKET_ALANLARI, mv),
+                            ("kök", schema.TOP_ALANLARI, out)):
+        fazla = set(deger) - kume
+        if fazla:
+            f.append(Finding("HF-31", SERT, None,
+                             f"`{ad}` içinde şema dışı alan", sorted(fazla),
+                             sorted(kume)))
+
     # ---------------------------------------------- süreç (30)
     if con is not None:
         acik_ticker = {p["ticker"] for p in journal.open_predictions(con, bundle["asof"])}
@@ -291,6 +375,85 @@ def audit(cfg: dict, bundle: dict, out: dict, con: sqlite3.Connection | None = N
     return f
 
 
+# Anahtar adı bunlardan birini içeriyorsa değeri bir ORAN'dır.
+_YUZDE_ANAHTARI = re.compile(r"pct|yuzde|oran|prox", re.IGNORECASE)
+
+
+def _yuzde_tokenlari(bundle: dict, cfg: dict) -> set[str]:
+    """Pakette gerçekten YÜZDE olarak bulunan değerlerin token'ları.
+
+    HF-19'un HF-17'den farkı burada: bir sayının pakette bulunması, ona ORAN
+    anlamı yüklemeye izin vermez. THYAO'nun stop fiyatı 275.00 diye pakette
+    duruyor olabilir; "%275 getiri" yazmak yine uydurmadır. Bu küme yalnız
+    adı oran ima eden alanlardan (`*_pct`, `yuzdelik`, `*_orani`, `*_prox`)
+    beslenir, artı config'in küçük tamsayı beyaz listesi (prose'da "%3 düştü"
+    gibi ifadeler sayı uydurma değildir).
+    """
+    d = cfg["denetim"]
+    basamak = int(d["ondalik_tolerans_basamak"])
+    ham: set[float] = set()
+
+    def gez(obj, yuzde_baglami: bool) -> None:
+        if isinstance(obj, bool):
+            return
+        if isinstance(obj, (int, float)):
+            if yuzde_baglami:
+                ham.add(float(obj))
+        elif isinstance(obj, dict):
+            for k, v in obj.items():
+                gez(v, yuzde_baglami or bool(_YUZDE_ANAHTARI.search(str(k))))
+        elif isinstance(obj, (list, tuple)):
+            for v in obj:
+                gez(v, yuzde_baglami)
+
+    gez(bundle, False)
+    izin: set[str] = set()
+    for v in ham:
+        izin |= llm_io._varyantlar(v, basamak)
+    for v in d.get("ek_izinli_sayilar", []):
+        izin |= llm_io._varyantlar(float(v), basamak)
+    for i in range(0, int(d["sayisal_beyaz_liste_tamsayi_maks"]) + 1):
+        izin |= llm_io._varyantlar(float(i), basamak)
+    return izin
+
+
+def _hisse_fiyatlari(e: dict, cfg: dict) -> set[str]:
+    """Bir hissenin pakette FİYAT olarak geçen değerleri (token biçiminde)."""
+    basamak = int(cfg["denetim"]["ondalik_tolerans_basamak"])
+    ham: set[float] = set()
+
+    def ekle(x) -> None:
+        if isinstance(x, (int, float)) and not isinstance(x, bool):
+            ham.add(float(x))
+
+    fiyat = e.get("fiyat") or {}
+    for k in ("kapanis", "onceki_kapanis", "yuksek_52h", "dusuk_52h"):
+        ekle(fiyat.get(k))
+    g = e.get("gostergeler") or {}
+    for k in ("atr14", "sma20", "sma50", "sma200"):
+        ekle(g.get(k))
+    for p in (e.get("plan_menusu") or []):
+        for k in ("entry_low", "entry_high", "stop_price"):
+            ekle(p.get(k))
+        for h in (p.get("targets") or []):
+            ekle((h or {}).get("price"))
+
+    out: set[str] = set()
+    for v in ham:
+        out |= llm_io._varyantlar(v, basamak)
+    return out
+
+
+def _fiyat_alani_ile_tutarli(ifade: str, e: dict, cfg: dict) -> bool:
+    """"324.75 TL" ifadesindeki sayı, BU hissenin fiyat alanlarından biri mi?
+
+    Paketin herhangi bir yerinde bulunmak yetmez: başka bir hissenin kapanışını
+    alıp bu hisseye fiyat diye yazmak da uydurmadır ve HF-17 onu göremez.
+    """
+    tok = llm_io.numeric_tokens(ifade)
+    return bool(tok & _hisse_fiyatlari(e, cfg))
+
+
 def _normalize_hash(metin: str) -> str:
     """Sayı ve noktalama atılmış, küçük harfe indirilmiş prose'un hash'i.
 
@@ -302,4 +465,4 @@ def _normalize_hash(metin: str) -> str:
 
 
 def all_codes() -> list[str]:
-    return [f"HF-{i:02d}" for i in range(1, 31)]
+    return [f"HF-{i:02d}" for i in range(1, 32)]

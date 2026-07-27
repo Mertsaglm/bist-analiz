@@ -212,17 +212,6 @@ def _n(x) -> float | None:
     return None if not np.isfinite(v) else v
 
 
-def load(con: sqlite3.Connection, ticker: str, cfg: dict, *,
-         start: str | None = None, end: str | None = None) -> pd.DataFrame:
-    sql = ("SELECT * FROM indicator_daily WHERE ticker = ? AND set_version = ?")
-    params: list = [ticker.upper(), cfg["gostergeler"]["set_version"]]
-    if start:
-        sql += " AND date >= ?"; params.append(start)
-    if end:
-        sql += " AND date <= ?"; params.append(end)
-    return pd.read_sql_query(sql + " ORDER BY date", con, params=params)
-
-
 def snapshot(con: sqlite3.Connection, asof: str, cfg: dict) -> dict[str, dict]:
     """{ticker: gösterge satırı} — belirli bir gün için tüm evren."""
     rows = db.fetch_all(

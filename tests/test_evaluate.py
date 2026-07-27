@@ -193,3 +193,92 @@ class TestRapor:
                     for h in satir.split("|") if "**" in h]
         assert not any("doğrulandı" in h.lower() or "kanıtlandı" in h.lower()
                        for h in hukumler), f"hüküm olarak geçmiş: {hukumler}"
+
+
+class TestBoyutlandirmaKarsiOlgusu:
+    """⚠ REGRESYON KİLİDİ (2026-07-27 denetimi).
+
+    `resolver` bu kolona `ret_pct`'i AYNEN yazıyordu (iki dalda da aynı değer),
+    dolayısıyla fark TANIM GEREĞİ sıfırdı ve rejim katmanı ölçülemiyordu.
+    Üstelik `resolver.py`, `db.SCHEMA` ve `regime.py`'de üç ayrı yorum
+    ölçülüyormuş izlenimi veriyordu.
+    """
+
+    def test_kolon_ret_pct_ile_AYNI_DEGIL(self, cfg, con):
+        import pandas as pd
+        pred = {"prediction_id": "p1", "ticker": "AAA", "entry_high": 100.0,
+                "position_size_pct": 4.0}
+        out = resolver._outcome(pred, resolver.HEDEF, resolved_date="2024-02-01",
+                                entry_date="2024-01-02", entry_price=100.0,
+                                exit_date="2024-02-01", exit_price=110.0, cfg=cfg)
+        assert out["ret_pct_equal_size"] is not None
+        assert out["ret_pct_equal_size"] != out["ret_pct"], \
+            "karşı-olgu hâlâ ret_pct'in kopyası"
+        # eşit boyut = maks_pozisyon_pct (%10) → 9.70 × 10/100 = 0.97
+        assert abs(out["ret_pct_equal_size"]
+                   - out["ret_pct"] * cfg["risk"]["maks_pozisyon_pct"] / 100) < 1e-6
+
+    def test_boyut_bilinmiyorsa_UYDURULMAZ(self, cfg):
+        out = resolver._outcome({"prediction_id": "p", "ticker": "A",
+                                 "entry_high": 100.0, "position_size_pct": None},
+                                resolver.HEDEF, resolved_date="2024-02-01",
+                                entry_date="2024-01-02", entry_price=100.0,
+                                exit_date="2024-02-01", exit_price=110.0, cfg=cfg)
+        assert out["ret_pct_equal_size"] is None, \
+            "bilinmeyen boyut için 'fark sıfır' uyduruluyor"
+
+    def test_fark_gercekten_olculuyor(self, cfg, con):
+        _kayit(cfg, con, asof="2024-01-02", ticker="AAA", alfa=2.0)
+        # `_kayit` outcomes'a ret_pct_equal_size = alfa yazıyor; boyut %5.
+        s = evaluate.sizing_counterfactual(cfg, con)
+        assert s["n"] == 1
+        assert s["ort"] is not None
+
+
+class TestLLMKatkisiHukmu:
+    """⚠ L-006'nın atlanmış çağrı yeri: IC farkına yüzde-puan eşiği."""
+
+    def test_hukum_t_tabanli(self, cfg, con):
+        for i, t in enumerate(("AAA", "BBB", "CCC")):
+            _kayit(cfg, con, asof="2024-01-02", ticker=t, alfa=1.0 + i,
+                   score=float(i))
+        s = evaluate.llm_contribution(cfg, con)
+        # N küçük → 'ölçüm yok' ya da 'ölçüm yetersiz'; ASLA 'zayıf kanıt' değil
+        assert not s["hukum"].startswith(stats.HUKUM_ZAYIF_KANIT)
+
+    def test_isaret_koru_yorum_alani_KALDIRILDI(self, cfg, con):
+        s = evaluate.llm_contribution(cfg, con)
+        assert "yorum" not in s, "işarete bakıp anlamlılığa bakmayan alan geri gelmiş"
+
+
+class TestKaynakAyrimi:
+    """⚠ `replay` VEKİL bir analisttir (kasten aptal, deterministik kural).
+    Onun alfasını gerçek LLM kayıtlarıyla aynı potaya koymak, ölçümün ne
+    ölçtüğünü belirsizleştirir — ve rapor bunu hiçbir yerde yazmazdı."""
+
+    def test_tek_kaynakta_surtunme_yok(self, cfg, con):
+        _kayit(cfg, con, asof="2024-01-02", ticker="AAA", alfa=1.0)
+        e = evaluate.run(cfg, con)          # --tool YOK
+        assert e["tool"] == "test", "tek kaynak varsa seçilip ADI basılmalı"
+
+    def test_karisik_kaynak_REDDEDILIR(self, cfg, con):
+        from src import journal
+        _kayit(cfg, con, asof="2024-01-02", ticker="AAA", alfa=1.0)
+        r2 = journal.create_run(cfg, con, asof="2024-02-02", tool="replay",
+                                bundle_sha="s")
+        _kayit(cfg, con, asof="2024-02-02", ticker="BBB", alfa=2.0, run_id=r2)
+        with pytest.raises(evaluate.KaynakKarisik) as e:
+            evaluate.run(cfg, con)
+        assert "--tool" in str(e.value), "hata mesajı çıkış yolunu göstermiyor"
+
+    def test_tool_verilince_calisir(self, cfg, con):
+        from src import journal
+        _kayit(cfg, con, asof="2024-01-02", ticker="AAA", alfa=1.0)
+        r2 = journal.create_run(cfg, con, asof="2024-02-02", tool="replay",
+                                bundle_sha="s")
+        _kayit(cfg, con, asof="2024-02-02", ticker="BBB", alfa=2.0, run_id=r2)
+        assert evaluate.run(cfg, con, tool="replay")["tool"] == "replay"
+
+    def test_bos_journal_patlamaz(self, cfg, con):
+        e = evaluate.run(cfg, con)
+        assert e["tool"] == "(kayıt yok)" and e["alfa"]["n"] == 0

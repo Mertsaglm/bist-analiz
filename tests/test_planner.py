@@ -11,6 +11,7 @@ import pandas as pd
 import pytest
 
 from src import levels as lv, planner, risk
+from tests.conftest import add_universe
 
 
 def _bars(n: int = 300, taban: float = 100.0) -> pd.DataFrame:
@@ -191,3 +192,62 @@ class TestUyari:
         for o in opts:
             assert "kenar yok" in o.uyari
             assert "planlama geometrisi" in o.uyari
+
+
+class TestKaliteKapisiVeReplay:
+    """⚠ REGRESYON KİLİDİ (2026-07-27 denetimi, İKİ AŞAMALI).
+
+    (1) `build_menu` kalite kaydı eksik olan ismi ELEMELİ — eksik kayıt
+        "sorun yok" değildir.
+    (2) AMA `data_quality` yalnız BUGÜNÜ tutar. Geçmişe dönük koşan replay
+        tabloya güvenirse TAMAMI elenir — ilk düzeltmede tam olarak bu oldu:
+        30 dönem × 3 isim = 90 plan_yok, **0 tahmin**. Bu yüzden `build_menu`
+        `kalite` parametresi kabul eder ve replay o güne ait kaliteyi kendisi
+        hesaplayıp geçirir (look-ahead yok: `assess_quality` yalnız
+        `date <= asof` barlarını okur).
+    """
+
+    @staticmethod
+    def _gosterge_ekle(con, ticker="AAA", tarih="2024-01-02"):
+        """Kalite kapısına ULAŞABİLMEK için gösterge satırı şart —
+        `build_menu` önce `gösterge yok` diye eler."""
+        con.execute(
+            "INSERT OR REPLACE INTO indicator_daily "
+            "(ticker,date,set_version,atr14,sma20,sma50,computed_utc) "
+            "VALUES (?,?,?,?,?,?,?)",
+            (ticker, tarih, "core_indicators_v1", 2.5, 99.0, 98.0, "x"))
+        con.commit()
+
+    def test_kalite_kaydi_yoksa_ELENIR(self, cfg, con):
+        from src import planner
+        add_universe(con, "AAA")
+        self._gosterge_ekle(con)
+        r = planner.build_menu(cfg, con, "2024-01-02", tickers=["AAA"])
+        assert "veri kalitesi" in r["atlanan"]["AAA"], \
+            f"kalite kaydı yokken kapı sessizce açık kaldı: {r['atlanan']['AAA']}"
+
+    def test_kalite_gecirilince_kapi_gecilir(self, cfg, con):
+        from src import planner
+        add_universe(con, "AAA")
+        self._gosterge_ekle(con)
+        r = planner.build_menu(cfg, con, "2024-01-02", tickers=["AAA"],
+                               kalite={"AAA": {"ok": True, "reasons": []}})
+        assert "veri kalitesi" not in r["atlanan"]["AAA"], \
+            "kalite geçirildiği halde kapı yine de eledi — replay çalışamaz"
+
+    def test_replay_build_menu_KULLANIR(self):
+        """Replay canlı hattı taklit ettiğini iddia ediyorsa onu KOŞMALI."""
+        import inspect
+        from src import replay
+        kaynak = inspect.getsource(replay.run)
+        assert "planner.build_menu(" in kaynak
+        assert "planner.build_options(" not in kaynak, \
+            "replay hâlâ build_options'ı doğrudan çağırıyor — kalite ve " \
+            "ex-tarih kapıları koşmuyor demektir"
+
+    def test_replay_kaliteyi_O_GUNE_gore_hesaplar(self):
+        """Tabloya güvenirse replay'in TAMAMI elenir (ölçüldü: 0 tahmin)."""
+        import inspect
+        from src import replay
+        kaynak = inspect.getsource(replay.run)
+        assert "assess_quality" in kaynak and "store=False" in kaynak

@@ -120,7 +120,8 @@ class TestDigerKapilar:
 class TestGercekVeri:
     def test_sasa_gercekten_eleniyor(self, real_cfg, real_con):
         """Kapının canlı test vakası. SASA evrende bilerek duruyor (in_live=0)."""
-        rows = prices.assess_quality(real_cfg, real_con, tickers=["SASA"])
+        rows = prices.assess_quality(real_cfg, real_con, tickers=["SASA"],
+                                     store=False)
         if not rows or rows[0]["bars_252"] == 0:
             pytest.skip("SASA verisi yok")
         assert rows[0]["ok"] is False, "SASA kapıdan geçti — kapı çalışmıyor"
@@ -133,6 +134,51 @@ class TestGercekVeri:
         """
         from src import universe
         canli = [t for t in universe.live(real_con)]
-        rows = prices.assess_quality(real_cfg, real_con, tickers=canli)
+        rows = prices.assess_quality(real_cfg, real_con, tickers=canli,
+                                     store=False)
         kotu = [(r["ticker"], r["reasons"]) for r in rows if not r["ok"]]
         assert not kotu, f"canlı evrende kapıdan geçemeyen isimler: {kotu}"
+
+
+class TestKapiSessizceKapanamaz:
+    """⚠ REGRESYON KİLİDİ (2026-07-27 denetimi).
+
+    `quality_map` TAM TARİH EŞLEŞMESİ arıyordu. `assess_quality` yalnız
+    `bist veri kalite` ile koştuğu için, fiyat verisi bir gün ilerlediğinde
+    sorgu BOŞ dönüyor ve dört tüketicinin dördü de "kayıt yok"u "sorun yok"
+    diye okuyordu — kapı fark edilmeden kapanıyordu.
+    """
+
+    def test_asof_ilerlediginde_en_son_kayit_kullanilir(self, cfg, con):
+        add_universe(con, "TEMIZ")
+        add_bars(con, "TEMIZ", _bar_serisi(200))
+        prices.assess_quality(cfg, con, tickers=["TEMIZ"])
+        qm = prices.quality_map(con, "2099-01-01")
+        assert "TEMIZ" in qm, "bayat kayıt sessizce düştü — kapı kapandı"
+        assert qm["TEMIZ"]["yas_gun"] > 0, "kaydın yaşı taşınmıyor"
+
+    def test_kayit_yoksa_OK_DEGIL(self, con):
+        """Bilinmeyeni 'sorun yok'a çevirmek, bu projenin yasakladığı şey."""
+        v = prices.quality_for({}, "HICBILINMEYEN")
+        assert v["ok"] is False
+        assert v["degerlendirildi"] is False
+
+    def test_gunluk_akis_kalite_kapisini_KOSAR(self, cfg, con, monkeypatch):
+        """L-002: bağlı olmayan script donar ve hiçbir hata fırlatmaz."""
+        import pandas as pd
+        add_universe(con, "TEMIZ")
+        add_bars(con, "TEMIZ", _bar_serisi(200))
+        monkeypatch.setattr(prices.yf, "fetch_bars",
+                            lambda *a, **k: pd.DataFrame())
+        r = prices.daily(cfg, con, tickers=["TEMIZ"])
+        assert r["kalite_degerlendirilen"] == 1, \
+            "`bist veri gunluk` kalite kapısını çalıştırmıyor"
+
+    def test_kalite_kaydi_yoksa_faktor_kapisi_ELER(self, cfg):
+        """`eligibility_gates(kalite=None)` UYGUN döndürüyordu."""
+        import pandas as pd
+        from src import factors
+        satir = pd.Series({"c_tr": 100.0, "sma200_tr": 50.0,
+                           "turnover_med_63": 1e9, "mom_6_1": 1.0, "mom_12_1": 1.0})
+        uygun, nedenler = factors.eligibility_gates(satir, None, cfg)
+        assert uygun is False and "kalite_degerlendirilmedi" in nedenler

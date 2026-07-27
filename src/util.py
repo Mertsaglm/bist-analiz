@@ -12,6 +12,7 @@ import hashlib
 from datetime import datetime, timezone, date
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo
 
 import yaml
 
@@ -161,6 +162,36 @@ def utc_now_iso() -> str:
     return utc_now().replace(microsecond=0).isoformat()
 
 
+def to_utc_iso(dt: datetime, *, assume_tz: str | None = None) -> str:
+    """Bir datetime'ı `+00:00` ekli, KARŞILAŞTIRILABİLİR UTC ISO metnine çevirir.
+
+    ⚠ Naif (tz'siz) datetime, `assume_tz` verilmedikçe UTC sayılır. Yerel saatli
+    bir kaynağı (ör. KAP: İstanbul saati) naif bırakıp `_utc` adlı bir kolona
+    yazmak, adı doğru içeriği yanlış bir alan üretir; sonra o alan gerçek UTC
+    damgalarıyla METİN olarak karşılaştırıldığında 3 saatlik sessiz kayma verir.
+    Bu fonksiyonun varlık sebebi o kaymayı tek yerde kapatmaktır.
+
+    Çıktı biçimi daima aynı uzunlukta ve aynı ofsetle olduğu için `ORDER BY` ve
+    `>` karşılaştırmaları metin üzerinde de kronolojiktir.
+    """
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=ZoneInfo(assume_tz) if assume_tz else timezone.utc)
+    return dt.astimezone(timezone.utc).replace(microsecond=0).isoformat()
+
+
+def local_day_end_utc_iso(day: str | date, tz: str) -> str:
+    """Verilen YEREL günün son anını (23:59:59) UTC ISO olarak döner.
+
+    "Şu güne kadar analiz ettim, ondan sonrasını göster" tipi filtrelerin doğru
+    referansı budur: analizin ASOF GÜNÜ, kaydın diske yazıldığı an değil.
+    """
+    d = parse_date(day) if isinstance(day, str) else day
+    if d is None:
+        raise ValueError(f"Tarih çözülemedi: {day!r}")
+    yerel = datetime(d.year, d.month, d.day, 23, 59, 59, tzinfo=ZoneInfo(tz))
+    return yerel.astimezone(timezone.utc).replace(microsecond=0).isoformat()
+
+
 def to_iso_date(value: Any) -> str | None:
     """Tarih benzeri her şeyi SIRALANABİLİR ISO'ya (YYYY-MM-DD) çevirir.
 
@@ -199,29 +230,3 @@ def parse_date(value: Any) -> date | None:
     return date.fromisoformat(iso) if iso else None
 
 
-# ---------------------------------------------------------------- sayı
-def parse_tr_number(value: Any) -> float | None:
-    """Türkçe biçimli sayıyı ('1.234,56') float'a çevirir.
-
-    ⚠ TCMB EVDS değerleri NOKTA ondalıklıdır ('45.71340000') — orada bu
-    fonksiyonu KULLANMA, 10 kat hataya yol açar. Bu, ekran/rapor girdileri için.
-    """
-    if value is None:
-        return None
-    if isinstance(value, (int, float)):
-        return float(value)
-    s = str(value).strip().replace("%", "").replace("₺", "").replace("TL", "").strip()
-    if not s:
-        return None
-    s = s.replace(".", "").replace(",", ".") if "," in s else s.replace(" ", "")
-    try:
-        return float(s)
-    except ValueError:
-        return None
-
-
-def pct(new: float | None, old: float | None) -> float | None:
-    """Yüzde değişim. Payda 0 veya eksik veri → None (0 değil)."""
-    if new is None or old is None or old == 0:
-        return None
-    return (new / old - 1.0) * 100.0

@@ -170,18 +170,38 @@ yazdığında hangi araçta olursan ol aynı davranışı üret:
 | `/kapat` | Bu oturumda yapılanları `ai/STATE.md`'ye yaz, sıradaki 3 işi güncelle, varsa yeni karar/dersleri ilgili dosyalara işle, kısa bir kapanış özeti ver. |
 | `/ders <olay>` | Olaydan çıkan dersi `ai/LESSONS.md`'ye anti-pattern formatında ekle. |
 | `/ogret <konu>` | Konuyu Mert'in seviyesine göre, benzetmelerle ve küçük örneklerle anlat; sonunda anlayıp anlamadığını yoklayan 1-2 soru sor. |
+| `/denetle` | Projeyi bir DIŞ göz gibi denetle: kod ↔ doküman ↔ config ↔ **veritabanının GERÇEK içeriği** tutarlı mı? Bulguları şiddetine göre sırala, her birini `file:line` + koşulabilir bir kanıtla göster, hiçbir şeyi düzeltmeden önce raporla. Ayrıntı: bölüm 11. |
 
 ## 8. Hafıza Disiplini
 
 - `ai/STATE.md` **kısa kalmalı** (~100 satır hedef). Eskiyen içeriği
   `ai/archive/` altına `STATE-YYYY-MM.md` olarak taşı, STATE'te tek satır
-  özet bırak.
+  özet bırak. Bu bir öneri değil, **eşik**: 100 satırı geçtiğini gördüğün
+  oturumda taşı, "sonra" deme.
 - `ai/DECISIONS.md`'ye yalnızca **önemli** kararlar girer (mimari, araç,
   yaklaşım). "Butonu maviye boyadık" karar değildir.
 - `ai/PROFILE.md`'yi Mert hakkında yeni ve kalıcı bir şey öğrendiğinde
   (yeni öğrendiği teknoloji, yeni kısıt, tercih) güncellemeyi teklif et.
 - Tarihler daima mutlak yazılır (2026-07-23 gibi), "geçen hafta" gibi
   göreli ifade kullanılmaz.
+
+**Doküman çürümesine karşı üç kural** (2026-07-27 denetiminden):
+
+- **Sayı gömme.** README'ye "302 test", "70 ticker × 10 yıl" gibi bir sayı
+  yazma; o sayı ilk değişiklikte sessizce yalan olur. Sayıyı üreten KOMUTU
+  yaz. Gömmek zorundaysan yanına ölçüldüğü tarihi koy.
+- **Ölü referans bırakma.** Bir dosyaya atıf verirken (`reports/x.md`,
+  `docs/y.md`) o dosyanın gerçekten repoda olduğunu doğrula — gitignore'daki
+  bir dosyaya atıf, taze klonda kırık bir bağlantıdır.
+- **Yorum bir iddiadır.** "Şu kolon şunu ölçer", "şu girdiler saklanır" gibi
+  bir cümle yazdığında, o iddianın KODDA karşılığı olduğunu doğrula. Denetimde
+  bulunan en pahalı yanılgılar kod hatası değil, **doğru görünen ama karşılığı
+  olmayan yorumlardı** (üç ayrı dosya bir ölçümün yapıldığını söylüyordu;
+  ölçüm hiç yapılmıyordu).
+
+**`/durum` ve `/kapat`'ın zorunlu kontrolü:** "Sıradaki 3 İş" listesindeki her
+madde hâlâ geçerli mi? Tamamlanmış bir işi listede bırakmak, bir sonraki
+oturumu yanlış işe başlatır. Madde numaraları da atlanmadan yazılır.
 
 ## 9. Mert'in Sezgisini Koru
 
@@ -199,3 +219,103 @@ yazdığında hangi araçta olursan ol aynı davranışı üret:
   satın alma) öncesi daima açıkça onay iste.
 - Mert'in yazdığı koddaki bir hatayı görünce söyle — "çalışıyor ama şurada
   patlar" demek senin görevin.
+
+## 11. Denetim Protokolü (`/denetle`)
+
+2026-07-27'de yapılan bağımsız bir denetim, tek başına en pahalı hata sınıfının
+ne olduğunu gösterdi ve bu bölüm oradan doğdu.
+
+**Altın kural: kodun doğru olması, sistemin doğru çalıştığını GÖSTERMEZ.**
+Bulunan bir kritik ve beş yüksek şiddetli bulgunun hepsinde kod doğruydu;
+bozulan şey kodun VARSAYDIĞI veri durumuydu ve hiçbiri hata fırlatmıyordu.
+
+**Denetlerken sırayla şunlara bak:**
+
+1. **Veritabanının GERÇEK içeriği.** Kod "67 isim" istiyorsa tabloda 67 isim
+   var mı? Bir tabloyu kim besliyor, en son ne zaman beslendi? Boş bir tablo
+   ile "henüz veri yok" farklı şeyler mi, yoksa aynı çıktıya mı düşüyorlar?
+   *Bu adım kod okuyarak GEÇİLEMEZ ve en çok bulgu buradan çıktı.*
+2. **Payda.** Bir oran, sıralama ya da yüzdelik gördüğün her yerde sor: payda
+   nedir, nerede yazıyor, düştüğünde çıktı nasıl görünür?
+3. **"Veri yok" ile "sorun yok".** Eksik kaydın varsayılanı olumlu mu? Bir dış
+   kaynak hatası boş listeye mi düşüyor? Çıkış kodu ne?
+4. **Yorum ↔ kod.** Her "şunu ölçer / şunu saklar / şunu imkânsız kılar"
+   cümlesinin kodda karşılığı var mı? Docstring'e inanma, çağrıyı ara.
+5. **Testin gerçekten ne kanıtladığı.** Test kaynak METNİNİ mi kontrol ediyor,
+   DAVRANIŞI mı? Yeşil bir test yanlış güven verebilir.
+6. **Zaman referansı.** Filtreler duvar saatine mi analiz gününe mi dayanıyor?
+   Dış kaynaktan gelen damgaların saat dilimi ne?
+
+**Denetim koşarken:** hiçbir şeyi değiştirme, önce raporla. Her bulguyu
+`file:line` ile göster ve mümkünse **koşulabilir bir kanıtla** doğrula
+(gerçek veriyle salt-okunur bir script > kod okuma). Kanıtlayamadığını
+"DOĞRULANMADI" diye işaretle ve neyin doğrulayacağını yaz. Şiddet
+sıralaması: sessiz yanlış sonuç > çalışmayan özellik > yanıltıcı doküman.
+
+**Denetim sonrası:** düzeltmeleri uygula, her düzeltmeye bir **regresyon
+kilidi testi** yaz (yorumunda "ne olmuştu"yu anlat), ve dersi `LESSONS.md`'ye
+işle. Düzeltilemeyen/ön kayıt gerektiren bulgular `STATE.md` Backlog'una
+**ifşa edilerek** yazılır — sessizce bırakılmaz.
+
+**Düzeltmeleri KAPATIRKEN beş tuzak** (hepsi 2026-07-27'de yaşandı):
+
+1. **Düzeltme yeni hata doğurabilir.** Kalite kapısını sıkılaştırmak replay'in
+   tamamını eledi (30 dönem × 3 isim = 90 plan_yok, **0 tahmin**). Her
+   düzeltmeden sonra ETKİLENEN HATTI uçtan uca koş; test yeşil diye geçme.
+2. **Kontrol listesini kodla doğrula, gözle değil.** "Yaptım" demek yetmez;
+   her maddeyi `inspect.getsource` / DB sorgusu ile sınayan bir script yaz.
+   Ama dikkat: naif metin araması **kendi yorumlarını yakalar** ve yanlış
+   alarm verir — koda mı yoruma mı baktığını ayırt et.
+3. **Yeni ölçüm yeni bulgu doğurur.** "90 gün haber çek" kararı, KAP'ın geniş
+   pencereyi **sessizce kırptığını** ortaya çıkardı. Bir kararı uygularken
+   çıkan sürprizi "kapsam dışı" diye geçme — asıl bulgu o olabilir.
+4. **Eski testler eski varsayımı korur.** `tick_size(1000) == 1.00` testi bir
+   VARSAYIMI sabitliyordu; ölçüm 2.50 dedi. Yeşil bir test, doğrulanmış bir
+   gerçek değil, **kayda geçmiş bir inançtır**. Varsayımı test ederken
+   yanına "bu ölçüldü mü, ne zaman?" yaz.
+5. **Tek çağrı yerini düzeltmek kuralı uygulamak DEĞİLDİR — simetriğini ara.**
+   Bir savunma yazdıktan sonra "bunun aynısı başka nerede olmalıydı?" diye sor.
+   Yaşandı: bir fixture salt-okunur yapıldı ama aynı sınıf hata bir sonraki
+   testte yeniden yapılabiliyordu; bir alan için None koruması yazıldı,
+   simetriği olan alan için yazılmadı. Düzeltme (a) bu çağrı yerini, (b) aynı
+   hatanın BİR DAHA yapılamayacağı yeri kapsamalı (LESSONS L-008).
+
+## 12. Kuralı Zorla — yorum bir niyettir, test bir sözleşmedir
+
+Bu bölüm §11'in doğal devamı: denetimde bulunan hataların çoğu, **yazılı ama
+zorlanmayan** kurallardan doğdu. Bir kural yalnızca yorumda duruyorsa ömrü,
+onu hatırlayan kişinin ömrü kadardır — ve o kişi çoğu zaman sen değilsin
+(farklı bir model, farklı bir araç, ya da aylar sonraki sen).
+
+**Kural: bir kuralı yazdıktan sonra sor — bunu koşulabilir hale getirebilir
+miyim?** Getirebiliyorsan getir. Somut olarak şu dört sınıf hemen devredilebilir:
+
+1. **Eşik zemini.** "Bu eşik düşürülmemeli" bir dilek; `assert esik >= 15` bir
+   sözleşme. Zemin, eşiği değiştirmeyi yasaklamaz — **görünür** kılar: değiştiren
+   kişi testi de değiştirmek zorunda kalır, yani karar sessiz bir config
+   düzenlemesi olarak geçmez.
+2. **Yapı eşliği.** Koddaki kolon/alan listeleri ile şemanın (ya da şablonun)
+   birebir aynı olduğunu test et. Bu ikisi ayrışırsa yazma ya patlar ya da —
+   daha kötüsü — bir kolon kayarak sessizce yanlış yere düşer.
+3. **Doküman ↔ kod atıfları.** Belgelerde geçen her komut, config anahtarı ve
+   dosya yolu gerçekten var mı? Bu, §8'deki "ölü referans bırakma" kuralının
+   makineye devredilmiş hâlidir; insanın hatırlamasına bırakılırsa bırakılmaz.
+4. **Test suite'inin yan etkisizliği.** Testler kullanıcının gerçek verisine,
+   çıktı klasörlerine ya da dış servislere DOKUNMAMALI — ve bu bir konvansiyon
+   değil, fixture'da zorlanan bir kural olmalı.
+
+**Üç katman, üç ayrı soru** (birini diğerinin yerine koyma):
+
+| Katman | Soru | Yakaladığı |
+|---|---|---|
+| Sözleşme | Kodun VARSAYDIĞI yapı ayakta mı? | Liste↔şema kayması, eşik gevşemesi, katman ihlali |
+| Mekanizma | Doğru girdiden/paydadan mı besleniyor? | Birim düzeyinde sessiz yanlış |
+| Uçtan uca | Zincir gerçekten koşuyor mu? | **Modüller arası varsayım kırılması** |
+
+Üçüncüsü en pahalı hataların yeridir ve birim testleri onu GÖRMEZ: her modül
+kendi başına doğrudur, kırılan şey aralarındaki varsayımdır.
+
+**Sınır — testin de bir maliyeti var.** Her satırı test etmek hedef değil;
+hedef **her KURALI** test etmek. Kapsam yüzdesi "kod çalıştı" der, "kural
+tutuyor" demez. Ve bir test yazarken yine §11 geçerli: testin neyi kanıtladığını
+sor — kaynak METNİNİ mi kontrol ediyor, DAVRANIŞI mı?

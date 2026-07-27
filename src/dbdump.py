@@ -53,8 +53,13 @@ def _pk_order(con: sqlite3.Connection, table: str) -> str:
 
 
 def dump(cfg: dict, out_path: str | Path | None = None) -> Path:
-    """Veritabanını deterministik SQL metnine yazar. Yazılan yolu döner."""
-    con = db.connect(cfg)
+    """Veritabanını deterministik SQL metnine yazar. Yazılan yolu döner.
+
+    Bağlantı SALT-OKUNUR: bir "dump" işleminin şema uygulaması ya da migration
+    ilerletmesi beklenmez. İlk sürüm `db.connect(cfg)` çağırıyordu, yani
+    okumak için açılan bir komut yazma yapıyordu.
+    """
+    con = db.connect(cfg, readonly=True)
     p = util.ensure_parent(out_path or cfg["paths"]["db_dump"])
 
     parts: list[str] = [

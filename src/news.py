@@ -57,21 +57,56 @@ def store(con: sqlite3.Connection, kayitlar: list[dict],
 
 
 def sync(cfg: dict, con: sqlite3.Connection, *, until: str | None = None,
-         full: bool = False) -> dict:
-    """Artımlı KAP senkronu — evrendeki hisselerle sınırlı."""
+         full: bool = False, gun: int | None = None) -> dict:
+    """Artımlı KAP senkronu — evrendeki hisselerle sınırlı.
+
+    Dönen sözlükte `hata` ve `atlanan_aralik` DAİMA bulunur. Çağıran taraf
+    (CLI) bunları görünür kılmakla yükümlüdür: "0 bildirim" ile "çekilemedi"
+    aynı çıktıya düşerse sistem sessizce habersiz çalışmaya devam eder.
+    """
     from . import universe
 
     if not cfg["sources"]["kap"].get("enabled", False):
         log.info("KAP kapalı (config.sources.kap.enabled)")
-        return {"atlandi": True, "yazilan": 0}
+        return {"atlandi": True, "yazilan": 0, "hata": None,
+                "atlanan_aralik": None}
 
     ev = set(universe.all_tickers(con))
     since = None if full else last_seen(con)
-    kayitlar = kap.fetch_incremental(cfg, since=since, until=until)
-    sonuc = store(con, kayitlar, tickers=ev)
-    sonuc["since"] = since or "(tam çekim)"
-    sonuc["atlandi"] = False
+    s = kap.fetch_incremental(cfg, since=since, until=until, tam_gun=gun)
+    sonuc = store(con, s.kayitlar, tickers=ev)
+    sonuc.update({
+        "since": since or "(tam çekim)",
+        "atlandi": False,
+        "hata": s.hata,
+        "tickersiz": s.tickersiz,
+        "atlanan_aralik": s.atlanan_aralik,
+    })
     return sonuc
+
+
+def kaynak_durumu(con: sqlite3.Connection, asof: str, *,
+                  bayat_gun: int = 5) -> dict:
+    """Haber katmanının SAĞLIK durumu — pakete girer.
+
+    Pakette boş bir `haberler` listesi iki farklı olguyu temsil edebilir:
+    "bu hissede bildirim yok" ve "KAP taraması hiç çalışmadı / bayat". İkisini
+    ayırt edemeyen analist ikincisini birincisi sanar. Bu fonksiyon farkı
+    tek bir alana indirger.
+    """
+    son = last_seen(con)
+    if son is None:
+        return {"ok": False, "son_bildirim": None,
+                "not": "KAP taraması hiç çalışmadı — `bist haber cek`"}
+    gun = None
+    d_son, d_asof = util.parse_date(son[:10]), util.parse_date(asof)
+    if d_son and d_asof:
+        gun = (d_asof - d_son).days
+    if gun is not None and gun > bayat_gun:
+        return {"ok": False, "son_bildirim": son, "gecikme_gun": gun,
+                "not": f"KAP verisi {gun} gün bayat — boş haber listesi "
+                       f"'bildirim yok' anlamına GELMEZ"}
+    return {"ok": True, "son_bildirim": son, "gecikme_gun": gun, "not": None}
 
 
 def for_ticker(con: sqlite3.Connection, ticker: str, *, since: str | None = None,

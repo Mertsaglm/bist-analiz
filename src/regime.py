@@ -5,8 +5,15 @@ overfit kapısıdır: rejim tanımı serbestlik derecesidir ve dondurulmadan
 doğrulanamaz. Rejimin işi risk yönetimi — ne alacağını değil, NE KADAR
 alacağını ve ne kadar nakitte kalacağını söyler.
 
-Bu ayrım ölçülene kadar korunur. Ölçmek için: `outcomes.ret_pct_equal_size`
-karşı-olgusu (rejim boyutlandırmalı getiri vs eşit boyutlandırmalı) — Faz 6.
+Bu ayrım ölçülene kadar korunur. Ölçüm aracı: `outcomes.ret_pct_equal_size`
+karşı-olgusu — rejim boyutuyla açılan pozisyonun PORTFÖY KATKISI vs sabit
+referans boyutla açılsaydı ne katardı (`evaluate.sizing_counterfactual`).
+
+⚠ Bu kolon 2026-07-27'ye kadar `ret_pct`'in KOPYASIYDI, yani fark tanım gereği
+sıfırdı ve rejim katmanı ölçülüyor görünüp hiç ölçülmüyordu (ADR #009).
+Düzeltildikten sonraki İLK ölçüm: replay N=13, **−0.22pp (t=−2.51)** — yani
+rejimin kırptığı pozisyonlar kazanmış olabilir. Hüküm `ölçüm yetersiz`;
+N≥15'e ulaşınca ilk kez gerçek bir cevap verilebilecek.
 
 ⚠ Yeniden çerçeveleme notu (ADR #008): rejim etiketi bir TAHMİN değil, bir
 DURUM TESPİTİdir. "Risk-off" piyasanın düşeceğini söylemez; şu anda geniş
@@ -15,11 +22,14 @@ tabanlı bir zayıflık olduğunu söyler ve buna göre daha az risk alınmasın
 
 from __future__ import annotations
 
+import logging
 import sqlite3
 
 import numpy as np
 
 from . import db, macro, prices, util
+
+log = logging.getLogger(__name__)
 
 ETIKETLER = ("risk-on", "neutral", "transition", "risk-off")
 
@@ -33,17 +43,25 @@ def _vol_ann(seri: np.ndarray, n: int = 21) -> float | None:
     return float(np.std(r, ddof=1) * np.sqrt(252) * 100)
 
 
-def breadth(con: sqlite3.Connection, cfg: dict, asof: str) -> float | None:
-    """Evrenin yüzde kaçı SMA50'sinin üstünde? Genişlik = katılım ölçüsü.
+def breadth(con: sqlite3.Connection, cfg: dict, asof: str) -> tuple[float | None, int, int]:
+    """Evrenin yüzde kaçı SMA50'sinin üstünde? `(pct, kullanilan_n, istenen_n)`.
 
     Endeks yükselirken genişlik düşüyorsa ralli birkaç isme dayanıyordur —
     endeksin tek başına söylemediği şey budur.
+
+    ⚠ PAYDA DÖNDÜRÜLÜR ÇÜNKÜ PAYDA SESSİZCE DÜŞÜYORDU. Bu sorgu
+    `indicator_daily`'ye JOIN atar; göstergesi hesaplanmamış isim satır
+    üretmez. Ölçüldü (2026-07-24 paketi): 67 isimlik ölçüm evreni istenmesine
+    rağmen 16 isim kullanılmış, genişlik 5/16 = %31.25 çıkmış ve `risk_off`
+    eşiği (≤%35) tetiklenmişti — XU100 SMA200'ünün **%9.7 ÜSTÜNDEYKEN**,
+    nakit önerisi %90'a çıkmıştı. 67 isimle eşiğin hangi tarafına düşeceği
+    bilinmiyordu, çünkü kimse paydaya bakmıyordu.
     """
     from . import universe
 
     tickers = universe.measure(con)
     if not tickers:
-        return None
+        return None, 0, 0
     ph = ",".join("?" * len(tickers))
     # `sma50` FİYAT uzayında hesaplanıyor (indicators.py), dolayısıyla ham
     # kapanış `c` ile karşılaştırılır. `c_tr` (toplam getiri) ile kıyaslamak
@@ -56,8 +74,15 @@ def breadth(con: sqlite3.Connection, cfg: dict, asof: str) -> float | None:
         (asof, cfg["gostergeler"]["set_version"], *tickers))
     gecerli = [r for r in rows if r["c"] and r["sma50"]]
     if len(gecerli) < 5:
-        return None
-    return float(sum(1 for r in gecerli if r["c"] > r["sma50"]) / len(gecerli) * 100)
+        log.warning("%s: genişlik ölçülemiyor — %d ticker istendi, %d tanesinin "
+                    "göstergesi var (<5)", asof, len(tickers), len(gecerli))
+        return None, len(gecerli), len(tickers)
+    if len(gecerli) < len(tickers) * 0.8:
+        log.warning("%s: genişlik DAR PAYDA ile hesaplanıyor — %d/%d isim. "
+                    "Rejim etiketi ve nakit oranı buna dayanıyor; tamamlamak "
+                    "için `bist gosterge`.", asof, len(gecerli), len(tickers))
+    pct = float(sum(1 for r in gecerli if r["c"] > r["sma50"]) / len(gecerli) * 100)
+    return pct, len(gecerli), len(tickers)
 
 
 def classify(cfg: dict, con: sqlite3.Connection, asof: str) -> dict:
@@ -72,7 +97,10 @@ def classify(cfg: dict, con: sqlite3.Connection, asof: str) -> dict:
     xu_fark = (float(xu_c[-1] / sma200 - 1) * 100
                if sma200 and len(xu_c) else None)
     girdiler["xu100_vs_sma200_pct"] = xu_fark
-    girdiler["breadth_above_sma50_pct"] = breadth(con, cfg, asof)
+    gen_pct, gen_n, gen_istenen = breadth(con, cfg, asof)
+    girdiler["breadth_above_sma50_pct"] = gen_pct
+    girdiler["breadth_n"] = gen_n                  # PAYDA — denetlenebilirlik
+    girdiler["breadth_istenen_n"] = gen_istenen
     girdiler["xu100_vol_ann_21"] = _vol_ann(xu_c) if len(xu_c) else None
     girdiler["usdtry_vol_ann_21"] = (_vol_ann(usd["c"].to_numpy(float))
                                      if len(usd) else None)
@@ -86,10 +114,13 @@ def classify(cfg: dict, con: sqlite3.Connection, asof: str) -> dict:
 
     # Makro verisi büyük ölçüde eksikse DEFANSİF kayma. Bilmemek, bilmek gibi
     # davranmaktan iyidir — nakit önerisi yukarı çekilir.
+    # ⚠ `makro_eksik_pct` **`**girdiler` yayılımından ÖNCE** eklenmeli; ilk
+    # sürümde sonra ekleniyordu ve alan `inputs` içinde görünüp üst seviyede
+    # görünmüyordu (aynı sözlük nesnesi olduğu için).
     eksik = macro.null_pct(cfg, mctx)
+    girdiler["makro_eksik_pct"] = eksik
     if eksik > 70:
         pol["nakit_pct"] = min(100.0, pol["nakit_pct"] + 10.0)
-        girdiler["makro_eksik_pct"] = eksik
 
     return {
         "date": asof, "label": etiket, **girdiler,
@@ -116,6 +147,16 @@ def _label(g: dict, r: dict) -> str:
 
 
 def store(cfg: dict, con: sqlite3.Connection, rej: dict) -> int:
+    """Rejim kararını `regime_daily`'ye dondurur.
+
+    ⚠ Bu fonksiyon uzun süre HİÇ ÇAĞRILMADI (2026-07-27 denetimi: 0 referans,
+    tablo 0 satır) — oysa `classify`'ın docstring'i "girdiler denetlenebilir
+    biçimde saklanır" diyordu. Yani "2026-07-24'te neden risk-off dedik?"
+    sorusunun cevabı hiçbir yerde yoktu; girdiler (genişlik, payda, makro
+    eksikliği) her gün yeniden hesaplanıp atılıyordu. `planner.build_menu`
+    artık her çağrıda buraya yazar — LESSONS L-002'nin tam olarak uyardığı
+    "besleyen script yoksa tablo donar" durumu.
+    """
     return db.upsert_many(
         con, "regime_daily",
         ["date", "label", "xu100_vs_sma200_pct", "breadth_above_sma50_pct",

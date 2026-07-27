@@ -28,7 +28,7 @@ Bir plan geometrik olarak geçerli olabilir ama yine de kötü bir fikir olabili
 {
   "schema_version": "bist_llm_v1",
   "asof": "2026-07-24",
-  "bundle_sha": "636ca4a4d9e47b00fa954a2b400435133078b7968042d3309066c7489750b8ad",
+  "bundle_sha": "7c98b97b76b461c94e9192188122129e85b0d6c3e18256c89790045d92dbbf94",
   "tool": "<araç>",
   "market_view": {
     "regime_agreement": "katiliyorum|katilmiyorum",

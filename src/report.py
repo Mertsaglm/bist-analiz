@@ -459,6 +459,19 @@ def evaluate_report(cfg: dict, e: dict) -> str:
     A(f"> {b['not']}")
     A("")
 
+    A("## Rejim boyutlandırması işe yarıyor mu?")
+    A("")
+    bz = e["boyutlandirma"]
+    A(f"Portföy katkısı farkı: {_s(bz['ort'], 3, 'pp')} · N={bz['n']} · "
+      f"t={_s(bz['t'])} · **{bz.get('hukum', '—')}**")
+    A("")
+    A(f"> {bz['not']}")
+    A("")
+    A("_Bu satır uzun süre TANIM GEREĞİ sıfırdı (`ret_pct_equal_size` kolonu "
+      "`ret_pct`'in kopyasıydı), yani rejim katmanı ölçülüyor görünüp hiç "
+      "ölçülmüyordu — 2026-07-27 denetiminde düzeltildi (ADR #009)._")
+    A("")
+
     A("## Veto")
     A("")
     v = e["veto"]
@@ -480,18 +493,30 @@ def evaluate_report(cfg: dict, e: dict) -> str:
     return "\n".join(L)
 
 
-def daily_report(cfg: dict, bundle: dict, *, holdings: dict | None = None) -> str:
+AZALT_SINYALLERI = ("reduce", "sell", "avoid")
+
+
+def daily_report(cfg: dict, bundle: dict, *, holdings: dict | None = None,
+                 analiz: list[dict] | None = None) -> str:
     """Günlük markdown rapor — **AZALT bölümüyle başlar.**
 
     Ölçüldü (2026-07-26): alt kuyruk (−1.03pp) üst kuyruğun ~1.8 katı. Retail
     olarak açığa satamazsın, dolayısıyla sistemin en savunulabilir çıktısı
     "ne al" değil "elindekilerden hangisini azalt"tır. Rapor sırası bu ölçüme
     göre seçildi; çoğu perakende araç bunu ters yapar.
+
+    ⚠ `analiz` (journal'daki o güne ait tahminler) VERİLMELİ. İlk sürüm yalnız
+    paketi okuyordu; analistin tezi, karşı senaryosu, VETOSU ve sinyali
+    Mert'in okuduğu belgeye HİÇ ulaşmıyordu (2026-07-27 denetimi). Üstelik
+    "azaltma adayları" başlığının altında azaltma kararı değil, düz bir
+    envanter tablosu vardı. ADR #008 sonrası sistemin kalan ürünü veto ve
+    haber yorumu; raporda görünmeyen bir ürün yoktur.
     """
     L: list[str] = []
     A = L.append
     r = bundle["rejim"]
     tutulan = holdings or {}
+    an = {a["ticker"]: a for a in (analiz or [])}
 
     A(f"# BIST Günlük — {bundle['asof']}")
     A("")
@@ -499,7 +524,19 @@ def daily_report(cfg: dict, bundle: dict, *, holdings: dict | None = None) -> st
     A(f"> {cfg['rapor']['uyari']}")
     A("")
     A(f"**Rejim: {r['etiket']}** · nakit %{r['pozisyon_politikasi']['nakit_pct']:.0f} "
-      f"· maks {r['pozisyon_politikasi']['maks_pozisyon']} pozisyon")
+      f"· maks {r['pozisyon_politikasi']['maks_pozisyon']} pozisyon"
+      + (f" · genişlik {_s(r.get('genislik_sma50_ustu_pct'), 1, '%')} "
+         f"({r.get('genislik_n')}/{r.get('genislik_istenen_n')} isim)"
+         if r.get("genislik_n") else ""))
+    if not analiz:
+        A("")
+        A("> ⚠ **Analist çıktısı yok** — bu rapor yalnız deterministik katmanı "
+          "gösteriyor. Tez / veto / sinyal için önce `bist kaydet`.")
+    hs = bundle.get("haber_taramasi") or {}
+    if hs and not hs.get("ok", True):
+        A("")
+        A(f"> ⚠ **Haber katmanı güvenilmez:** {hs.get('not')} — aşağıdaki boş "
+          "haber listeleri 'bildirim yok' anlamına GELMEZ.")
     A("")
 
     # --------------------------------------------------- 1) AZALT (önce)
@@ -510,17 +547,53 @@ def daily_report(cfg: dict, bundle: dict, *, holdings: dict | None = None) -> st
           "ile ekleyebilirsin — sistemin en savunulabilir çıktısı bu bölüm ve "
           "neyi tuttuğunu bilmeden çalışamaz.")
     else:
-        A("| Hisse | adet | kapanış | veri kalitesi | plan durumu |")
-        A("|---|---|---|---|---|")
+        A("| Hisse | adet | kapanış | **sinyal** | veri kalitesi | plan durumu |")
+        A("|---|---|---|---|---|---|")
         ev = {e["ticker"]: e for e in bundle["evren"]}
         for t, h in sorted(tutulan.items()):
             e = ev.get(t, {})
-            kal = "OK" if (e.get("veri_kalitesi") or {}).get("ok", True) else "⚠ BOZUK"
+            vk = e.get("veri_kalitesi") or {}
+            kal = ("OK" if vk.get("ok")
+                   else ("⚠ " + "; ".join(vk.get("uyarilar") or ["bilinmiyor"])))
             durum = ("plan var" if e.get("plan_menusu")
                      else (e.get("plan_yok_nedeni") or "evrende değil"))
+            a = an.get(t)
+            sinyal = a["signal"] if a else "—"
+            if a and a["signal"] in AZALT_SINYALLERI:
+                sinyal = f"**{sinyal.upper()}**"
             A(f"| {t} | {h['qty']:.0f} | "
-              f"{_s((e.get('fiyat') or {}).get('kapanis'))} | {kal} | {durum} |")
+              f"{_s((e.get('fiyat') or {}).get('kapanis'))} | {sinyal} | "
+              f"{kal} | {durum} |")
+
+        azalt = [an[t] for t in sorted(tutulan)
+                 if t in an and an[t]["signal"] in AZALT_SINYALLERI]
+        if azalt:
+            A("")
+            A("**Azaltma gerekçeleri (analistten):**")
+            A("")
+            for a in azalt:
+                A(f"- **{a['ticker']}** — `{a['signal']}` · güven "
+                  f"`{a['confidence']}`")
+                A(f"  - _tez:_ {a['thesis']}")
+                A(f"  - _karşı senaryo:_ {a['counter_scenario']}")
+                A(f"  - _yanlışlayıcı:_ {a['falsifier']}")
+        elif an:
+            A("")
+            A("_Analist elindekilerin hiçbirinde `reduce`/`sell`/`avoid` demedi._")
     A("")
+
+    # --------------------------------------------------- 1b) VETO
+    vetolar = [a for a in (analiz or []) if a.get("veto_code")]
+    if vetolar:
+        A("## 1b. Vetolar — analistin en ölçülebilir katkısı")
+        A("")
+        A("_Veto gerçek bir karardır ve performansı AYRI ölçülür: veto "
+          "edilenler seçilenlerden iyi giderse veto negatif değerlidir ve "
+          "kapatılır (`bist degerlendir`)._")
+        A("")
+        for a in vetolar:
+            A(f"- **{a['ticker']}** · `{a['veto_code']}` — {a['key_risk']}")
+        A("")
 
     # --------------------------------------------------- 2) plan menüsü
     planli = [e for e in bundle["evren"] if e["plan_menusu"]]
@@ -529,6 +602,17 @@ def daily_report(cfg: dict, bundle: dict, *, holdings: dict | None = None) -> st
     A("_Bunlar **öneri değil**, ölçülmüş kurallarla üretilmiş plan iskeletleridir. "
       "Kenar iddiası taşımazlar._")
     A("")
+    tetiklenmeyen = sum(1 for e in planli
+                        for p in e["plan_menusu"]
+                        if p.get("entry_zone_status") == "above_zone")
+    toplam_plan = sum(len(e["plan_menusu"]) for e in planli)
+    if toplam_plan:
+        A(f"⚠ **{tetiklenmeyen}/{toplam_plan} plan `above_zone`** — yani fiyat "
+          "giriş bandının üstünde ve plan bir GERİ ÇEKİLMEYE bağlı. Ölçüldü "
+          "(replay): planların **%46'sı hiç tetiklenmedi**. R:R değerleri "
+          "planlar arasında KIYASLANABİLİR DEĞİLDİR (`rr_secim` alanına bak): "
+          "hedef sabittir, eşitsizlik girişi aşağı iterek sağlanır.")
+        A("")
     for e in planli:
         p = e["plan_menusu"][0]
         t1 = p["targets"][0] if p["targets"] else {}
@@ -540,6 +624,17 @@ def daily_report(cfg: dict, bundle: dict, *, holdings: dict | None = None) -> st
           f"· boyut %{p['position_size_pct']} · maks kayıp "
           f"%{p['max_loss_pct_of_portfolio']}")
         A(f"- {p['daily_limit_note']}")
+        if p.get("rr_secim"):
+            A(f"- _R:R nasıl sağlandı:_ {p['rr_secim']}"
+              + (f" · elenen: {len(p.get('elenen_adaylar') or [])} aday"
+                 if p.get("elenen_adaylar") else ""))
+        a = an.get(e["ticker"])
+        if a:
+            A(f"- **analist:** `{a['signal']}` / `{a['action']}`"
+              + (f" · VETO `{a['veto_code']}`" if a.get("veto_code") else "")
+              + f" · güven `{a['confidence']}`")
+            A(f"  - _tez:_ {a['thesis']}")
+            A(f"  - _ana risk:_ {a['key_risk']}")
         A("")
 
     # --------------------------------------------------- 3) plan yok

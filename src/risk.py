@@ -96,13 +96,19 @@ def position_size_pct(*, entry: float, stop: float, cfg: dict,
         boyut% = pozisyon_başı_risk% / stop_mesafesi%  × rejim_çarpanı
     `maks_pozisyon_pct` ile sınırlanır.
 
-    ⚠ ÖLÇÜLEN DAVRANIŞ: mevcut ayarlarla (risk %1, tavan %10) tavan, stop
-    mesafesi **%10'un altındaki her planda BAĞLAYICIDIR** — tipik ATR stopları
-    %6-9 olduğu için boyut pratikte hep tavana oturur ve volatilite hedeflemesi
-    atıl kalır. Bu bir hata değil, bilinçli muhafazakârlık: gerçekleşen risk
-    %1 yerine ~%0.6-0.9'a düşer. Volatilite hedeflemesinin gerçekten çalışmasını
-    istiyorsan tavanı yükselt ya da riski düşür — ama ikisi de ölçülmüş bir
-    gerekçe ister, sezgiyle oynanmaz.
+    ⚠ ÖLÇÜLEN DAVRANIŞ — İKİ AYRI SINIRLAYICI, KARIŞTIRMA:
+
+    1. **Rejim çarpanı < 1 iken** boyutu o belirler, tavan değil. Ölçüldü
+       (2026-07-24, risk-off, çarpan 0.40): stop mesafesi %6.9 → ham boyut
+       %14.5 → çarpanla %5.83 → tavan (%10) BAĞLAMIYOR. Gerçekleşen risk
+       %1 değil %0.40.
+    2. **Çarpan 1.0 iken** (risk-on) tavan, stop mesafesi %10'un altındaki
+       her planda bağlar ve volatilite hedeflemesi atıl kalır.
+
+    İlk sürümdeki yorum yalnız (2)'yi yazıyor ve "her planda" diyordu; canlı
+    rejimlerin çoğunda geçerli olan (1)'i atlıyordu (2026-07-27 denetimi).
+    Her iki durumda da gerçekleşen risk hedeflenenin ALTINDA kalır — bilinçli
+    muhafazakârlık. Değiştirmek istiyorsan ölçülmüş bir gerekçe gerekir.
 
     ⚠ LLM'in güven seviyesi BURAYA GİRMEZ. Güven→boyut eşlemesi ancak güven
     kalibrasyonu ÖLÇÜLDÜKTEN sonra meşrudur ve o ölçüm için yıllarca veri

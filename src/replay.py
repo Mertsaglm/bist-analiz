@@ -21,8 +21,8 @@ import sqlite3
 
 import numpy as np
 
-from . import (backtest, db, factors, indicators, journal, levels as lv,
-               planner, prices, regime as rj, resolver, universe, util)
+from . import (backtest, db, factors, indicators, journal, planner, prices,
+               resolver, universe)
 from .calendar_bist import BistCalendar
 
 log = logging.getLogger(__name__)
@@ -83,8 +83,6 @@ def run(cfg: dict, con: sqlite3.Connection, *, start: str, end: str,
 
         skor = backtest.score_at(panel, feat, cfg, t, horizon_days=H,
                                  sector_map=smap)
-        rej = rj.classify(cfg, con, asof)
-        bariyer = cal.add_trading_days(asof, H).isoformat()
         snap = indicators.snapshot(con, asof, cfg)
         xu = prices.index_series(con, "XU100", start=asof, end=asof)
 
@@ -105,17 +103,27 @@ def run(cfg: dict, con: sqlite3.Connection, *, start: str, end: str,
                                     bundle_sha=f"replay-{asof}")
         kayit["donem"] += 1
 
+        # ⚠ CANLI HATTIN AYNISI KOŞULMALI. İlk sürüm `planner.build_options`'ı
+        # DOĞRUDAN çağırıyordu ve `build_menu`'yü atlıyordu; böylece canlı
+        # hattaki üç kontrol replay'de HİÇ koşmuyordu: veri-kalitesi kapısı,
+        # plan penceresindeki ex-tarih elemesi ve `atlanan` gerekçesi.
+        # Replay'in tek işi "boru hattı çalışıyor mu"yu kanıtlamak; taklit
+        # ettiği hattı koşmuyorsa kanıt gücü yoktur (2026-07-27 denetimi).
+        secilen_tickerlar = [tk for tk, _, _ in adaylar[:top_n]]
+        # Kalite O GÜNE göre hesaplanır (yazılmaz). `data_quality` yalnız
+        # bugünü tutar; eksik kayıt artık ELEYİCİ olduğu için tabloya
+        # güvenmek replay'in tamamını eler. `assess_quality` sadece
+        # `date <= asof` barlarını okur → LOOK-AHEAD YOK.
+        kal = {r["ticker"]: {**r, "reasons": r["reasons"], "yas_gun": 0}
+               for r in prices.assess_quality(cfg, con, asof=asof,
+                                              tickers=secilen_tickerlar,
+                                              store=False)}
+        menu = planner.build_menu(cfg, con, asof, tickers=secilen_tickerlar,
+                                  kalite=kal)
+        rej = menu["rejim"]            # rejim de artık tek yerden geliyor
+
         for sira, (tk, s, i) in enumerate(adaylar[:top_n]):
-            ind = snap.get(tk)
-            bars = prices.bars(con, tk, end=asof)
-            if not ind or len(bars) < 260:
-                kayit["plan_yok"] += 1
-                continue
-            sev = lv.build_levels(bars, cfg, atr=ind.get("atr14"))
-            opts, _ = planner.build_options(
-                cfg, ticker=tk, asof=asof, bars=bars, ind=ind, seviyeler=sev,
-                regime=rej, tier=tiers.get(tk), time_barrier_date=bariyer)
-            gecerli = [o for o in opts if not planner.validate_option(o, cfg)]
+            gecerli = menu["menu"].get(tk) or []
             if not gecerli:
                 kayit["plan_yok"] += 1
                 continue
@@ -132,7 +140,7 @@ def run(cfg: dict, con: sqlite3.Connection, *, start: str, end: str,
                 referans={"close": float(panel.c[t, i]),
                           "xu100": float(xu["c"].iloc[0]) if len(xu) else None,
                           "ew_index": None,
-                          "atr14": ind.get("atr14")})
+                          "atr14": (snap.get(tk) or {}).get("atr14")})
             kayit["tahmin"] += 1
 
     coz = resolver.resolve_open(cfg, con)

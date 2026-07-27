@@ -110,10 +110,6 @@ def index_symbols(cfg: dict) -> dict[str, str]:
     return {**ycfg["endeksler"], **ycfg["kur"]}
 
 
-def info(con: sqlite3.Connection, ticker: str) -> dict | None:
-    return db.fetch_one(con, "SELECT * FROM universe WHERE ticker = ?", (ticker.upper(),))
-
-
 def scan(cfg: dict) -> list[dict]:
     """Evrendeki her sembolü CANLI yoklar — `universe.yaml`'daki ölçümleri tazeler.
 

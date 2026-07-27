@@ -20,7 +20,11 @@ class TestTickSize:
         (100.00, 0.10), (249.90, 0.10),
         (250.00, 0.25), (499.75, 0.25),
         (500.00, 0.50), (999.50, 0.50),
-        (1000.00, 1.00), (5000.00, 1.00),
+        # ⚠ 1000+ bandı 2026-07-27'de ÖLÇÜLDÜ (EGEEN, 735 farklı fiyat):
+        # en küçük fark 2.50 ve tüm farklar 2.50'nin katı. Eski 1.00 değeri
+        # bir VARSAYIMDI ve bu test onu sabitliyordu — yani yanlış varsayımı
+        # koruyan bir testti.
+        (1000.00, 2.50), (5000.00, 2.50), (17500.00, 2.50),
     ])
     def test_bant_sinirlari(self, cfg, fiyat, beklenen):
         assert risk.tick_size(fiyat, cfg) == beklenen
@@ -153,3 +157,34 @@ class TestRR:
     def test_stop_atr_katsayisi(self):
         assert risk.stop_atr_multiple(100.0, 90.0, 5.0) == pytest.approx(2.0)
         assert risk.stop_atr_multiple(100.0, 90.0, 0) is None
+
+
+class TestYuksekFiyatIzgarasi:
+    """⚠ REGRESYON KİLİDİ (2026-07-27 denetimi).
+
+    config uzun süre "evrende 500 TL üstü fiyat gözlemi yok" diyordu ve
+    1000+ bandına 1.00 TL VARSAYIM koyuyordu. Faz 2'de ölçüm evreni 67 isme
+    çıkınca iddia geçersiz oldu ama not güncellenmedi. Ölçüldü: 1000+ bandında
+    (EGEEN, 735 farklı fiyat) en küçük fark **2.50 TL** ve TÜM farklar 2.50'nin
+    katı; 1.00 hiç gözlenmiyor. Yanlış adım = ızgara dışı fiyat = UYGULANAMAZ
+    plan, ve `on_tick_grid` onu geçerli sayardı.
+    """
+
+    def test_1000_ustu_adim_2_50(self, cfg):
+        assert risk.tick_size(1500.0, cfg) == 2.50
+        assert risk.tick_size(17500.0, cfg) == 2.50
+
+    def test_500_1000_arasi_adim_0_50(self, cfg):
+        assert risk.tick_size(750.0, cfg) == 0.50
+
+    def test_1000_ustu_yuvarlama_izgarada(self, cfg):
+        for ham in (1234.0, 1001.3, 17499.9):
+            for mod in ("down", "up", "nearest"):
+                v = risk.round_to_tick(ham, cfg, mod)
+                assert risk.on_tick_grid(v, cfg), f"{ham}/{mod} → {v} ızgarada değil"
+                assert abs(v / 2.5 - round(v / 2.5)) < 1e-6
+
+    def test_1_00_katlari_artik_gecerli_SAYILMIYOR(self, cfg):
+        """1234.00 eski varsayımla geçerliydi; gerçek ızgarada DEĞİL."""
+        assert not risk.on_tick_grid(1234.00, cfg)
+        assert risk.on_tick_grid(1235.00, cfg)      # 494 × 2.50

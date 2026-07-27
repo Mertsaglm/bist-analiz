@@ -46,6 +46,7 @@ class Level:
     first_date: str
     last_date: str
     confirm_idx: int    # kümedeki EN GEÇ doğrulanan pivot
+    spread: float = 0.0  # kümenin fiyat yayılımı (max-min) — `price` ortalamadır
 
 
 # ---------------------------------------------------------------- pivotlar
@@ -64,13 +65,44 @@ def find_pivots(high: np.ndarray, low: np.ndarray, dates: list[str],
 
 
 def _cluster(pivots: list[Pivot], tolerans: float, min_dokunus: int) -> list[Level]:
-    """Birbirine `tolerans` kadar yakın pivotları tek seviyeye toplar."""
+    """Birbirine `tolerans` kadar yakın pivotları tek seviyeye toplar.
+
+    ⚠ Ölçüt KÜME GENİŞLİĞİDİR, son üyeye uzaklık değil. İlk sürüm tek-bağlantı
+    (single linkage) yapıyordu: `abs(p.price - kumeler[-1][-1].price)`. Ardışık
+    farkların her biri ≤ tolerans olan bir zincir toplamda N × tolerans kadar
+    yayılabilir ve kümenin ORTALAMASI hiçbir gerçek pivotun bulunmadığı bir
+    fiyata düşebilir.
+
+    ÖLÇÜLDÜ (2026-07-27, 8 canlı isim, gerçek veri) — etki tahmin edilenden
+    büyük çıktı. Eski kümelerin en geniş yayılımı toleransın **2.9 ila 16.2
+    KATI** arasındaydı:
+
+        ticker  pivot  eski küme  yeni küme   eski maks yayılım
+        TCELL      62          3         15   27.85 TL (16.2×tol)
+        SISE       66          6         19    8.06 TL (12.3×tol)
+        THYAO      66          6         14   47.00 TL (10.6×tol)
+
+    ASIL ZARAR, hedefin uydurulması değil **R:R'ın ŞİŞMESİYDİ**. Geniş zincir,
+    fiyatın hemen üstündeki gerçek direnci yutup kümenin ortalamasını yukarı
+    taşıyordu; planlayıcı da "en yakın direnç" diye o UZAK ortalamayı alıyordu:
+
+        ticker  fiyat    eski en yakın direnç   yeni en yakın direnç
+        TCELL   103.70                 116.30                 103.92  (−3.6×ATR)
+        SISE     43.42                  47.83                  44.20  (−2.8×ATR)
+        PETKM    22.02                  24.35                  22.12  (−2.6×ATR)
+
+    Yani fiyatın 0.2 TL üstündeki duvar görünmez oluyor, hedef 12 TL yukarıya
+    konuyor ve R:R yapay olarak `min_rr_t1` çıtasını aşıyordu. Düzeltmeden
+    sonra 18 canlı isimden yalnız 4'ü R:R ≥ 1.5'i geçiyor (önce 9'du) —
+    **"geçerli plan yok" bu projede meşru bir cevaptır** ve eşiği sonucu
+    görüp gevşetmek yasak (bkz. `docs/on-kayit-revizyon-01.md` §5).
+    """
     if not pivots:
         return []
     sirali = sorted(pivots, key=lambda p: p.price)
     kumeler: list[list[Pivot]] = [[sirali[0]]]
     for p in sirali[1:]:
-        if abs(p.price - kumeler[-1][-1].price) <= tolerans:
+        if p.price - kumeler[-1][0].price <= tolerans:      # KÜME GENİŞLİĞİ
             kumeler[-1].append(p)
         else:
             kumeler.append([p])
@@ -81,12 +113,17 @@ def _cluster(pivots: list[Pivot], tolerans: float, min_dokunus: int) -> list[Lev
             continue
         tarihler = sorted(p.date for p in kume)
         tepe = sum(1 for p in kume if p.kind == "tepe")
+        fiyatlar = [p.price for p in kume]
         out.append(Level(
-            price=round(float(np.mean([p.price for p in kume])), 4),
+            price=round(float(np.mean(fiyatlar)), 4),
             kind="direnc" if tepe * 2 >= len(kume) else "destek",
             touches=len(kume),
             first_date=tarihler[0], last_date=tarihler[-1],
             confirm_idx=max(p.confirm_idx for p in kume),
+            # Kümenin YAYILIMI taşınır: seviye fiyatı bir ortalamadır ve
+            # yayılım büyükse o ortalama hiçbir pivotun tam üstünde değildir.
+            # Okuyanın bunu görmesi gerekir.
+            spread=round(float(max(fiyatlar) - min(fiyatlar)), 4),
         ))
     return sorted(out, key=lambda l: l.price)
 

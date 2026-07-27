@@ -158,7 +158,3 @@ def probe(ticker: str, cfg: dict, *, period: str = "6mo") -> dict:
         "zero_vol_ratio": float((v == 0).mean()),
         "reason": None,
     }
-
-
-def today_iso() -> str:
-    return date.today().isoformat()

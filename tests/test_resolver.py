@@ -68,7 +68,7 @@ class TestGiris:
             {"date": "2024-01-02", "o": 105, "h": 106, "l": 104, "c": 105},
             {"date": "2024-01-03", "o": 103, "h": 104, "l": 99, "c": 100},
         ])
-        d = resolver.entry_fill(bars, entry_low=98, entry_high=100, trigger="x")
+        d = resolver.entry_fill(bars, entry_low=98, entry_high=100)
         assert d is not None
         assert d[0] == "2024-01-03"
 
@@ -76,15 +76,13 @@ class TestGiris:
         """Bandın İÇİNDEKİ en kötü fiyat — iyimser dolum slippage'ı gizler."""
         bars = self._bars([
             {"date": "2024-01-03", "o": 103, "h": 104, "l": 99, "c": 100}])
-        _, fiyat = resolver.entry_fill(bars, entry_low=98, entry_high=100,
-                                       trigger="x")
+        _, fiyat = resolver.entry_fill(bars, entry_low=98, entry_high=100)
         assert fiyat == 100.0
 
     def test_acilis_bandin_altindaysa_acilistan(self):
         bars = self._bars([
             {"date": "2024-01-03", "o": 97, "h": 99, "l": 95, "c": 98}])
-        _, fiyat = resolver.entry_fill(bars, entry_low=98, entry_high=100,
-                                       trigger="x")
+        _, fiyat = resolver.entry_fill(bars, entry_low=98, entry_high=100)
         assert fiyat == 97.0
 
     def test_dokunulmazsa_dolum_yok(self):
@@ -92,8 +90,7 @@ class TestGiris:
             {"date": "2024-01-02", "o": 105, "h": 106, "l": 104, "c": 105},
             {"date": "2024-01-03", "o": 106, "h": 107, "l": 105, "c": 106},
         ])
-        assert resolver.entry_fill(bars, entry_low=98, entry_high=100,
-                                   trigger="x") is None
+        assert resolver.entry_fill(bars, entry_low=98, entry_high=100) is None
 
 
 class TestUctanUca:
@@ -205,3 +202,33 @@ class TestHataEtiketi:
         resolver.resolve_open(cfg, con)
         o = con.execute("SELECT * FROM outcomes").fetchone()
         assert o["error_tag"] == "hizli_stop"
+
+
+class TestTabanCizgisiNoktaZamanli:
+    """⚠ REGRESYON KİLİDİ (2026-07-27 denetimi).
+
+    `_ew_return` BİRİNCİL taban çizgisini `universe.live(con)` ile, yani
+    ÇÖZÜM ANINDAKİ listeyle kuruyordu. `universe.sync` YAML'dan silinen ismi
+    tablodan da sildiği için, evren bir kez değişince GEÇMİŞ tahminlerin
+    `alpha_vs_ew` değeri sessizce kayıyordu.
+    """
+
+    def test_evren_o_gunku_barlardan_kurulur(self, cfg, con):
+        from tests.conftest import add_bars, add_universe
+        for t in ("AAA", "BBB", "CCC"):
+            add_universe(con, t, in_live=True, in_measure=True)
+            add_bars(con, t, [("2024-01-02", 10, 10, 10, 10, 100, 10)])
+        # DDD o gün vardı ama bugün canlı listede DEĞİL
+        add_universe(con, "DDD", in_live=False, in_measure=True)
+        add_bars(con, "DDD", [("2024-01-02", 10, 10, 10, 10, 100, 10)])
+
+        ev = resolver._ew_evreni(con, "2024-01-02")
+        assert "DDD" in ev, "listeden çıkarılan isim geçmiş tabandan da düştü"
+        assert len(ev) == 4
+
+    def test_bari_olmayan_isim_tabana_girmez(self, cfg, con):
+        from tests.conftest import add_bars, add_universe
+        add_universe(con, "AAA", in_measure=True)
+        add_bars(con, "AAA", [("2024-01-02", 10, 10, 10, 10, 100, 10)])
+        add_universe(con, "YOK", in_measure=True)      # barı yok
+        assert resolver._ew_evreni(con, "2024-01-02") == ["AAA"]

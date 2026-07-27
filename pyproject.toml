@@ -1,30 +1,37 @@
-[tool.poetry]
+# Poetry 2.x konvansiyonu: metadata [project] tablosunda durur.
+# [tool.poetry] altındaki name/version/description/authors/readme/scripts
+# kullanımı deprecate edildi (`poetry check` 6 uyarı basıyordu).
+[project]
 name = "bist-analiz"
 version = "0.1.0"
 description = "BIST hisse analiz ve karar destek sistemi — nicel skorlama + LLM yorum katmanı + ölçüm harness'i"
-authors = ["Mert"]
+authors = [{ name = "Mert" }]
 readme = "README.md"
+requires-python = ">=3.12,<4.0"
+dependencies = [
+    "yfinance (>=0.2.66,<0.3.0)",
+    "pandas (>=2.3,<3.0)",
+    "numpy (>=2.0,<3.0)",
+    "requests (>=2.32,<3.0)",
+    "PyYAML (>=6.0,<7.0)",
+]
+
+[project.scripts]
+bist = "src.cli:main"
+
+[tool.poetry]
 package-mode = true
 packages = [{ include = "src" }]
-
-[tool.poetry.dependencies]
-python = "^3.12"
-yfinance = "^0.2.66"
-pandas = "^2.3"
-numpy = "^2.0"
-requests = "^2.32"
-PyYAML = "^6.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3"
 
-[tool.poetry.scripts]
-bist = "src.cli:main"
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-q"
+# `-q` KALDIRILDI: `pytest` çıktısının sonundaki "N passed" satırını gizliyordu
+# ve README'deki test sayısı bu yüzden sessizce bayatlıyordu.
+addopts = "--strict-markers"
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=2.0"]
 build-backend = "poetry.core.masonry.api"

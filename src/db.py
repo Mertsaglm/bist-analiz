@@ -81,6 +81,14 @@ CREATE TABLE IF NOT EXISTS data_quality (
 );
 
 -- ======================== Analitik (dondurulmuş) ========================
+-- ⚠ `indicator_daily` KESİTSEL İSTATİSTİKLERİN PAYDASIDIR. `factors._panel` ve
+-- `regime.breadth` buraya JOIN atar; göstergesi hesaplanmamış bir ticker
+-- SESSİZCE satır üretmez ve kesit daralır — hata yok, uyarı yok, sadece
+-- daha küçük bir popülasyon. Ölçüldü (2026-07-27): tablo 70 ticker'ın 19'unu
+-- kapsıyordu, dolayısıyla 67 isimlik ölçüm evreni istenirken 16 isimle
+-- skorlanıyor ve piyasa genişliği 5/16 = %31 çıkıp rejimi `risk-off`
+-- yapıyordu. Evren her değiştiğinde `bist gosterge` YENİDEN koşulmalı;
+-- paket artık paydayı `kesit` ve `rejim.genislik_n` alanlarında yazıyor.
 CREATE TABLE IF NOT EXISTS indicator_daily (
     ticker TEXT NOT NULL,
     date   TEXT NOT NULL,
@@ -211,7 +219,11 @@ CREATE TABLE IF NOT EXISTS outcomes (
     holding_days INTEGER,
     ret_pct REAL,                 -- maliyet dahil
     ret_pct_gross REAL,
-    ret_pct_equal_size REAL,      -- boyutlandırma karşı-olgusu (rejim boyutu işe yaradı mı?)
+    -- Boyutlandırma karşı-olgusu: PORTFÖY KATKISI (hisse getirisi DEĞİL),
+    -- pozisyon `maks_pozisyon_pct` ile açılsaydı ne olurdu. Gerçekleşen katkı
+    -- `predictions.position_size_pct` ile hesaplanır; ikisinin farkı rejim
+    -- boyutlandırmasının değeridir. NULL = boyut bilinmiyor, ölçülemez.
+    ret_pct_equal_size REAL,
     xu100_ret_pct REAL,
     ew_universe_ret_pct REAL,
     alpha_vs_xu100 REAL,          -- İKİNCİL — sermaye-ağırlık eğilimi içerir
@@ -234,10 +246,15 @@ CREATE TABLE IF NOT EXISTS holdings (
 );
 
 -- ======================== Haber / KAP (Faz 7) ========================
+-- ⚠ Bu taban tanım migration v5 tarafından DEĞİŞTİRİLİR: bir bildirim birden
+-- çok hisseye ait olabildiği için birincil anahtar (disclosure_id, ticker)
+-- olur ve importance/summary/company kolonları eklenir. v6 ise published_utc'yi
+-- İstanbul yerel saatinden gerçek UTC'ye çevirir. Güncel şema için
+-- `migrations._m005` / `_m006`'ya bak.
 CREATE TABLE IF NOT EXISTS disclosures (
     disclosure_id TEXT PRIMARY KEY,
     ticker TEXT,
-    published_utc TEXT NOT NULL,
+    published_utc TEXT NOT NULL,  -- +00:00 ekli UTC (v6 sonrası)
     tier INTEGER NOT NULL,        -- 1=KAP resmî, 2=kurumsal ajans, 3=diğer
     title TEXT, url TEXT, category TEXT, raw TEXT
 );
@@ -250,18 +267,28 @@ def db_path(cfg: dict) -> Path:
 
 
 def connect(cfg: dict, *, readonly: bool = False) -> sqlite3.Connection:
-    """Bağlantı açar, şemayı uygular, migration'ları ilerletir."""
+    """Bağlantı açar; `readonly=False` ise şemayı uygular ve migration'ları ilerletir.
+
+    ⚠ `readonly=True` GERÇEKTEN salt-okunur bir bağlantı açar (`mode=ro`).
+    İlk sürüm yalnız şema uygulamayı atlıyordu — yani "readonly" adlı bir
+    bağlantıyla veritabanına pekâlâ yazılabiliyordu. Adı doğru davranışı
+    yanlış bir bayrak, onu okuyan bir sonraki kişiyi yanıltır.
+    """
     from . import migrations
 
     p = util.ensure_parent(db_path(cfg))
+    if readonly:
+        con = sqlite3.connect(f"file:{p}?mode=ro", uri=True, timeout=30.0)
+        con.row_factory = sqlite3.Row
+        return con
+
     con = sqlite3.connect(p, timeout=30.0)
     con.row_factory = sqlite3.Row
     con.execute("PRAGMA foreign_keys = ON")
     con.execute("PRAGMA journal_mode = WAL")
-    if not readonly:
-        con.executescript(SCHEMA)
-        migrations.apply(con)
-        con.commit()
+    con.executescript(SCHEMA)
+    migrations.apply(con)
+    con.commit()
     return con
 
 

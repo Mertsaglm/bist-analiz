@@ -79,7 +79,7 @@ Fiyat + Makro + KAP  →  Göstergeler (dondurulmuş, versiyonlu)
                               ↓
                     LLM (enum seç + prose yaz + VETO)
                               ↓
-                    Denetim (HF-01..HF-30) ── başarısız → journal'a giremez
+                    Denetim (HF-01..HF-31) ── başarısız → journal'a giremez
                               ↓
                   Journal (değişmez)  →  Resolver (üçlü bariyer, KOD)
                               ↓
@@ -92,7 +92,8 @@ prose yazar. Ayrıca HF-17 prose'daki her sayısal token'ı girdi paketine karş
 asıl hata modu yapısal değil, metinsel ("hedef 324 TL civarı makul").
 
 **İki ayrı öğrenme döngüsü:**
-- **Yavaş** (yılda 1-2, elle): 10 yıl walk-forward backtest → faktör ağırlıkları
+- **Yavaş** (yılda 1-2, elle): tüm geçmişle walk-forward backtest → faktör ağırlıkları
+  (`sources.yf.backfill_start`'tan bugüne; sayı config'te, burada değil)
 - **Hızlı** (her değerlendirme): canlı journal → ağırlığa **asla dokunmaz**; dönem-içi IC,
   veto değeri, LLM katkısı, slippage, boyutlandırma karşı-olgusu, hata taksonomisi
 
@@ -108,31 +109,52 @@ cp .env.example .env   # EVDS_API_KEY doldur (opsiyonel; yoksa makro satırları
 **Kurulum (bir kez):**
 
 ```bash
-poetry run bist veri backfill        # 70 ticker × 10 yıl + endeksler + kur
-poetry run bist gosterge             # göstergeleri hesapla ve dondur
+poetry run bist veri backfill        # 70 ticker × ~11 yıl (2015→) + endeksler + kur
+poetry run bist gosterge             # göstergeleri hesapla ve dondur — TÜM 70 ticker
 poetry run bist veri kalite          # ticker bazlı kalite kapısı
 ```
+
+> ⚠ `bist gosterge`'yi evren her değiştiğinde TEKRAR koş. `indicator_daily`
+> eksik kalırsa kesitsel `yuzdelik` ve piyasa genişliği sessizce daralır —
+> pakette artık `kesit` ve `rejim.genislik_n` alanları paydayı gösterir.
 
 **Günlük akış:**
 
 ```bash
-poetry run bist veri gunluk          # fiyatları güncelle
-poetry run bist haber cek            # KAP bildirimleri (artımlı)
+poetry run bist veri gunluk          # fiyat + hayalet bar ayıklama + kalite kapısı
+poetry run bist haber cek            # KAP · çıkış: 0 temiz · 1 aralık atlandı · 2 hata
 poetry run bist gunluk               # llm/in/<tarih>/ paketini yazar
 # → IDE'de llm/in/<tarih>/prompt.md çalıştır, llm/out/<tarih>/analysis.json kaydet
-poetry run bist denetle              # HF-01..HF-30 — geçmeyen journal'a giremez
+poetry run bist denetle              # HF-01..HF-31 — geçmeyen journal'a giremez
 poetry run bist kaydet               # journal'a yaz
-poetry run bist rapor                # Türkçe markdown (AZALT bölümüyle başlar)
+poetry run bist rapor                # Türkçe markdown: AZALT + tez + VETO
 ```
 
 **Periyodik:**
 
 ```bash
 poetry run bist coz                  # açık tahminleri çöz (üçlü bariyer)
-poetry run bist degerlendir          # IC, required_n, hüküm
+poetry run bist degerlendir          # IC, required_n, hüküm (kaynak karışıksa --tool ister)
 poetry run bist backtest             # yavaş döngü — ölçüm harness'i
 poetry run bist teshis               # kayıp atıfı (revizyon turu DEĞİL)
+poetry run bist seviye               # seviye yakınlığının yön üstünlüğü — ölçüm
 ```
+
+**Her şeyden önce — sessiz bozulma taraması:**
+
+```bash
+poetry run bist saglik               # 0 temiz · 1 uyarı · 2 KRİTİK
+```
+
+Gösterge kapsaması/tazeliği, kalite kapısı, haber katmanı sağlığı, tick
+ızgarası, journal kaynak karışıklığı ve şema sürümünü tek seferde kontrol
+eder. 2026-07-27 denetiminin ürettiği risk listesi elle koşulacak SQL'ler
+olarak bırakılmadı — koşulmayan kontrol, olmayan kontroldür.
+
+> `bist degerlendir` kaynak ayrımını kendisi yapar: journal'da tek araç varsa
+> onu seçer ve raporun `Kaynak:` satırına yazar; **birden çok araç varsa DURUR**
+> ve `--tool` ister (çıkış kodu 2). `replay` VEKİL bir analisttir; alfası
+> gerçek LLM kayıtlarıyla aynı potaya girmez.
 
 **Geliştirme / doğrulama:**
 
@@ -140,8 +162,62 @@ poetry run bist teshis               # kayıp atıfı (revizyon turu DEĞİL)
 poetry run bist replay --start 2024-01-01 --end 2026-06-30   # LLM'siz tam boru hattı
 poetry run bist plan THYAO           # tek hisse için plan menüsü
 poetry run bist portfoy ekle THYAO 100 312.5
-poetry run pytest -q                 # 329 test
+poetry run bist revizyon             # ön kayıtlı revizyon turu #1 (mühürlü)
+poetry run pytest                    # tüm suite (sayı basılır — README'ye gömülmez)
 ```
+
+> `pytest`in yan etkisi YOKTUR: gerçek `data/bist.db`'ye yazılabilir bağlantı
+> açan bir test hata verir, üretilen paket/rapor dosyaları geçici dizine gider.
+> Bu bir konvansiyon değil, `tests/conftest.py`'de zorlanan bir kural.
+
+## Regresyona karşı zırh — kuralları insan değil test hatırlar
+
+Bu projedeki kuralların çoğu bir hatadan doğdu ve doğal ömrü kısa: kuralı yazan
+kişi unutur, projeye sonradan dokunan (insan ya da model) hiç bilmez. Bu yüzden
+kurallar **koşulabilir hale getirildi.** Test katmanları üç ayrı soru sorar:
+
+| Katman | Soru | Ne engeller |
+|---|---|---|
+| **Sözleşme** (`tests/test_sozlesme.py`) | Kodun VARSAYDIĞI yapı ayakta mı? | `*_COLS` listesi ↔ şema ayrışması, LLM sınırı kümelerinin kayması, **eşiklerin sessizce gevşetilmesi**, katman disiplini |
+| **Mekanizma** (modül başına) | Doğru seriden / doğru paydadan mı besleniyor? | `c` ↔ `c_tr` karışması, eksik faktörün "nötr oy" sayılması, paydanın sessizce düşmesi |
+| **Uçtan uca** (`tests/test_uctan_uca.py`) | Zincir gerçekten koşuyor mu? | Modüller arası varsayım kırılması — birim testleri yeşilken hattın durması |
+
+Somut olarak artık **config'ten sessizce gevşetilemeyen** şeyler var:
+`olcum.zayif_n_esigi`, `olcum.min_anlamli_fark_puan`, `planlayici.min_rr_t1`,
+`risk.islem_maliyeti_gidis_donus_pct`, `denetim.sayisal_beyaz_liste_tamsayi_maks`
+ve rejim politikasının defansiflik yönü. Bunları değiştirmek isteyen bir testi
+de değiştirmek zorunda — yani karar **görünür** olur, config düzenlemesi olarak
+geçmez.
+
+Doküman tutarlılığı da makineye devredildi (`tests/test_dokuman.py`):
+belgelerdeki her `bist <komut>`, her `config.<blok>.<anahtar>` atfı, her dosya
+yolu ve her `HF-xx` kodu gerçekten var mı diye kontrol edilir. Ön kayıt mührü
+(`docs/on-kayit-revizyon-01.md`'nin sha256'sı) de testle korunur — belge
+sonradan düzenlenirse suite kırmızıya döner.
+
+Ayrıca `pytest` artık **yan etkisiz**: gerçek veritabanına yazılabilir bağlantı
+açan bir test hata verir, üretilen paket/rapor dosyaları geçici dizine gider.
+
+## Denetimin bilinen sınırları
+
+Bunlar gizlenmiyor çünkü gizlenen sınır, olmayan bir garantiye dönüşür:
+
+- **HF-17 küçük tamsayılara ve yuvarlak yüzdelere karşı geçirgendir.** İzinli
+  küme paketteki her sayı + `config.denetim` beyaz listeleri (0-31 arası
+  tamsayılar, yıllar, `ek_izinli_sayilar`). Ölçüldü (2026-07-27, gerçek paket):
+  −50..+50 tamsayıların **%56'sı** izinli, ama iki ondalıklı uydurma fiyatların
+  yalnız **%0.5'i** geçiyor. Yani tasarlandığı hata modunda (*"hedef 324.75 TL"*)
+  çalışıyor, prose'un doğal kaydında (*"%20 potansiyel"*) çalışmıyor.
+- **R:R planlar arasında kıyaslanabilir değildir.** Hedef sabittir; eşitsizlik
+  girişi aşağı iterek ya da stop'u daraltarak sağlanır. `rr_secim` ve
+  `elenen_adaylar` alanları bunu görünür kılar; replay'de planların **%46'sı
+  hiç tetiklenmedi**.
+- **`bist degerlendir` şu an yalnız replay verisi görüyor** — gerçek LLM
+  kayıtları henüz yok.
+- **KAP geniş pencereyi sessizce kırpıyor.** Ölçüldü (2026-07-27): 90 gün
+  istendiğinde 14 gün dönüyor, hata vermeden. Bu yüzden çekim dilimleniyor ve
+  doyan dilim kendini ikiye bölüyor; tek gün bile doyarsa `bist haber cek`
+  ATLANAN ARALIK basar ve 1 döner. `evds` aynı tuzağı aynı çözümle aşıyor.
 
 ## Proje yapısı
 
@@ -155,10 +231,14 @@ CLAUDE.md · GEMINI.md · .github/copilot-instructions.md    IDE köprüleri
 ai/               proje hafızası: PROJECT · STATE · DECISIONS · LESSONS · PROFILE
 
 src/              veri → gösterge → faktör → plan → LLM sınırı → journal → ölçüm
-tests/            pytest; her HF koduna bir test, her ölçüm değişmezine bir test
+tests/            pytest; sözleşme + mekanizma + uçtan uca (bkz. "Regresyona karşı zırh")
 llm/in            LLM girdi paketi (izlenir)    llm/out  LLM çıktısı (izlenmez)
-data/             SQLite + deterministik SQL dump (dump izlenir, .db izlenmez)
+data/             SQLite + deterministik SQL dump (ikisi de gitignore'da)
+docs/             ön kayıtlar (koşudan önce mühürlenmiş, değiştirilmez)
 ```
+
+> `reports/*.md` **gitignore'da**: raporlar türev çıktıdır ve komutla yeniden
+> üretilir. Bu README'de rapor dosyasına atıf verilmez — taze klonda bulunmaz.
 
 ## Ölçüm kültürü
 

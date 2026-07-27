@@ -135,6 +135,19 @@ def _m005(con: sqlite3.Connection) -> None:
     Bir KAP bildirimi BİRDEN ÇOK hisseye ait olabilir (ör. holding + bağlı
     ortaklık). Tek `disclosure_id` birincil anahtarı bunu temsil edemiyordu:
     ya bildirim tek hisseye zorlanır ya da diğerleri sessizce düşerdi.
+
+    ⚠⚠ BU ADIM VERİ KAYBEDER — ve artık değiştirilemez (yayımlanmış migration
+    değiştirilmez kuralı). `DROP TABLE` + `CREATE TABLE`, veri taşımaz. v4'ten
+    yükselen bir veritabanı mevcut `disclosures` satırlarını KAYBEDER.
+    Denetimde geçici bir veritabanıyla kanıtlandı (2026-07-27): 1 satır → 0.
+
+    Bunu yaparken doğrusu `_m003`/`_m004`'teki desendi (yeniden adlandır →
+    yeni tabloyu kur → `INSERT ... SELECT` → eskiyi düşür). Sonraki her şema
+    değişikliği o deseni izlemeli.
+
+    TELAFİ: v5'e yükselen bir kurulumda bildirim geçmişi `bist haber cek --tam`
+    ile yeniden çekilir. KAP artımlı çekimi `last_seen`'e dayandığı için
+    `--tam` OLMADAN yalnız son 30 gün gelir; daha eskisi geri gelmez.
     """
     con.executescript("""
         PRAGMA foreign_keys = OFF;
@@ -158,11 +171,46 @@ def _m005(con: sqlite3.Connection) -> None:
     """)
 
 
+def _m006(con: sqlite3.Connection) -> None:
+    """disclosures.published_utc: İstanbul yerel → gerçek UTC (`+00:00` ekli).
+
+    KAP damgaları İstanbul saatidir; `kap._parse_dt` ilk sürümde onları NAİF
+    biçimde `published_utc` kolonuna yazıyordu. Yani adı UTC, içeriği yerel bir
+    alan vardı ve `predictions.created_utc` (gerçek UTC, `+00:00` ekli) ile
+    METİN olarak karşılaştırılıyordu → 3 saatlik sessiz kayma, ve farklı
+    uzunluktaki dizelerde saniye sınırında ters sıralama.
+
+    Bu adım yalnız OFSETSİZ satırlara dokunur; iki kez koşmak zararsızdır.
+    Veri taşınır, silinmez (`_m005`'in aksine — bkz. oradaki uyarı).
+    """
+    from datetime import datetime as _dt
+
+    from . import util
+
+    rows = con.execute(
+        "SELECT disclosure_id, ticker, published_utc FROM disclosures "
+        "WHERE published_utc NOT LIKE '%+00:00' AND published_utc NOT LIKE '%Z'"
+    ).fetchall()
+    if not rows:
+        return
+    guncel = []
+    for did, tk, ham in rows:
+        try:
+            naif = _dt.fromisoformat(str(ham))
+        except (TypeError, ValueError):
+            continue
+        guncel.append((util.to_utc_iso(naif, assume_tz="Europe/Istanbul"), did, tk))
+    con.executemany(
+        "UPDATE disclosures SET published_utc = ? "
+        "WHERE disclosure_id = ? AND ticker = ?", guncel)
+
+
 MIGRATIONS: list[Migration] = [
     (2, "indicator_daily: sma50_tr / sma200_tr (trend kapısı toplam getiri uzayında)", _m002),
     (3, "predictions.score/rank/pct nullable — 'skorlanmadı' gerçek bir durumdur", _m003),
     (4, "v3'ün bozduğu outcomes FK'sını onar (legacy_alter_table tuzağı)", _m004),
     (5, "disclosures: (disclosure_id, ticker) bileşik anahtar + önem/özet", _m005),
+    (6, "disclosures.published_utc: İstanbul yerel → gerçek UTC (+00:00)", _m006),
 ]
 
 BASELINE_VERSION = 1

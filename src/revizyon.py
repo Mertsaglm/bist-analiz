@@ -87,6 +87,9 @@ def run(cfg: dict, con: sqlite3.Connection) -> dict:
             "kural": f"N≥{zn} VE |Δ|≥{md:.1f}pp VE işaret pozitif",
             "olculen": {"N": a["n"], "delta": a["ort"], "t": a["t"]},
         },
-        "n_test": 6 + len(fakt),
+        # Gerçekten koşulan `koş()` sayısı: ref_tam, ref_oos, yeni_tam,
+        # yeni_oos, yeni_is (5) + 2 kol + faktör başına 1. İlk sürüm `6 + len`
+        # yazıyordu ve bir eksikti — çoklu test muhasebesini eksik gösteriyordu.
+        "n_test": 7 + len(fakt),
         "n_teshis_test": 24,
     }

@@ -40,10 +40,12 @@ raporunda basılır**. "Ne zaman bilebiliriz?" bir his değil, hesaplanmış bir
 - 3 faktör + 1 hipotez, kesitsel z-skor, kapılar (sektör nötralizasyonu KAPALI — ölçüldü, zarar veriyor)
 - Deterministik plan menüsü (entry/stop/hedef/boyut) — LLM sayı üretmez
 - LLM katmanı **IDE içinde manuel** (Claude Code / Codex / Antigravity / Kiro)
-- HF-01..HF-30 sert hata denetimi — geçmeyen çıktı journal'a giremez
+- HF-01..HF-31 sert hata denetimi — geçmeyen çıktı journal'a giremez
 - Değişmez tahmin günlüğü + **deterministik** üçlü bariyer sonuç çözümü
 - Ölçüm harness'i: walk-forward, örtüşmeyen pencere, maliyetli, in-sample/OOS
 - Yerel CLI + Türkçe markdown rapor
+- **Sözleşme testleri:** projenin kendi kuralları (eşik zemini, LLM sınırı,
+  kolon↔şema eşliği, doküman tutarlılığı) koşulabilir hale getirildi (#011)
 
 ## Kapsam Dışı (Ne YOK — bilerek)
 - **İki-AI konsensüs** — 2× maliyet, ölçülmemiş fayda
@@ -71,7 +73,7 @@ raporunda basılır**. "Ne zaman bilebiliriz?" bir his değil, hesaplanmış bir
 | Makro | TCMB EVDS (gold'dan port) | — |
 | Depolama | SQLite + deterministik SQL dump | — (gold deseni) |
 | LLM | IDE içinde manuel, düz JSON sözleşmesi | #005 |
-| Test | pytest | — |
+| Test | pytest — sözleşme + mekanizma + uçtan uca | #011 |
 
 ## Referans projeler
 - `../gold_tracking_system/` — aynı kullanıcının üretimdeki quant projesi.

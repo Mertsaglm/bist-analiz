@@ -107,8 +107,15 @@ def temiz(cfg, con):
     return b, _output(b)
 
 
+# Oturum boyunca GERÇEKTEN ateşlenen kodlar. `TestKapsam` bunu kullanır:
+# kaynak metnini greplemek bir kodun tetiklenebildiğini KANITLAMAZ.
+GORULEN_KODLAR: set[str] = set()
+
+
 def _kodlar(bulgular) -> set[str]:
-    return {f.code for f in audit.hard_fails(bulgular)}
+    k = {f.code for f in audit.hard_fails(bulgular)}
+    GORULEN_KODLAR.update(k)
+    return k
 
 
 class TestTemiz:
@@ -240,19 +247,99 @@ class TestSayisalSizinti:
         """Model biçim değiştirerek denetimi ATLAYAMAZ."""
         assert llm_io.numeric_tokens("1.234,56") & llm_io.numeric_tokens("1234.56")
 
-    def test_HF18_izinsiz_fiyat_ifadesi(self, cfg, con, temiz):
+    def test_HF17_tarih_izinli_sayi_URETMEZ(self, cfg):
+        """⚠ REGRESYON KİLİDİ (2026-07-27 denetimi).
+
+        `_SAYI` regex'i "2026-07-24" dizesinde `-07` ve `-24`'ü de yakalıyordu;
+        paketteki her tarih izinli listeye NEGATİF TAMSAYI enjekte ediyordu.
+        Sonuç: uydurma "%-7 geriledi" denetimden geçiyor VE hangi negatif
+        sayının geçtiği o günkü TAKVİME bağlı oluyordu.
+        """
+        izin = llm_io.allowed_numeric_tokens(
+            {"asof": "2026-07-24", "karar_gunu": "2026-08-21", "evren": []}, cfg)
+        assert "-7" not in izin and "-24" not in izin and "-8" not in izin
+
+    def test_HF17_prosedeki_tarih_YANLIS_ALARM_uretmez(self, cfg, con, temiz):
+        """Simetri şart: tarih paket tarafında maskeleniyorsa prose tarafında da
+        maskelenmeli, yoksa denetim sayı uydurmayı değil takvim yazmayı cezalandırır."""
+        b, o = temiz
+        o["stocks"][0]["thesis"] = (
+            "AAA için zaman bariyeri 2026-08-21 tarihine kadar geçerli olacak "
+            "ve o gün pozisyon yeniden değerlendirilecektir mutlaka.")
+        assert "HF-17" not in _kodlar(audit.audit(cfg, b, o, con))
+
+    def test_HF18_paketteki_sayiya_FIYAT_anlami_yuklenemez(self, cfg, con, temiz):
+        """HF-18, HF-17'DEN BAĞIMSIZ olmalı.
+
+        İlk sürümde koşulu `... and kacak` idi; yani HF-17 zaten patlamışken
+        aynı olguyu tekrarlıyordu ve tek başına hiç ateşlenemiyordu.
+        Yakalaması gereken ayrı olgu şu: sayı pakette VAR ama BU hissenin
+        fiyatı değil — başka bir hissenin kapanışını buraya fiyat diye yazmak.
+        """
+        b, o = temiz
+        # 50.00 pakette var (BBB'nin kapanışı) ama AAA'nın fiyatı değil.
+        o["stocks"][0]["key_risk"] = (
+            "Fiyat 50.00 TL civarına gerilerse tez tamamen geçersiz kalır ve "
+            "pozisyonun kapatılması gerekir hemen ertesi gün mutlaka.")
+        kodlar = _kodlar(audit.audit(cfg, b, o, con))
+        assert "HF-18" in kodlar
+        assert "HF-17" not in kodlar, "HF-18 bağımsız ateşlenemiyor"
+
+    def test_HF18_kendi_fiyatini_yazmak_serbest(self, cfg, con, temiz):
         b, o = temiz
         o["stocks"][0]["key_risk"] = (
-            "Fiyat 987.65 TL civarına gerilerse tez tamamen geçersiz kalır ve "
-            "pozisyonun kapatılması gerekir hemen ertesi gün.")
-        assert "HF-18" in _kodlar(audit.audit(cfg, b, o, con))
+            "Stop 95.00 TL seviyesinde duruyor ve bu geometri rejimin izin "
+            "verdiği sınırlar içinde kalmaya devam ediyor bugün itibarıyla.")
+        assert "HF-18" not in _kodlar(audit.audit(cfg, b, o, con))
 
-    def test_HF19_izinsiz_yuzde(self, cfg, con, temiz):
+    def test_HF19_paketteki_sayiya_YUZDE_anlami_yuklenemez(self, cfg, con, temiz):
+        """HF-19 da bağımsız: 95.00 pakette bir STOP FİYATIDIR; "%95 olasılık"
+        yazmak o sayıyı bambaşka bir büyüklüğe çevirir ve HF-17 bunu göremez."""
         b, o = temiz
         o["stocks"][0]["counter_scenario"] = (
-            "Beklenen getiri %47.3 seviyesinde olabilir ve bu senaryoda tez "
-            "fazlasıyla iyimser kalır, dolayısıyla dikkatli olunmalıdır.")
-        assert "HF-19" in _kodlar(audit.audit(cfg, b, o, con))
+            "Tezin tutma olasılığını %95 civarında görüyorum ve bu senaryoda "
+            "pozisyon korunmalıdır, aksi halde erken kapatılır hemen.")
+        kodlar = _kodlar(audit.audit(cfg, b, o, con))
+        assert "HF-19" in kodlar
+        assert "HF-17" not in kodlar, "HF-19 bağımsız ateşlenemiyor"
+
+    def test_HF19_gercek_yuzde_alani_serbest(self, cfg, con, temiz):
+        b, o = temiz
+        b["evren"][0]["fiyat"]["gunluk_degisim_pct"] = 2.5
+        b["bundle_sha"] = llm_io.bundle_sha(b)
+        o["bundle_sha"] = b["bundle_sha"]
+        o["stocks"][0]["counter_scenario"] = (
+            "Günlük değişim %2.5 seviyesinde kaldı; bu, tezin dayandığı "
+            "sakin seyrin bozulmadığını gösteriyor bugün itibarıyla açıkça.")
+        assert "HF-19" not in _kodlar(audit.audit(cfg, b, o, con))
+
+
+class TestYapisalSizinti:
+    """HF-31 — `schema.py`'de belgelenen ama HİÇ ZORLANMAYAN savunma."""
+
+    def test_HF31_yasak_sayisal_alan(self, cfg, con, temiz):
+        b, o = temiz
+        o["stocks"][0]["t1_price"] = 412.0
+        assert "HF-31" in _kodlar(audit.audit(cfg, b, o, con))
+
+    def test_HF31_sema_disi_alan(self, cfg, con, temiz):
+        b, o = temiz
+        o["stocks"][0]["benim_ekstra_alanim"] = "x"
+        assert "HF-31" in _kodlar(audit.audit(cfg, b, o, con))
+
+    def test_HF31_zorunlu_alan_eksik(self, cfg, con, temiz):
+        b, o = temiz
+        del o["stocks"][0]["key_risk"]
+        assert "HF-31" in _kodlar(audit.audit(cfg, b, o, con))
+
+    def test_HF31_kok_seviyesinde_fazla_alan(self, cfg, con, temiz):
+        b, o = temiz
+        o["expected_return"] = 12.5
+        assert "HF-31" in _kodlar(audit.audit(cfg, b, o, con))
+
+    def test_HF31_temiz_ciktida_atesLENMEZ(self, cfg, con, temiz):
+        b, o = temiz
+        assert "HF-31" not in _kodlar(audit.audit(cfg, b, o, con))
 
 
 class TestTutarlilik:
@@ -276,6 +363,23 @@ class TestTutarlilik:
     def test_HF22_strong_buy_siralamayi_ezemez(self, cfg, con, temiz):
         b, o = temiz
         o["stocks"][1]["signal"] = "strong_buy"      # yüzdelik 30 < 70
+        o["stocks"][1]["action"] = "plan_sec"
+        o["stocks"][1]["selected_plan_id"] = "BBB-1"
+        assert "HF-22" in _kodlar(audit.audit(cfg, b, o, con))
+
+    def test_HF22_SKORLANMAMIS_isme_strong_buy_verilemez(self, cfg, con, temiz):
+        """⚠ REGRESYON KİLİDİ (2026-07-27 denetimi).
+
+        `yuzdelik` YALNIZ kapıdan geçen isimlerde dolar. İlk sürüm
+        `if pct is not None and pct < esik` diyordu → kontrol tam da kapının
+        ELEDİĞİ isimlerde atlanıyordu. Ölçüldü: canlı evrenin 18 isminden
+        8'inde `yuzdelik: None`, yani HF-22 evrenin %44'ünde ölüydü.
+        """
+        b, o = temiz
+        b["evren"][1]["faktorler"]["yuzdelik"] = None
+        b["bundle_sha"] = llm_io.bundle_sha(b)
+        o["bundle_sha"] = b["bundle_sha"]
+        o["stocks"][1]["signal"] = "strong_buy"
         o["stocks"][1]["action"] = "plan_sec"
         o["stocks"][1]["selected_plan_id"] = "BBB-1"
         assert "HF-22" in _kodlar(audit.audit(cfg, b, o, con))
@@ -356,16 +460,6 @@ class TestSurec:
         assert "HF-30" in _kodlar(audit.audit(cfg, b, o, con))
 
 
-class TestKapsam:
-    def test_her_HF_kodunun_testi_var(self):
-        """Bir kod hiç tetiklenemiyorsa o kontrol ÖLÜDÜR ve yanlış güven verir."""
-        import inspect
-        kaynak = inspect.getsource(__import__("tests.test_audit", fromlist=["x"]))
-        eksik = [k for k in audit.all_codes() if k.replace("-", "") not in
-                 kaynak.replace("-", "")]
-        assert not eksik, f"testi olmayan HF kodları: {eksik}"
-
-
 class TestUyarilar:
     def test_uyarilar_engellemez(self, cfg, con, temiz):
         b, o = temiz
@@ -374,3 +468,23 @@ class TestUyarilar:
         bulgular = audit.audit(cfg, b, o, con)
         assert any(f.code == "W-02" for f in bulgular)
         assert not audit.hard_fails(bulgular), "uyarı sert hataya dönüşmüş"
+
+
+# ⚠ Bu sınıf dosyanın SONUNDA durmalı: `GORULEN_KODLAR`'ı yukarıdaki tüm
+# testler doldurur ve pytest bir dosyayı tanım sırasına göre koşar.
+class TestKapsam:
+    def test_her_HF_kodu_GERCEKTEN_atesLENDI(self):
+        """Bir kod hiç tetiklenemiyorsa o kontrol ÖLÜDÜR ve yanlış güven verir.
+
+        ⚠ İlk sürüm bunu KAYNAK METNİNİ grepleyerek yapıyordu:
+        `if "HF18" not in inspect.getsource(test_modulu)`. `def test_HF18_...`
+        adı bu koşulu tek başına karşılıyordu; testin o kodu gerçekten
+        tetiklediğini doğrulamıyordu. Nitekim HF-18 ve HF-19 aylarca yalnız
+        HF-17 ile BİRLİKTE ateşlenebiliyordu ve bu test onları yeşil sayıyordu
+        (2026-07-27 denetimi). Artık `audit.audit()`'in gerçekten döndürdüğü
+        kodlar sayılır — totoloji değil, gözlem.
+        """
+        eksik = sorted(set(audit.all_codes()) - GORULEN_KODLAR)
+        assert not eksik, (
+            f"hiç tetiklenemeyen HF kodları: {eksik}. "
+            f"Görülenler: {sorted(GORULEN_KODLAR)}")
