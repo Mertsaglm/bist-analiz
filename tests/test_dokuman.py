@@ -149,6 +149,19 @@ YER_TUTUCULAR = {
     "src/history.py",                # LESSONS L-002: BAŞKA bir projenin dosyası
 }
 
+# YEREL ÜRETİLEN dosyalar: gerçek dosyalardır ama repoya BİLEREK girmezler.
+# Yer tutuculardan ayrı tutuluyorlar çünkü farklı bir olgu: `docs/y.md` hiç var
+# olmayan bir örnek; `ai/PROFILE.md` var olan ama kişisel olduğu için
+# izlenmeyen bir dosya (projeler arası ortak, gitignore'da).
+#
+# ⚠ Bu ayrım TAZE KLONDA yakalandı: çalışma kopyasında PROFILE.md durduğu için
+# test yeşil geçiyordu, klonda ise yoktu. Aynı istisna testin gitignore dalında
+# YAZILIYDI ama varlık dalında yazılmamıştı — LESSONS L-008'in ta kendisi:
+# savunmayı bir yerde uygulayıp simetriğinde atlamak.
+YEREL_URETILEN = {
+    "ai/PROFILE.md",                 # kişisel profil; `yeni-proje.sh` taşır, repo tutmaz
+}
+
 
 def _dosya_atiflari() -> dict[str, set[str]]:
     ref: dict[str, set[str]] = {}
@@ -160,22 +173,40 @@ def _dosya_atiflari() -> dict[str, set[str]]:
 
 class TestDosyaAtiflari:
     def test_atif_verilen_her_dosya_VAR(self):
+        """⚠ Bu test TAZE KLONDA da geçmeli — asıl kontrol edilen o.
+
+        Çalışma kopyasında her şey durur; kırık bağlantı ancak repoyu ilk kez
+        klonlayan kişide görünür. Bu yüzden istisnalar açıkça listelenir:
+        yer tutucular (hiç var olmayan örnekler) ve yerel üretilenler (var olan
+        ama bilerek izlenmeyen dosyalar).
+        """
         ref = _dosya_atiflari()
         assert len(ref) > 10, "dosya atıf taraması çalışmıyor"
+        muaf = YER_TUTUCULAR | YEREL_URETILEN
         eksik = {y: sorted(s) for y, s in ref.items()
-                 if y not in YER_TUTUCULAR and not (KOK / y).exists()}
+                 if y not in muaf and not (KOK / y).exists()}
         assert not eksik, f"var olmayan dosyaya atıf: {eksik}"
+
+    def test_YEREL_URETILEN_dosyalar_gercekten_izlenmiyor(self):
+        """Muafiyet listesi kötüye kullanılamasın: muaf dosya GERÇEKTEN
+        gitignore'da olmalı. Aksi halde bu liste, unutulmuş bir dosyayı
+        gizlemenin kolay yoluna dönüşür."""
+        for yol in sorted(YEREL_URETILEN):
+            r = subprocess.run(["git", "check-ignore", yol],
+                               cwd=KOK, capture_output=True, text=True)
+            assert r.returncode == 0, (
+                f"{yol} gitignore'da değil — muafiyet listesinde işi yok")
 
     def test_atif_verilen_dosya_GITIGNORE_da_DEGIL(self):
         """Gitignore'daki bir dosyaya atıf, TAZE KLONDA kırık bağlantıdır.
 
         README bunu kendi yazıyor: *"Bu README'de rapor dosyasına atıf verilmez
-        — taze klonda bulunmaz."* Tek istisna `ai/PROFILE.md`: bilinçli olarak
-        kişisel ve repoya girmiyor; ona atıf veren tek yer kural dosyasının
-        "bu dosyayı doldur" talimatı.
+        — taze klonda bulunmaz."* İstisna `YEREL_URETILEN`: bilinçli olarak
+        kişisel olan ve repoya girmeyen dosyalar; onlara atıf veren tek yer
+        kural dosyasının "bu dosyayı doldur" talimatı.
         """
         var = [y for y in _dosya_atiflari()
-               if (KOK / y).exists() and y != "ai/PROFILE.md"]
+               if (KOK / y).exists() and y not in YEREL_URETILEN]
         r = subprocess.run(["git", "check-ignore", *var],
                            cwd=KOK, capture_output=True, text=True)
         yoksayilan = [x for x in r.stdout.split() if x]
