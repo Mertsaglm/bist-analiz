@@ -79,17 +79,16 @@ Kurallar teste devredildi (#011, L-008): sözleşme · mekanizma · uçtan uca.
    `reports/` altına yazılır ve "seviyeler yön iddiası taşıyor mu" sorusuna
    `edge_verdict` diliyle cevap verilir (tek hisse denendi, THYAO direnç
    −1.4pp çıktı — çoklu test uyarısıyla okunmalı).
-3. **İlk çözüm turu (2026-07-29 tahminleri).** DoD: zaman bariyeri dolunca
-   `bist coz` 18 tahmini çözüyor; ardından `bist degerlendir` KARIŞIK KAYNAK
-   nedeniyle duruyor ve `--tool` istiyor (çıkış 2). Not: `araclar()` yalnız
-   ÇÖZÜLMÜŞ tahminleri sayar, bu yüzden uyarı ancak çözümden sonra çıkar —
-   `bist saglik` ise şimdiden uyarıyor. İkisi farklı soru soruyor, hata değil.
+3. **İlk çözüm turu.** DoD: bariyer dolunca `bist coz` tahminleri çözüyor;
+   ardından `bist degerlendir` KARIŞIK KAYNAK nedeniyle durup `--tool` istiyor
+   (çıkış 2). Not: `araclar()` yalnız ÇÖZÜLMÜŞ tahminleri sayar → uyarı ancak
+   çözümden sonra çıkar; `saglik` şimdiden uyarıyor (farklı soru, hata değil).
 
 ## 📦 Backlog (şimdi değil, unutma da)
-- **`poetry run bist` YEREL'de çalışmıyor** (2026-07-29): klasör adındaki
-  boşluk venv konsol script'inin shebang'ini kırıyor. Çalışan biçim
-  `poetry run python -m src.cli <komut>` (Actions'ta sorun yok — Linux yolunda
-  boşluk yok). Seçenek: (a) klasörü boşluksuz adlandır, (b) README'yi çevir.
+- **`poetry run bist` YEREL'de çalışmıyor**: klasör adındaki boşluk venv
+  konsol script'inin shebang'ini kırıyor; çalışan biçim
+  `poetry run python -m src.cli <komut>` (Actions'ta sorun yok). Seçenek:
+  (a) klasörü boşluksuz adlandır, (b) README'yi çevir.
 - **Replay'i yeniden koş?** (#012) `asof 2024-12-18` bir gün geniş bariyerle
   çözüldü; yeniden koşmak journal'ı yeniden yazar → ayrı karar (20 kayıttan 1'i).
 - **`bist saglik`'e kısmi seans kontrolü** (#012): bir gün 0 < hisse barı <
@@ -98,17 +97,18 @@ Kurallar teste devredildi (#011, L-008): sözleşme · mekanizma · uçtan uca.
   (t=2.42): 34 karşılaştırmada çıtayı geçen TEK satır. Sonucu görüp seçmek
   p-hacking → AYRI ve ön kayıtlı tur hak ediyor (H=20'de ağırlığı zaten 0).
   `volscaled_mom` ise katkı göstermedi (−0.22pp) — 0'a çekmek de ön kayıt ister.
-- **R:R'ın seçimle sağlanması** (#009'da ifşa edildi, düzeltilmedi): hedef
-  sabit, eşitsizlik girişi aşağı iterek çözülüyor. Mekanizmayı değiştirmek ön
-  kayıt ister → `docs/on-kayit-seviye-02.md` HAZIR ama **koşulmadı**;
-  tetikleyici koşullardan biri (20 günde ort. <2 plan · N≥30 çözülmüş tahmin ·
-  evren genişlemesi) oluşmadan koşulmayacak.
-- **Dump yerel↔Actions arasında 4 satır oynuyor** (2026-08-01, ölçüldü):
-  197.191 satırın 4'ü, `turnover_try` kolonunda, SON BİT farkı — macOS/Ubuntu
-  SQLite'ının ondalık→double çevriminde 1 ULP ayrışması (yerelde ayrıştırma
-  birebir, test edildi). **Kovalanmadı:** türev kolonda son bit ve o kolon
-  200M TL eşiğinde kullanılıyor; hassasiyeti kırpmak kozmetik gürültü için
-  gerçek veriyi değiştirmek olurdu. Yalnız Actions dump'larken tekrarlamaz.
+- **R:R'ın seçimle sağlanması** (#009'da ifşa edildi): hedef sabit, eşitsizlik
+  girişi aşağı iterek çözülüyor. Değiştirmek ön kayıt ister →
+  `docs/on-kayit-seviye-02.md` HAZIR ama koşulmadı; tetikleyici (20 günde ort.
+  <2 plan · N≥30 çözülmüş · evren genişlemesi) oluşmadan koşulmayacak.
+- **Dump yerel↔Actions arası 4 satır oynuyor** (ölçüldü): 197.191 satırın 4'ü,
+  `turnover_try`'da SON BİT — macOS/Ubuntu SQLite'ının ondalık→double
+  çevriminde 1 ULP farkı. **Kovalanmadı:** türev kolonda son bit, üstelik o
+  kolon 200M TL eşiğinde kullanılıyor; kırpmak kozmetik gürültü için gerçek
+  veriyi değiştirmek olurdu.
+- **Supabase aynası** — ADR #014: gerek YOK; git arşivi yedeği karşılıyor,
+  üstelik değiştirilemezlik + geçmişe dönüş veriyor. Web/mobil arayüz kararı
+  çıkarsa salt-okunur ayna yazılır (yarım günlük iş).
 - **KAP dilim bölme derinliği** — tek gün bile tavanı aşarsa (derinlik 6)
   sayfalama araştırılmalı. Şu an 90 günde bir kez bölme yetti.
 - Evren BIST-100'e genişletilirse kesitsel dağılım ve OOS N artar → aynı ön

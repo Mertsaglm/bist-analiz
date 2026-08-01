@@ -6,6 +6,50 @@
 
 ---
 
+## #014 — 2026-08-01 — Depolama SQLite + git arşivi kalır; Supabase'e geçilmez
+
+**Bağlam:** Mert "veriyi bir yerde tutmak iyi olur" diye Supabase sordu. Asıl
+ihtiyaç veritabanı teknolojisi değil, **yedekleme** çıktı — ve o endişe
+haklıydı: bu sabaha kadar `data/*.sql` gitignore'daydı, yani veritabanı YALNIZ
+Mert'in laptopunda duruyordu. Disk giderse 11 yıllık bar ve tüm tahmin geçmişi
+giderdi.
+
+O ihtiyaç ADR #013'te (gitignore ters çevirme) zaten kapandı. **Kanıtlandı**
+(2026-08-01, taze klon + `bist db restore`): 197.191 bar (2015-01-02 →
+2026-07-30), 56 tahmin (`claude-code` 18 · `gemini-3.6-flash` 18 · `replay` 20),
+makro, KAP — hepsi geri geldi.
+
+**Seçenekler:**
+- A) Supabase KAYNAK olsun, SQLite kalksın.
+- B) SQLite kaynak kalsın, Supabase'e salt-okunur AYNA yazılsın.
+- C) **Değişiklik yok** — git arşivi yedek ihtiyacını zaten karşılıyor.
+
+**Karar: C.** Git'in bu projeye özgü iki üstünlüğü Supabase'de yok:
+
+1. **Değiştirilemezlik.** Sistemin tek işi kendi isabetini dürüstçe ölçmek.
+   Barındırılan bir tabloda bir tahmin satırını sessizce düzeltebilirsin;
+   commit geçmişinde düzeltemezsin — denersen geçmiş ifşa eder. Bu bir lüks
+   değil, ÜRÜNÜN KENDİSİ.
+2. **Herhangi bir güne dönüş.** "3 ay önce sistem ne diyordu?" sorusu tek
+   `git checkout` ile cevaplanıyor. Ücretsiz Supabase'de nokta-zaman geri
+   yükleme yok.
+
+Ayrıca: offline çalışma biter; `backtest`/`replay` 197 bin satırı ağdan çekmeye
+başlar (saniyeler → dakikalar); ücretsiz proje hareketsizlikte duraklar.
+
+**Maliyet ölçüldü:** 25 modül `sqlite3` kullanıyor · 102 `sqlite3.Connection`
+imzası · 104 ham SQL · 29 test dosyası. Üstelik 1079 testin tamamı geçici
+SQLite dosyasına dayanıyor; Postgres'e geçince ya CI'a Postgres eklenir ya
+testler SQLite'ta kalır — ikincisi *"test ettiğin şey üretimdeki şey değil"*
+demek ve bu projenin kovaladığı hata sınıfının ta kendisi.
+
+**Tekrar gözden geçir:** Bu veriyi kullanan bir web/mobil arayüz yazılmasına
+karar verilirse **B**'ye geçilir — SQLite kaynak kalır, Supabase salt-okunur
+ayna olur. Yedek ve denetlenebilirlik korunur, arayüz veriyi alır. O gün
+geldiğinde yarım günlük iş; şimdiden yapmak YAGNI.
+
+---
+
 ## #013 — 2026-08-01 — Faz 8: otonom koşu, ücretsiz-öncelikli model zinciri, Telegram
 
 **Bağlam:** v1 boru hattı çalışıyordu ama her adım elle tetikleniyordu. İlk
