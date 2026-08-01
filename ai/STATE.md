@@ -104,6 +104,12 @@ Kurallar teste devredildi (#011, L-008): sözleşme · mekanizma · uçtan uca.
   kayıt ister → `docs/on-kayit-seviye-02.md` HAZIR ama **koşulmadı**;
   tetikleyici koşullardan biri (20 günde ort. <2 plan · N≥30 çözülmüş tahmin ·
   evren genişlemesi) oluşmadan koşulmayacak.
+- **Dump yerel↔Actions arasında 4 satır oynuyor** (2026-08-01, ölçüldü):
+  197.191 satırın 4'ü, `turnover_try` kolonunda, SON BİT farkı — macOS/Ubuntu
+  SQLite'ının ondalık→double çevriminde 1 ULP ayrışması (yerelde ayrıştırma
+  birebir, test edildi). **Kovalanmadı:** türev kolonda son bit ve o kolon
+  200M TL eşiğinde kullanılıyor; hassasiyeti kırpmak kozmetik gürültü için
+  gerçek veriyi değiştirmek olurdu. Yalnız Actions dump'larken tekrarlamaz.
 - **KAP dilim bölme derinliği** — tek gün bile tavanı aşarsa (derinlik 6)
   sayfalama araştırılmalı. Şu an 90 günde bir kez bölme yetti.
 - Evren BIST-100'e genişletilirse kesitsel dağılım ve OOS N artar → aynı ön
