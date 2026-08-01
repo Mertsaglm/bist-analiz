@@ -31,9 +31,14 @@ jobs:
   gunluk:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      # checkout@v4 / setup-python@v5 Node 20 hedefliyordu ve GitHub onlari
+      # zorla Node 24'te kosturup uyari basiyordu (2026-08-01 ilk kosuda
+      # gorulda). v5/v6 bu sinirin ustundeki ILK surumler — en yeniye (v7)
+      # atlanmadi: ana surum sicramasi dogrulanmamis davranis degisikligi
+      # getirebilir ve buradaki kazanc yalnizca bir uyariyi susturmak.
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: pip
