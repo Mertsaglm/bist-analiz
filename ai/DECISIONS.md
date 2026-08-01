@@ -6,6 +6,224 @@
 
 ---
 
+## #013 — 2026-08-01 — Faz 8: otonom koşu, ücretsiz-öncelikli model zinciri, Telegram
+
+**Bağlam:** v1 boru hattı çalışıyordu ama her adım elle tetikleniyordu. İlk
+gerçek LLM turu (2026-07-29) bunun bedelini gösterdi: README'nin günlük akışında
+`bist gosterge` yoktu, akış harfiyen izlendi ve **boş ama şeklen geçerli** bir
+paket üretildi (0 skorlanan isim, 0 plan, rejim paydası 0 — sıfır hata koduyla,
+L-009). Elle koşulan bir zincirde bir adımın unutulması kaçınılmazdır; çözüm
+adımı hatırlamak değil, **akışı tek komuta indirmek.**
+
+### Karar A — LLM analist katmanı otomatiğe bağlanıyor
+
+Faz 8 planındaki ilk taslak "LLM elle kalsın, otomasyon deterministik katmanı
+koşsun" diyordu; gerekçe PROJECT.md'deki *"ücretsiz kalmalı, LLM API maliyeti
+YOK"* kısıtıydı. Ölçüm bu kısıtın artık gereksiz olduğunu gösterdi:
+
+    GERÇEK paket ölçüldü (2026-07-29): girdi ~10.0K token · çıktı ~8.2K token
+    (ilk tahminim ~50-60K'ydı — 5 kat şişik, ölçmeden konuşmuşum)
+
+Gemini tarafında ücretsiz katmanı olan üç model var ve günde **1 istek**
+atıyoruz; ücretsiz kota pratikte hiç dolmaz. Ücretli halkalara düşmek istisna
+olacak; her gün en pahalı halkaya düşülse bile ay maliyeti **~$2.6**.
+
+**PROJECT.md kısıtı revize edildi:** "LLM API maliyeti YOK" → "ücretsiz-öncelikli
+zincir; ücretli halkalara düşüş istisna, ay tavanı ~$3".
+
+### Karar B — Zincir sırası
+
+    1. gemini-3.5-flash        ÜCRETSİZ · Google'ın "en akıllı" flash'ı
+    2. gemini-3.6-flash        ÜCRETSİZ · kardeş model, ayrı kota kovası
+    3. gemini-2.5-pro          ÜCRETSİZ · Pro sınıfı, FARKLI nesil
+    4. gemini-3.1-pro-preview  ücretli ~$0.12/tur · en güçlü Gemini
+    5. gpt-5.6-luna            ücretli ~$0.012/tur
+    6. gpt-5-mini              ücretli ~$0.019/tur
+
+Gerekçeler:
+- **3.5 önce, 3.6 sonra.** 3.6 daha yeni ama Google onu *"hızı zekayla
+  dengeleyen"* diye tanımlıyor; 3.5 ise *"en akıllı model"*. Fiyat da bunu
+  doğruluyor (çıkış $9.00 vs $7.50). Günde 1 istek atıyoruz — hız umurumuzda
+  değil, yargı kalitesi her şey. ⚠ Bu bir doküman-dili çıkarımı, benchmark
+  değil; kesin cevabı `degerlendir --tool` verecek.
+- **3. sırada bilerek FARKLI NESİL.** 1-2 birden düşerse sorun aile geneli
+  demektir ve kardeş model kurtarmaz. 2.5-pro bağımsız bir aile ve hâlâ bedava.
+  (İlk taslakta Pro'yu hiç değerlendirmemiştim; hata zinciri **kota bolluğuna**
+  göre kurmaktı — oysa kota bizim için hiç kısıt değil.)
+- **OpenAI DAİMA sonda** (kullanıcı kuralı) ve ucuzdan pahalıya.
+- `gemini-3.1-pro-preview` 4. sırada: ücretsiz katmanı yok, o yüzden üç bedava
+  halkanın arkasında; ama luna'dan 10× pahalı olmasına rağmen en güçlü Gemini
+  ve model karakteri tercihi Gemini.
+
+### Karar C — "Cevap verememek" HF denetimini de kapsar
+
+Zincir, hata sınıfını ayırt etmez: kota, 5xx, zaman aşımı, geçersiz JSON ve
+**`bist denetle` sert hatası** aynı kefede. Yani model şemaya uyan JSON üretse
+bile HF-01..31'den geçemezse "cevap vermedi" sayılır ve sıradaki denenir.
+Denetim, zincirin bir halkası gibi çalışır.
+
+**`tool` alanını KOD yazar.** Model kendi kimliğini yanlış beyan ederse
+(ya da iskeletteki `"<araç>"` yer tutucusunu bırakırsa) `degerlendir --tool`
+o turu bulamaz ve ölçüm sessizce eksik kalır. Modelin kendisi hakkındaki
+beyanına güvenilmez.
+
+**Ara halkalarda tekrar YOK.** Arkasında beş yedek varken aynı modele ısrar
+etmek zaman kaybı; yalnız son halkada tekrar denenir.
+
+### Karar D — Hata sınıflandırması (gold `daily_job` deseni)
+
+Her adım kendi try/except'inde koşar ve hiçbiri diğerini kesmez — ama gold'da
+bunun bedeli yaşandı: altı adım da istisnayı yutunca iş HER ZAMAN yeşil bitiyor
+ve bir modül günlerce bozuk kalıyordu (L-002). O yüzden yutmak yetmez,
+sınıflandırmak gerekir:
+
+    KRITIK_ADIMLAR = ("veri", "gosterge", "saglik", "rapor")   → çıkış 1
+    diğerleri (haber, analist, coz, paket)                      → çıkış 0, rapora yazılır
+
+`analist` bilerek kritik DEĞİL: zincirin tamamı düşse bile o günün plan
+geometrisi ve risk çerçevesi tek başına değerlidir.
+
+**Sağlık kapısı gerçek bir kapıdır:** KRİTİK dönerse paket üretilmez, analiz
+edilmez, rapor yazılmaz. Bayat göstergeyle üretilen paket boş ama şeklen
+geçerlidir (L-009) ve onu analiz etmek bu projenin en pahalı hata sınıfıdır.
+
+### Karar E — Arşiv repoya giriyor (gitignore ters çevrildi)
+
+Actions her koşuda veritabanını sıfırdan kurar (`bist db restore`); arşiv
+repoda değilse sistemin hafızası yoktur. `data/`, `reports/` ve `llm/` artık
+izlenir; istisna yalnız ikili `.db` dosyaları.
+
+**Uygulama sırasında çıkan sürpriz:** dump 52,3 MB çıktı (plandaki varsayım
+15 MB'dı) — GitHub'ın 50 MB uyarı eşiğinin üstünde ve her gün commit'lenecek.
+Ölçüldü: `bars_daily` 48,6 MB ve her satır kendi `INSERT INTO ... VALUES`
+başlığını taşıyordu → **16,7 MB saf tekrar**. Çok satırlı INSERT'e geçildi
+(`dbdump.SATIR_KUME`): **52,3 → 32,9 MB**. Satır başına bir satır kuralı
+korundu — diff'lenebilirlik bu dosyanın varlık sebebi ve onu boyut için feda
+etmek `.db`'yi doğrudan commit'lemekten farksız olurdu.
+
+### Ölçüm: iyimserlik artık tartışma değil, veri
+
+Kullanıcının Gemini şikâyeti (fazla iyimser, yanlış yöne sürüklüyor) bu
+mimaride ölçülebilir bir soruya dönüşüyor: journal `tool` alanı model
+kimliğini taşır, `bist degerlendir --tool <model>` her modelin veto değerini
+ve isabetini AYRI ölçer. İyimser model veriyle yakalanır ve zincirden
+düşürülür. Elle atılan Claude turları da aynı potada kıyaslanır — yani
+"hangi model daha iyi analist" sorusunu sistem kendisi cevaplayacak.
+
+**Yapısal olarak zaten kapalı olanlar:** HF-17 (uydurma sayı), HF-22 (skorsuz
+isme strong_buy), HF-25 (risk-off'ta risk_artir). Fine-tuning gerekmiyor;
+OpenAI zaten platformu kapatıyor.
+
+### Zorlanan sözleşmeler (yeni testler)
+
+    zincir ⊆ llm.enums.tool          → ayrışırsa otonom turlar ölçümde kaybolur
+    ücretsizler ücretlilerden önce   → sıra bozulursa her gün para ödenir
+    gemini-2.5-* thinkingLevel ALMAZ → gönderilirse 400, halka HER ZAMAN düşer
+    workflow secret'ları ⊆ set_secrets.SECRETS
+    workflow'daki her `src.cli <komut>` gerçekten var
+    commit adımı `if: always()`      → düşen koşuda bile veri commit'lenir
+    yazılabilir her config yolu testte geçici dizine taşınır
+
+### İLK CANLI KOŞU (2026-08-01) — iki düzeltme doğurdu
+
+Zincir mekanik olarak kusursuz çalıştı: altı halka sırayla denendi, doğru
+sınıflandırıldı, analist kritik olmadığı için rapor yine üretildi. Ama **hiçbir
+model denetimden geçemedi** — ve sebep modellerde değildi:
+
+1. **İstem, denetimin zorladığı kuralların çoğunu söylemiyordu** (L-011).
+   HF-26 (prose < 80 karakter) altı modelin ALTISINDA da patladı; istem
+   minimum uzunluğu hiç yazmıyordu. Aynı şekilde veto_code enum'u,
+   `selected_plan_id`↔`plan_sec` eşliği, sinyal↔aksiyon çelişkisi ve açık
+   tahmin zorunluluğu da yazılı değildi. `render_prompt` sözleşmeyle
+   hizalandı (eşikler config'ten, gömülmeden) + temkin kalibrasyon bloğu
+   eklendi. Sonuç: **ilk halka ilk denemede geçti.**
+2. **Çıktı token tavanı açıkça verilmiyordu.** `gemini-3.5-flash`'ın JSON'u
+   17.000 karakterde sessizce kesildi ve hata "geçersiz JSON" diye göründü —
+   yani en iyi halka bir biçim kazası yüzünden kaybedildi. `llm.maks_cikti_token`
+   eklendi ve iki sağlayıcıya da gönderildiği teste kilitlendi.
+
+Düzeltmeler sonrası ilk tam otonom tur: **18 tahmin** journal'a yazıldı
+(run `2026-07-30-gemini-3.6-flash-1`), rapor üretildi, Telegram özeti gitti.
+
+Ayrıca gözlendi: `gemini-2.5-pro` ve `gemini-3.1-pro-preview` ücretsiz katmanda
+**429** döndü — Pro modellerin kotası Flash'lardan sıkı. Zincir bunu yutup
+ilerlediği için sorun olmadı; ama 3-4. halkaların pratikte "yedek" değil
+"nadiren erişilebilir" olduğu akılda tutulmalı.
+
+**Tekrar gözden geçir:** (a) 3 ay sonra model başına veto değeri/isabet ölçülüp
+zincir sırası VERİYLE yeniden kurulmalı; (b) `gemini-3.1-pro-preview` preview —
+emekli olursa zincir yumuşak düşer ama haftalık rapor fark ettirir;
+(c) Gemini ücretsiz kota koşulları değişirse ay tavanı yeniden hesaplanmalı;
+(d) private repo Actions dakikası ~200-250 dk/ay bekleniyor (limit 2000) —
+sınıra yaklaşılırsa `test.yml` yalnız PR'da koşacak şekilde daraltılır.
+
+---
+
+## #012 — 2026-07-29 — İşlem takvimi İKİ kaynaktan türetilir: endeks barı VEYA hisse çokluğu
+
+**Bağlam:** İlk gerçek LLM turundan sonra `pytest` kırmızıya döndü:
+`test_2026_takvimi_tatil_listesiyle_birebir`, 2026-07-24 ve 2026-07-28'i
+"tatil listesinde olmayan kapalı hafta içi gün" diye raporladı. Test doğruydu,
+veri yanlıştı: yfinance o iki günü **XU100, XU030 ve XBANK'in üçünde birden**
+atlamış; oysa evrendeki 70 hissenin hepsi o günler işlem görmüştü.
+
+Test daha önce yeşildi çünkü veri boşluktan ÖNCE bitiyordu (`son_bar`
+2026-07-23). Taze veri gelince boşluk sınırın soluna düştü ve görünür oldu —
+yani hata yeni doğmadı, **yeni ölçülebilir hale geldi.**
+
+Asıl bulgu daha derindi: çelişki kendi kodumuzun içindeydi.
+
+    calendar_bist.is_trading_day  → "endeks barı yok  ⇒ borsa kapalıydı"  (otoriter)
+    prices.purge_phantom_bars     → "endeks barı yok ama hisse barı gerçek" (142 bar KORUNDU)
+
+İki modül aynı olgu hakkında **zıt varsayım** taşıyordu ve hiçbir test bu
+çelişkiyi görmüyordu. Üstelik `calendar_bist` docstring'i ölçülmüş bir iddia
+sunuyordu (*"eksik 9 gün holidays_tr.yaml ile BİREBİR aynı"*) — o ölçüm dar bir
+pencerede doğruydu ve genelleştirilemezdi. §8'in "yorum bir iddiadır" kuralının
+tam örneği.
+
+**Ölçüm (2015-2026, gerçek veri) — ayrımda gri bölge yok:**
+
+    endeks barı YOK ama hisse barı VAR    → 10 gün, hepsinde 67-70 hisse
+    holidays_tr.yaml'deki gerçek tatiller → 12 gün, hepsinde  0 hisse
+
+0 ile 67 arasında hiçbir gözlem yok. Ayrım keyfi değil, ölçülmüş bir uçurum.
+
+**Seçenekler:**
+- A) Boşluk geçicidir, birkaç gün sonra yeniden çek → **ELENDİ**: taze çekimde
+  de yok, üstelik üç endekste birden. Sistematik, geçici değil.
+- B) İstisna listesi tut (`holidays_tr.yaml` dışında ayrı bir "endeks boşluğu"
+  listesi) → elle bakım, sessizce bayatlar; L-002'nin tam olarak yasakladığı
+  şey ("elle bir kere çalıştırılan" bakım).
+- C) **Takvimi iki kaynağın BİRLEŞİMİNDEN türet:** endeks barı VEYA
+  `takvim.min_hisse_bari_seans_icin` (=10) kadar hisse barı.
+
+**Karar: C.** Eşik, ölçülen uçurumun ortasında duruyor — sınırında değil.
+Döngüsellik yok: `purge_phantom_bars` hayalet barı elerken üç koşulu birden
+arıyor (o=h=l=c **ve** v=0 **ve** endeks barı yok), dolayısıyla gerçek seansın
+barları purge'den sağ çıkıyor ve gerçek tatilin barları eleniyor. İki modül
+artık aynı şeyi söylüyor.
+
+**Etki (uçtan uca koşuldu, §11 tuzak #1):**
+- 2026-07-24 ve 2026-07-28 artık seans günü; otoriter gün sayısı 2891 → 2901.
+- **Bugünkü 18 tahminin bariyeri DEĞİŞMEDİ** (2026-08-26) — ileri hesap tatil
+  dosyasından gidiyor, boşluktan etkilenmiyor.
+- Geçmişte **1 replay kaydı kaydı**: `asof 2024-12-18` bariyeri 2025-01-17 →
+  2025-01-16. O tahmin eski (bir gün geniş) bariyerle çözülmüştü. İfşa edildi,
+  düzeltilmedi — replay'i yeniden koşmak journal'ı yeniden yazar, bu ayrı bir
+  karar (STATE Backlog).
+
+**Regresyon kilidi:** `test_calendar.py::test_endeks_barsiz_ama_hisseli_gun_SEANS_SAYILIR`
+— iki yönlü: (a) endeks boşluğu olan günler seans SAYILIR, (b) gerçek tatiller
+seans SAYILMAZ. Tek yönlü bir test eşiği 0'a çekerek de geçilebilirdi.
+
+**Tekrar gözden geçir:** İkinci bir veri kaynağı eklenirse, ya da bir gün
+kısmi seans (borsa açık ama 10'dan az isim işlem gördü) gerçekleşirse eşik
+yeniden ölçülmeli. `bist saglik`'e bu durumu izleyen bir kontrol eklemek
+Backlog'da.
+
+---
+
 ## #011 — 2026-07-27 — Kuralları teste devret: proje kendi disiplinini kendi zorlar
 
 **Bağlam:** Claude Code aboneliği bitiyor. Projeye bundan sonra daha zayıf

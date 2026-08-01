@@ -28,13 +28,14 @@ from __future__ import annotations
 
 import ast
 import itertools
+import re
 import sqlite3
 from pathlib import Path
 
 import pandas as pd
 import pytest
 
-from src import (audit, backtest, db, dbdump, evaluate, factors, indicators,
+from src import (audit, backtest, cli, db, dbdump, evaluate, factors, indicators,
                  journal, llm_io, migrations, news, planner, prices, regime,
                  resolver, schema, stats, util)
 
@@ -760,3 +761,136 @@ class TestDeterminizm:
         """Sonuçlar hangi kuralla çözüldüyse o kural izlenebilir olmalı."""
         assert resolver.RESOLVER_VERSION.startswith("resolver_")
         assert "resolver_version" in resolver.OUTCOME_COLS
+
+
+# ============================================================ 8. otomasyon (Faz 8)
+class TestOtomasyonSozlesmesi:
+    """Actions ↔ kod ↔ secret betiği arasındaki sessiz ayrışmalar.
+
+    Bu üçlünün ayrışması CI'da anlamlı bir hata üretmez: eksik bir secret
+    "anahtar yok" demez, zincirin o halkasını SESSİZCE eler
+    (`analist.zincir`) — yani Gemini anahtarı unutulursa sistem her gün
+    OpenAI'a düşer, para harcar ve kimse fark etmez.
+    """
+
+    WF = Path(util.ROOT) / ".github" / "workflows"
+
+    def _wf_metni(self) -> str:
+        return " ".join(p.read_text(encoding="utf-8")
+                        for p in self.WF.glob("*.yml"))
+
+    def test_workflowlarin_kullandigi_her_secret_BETIKTE_var(self):
+        import importlib.util as _il
+
+        spec = _il.spec_from_file_location(
+            "set_secrets", Path(util.ROOT) / "scripts" / "set_secrets.py")
+        mod = _il.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+
+        kullanilan = set(re.findall(r"secrets\.([A-Z_]+)", self._wf_metni()))
+        eksik = sorted(kullanilan - set(mod.SECRETS))
+        assert not eksik, (
+            f"Workflow bu secret'ları kullanıyor ama `scripts/set_secrets.py` "
+            f"yüklemiyor: {eksik} — kurulumda sessizce eksik kalırlar")
+
+    def test_workflowlarin_cagirdigi_her_komut_VAR(self):
+        """`python -m src.cli <komut>` atıfları gerçekten var mı?
+
+        Bir komutu yeniden adlandırmak workflow'u sessizce kırar ve bunu
+        ancak ertesi sabah bildirim gelmeyince fark ederdin.
+        """
+        p = cli.build_parser()
+        harita = next(a.choices for a in p._subparsers._group_actions)
+
+        cagrilan = list(re.finditer(
+            r"python -m src\.cli ([a-z]+)(?: ([a-z]+))?", self._wf_metni()))
+        assert cagrilan, "workflow'lar hiçbir `bist` komutu çağırmıyor — regex bayat"
+
+        for m in cagrilan:
+            komut, alt = m.group(1), m.group(2)
+            assert komut in harita, f"workflow olmayan komutu çağırıyor: {komut}"
+            if alt:
+                # Alt komutlar bu projede positional `choices` ile tanımlı
+                # (`db dump|restore|durum`, `otonom gunluk|haftalik`).
+                gecerli = {c for act in harita[komut]._actions
+                           for c in (act.choices or [])}
+                assert alt in gecerli, (
+                    f"`{komut}` için geçersiz alt komut: {alt} "
+                    f"(geçerli: {sorted(gecerli)})")
+
+    def test_gunluk_workflow_ISLEM_GUNU_kapisina_guveniyor(self):
+        """Cron hafta içi tatilleri bilmez; kapı kodda olmalı ve workflow
+        onu ATLAMAMALI (ör. `--force` gibi bir bayrakla)."""
+        metin = (self.WF / "gunluk.yml").read_text(encoding="utf-8")
+        assert "otonom gunluk" in metin
+        assert "--force" not in metin
+
+    def test_commit_adimi_HATA_HALINDE_de_kosar(self):
+        """⚠ Kritik adım düşse bile o ana kadar çekilen veri commit'lenmeli;
+        aksi halde ertesi gün aynı veri yeniden çekilir ve BOZULMANIN İZİ
+        kaybolur."""
+        metin = (self.WF / "gunluk.yml").read_text(encoding="utf-8")
+        commit_blogu = metin.split("Commit + push")[1]
+        assert "if: always()" in metin.split("Commit + push")[0][-200:], \
+            "commit adımı `if: always()` taşımıyor"
+        assert "git pull --rebase" in commit_blogu, "push çakışma koruması yok"
+
+    def test_workflowlar_ayni_concurrency_grubunda(self):
+        """İki iş aynı anda push ederse biri kaybolur."""
+        gruplar = re.findall(r"group:\s*(\S+)", self._wf_metni())
+        commit_edenler = [g for g in gruplar if g == "repo-commit"]
+        assert len(commit_edenler) >= 2, \
+            "commit atan workflow'lar aynı concurrency grubunda değil"
+
+    def test_arsiv_dizinleri_ARTIK_izleniyor(self):
+        """Faz 8: Actions veritabanını her koşuda sıfırdan kurar. Arşiv
+        gitignore'da kalırsa sistemin hafızası olmaz."""
+        gi = (Path(util.ROOT) / ".gitignore").read_text(encoding="utf-8")
+        satirlar = {s.strip() for s in gi.splitlines()
+                    if s.strip() and not s.strip().startswith("#")}
+        for yasak in ("data/*.sql", "reports/*.md", "llm/out/"):
+            assert yasak not in satirlar, (
+                f"`{yasak}` hâlâ gitignore'da — Actions arşivi commit'leyemez")
+
+    # ------------------------------------------------------ test yan etkisizliği
+    #
+    # Testin YAZDIĞI her yol geçici dizine taşınmalı. Aşağıdakiler BİLEREK
+    # gerçek kalır: testin konusu o dosyaların İÇERİĞİDİR (evren tanımı,
+    # tatil listesi), yalnız okunurlar.
+    SALT_OKUNUR_YOLLAR = {"universe_file", "holidays_file"}
+
+    def test_yazilabilir_her_yol_GECICI_dizine_tasiniyor(self, cfg, real_cfg):
+        """⚠ NE OLMUŞTU (2026-08-01): `cfg` fixture'ı `paths.*` anahtarlarını
+        geçici dizine taşıyordu ama `telegram.outbox_file` BAŞKA BİR BLOKTA
+        olduğu için gözden kaçtı. Telegram testleri kullanıcının repo'sundaki
+        `data/telegram_outbox.jsonl` dosyasına 33 satır yazdı.
+
+        "pytest yan etkisizdir" kuralı yazıldığı blokta tutuyor, simetriğinde
+        tutmuyordu (L-008). Bu test o simetriyi zorlar: config'teki yol
+        görünümlü HER anahtar ya geçiciye taşınmış ya da salt-okunur ilan
+        edilmiş olmalı.
+        """
+        def yollar(d: dict, yol: str = ""):
+            for k, v in d.items():
+                tam = f"{yol}.{k}" if yol else k
+                if isinstance(v, dict):
+                    yield from yollar(v, tam)
+                elif isinstance(v, str) and re.search(
+                        r"^(data|reports|logs|llm)/|\.(db|sql|jsonl|log)$", v):
+                    yield tam, k, v
+
+        tasinmamis = []
+        for tam, anahtar, gercek_deger in yollar(real_cfg):
+            if anahtar in self.SALT_OKUNUR_YOLLAR:
+                continue
+            # `cfg` içindeki karşılığını bul
+            dugum = cfg
+            for parca in tam.split("."):
+                dugum = dugum[parca]
+            if dugum == gercek_deger:
+                tasinmamis.append(tam)
+
+        assert not tasinmamis, (
+            f"Bu config yolları testte GERÇEK hedefe bakıyor: {tasinmamis}. "
+            f"`tests/conftest.py::cfg` içinde geçici dizine taşı — yoksa "
+            f"pytest kullanıcının dosyalarına yazar.")

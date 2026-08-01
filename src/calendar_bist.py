@@ -1,16 +1,34 @@
 """BIST işlem takvimi.
 
-GEÇMİŞ işlem günleri XU100 bar tarihlerinden TÜRETİLİR — otoriter ve sıfır bakım.
-Ölçüm (2026-07-26): 2026 YTD'de XU100 138 bar / 147 iş günü; eksik 9 hafta-içi gün
-`holidays_tr.yaml` listesiyle BİREBİR aynı. Yani tatil dosyasını geçmiş için
-tutmak gereksiz iş ve sessiz hata kaynağıdır.
-
+GEÇMİŞ işlem günleri BARLARDAN TÜRETİLİR — otoriter ve sıfır bakım.
 `holidays_tr.yaml` YALNIZCA gelecek tarihler için gerekli: zaman bariyeri hesabı
 ("bugünden 20 işlem günü sonrası?") geleceğe bakar ve gelecekteki barlar yoktur.
 
 Sınır kritik: sınırın solunda barlara, sağında tatil listesine güvenilir. İkisini
 karıştırmak (ör. geçmiş için tatil listesine bakmak) 2020'de bir gün kayması
 üretirdi ve bu tüm zaman bariyerlerini bir gün kaydırırdı.
+
+⚠ İKİ KAYNAK, ÇÜNKÜ TEK KAYNAK YALAN SÖYLEDİ (ADR #012, 2026-07-29).
+Bu dosya eskiden takvimi YALNIZ XU100'den türetiyordu ve docstring'i
+*"eksik 9 hafta-içi gün holidays_tr.yaml ile BİREBİR aynı"* diye ölçülmüş bir
+iddia taşıyordu. Taze veri o iddiayı çürüttü: yfinance bir SEANS GÜNÜNDE de
+endeks barı vermeyebiliyor — 2026-07-24 ve 2026-07-28'i XU100, XU030 ve
+XBANK'in üçünde birden atladı; oysa 70 hissenin hepsi o günler işlem gördü.
+
+Ölçüldü (2015-2026, gerçek veri) ve ayrımda GRİ BÖLGE YOK:
+
+    endeks barı YOK ama hisse barı VAR    → 10 gün, hepsinde 67-70 hisse
+    holidays_tr.yaml'deki gerçek tatiller → 12 gün, hepsinde  0 hisse
+
+Bu yüzden bir gün, endeks barı VARSA **ya da** en az
+`takvim.min_hisse_bari_seans_icin` kadar hisse barı varsa işlem günü sayılır.
+
+Not — döngüsellik yok: `prices.purge_phantom_bars` hayalet barı elerken
+(1) o=h=l=c, (2) v=0 ve (3) endeks barı yok koşullarının ÜÇÜNÜ birden arıyor.
+Yani gerçek bir seansın barları purge'den sağ çıkıyor (ölçüldü: 142 bar
+"endeksin kendi boşluğu, hisse barı gerçek" diye korundu) ve gerçek tatilin
+barları eleniyor. İki modül artık aynı olgu hakkında AYNI şeyi söylüyor;
+eskiden zıt varsayım taşıyorlardı ve çelişkiyi hiçbir test görmüyordu.
 """
 
 from __future__ import annotations
@@ -45,13 +63,28 @@ class BistCalendar:
 
     # ------------------------------------------------------------ yükleme
     def reload(self, con: sqlite3.Connection) -> int:
-        """Endeks bar tarihlerini yeniden okur. Bar sayısını döner."""
+        """Otoriter işlem günlerini yeniden okur. Gün sayısını döner.
+
+        İKİ KAYNAĞIN BİRLEŞİMİ (bkz. modül docstring'i): endeks barı olan her
+        gün + eşiği aşan sayıda hisse barı olan her gün. Tek kaynak yeterli
+        değil çünkü yfinance gerçek bir seansta endeks barını atlayabiliyor ve
+        bunu SESSİZCE yapıyor — o gün tatil sanılıp takvim aritmetiği kayıyordu.
+        """
         sym = self.cfg["takvim"]["turet_kaynak_endeks"]
-        rows = con.execute(
-            "SELECT date FROM index_daily WHERE symbol = ? ORDER BY date", (sym,)
-        ).fetchall()
-        self._bar_gunleri = {r[0] for r in rows}
-        self._son_bar = date.fromisoformat(rows[-1][0]) if rows else None
+        gunler = {r[0] for r in con.execute(
+            "SELECT date FROM index_daily WHERE symbol = ?", (sym,)).fetchall()}
+
+        # Hisse tarafı: eşik "bu kadar isim işlem gördüyse borsa açıktı" demek.
+        # Ölçülen dağılımda 0 ile 67 arasında gözlem YOK; eşik boşluğun ortasında.
+        esik = int(self.cfg["takvim"]["min_hisse_bari_seans_icin"])
+        gunler |= {r[0] for r in con.execute(
+            "SELECT date FROM bars_daily GROUP BY date HAVING COUNT(*) >= ?",
+            (esik,)).fetchall()}
+
+        self._bar_gunleri = gunler
+        # Otoriter geçmişin sınırı da birleşimden gelir: endeks bir gün
+        # gecikirse hisse barları o günü zaten kanıtlıyor.
+        self._son_bar = date.fromisoformat(max(gunler)) if gunler else None
         return len(self._bar_gunleri)
 
     @property

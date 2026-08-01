@@ -6,6 +6,110 @@
 
 ---
 
+## L-011 — 2026-08-01 — Denetimde yaşayan ama istemde yazmayan kural, modelden imkânsızı istemektir
+
+**Olay:** İlk otonom turda zincirdeki **altı modelin altısı da** denetimden
+düştü. Elle koşulan tur (2026-07-29) ilk denemede geçmişti — ikisi arasındaki
+tek fark şuydu: insan analist `audit.py`'yi OKUYABİLİYORDU, model okuyamaz.
+
+Düşme sebepleri, hepsi istemde YAZMAYAN kurallardı:
+
+    HF-26  prose < 80 karakter   → 6/6 modelde. İstem yalnız `<prose>` diyordu,
+                                   minimum uzunluğu HİÇ söylemiyordu.
+    HF-10  veto_code enum dışı   → izinli kodlar listelenmemişti
+    HF-14  plan_sec eşliği       → `selected_plan_id`'nin hangi aksiyona bağlı
+                                   olduğu anlatılmamıştı
+    HF-20  sinyal↔aksiyon        → boğa sinyali ile `islem_yok` çelişkisi
+                                   hiçbir yerde yazmıyordu
+    HF-30  açık tahminler        → zorunluluk söylenmemişti
+
+İstem sözleşmeyle hizalandıktan sonra (eşikler config'ten okunarak, gömülmeden)
+**ilk halka ilk denemede geçti.** Yani modeller yetersiz değildi; kurallar
+görünmezdi.
+
+**Ders:** Bir sözleşmenin iki tarafı vardır — ZORLAYAN (denetim) ve UYMASI
+İSTENEN (analist). Bu ikisi ayrı dosyalarda yaşadığı için sessizce ayrışırlar
+ve ayrışmanın faturası "model kötü" diye okunur. Kuralı yalnız zorlayıcı
+tarafa yazmak, sınavı öğrencinin görmediği bir müfredattan yapmaktır.
+Aynı asimetrinin ikinci hâli aynı gün çıktı: çıktı token tavanı AÇIKÇA
+verilmediği için sağlayıcının varsayılanına düşüldü ve JSON 17.000 karakterde
+sessizce kesildi — hata "geçersiz JSON" diye göründü, sebebi görünmedi.
+
+**Kural:** Bir denetim/doğrulama kuralı eklerken sor: *"bu kurala uyması
+beklenen taraf onu NEREDEN öğrenecek?"* Cevap "kodu okuyarak" ise kural
+görünmez demektir; istemde (ya da arayüzde) açıkça yaz — ve eşiği koda
+gömme, tek kaynaktan (config) oku ki eşik değişince metin de değişsin.
+İkinci soru: *"bu değeri açıkça vermezsem kim karar verir?"* Cevap
+"sağlayıcının varsayılanı" ise, o varsayılan bir gün sessizce aleyhine çalışır.
+
+---
+
+## L-010 — 2026-08-01 — Kontroller birbirini doğruluyorsa hiçbiri dış dünyaya bakmıyordur
+
+**Olay:** Faz 8'de otonom koşu kurulurken `bist saglik` incelendi. Sekiz
+kontrolün üçü (gösterge kapsaması, gösterge tazeliği, kalite kapısı)
+`MAX(bars_daily.date)` ile karşılaştırma yapıyordu. Yani **referans noktası
+verinin kendisiydi.** Barlar bayatlarsa `asof` da bayatlar, gösterge ve kalite
+ona uyumlu kalır — ve üç kontrol birden **TEMİZ** der.
+
+Gerçek koşuda görüldü: cuma barı gelmemişti, sistem perşembe verisiyle
+çalışıyordu ve sağlık kontrolü ✓ basıyordu. Otomasyonda karşılığı şu olurdu:
+veri gelmediği her gün DÜNKÜ rapor bugünmüş gibi Telegram'a düşer, hiçbir
+uyarı çıkmaz.
+
+**Ders:** Bir kontrol kümesi kendi içinde tutarlıysa bu, sistemin doğru
+çalıştığını GÖSTERMEZ — yalnız kontrollerin aynı kaynağa baktığını gösterir.
+L-007 "payda"yı sormayı öğretmişti; bu onun bir üst katmanı: **referans
+noktasını sor.** İç tutarlılık ölçen kontroller, dış dünyayla bağı kopmuş bir
+sistemi mutlulukla onaylar.
+
+**Kural:** Bir sağlık/doğrulama kontrolü yazarken sor: *"bu neyle
+karşılaştırıyor — verinin kendisiyle mi, dışarıdaki bir gerçekle mi?"*
+Kontrol kümesinde EN AZ BİR tanesi dış referansa (takvim, duvar saati, bağımsız
+kaynak) bakmalı; hepsi içeriye bakıyorsa küme bir yankı odasıdır. Ve o dış
+referansı yazarken zaman kaynağını AÇIKÇA belirt (AGENTS.md §11 madde 6) —
+testler o referansı dondurabilmeli, yoksa suite takvim ilerledikçe kayar.
+
+---
+
+## L-009 — 2026-07-29 — Belgelenen AKIŞ da bir iddiadır: eksik adım boş ama "geçerli" çıktı üretir
+
+**Olay:** İlk gerçek LLM turunda README'nin "Günlük akış" bölümü harfiyen
+izlendi: `veri gunluk → haber cek → gunluk`. Üretilen paket **yapısal olarak
+geçerliydi ama tamamen boştu**: 67 istenen isimden **0'ı skorlandı**, toplam
+**0 plan**, her hissenin faktör skoru `None`, rejim genişliği paydası `0`.
+Rejim yine de bir etiket bastı — `transition` — ve o etiket sıfır paydadan
+geliyordu. Hiçbir komut hata vermedi, çıkış kodları temizdi.
+
+Sebep: `bist veri gunluk` kalite kapısını **otomatik koşuyor** ama
+`bist gosterge`'yi koşmuyor. README'nin günlük akışında `gosterge` **hiç
+geçmiyor**; yalnız "Kurulum (bir kez)" bölümünde var ve yanındaki not
+"evren her değiştiğinde TEKRAR koş" diyor. Oysa her yeni bar yeni bir
+`indicator_daily` satırı gerektirir — yani gerçek koşul "evren değişince"
+değil, **"her gün"**. Belgedeki koşul, kodun gerçek ihtiyacından dardı.
+
+`bist saglik` bu bozulmayı KRİTİK olarak yakalıyor (gösterge tazeliği). Ama
+README onu "Her şeyden önce" diye sunuyor; `veri gunluk`'tan ÖNCE koşulduğunda
+henüz görecek bir bayatlık yoktur ve temiz rapor verir. Yani doğru kontrol,
+belgelenen sırada yanlış anda koşuyordu.
+
+**Ders:** Bir eksik adım her zaman hata fırlatmaz — çoğu zaman **boş ama
+şeklen geçerli** bir çıktı üretir ve zincirin geri kalanı onu sorunsuz işler.
+L-007'nin ("kod doğru, veri sessizce dar") akış düzeyindeki kardeşi bu:
+burada dar olan veri değil, **belgelenen prosedürdü**. Ayrıca bir otomasyon
+asimetrisi vardı: aynı komut kalite kapısını otomatik koşup göstergeyi
+koşmuyordu — L-008'in "simetriğini ara" kuralı tam da buraya bakıyordu.
+
+**Kural:** Bir akış belgelendiğinde iki soru sorulur: (a) bu adımların
+tamamı gerçekten yeterli mi — akışı **taze bir günde uçtan uca koşarak**
+doğrula, adımları okuyarak değil; (b) bir adım atlanırsa ne olur — hata mı
+verir, yoksa boş ama geçerli çıktı mı üretir? İkincisi ise ya adımı otomatiğe
+bağla ya da atlanmasını **kapı** hâline getir. Ve bir ön-uçuş kontrolünü
+belgelerken **hangi andan sonra** koşulacağını yaz: yanlış anda koşan doğru
+kontrol, olmayan kontroldür.
+
+---
+
 ## L-008 — 2026-07-27 — Bir düzeltmeyi tek çağrı yerinde yapmak, kuralı uygulamak DEĞİLDİR
 
 **Olay:** Kapsamlı bir test turu yazılırken, daha önce "kapatıldı" sayılmış üç

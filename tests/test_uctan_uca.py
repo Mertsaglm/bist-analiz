@@ -22,6 +22,8 @@ uçtan uca koş; test yeşil diye geçme* (AGENTS.md §11, tuzak 1).
 from __future__ import annotations
 
 import json
+from datetime import date
+from pathlib import Path
 
 import pytest
 
@@ -372,3 +374,110 @@ class TestBoruHattiButunlugu:
         # Diskten okunan paketle denetim yine geçmeli (JSON gidiş-dönüşü)
         out = _analist_cikti(geri, plan_secilen=hat["planli"][0])
         assert not audit.hard_fails(audit.audit(cfg, geri, out, con))
+
+
+# ============================================================ 6. otonom koşu
+class TestOtonomKosu:
+    """Faz 8: `bist otonom gunluk` zinciri — MOCK'SUZ modüller arası akış.
+
+    `test_otonom.py` orkestrasyonu (hangi hata durdurur?) sahte adımlarla
+    sınar. Burada tersi yapılır: adımlar GERÇEK, yalnız dış dünya (yfinance,
+    KAP, Telegram, LLM) kapatılır. Yakaladığı hata sınıfı farklı — her modül
+    tek başına doğruyken aralarındaki varsayımın kırılması (AGENTS.md §12).
+    """
+
+    @pytest.fixture
+    def dis_dunya_kapali(self, cfg, con, monkeypatch):
+        """Ağ çağrılarını sustur; veri ZATEN kurulu olsun."""
+        from src import indicators, news, otonom, prices
+        from src.calendar_bist import BistCalendar
+
+        # `asof_geri=0`: otonom koşu `MAX(bars_daily.date)`i asof sayar; seride
+        # "gelecek" bar bırakmak kalite kaydıyla barları ayrıştırır ve sağlık
+        # kapısı — HAKLI OLARAK — bayat der. Burada canlı günü taklit ediyoruz.
+        asof = kur_sentetik_evren(cfg, con)
+        # Takvim: `asof` son kapalı seans olsun ki `bar tazeliği` temiz çıksın.
+        monkeypatch.setattr(BistCalendar, "last_closed_session",
+                            lambda self, ts=None: date.fromisoformat(asof))
+        monkeypatch.setattr(BistCalendar, "is_trading_day", lambda self, d: True)
+        # Dış kaynaklar: veri zaten var, tekrar çekilmesin.
+        monkeypatch.setattr(prices, "daily", lambda *a, **k: {
+            "tickers": 6, "hayalet_silinen": 0, "kalite_gecmeyen": 0,
+            "kalite_degerlendirilen": 6, "start": asof})
+        monkeypatch.setattr(indicators, "compute_and_store", lambda *a, **k: {
+            "satir": {"AAA": 320}, "tickers": 6, "set_version": "v1"})
+        monkeypatch.setattr(news, "sync", lambda *a, **k: {
+            "yazilan": 0, "atlanan_aralik": None})
+        # Haber katmanı sağlık kontrolünden geçsin diye bir bildirim koy.
+        con.execute(
+            "INSERT OR REPLACE INTO disclosures (disclosure_id,ticker,"
+            "published_utc,tier,title,fetched_utc) VALUES ('kap-e2e','AAA',?,1,'t',?)",
+            (f"{asof}T10:00:00+00:00", util.utc_now_iso()))
+        con.commit()
+        gonderilen: list[str] = []
+        monkeypatch.setattr(otonom.tg, "bildir",
+                            lambda c, m: gonderilen.append(m) or True)
+        return {"asof": asof, "telegram": gonderilen}
+
+    def test_analistsiz_kosu_UCTAN_UCA(self, cfg, con, dis_dunya_kapali):
+        """Zincirin tamamı: sağlık → paket → çözüm → rapor → bildirim."""
+        from src import otonom
+
+        s = otonom.gunluk(cfg, con, bugun=date(2026, 7, 29),
+                          analist_calistir=False)
+
+        assert otonom.basarisiz_mi(s) == [], f"kritik adım düştü: {s.get('hatalar')}"
+        assert s["asof"] == dis_dunya_kapali["asof"]
+        # Rapor GERÇEKTEN diske yazıldı ve okunabilir
+        yol = Path(s["rapor"])
+        assert yol.exists() and "BIST Günlük" in yol.read_text(encoding="utf-8")
+        # Telegram özeti gitti ve zorunlu ibareyi taşıyor
+        assert dis_dunya_kapali["telegram"], "bildirim gönderilmedi"
+        assert "kenar yok" in dis_dunya_kapali["telegram"][0].lower()
+
+    def test_analist_zinciriyle_journala_YAZAR(self, cfg, con, dis_dunya_kapali,
+                                               monkeypatch):
+        """Zincir temiz çıktı verirse tahminler journal'a girer ve `tool`
+        alanı MODEL KİMLİĞİ olur — ölçüm bu alana dayanıyor."""
+        from src import analist, otonom
+
+        asof = dis_dunya_kapali["asof"]
+
+        def sahte_model(c, model_id, prompt):
+            # Paketi DİSKTEN oku — gerçek analist de öyle yapar. Testte
+            # önceden kurulmuş bir paket kullanmak HF-02'ye takılır: her
+            # `build_bundle` çağrısı `generated_utc` yazdığı için sha değişir.
+            b = util.read_json(f"{cfg['paths']['llm_in_dir']}/{asof}/bundle.json")
+            planli = [e["ticker"] for e in b["evren"] if e["plan_menusu"]]
+            out = _analist_cikti(b, plan_secilen=planli[0] if planli else None)
+            out["tool"] = "yanlis-beyan"        # model kendini yanlış tanıtıyor
+            return json.dumps(out)
+
+        monkeypatch.setattr(analist, "_cagir", sahte_model)
+        monkeypatch.setattr(analist, "zincir", lambda c: ["gemini-3.5-flash"])
+
+        s = otonom.gunluk(cfg, con, bugun=date(2026, 7, 29))
+
+        assert otonom.basarisiz_mi(s) == [], f"kritik adım düştü: {s.get('hatalar')}"
+        assert s.get("analist_model") == "gemini-3.5-flash"
+        assert s.get("kaydedilen", 0) > 0
+        arac = db.scalar(con, "SELECT tool FROM llm_runs WHERE run_id = ?",
+                         (s["run_id"],))
+        assert arac == "gemini-3.5-flash", "journal modelin YANLIŞ beyanını yazmış"
+
+    def test_zincir_dususu_raporu_ENGELLEMEZ(self, cfg, con, dis_dunya_kapali,
+                                             monkeypatch):
+        """Analist kritik DEĞİL: zincirin tamamı düşse de o günün plan
+        geometrisi ve raporu üretilmeli (ADR #013)."""
+        from src import analist, otonom
+
+        monkeypatch.setattr(analist, "zincir", lambda c: ["a", "b"])
+        monkeypatch.setattr(analist, "_cagir", lambda c, m, p: (
+            _ for _ in ()).throw(RuntimeError("429 kota")))
+
+        s = otonom.gunluk(cfg, con, bugun=date(2026, 7, 29))
+
+        assert "analist" in s["hatalar"]
+        assert otonom.basarisiz_mi(s) == []
+        assert Path(s["rapor"]).exists()
+        assert "Analist çıktısı yok" in dis_dunya_kapali["telegram"][0]

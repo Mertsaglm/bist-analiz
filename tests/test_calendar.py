@@ -149,3 +149,48 @@ class TestGercekTakvim:
         assert set(kapali) <= tatil, (
             f"Tatil listesinde OLMAYAN kapalı hafta içi günler: "
             f"{sorted(set(kapali) - tatil)} — ya endeks verisi eksik ya liste eski")
+
+    def test_endeks_barsiz_ama_hisseli_gun_SEANS_SAYILIR(self, real_con, real_cfg):
+        """REGRESYON KİLİDİ — ADR #012 (2026-07-29).
+
+        NE OLMUŞTU: takvim YALNIZ XU100 barlarından türetiliyordu ve `son_bar`'a
+        kadar bunu OTORİTER sayıyordu. yfinance 2026-07-24 ve 2026-07-28'de
+        XU100/XU030/XBANK'in ÜÇÜNDE birden bar vermedi — ama 70 hissenin hepsi o
+        günler işlem gördü. Takvim o iki günü TATİL saydı; bu, o günleri kapsayan
+        her `add_trading_days` / `holding_days` hesabını sessizce kaydırıyordu.
+
+        Çelişki kendi kodumuzun içindeydi: `purge_phantom_bars` aynı olguyu ölçüp
+        "endeksin kendi boşluğu, hisse barı gerçek" diye 142 barı KORUMUŞTU. İki
+        modül zıt varsayım taşıyordu ve hiçbir test bunu görmüyordu.
+
+        Bu test o çelişkiyi kilitler: bir günde eşiği aşan sayıda hisse barı
+        varsa, endeks barı olmasa BİLE o gün seans günüdür.
+        """
+        cal = BistCalendar(real_cfg, real_con)
+        if cal.son_bar is None:
+            pytest.skip("veri yok")
+
+        sym = real_cfg["takvim"]["turet_kaynak_endeks"]
+        esik = int(real_cfg["takvim"]["min_hisse_bari_seans_icin"])
+        endeks_gunleri = {r[0] for r in real_con.execute(
+            "SELECT date FROM index_daily WHERE symbol = ?", (sym,))}
+
+        # Endeks barı olmayan ama evrenin çoğunun işlem gördüğü günler
+        bosluklar = [r[0] for r in real_con.execute(
+            "SELECT date FROM bars_daily GROUP BY date HAVING COUNT(*) >= ?",
+            (esik,)) if r[0] not in endeks_gunleri and r[0] <= cal.son_bar.isoformat()]
+
+        for g in bosluklar:
+            assert cal.is_trading_day(g), (
+                f"{g}: endeks barı yok ama eşiği aşan sayıda hisse işlem görmüş; "
+                f"bu gün TATİL sayılamaz (ADR #012)")
+
+        # Simetrik yön — asıl koruma burada: gerçek tatiller seans SAYILMAMALI.
+        # Eşik bir gün gevşetilirse (ya da purge bozulup tatilde bar bırakırsa)
+        # bu dal kırılır. Tek yönlü bir test, eşiği 0'a çekerek de geçilebilirdi.
+        hol = util.load_yaml(real_cfg["paths"]["holidays_file"])
+        for g in sorted({str(d) for y in hol["tam_gun"].values() for d in y}):
+            if g <= cal.son_bar.isoformat():
+                assert not cal.is_trading_day(g), (
+                    f"{g} holidays_tr.yaml'de tam gün tatil ama seans sayıldı — "
+                    f"hayalet bar ayıklaması bozulmuş olabilir")

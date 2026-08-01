@@ -26,6 +26,8 @@ testin niyeti baştan doğru olmalı.
 
 from __future__ import annotations
 
+from datetime import date, timedelta
+
 import pytest
 
 from src import cli, db, util
@@ -67,6 +69,8 @@ BEKLENEN_KOMUTLAR = {
     "seviye": None,
     "teshis": None,
     "revizyon": None,
+    "otonom": ["gunluk", "haftalik"],
+    "bildir": None,
     "db": ["dump", "restore", "durum"],
 }
 
@@ -252,14 +256,49 @@ class TestHaberCikisKodu:
 
 
 class TestSaglikCikisKodu:
+    @pytest.fixture
+    def zaman_dondur(self, monkeypatch):
+        """Sentetik evren 2023-2024 tarihlidir; `bar tazeliği` kontrolü ise
+        DUVAR SAATİNE bakar (ve bakmalıdır — sorduğu soru "bugünün verisi
+        geldi mi?"). Referans zamanı testin kendisi ilan eder, yoksa suite
+        takvim ilerledikçe kayan bir teste dönüşür.
+        """
+        from src.calendar_bist import BistCalendar
+
+        def dondur(asof: str):
+            monkeypatch.setattr(BistCalendar, "last_closed_session",
+                                lambda self, ts=None: date.fromisoformat(asof))
+        return dondur
+
     def test_bos_veritabaninda_KRITIK(self, cli_cfg, con, capsys):
         """Ön uçuş kontrolü boş kurulumda temiz DEMEMELİ."""
         assert _kos("saglik") == 2
         cikti = capsys.readouterr().out
         assert "KRİTİK" in cikti and "haber katmanı" in cikti
 
-    def test_tam_kurulumda_temiz(self, cli_cfg, con, capsys):
+    def test_bar_bayatsa_UYARI_verir(self, cli_cfg, con, capsys, zaman_dondur):
+        """⚠ Faz 8'de eklendi. NE OLURDU: diğer kontroller göstergeyi/kaliteyi
+        `MAX(bars_daily.date)`e kıyaslar; barlar bayatlarsa `asof` da bayatlar
+        ve hepsi TUTARLI görünür. Otomasyonda karşılığı: veri gelmeyen gün
+        dünkü rapor bugünmüş gibi bildirilir, hiçbir uyarı çıkmaz."""
         asof = kur_sentetik_evren(cli_cfg, con)
+        con.execute(
+            "INSERT INTO disclosures (disclosure_id,ticker,published_utc,tier,"
+            "title,fetched_utc) VALUES ('kap-1','AAA',?,1,'t',?)",
+            (f"{asof}T10:00:00+00:00", util.utc_now_iso()))
+        con.commit()
+        # Takvim bir seans ileride: veri gelmemiş.
+        d = date.fromisoformat(asof) + timedelta(days=1)
+        while d.weekday() >= 5:
+            d += timedelta(days=1)
+        zaman_dondur(d.isoformat())
+
+        assert _kos("saglik") == 1
+        assert "bar tazeliği" in capsys.readouterr().out
+
+    def test_tam_kurulumda_temiz(self, cli_cfg, con, capsys, zaman_dondur):
+        asof = kur_sentetik_evren(cli_cfg, con)
+        zaman_dondur(asof)
         con.execute(
             "INSERT INTO disclosures (disclosure_id,ticker,published_utc,tier,"
             "title,fetched_utc) VALUES ('kap-1','AAA',?,1,'t',?)",
@@ -270,11 +309,12 @@ class TestSaglikCikisKodu:
         assert kod == 0, cikti
         assert "Tüm kontroller temiz" in cikti
 
-    def test_gosterge_bayatsa_KRITIK(self, cli_cfg, con, capsys):
+    def test_gosterge_bayatsa_KRITIK(self, cli_cfg, con, capsys, zaman_dondur):
         """Fiyat ilerlemiş, gösterge geride kalmışsa kesit sessizce daralır."""
         from tests.conftest import add_bars
-        asof = kur_sentetik_evren(cli_cfg, con)
+        kur_sentetik_evren(cli_cfg, con)
         add_bars(con, "AAA", [("2030-01-02", 10.0, 11.0, 9.0, 10.0, 1e6, 10.0)])
+        zaman_dondur("2030-01-02")      # barlar taze; bayat olan GÖSTERGE
         assert _kos("saglik") == 2
         assert "gösterge tazeliği" in capsys.readouterr().out
 

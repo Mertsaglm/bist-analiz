@@ -10,6 +10,17 @@ Determinizm kuralları:
   * satırlar birincil anahtara göre sıralı
   * float'lar repr ile değil sabit biçimle yazılır
   * zaman damgası / rastgelelik YOK
+
+BOYUT (Faz 8'de ölçüldü, 2026-08-01): dump artık repoya GİRİYOR ve her işlem
+günü commit'leniyor, dolayısıyla büyüklüğü bir tasarım kısıtı oldu. İlk sürüm
+her satıra kendi `INSERT INTO ... (kolonlar) VALUES` başlığını yazıyordu:
+
+    197.191 satır × ~85 bayt başlık ≈ 16,7 MB SAF TEKRAR   (toplam 52,3 MB)
+
+`SATIR_KUME` kadar satır tek bir INSERT altında toplanır; başlık tablo başına
+~400 kez yazılır, 197 bin kez değil. **Satır başına bir SATIR kuralı korunur**
+— diff'lenebilirlik bu dosyanın varlık sebebi ve onu boyut için feda etmek,
+`.db`'yi doğrudan commit'lemekten farksız olurdu.
 """
 
 from __future__ import annotations
@@ -22,6 +33,11 @@ from . import db, util
 # Dump'a girmeyen tablolar: yeniden üretilebilir türev veri.
 # Bunlar dump'a girse repo şişer ve her çalıştırmada gürültülü diff üretirdi.
 ATLA: set[str] = {"indicator_daily", "levels_daily", "data_quality"}
+
+# Tek INSERT altında toplanan satır sayısı. Büyütmek dosyayı biraz daha
+# küçültür ama bir satır değiştiğinde git'in yeniden yazdığı blok büyür;
+# 500 ikisi arasında ölçülmüş bir denge.
+SATIR_KUME = 500
 
 
 def _quote(v) -> str:
@@ -74,11 +90,18 @@ def dump(cfg: dict, out_path: str | Path | None = None) -> Path:
         cols = [c[1] for c in con.execute(f"PRAGMA table_info({t})").fetchall()]
         rows = con.execute(f"SELECT {','.join(cols)} FROM {t} ORDER BY {_pk_order(con, t)}")
         parts.append(f"-- ---- {t} ----")
+        baslik = f"INSERT INTO {t} ({','.join(cols)}) VALUES"
         n = 0
         for row in rows:
-            vals = ",".join(_quote(v) for v in row)
-            parts.append(f"INSERT INTO {t} ({','.join(cols)}) VALUES ({vals});")
+            # Küme başı: başlığı yaz. Sonraki satırlar yalnız değer demeti.
+            if n % SATIR_KUME == 0:
+                if n:
+                    parts[-1] = parts[-1][:-1] + ";"      # önceki kümeyi kapat
+                parts.append(baslik)
+            parts.append("(" + ",".join(_quote(v) for v in row) + "),")
             n += 1
+        if n:
+            parts[-1] = parts[-1][:-1] + ";"              # son kümeyi kapat
         parts.append(f"-- {t}: {n} satır")
 
     parts += ["COMMIT;", ""]

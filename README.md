@@ -118,10 +118,26 @@ poetry run bist veri kalite          # ticker bazlı kalite kapısı
 > eksik kalırsa kesitsel `yuzdelik` ve piyasa genişliği sessizce daralır —
 > pakette artık `kesit` ve `rejim.genislik_n` alanları paydayı gösterir.
 
-**Günlük akış:**
+**Günlük akış — tek komut (Faz 8):**
+
+```bash
+poetry run bist otonom gunluk
+```
+
+Sırayla: takvim kapısı (işlem günü değilse çıkar) → `veri gunluk` →
+**`gosterge`** → `haber cek` → `saglik` (KRİTİK ise DURUR) → paket →
+**analist zinciri** → `coz` → rapor + Telegram özeti.
+Çıkış kodu: `0` başarılı · `1` KRİTİK adım düştü.
+
+> ⚠ `gosterge` bu akışın İÇİNDE. Eskiden yalnız kurulum bölümündeydi ve
+> günlük akışta hiç geçmiyordu; sonuç, her gün **boş ama şeklen geçerli**
+> bir paketti (0 skorlanan isim, 0 plan — sıfır hata koduyla). Bkz. L-009.
+
+Adımları elle koşmak istersen hepsi ayrı ayrı da var:
 
 ```bash
 poetry run bist veri gunluk          # fiyat + hayalet bar ayıklama + kalite kapısı
+poetry run bist gosterge             # HER YENİ BAR için gerekli
 poetry run bist haber cek            # KAP · çıkış: 0 temiz · 1 aralık atlandı · 2 hata
 poetry run bist gunluk               # llm/in/<tarih>/ paketini yazar
 # → IDE'de llm/in/<tarih>/prompt.md çalıştır, llm/out/<tarih>/analysis.json kaydet
@@ -129,6 +145,29 @@ poetry run bist denetle              # HF-01..HF-31 — geçmeyen journal'a gire
 poetry run bist kaydet               # journal'a yaz
 poetry run bist rapor                # Türkçe markdown: AZALT + tez + VETO
 ```
+
+## Otonom koşu — Actions + model zinciri + Telegram
+
+Analist artık sıralı bir model zinciri (`config.llm.zincir`, ADR #013).
+Sıra ücretsizden ücretliye; bir model cevap veremezse sıradakine geçilir.
+**"Cevap verememek" HF denetimini de kapsar** — şemaya uyan ama `bist denetle`
+sert hatası veren çıktı da reddedilir ve sıradaki model denenir.
+
+`tool` alanını **kod** yazar, model değil: modelin kendi kimliği hakkındaki
+beyanına güvenilirse `bist degerlendir --tool` yanlış kayıtları toplar.
+
+```bash
+poetry run bist bildir --test        # Telegram hattı ayakta mı?
+poetry run bist otonom haftalik      # araç BAŞINA değerlendirme + haftalık özet
+```
+
+Workflow'lar `.github/workflows/` altında: `gunluk.yml` (hafta içi),
+`haftalik.yml` (pazar), `test.yml` (her push). Secret'lar
+`python scripts/set_secrets.py <pat_dosyasi>` ile yüklenir.
+
+> ⚠ **Actions repoya commit atar.** Yerel kopyan sessizce geride kalır;
+> çalışmadan önce `git pull` (LESSONS L-001). Ayrıca cron 5-30 dk gecikebilir —
+> "saat 19:35'te gelir" diye bekleme.
 
 **Periyodik:**
 
@@ -224,7 +263,7 @@ Bunlar gizlenmiyor çünkü gizlenen sınır, olmayan bir garantiye dönüşür:
 ```
 config.yaml       TÜM eşik/oran/URL — koda sabit gömülmez
 universe.yaml     18 canlı hisse + 67 ölçüm evreni (canlı ölçülmüş metriklerle)
-holidays_tr.yaml  YALNIZCA gelecek tarihler (geçmiş takvim XU100 barlarından türetilir)
+holidays_tr.yaml  YALNIZCA gelecek tarihler (geçmiş takvim barlardan türetilir)
 
 AGENTS.md         AI yardımcı ("Usta") kanonik kuralları — araçtan bağımsız
 CLAUDE.md · GEMINI.md · .github/copilot-instructions.md    IDE köprüleri
@@ -232,13 +271,21 @@ ai/               proje hafızası: PROJECT · STATE · DECISIONS · LESSONS · 
 
 src/              veri → gösterge → faktör → plan → LLM sınırı → journal → ölçüm
 tests/            pytest; sözleşme + mekanizma + uçtan uca (bkz. "Regresyona karşı zırh")
-llm/in            LLM girdi paketi (izlenir)    llm/out  LLM çıktısı (izlenmez)
-data/             SQLite + deterministik SQL dump (ikisi de gitignore'da)
+scripts/          set_secrets.py — .env anahtarlarını Actions secret'ına yükler
+.github/workflows/  gunluk · haftalik · test
+
+llm/              LLM girdi paketi ve çıktısı — İZLENİR
+data/             deterministik SQL dump İZLENİR; ikili `.db` gitignore'da
+reports/          üretilen raporlar — İZLENİR
 docs/             ön kayıtlar (koşudan önce mühürlenmiş, değiştirilmez)
 ```
 
-> `reports/*.md` **gitignore'da**: raporlar türev çıktıdır ve komutla yeniden
-> üretilir. Bu README'de rapor dosyasına atıf verilmez — taze klonda bulunmaz.
+> **Arşiv politikası (Faz 8'de tersine çevrildi).** `data/`, `reports/` ve
+> `llm/` artık izlenir. Sebep: Actions her koşuda veritabanını sıfırdan kurar
+> (`bist db restore`) — arşiv repoda değilse sistemin hafızası yoktur.
+> Tahminlerin ve sonuçların git geçmişinde durması ayrıca "bu tahmin ne zaman,
+> hangi girdiyle üretildi?" sorusunu sonradan düzenlenemez biçimde cevaplar.
+> Yalnız ikili `.db` dışarıda: diff'lenmez ve dump'tan yeniden kurulur.
 
 ## Ölçüm kültürü
 

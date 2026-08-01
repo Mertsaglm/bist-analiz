@@ -1,0 +1,3 @@
+{"ts_utc":"2026-08-01T11:01:57+00:00","chat":"198","parca":1,"metin":"✅ BIST bildirim testi — 2026-08-01\nHat çalışıyor. Bu mesaj bist bildir --test ile gönderildi."}
+{"ts_utc":"2026-08-01T11:43:46+00:00","chat":"198","parca":1,"metin":"📊 BIST — 2026-07-30\nRejim: risk-off · nakit %80 · maks 2 pozisyon\n⚠ Sağlık: 2 uyarı\n\nℹ️ Analist çıktısı yok — yalnız deterministik katman.\n\nÖlçülen kenar yok — plan geometrisi, yön iddiası değil.\n\n⚠ Düşen adım: analist"}
+{"ts_utc":"2026-08-01T12:24:55+00:00","chat":"198","parca":1,"metin":"📊 BIST — 2026-07-30\nRejim: risk-off · nakit %80 · maks 2 pozisyon\n⚠ Sağlık: 2 uyarı\n\n🚫 Veto: EUPWR (rejim_uyumsuz)\n\n📌 Plan seçildi: KRDMD, TUPRS\n\n🤖 gemini-3.6-flash\n\nÖlçülen kenar yok — plan geometrisi, yön iddiası değil."}

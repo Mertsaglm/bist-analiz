@@ -1,0 +1,84 @@
+name: Gunluk otonom kosu
+
+# Her hafta ici 16:35 UTC (19:35 TR). Kapanis seansi 18:10'da biter; yfinance'in
+# gunun barini yayinlamasi icin ~1 saat pay birakilir.
+#
+# ⚠ GitHub cron GECIKIR (gold'da olculdu: nominal */15 gercekte ~90 dk ritim
+# veriyordu; az aktiviteli repolarda throttle daha da sert). Gunde tek kosu icin
+# sorun degil, ama "saat 19:35'te gelir" diye BEKLEME.
+#
+# Cron hafta ici tatilleri BILMEZ; `bist otonom gunluk` ilk is olarak takvime
+# bakar ve islem gunu degilse hicbir sey yapmadan cikar.
+
+on:
+  schedule:
+    - cron: "35 16 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      analistsiz:
+        description: "LLM zincirini atla (yalniz deterministik katman)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: repo-commit          # haftalik is ile ayni grup → push cakismasi yok
+  cancel-in-progress: false
+
+jobs:
+  gunluk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      # Bagimliliklar pyproject.toml'dan gelir — burada IKINCI bir liste
+      # tutulsaydi, yeni bir bagimlilik eklendiginde workflow sessizce eskir
+      # ve hata CI'da "modul yok" diye gorunurdu.
+      - name: Bagimliliklar
+        run: pip install --quiet -e .
+
+      # Ikili SQLite git'te YOK; deterministik SQL dump'tan kurulur.
+      - name: Veritabanini dump'tan kur
+        run: python -m src.cli db restore
+
+      - name: Otonom kosu
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          EVDS_API_KEY: ${{ secrets.EVDS_API_KEY }}
+        run: |
+          python -m src.cli otonom gunluk \
+            ${{ inputs.analistsiz && '--analistsiz' || '' }}
+
+      # ⚠ `if: always()` KRITIK. Kosu KRITIK adimda dustuyse (cikis 1) bile o
+      # ana kadar cekilen veri ve yazilan rapor commit'lenmeli — aksi halde
+      # ertesi gun ayni veri yeniden cekilir ve BOZULMANIN IZI KAYBOLUR.
+      # Hangi adimin dustugu zaten Telegram'a ve Actions loguna dusuyor.
+      - name: Veritabanini dump'a yaz
+        if: always()
+        run: python -m src.cli db dump
+
+      - name: Commit + push
+        if: always()
+        run: |
+          git config user.name "bist-otonom"
+          git config user.email "actions@github.com"
+          git add data/ reports/ llm/ || true
+          if git diff --cached --quiet; then
+            echo "degisiklik yok"
+          else
+            git commit -m "otonom: gunluk kosu $(date -u +%Y-%m-%d)"
+            for i in 1 2 3; do
+              git pull --rebase origin main && git push && break
+              echo "push denemesi $i basarisiz"; sleep 5
+            done
+          fi

@@ -11,24 +11,24 @@ __pycache__/
 # Kişisel — projeler arası ortak profil, repoya girmez (gold_tracking_system konvansiyonu)
 ai/PROFILE.md
 
-# Veri — SQLite git'e ham girmez (ikili, diff'lenmez)
+# --- Veri ve çıktılar: POLİTİKA TERSİNE ÇEVRİLDİ (Faz 8, ADR #013) ---
+#
+# Artık `data/`, `reports/` ve `llm/` İZLENİR. Sebep: Actions her koşuda
+# veritabanını SIFIRDAN kurar (`bist db restore`), yani arşiv repoda değilse
+# sistemin hafızası yoktur — her gün ilk günmüş gibi başlar. Ayrıca tahminlerin
+# ve sonuçların git geçmişinde durması, "bu tahmin ne zaman ve hangi girdiyle
+# üretildi?" sorusunu sonradan düzenlenemez biçimde cevaplar.
+#
+# Repo PRIVATE; içerik fiyat verisi + kendi analizimiz.
+#
+# İstisna YALNIZ ikili/türev dosyalar:
 data/*.db
 data/*.db-wal
 data/*.db-shm
 data/backup/
 
-# Deterministik SQL dump (src/dbdump.py) — şimdilik git'e GİRMİYOR.
-# 15 MB türev veri; `bist veri backfill` ile ~3 dakikada yeniden üretiliyor.
-# Faz 8'de (GitHub Actions) bu satır kaldırılacak: orada arşivin repoda olması
-# gerekir çünkü Actions kendi veritabanını her koşuda sıfırdan kurar.
-data/*.sql
-
-# LLM çalıştırma çıktıları — girdi paketi (llm/in) izlenir, çıktı izlenmez
-llm/out/
-
-# Üretilen raporlar (arşivlenmek istenenler elle eklenir)
-reports/*.md
-!reports/.gitkeep
+# LLM çıktısının HAM hâli (`analysis.json`) izlenir — otonom analistin ürettiği
+# şey artık kişisel bir dosya değil, sistemin denetlenebilir çıktısı.
 
 # Loglar
 logs/*.log

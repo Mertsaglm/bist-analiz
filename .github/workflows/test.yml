@@ -1,0 +1,35 @@
+name: Test
+
+# Bu projenin kurallari YORUMDA degil TESTTE yasiyor (ADR #011): esik zeminleri,
+# kolon↔sema esligi, LLM siniri kumeleri, katman disiplini, dokuman↔kod atiflari.
+# O kurallarin CI'da kosmamasi, kurallarin "yerel makinede hatirlanan" seye geri
+# donmesi demektir. Faz 8'in en ucuz ve en degerli parcasi bu.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch: {}
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      # Bagimliliklar pyproject.toml'dan; yalniz pytest ayrica (dev grubu).
+      - name: Bagimliliklar
+        run: pip install --quiet -e . pytest
+
+      # ⚠ Veritabani KURULMAZ. Gercek veri testleri (`real_con`) veritabani
+      # yoksa kendilerini ATLAR — bu bilincli: CI'in isi mantigi dogrulamak,
+      # yfinance'in o anki davranisini degil. Aksi halde suite, bir dis
+      # servisin kotasina bagli olarak kirmiziya doner ve kirmizinin anlami
+      # asinir.
+      - name: pytest
+        run: python -m pytest

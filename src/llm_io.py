@@ -406,8 +406,35 @@ def render_context(bundle: dict) -> str:
 
 
 def render_prompt(cfg: dict, bundle: dict) -> str:
-    """Görev tanımı + sert kurallar + çıktı iskeleti."""
+    """Görev tanımı + sert kurallar + çıktı iskeleti.
+
+    ⚠ BU FONKSİYONUN TEK İŞİ: denetimin ZORLADIĞI her kuralı analiste
+    SÖYLEMEK. İlk sürüm bunu yapmıyordu ve sonuç ölçüldü (2026-08-01, ilk
+    otonom tur): zincirdeki **altı modelin altısı da** denetimden düştü.
+
+        HF-26 (prose çok kısa)  → 6/6 modelde   ← prompt minimum uzunluğu
+                                                  HİÇ söylemiyordu
+        HF-10 (veto_code enum)  → veto kodları listelenmemişti
+        HF-14 (plan_sec eşliği) → alan bağı anlatılmamıştı
+        HF-20 (sinyal↔aksiyon)  → çelişki kuralı yazılmamıştı
+        HF-30 (açık tahminler)  → zorunluluk söylenmemişti
+
+    Elle koşulan tur geçmişti — çünkü insan `audit.py`'yi OKUYABİLİYOR.
+    Model okuyamaz. Denetimde yaşayan ama prompt'ta yazmayan her kural,
+    modelden imkânsızı istemektir.
+
+    Eşikler config'ten okunur, buraya GÖMÜLMEZ: eşik değişince prompt'un
+    sessizce yalan söylemesi bu projenin en bilinen hata sınıfı.
+    """
+    D = cfg["llm"]
+    E = D["enums"]
     iskelet = schema.output_iskelet(bundle["asof"], bundle["bundle_sha"], "<araç>")
+    min_kr = int(D["min_prose_karakter"])
+    # Açık tahminler hissenin KENDİ girdisinde nested duruyor; kimlik dış
+    # döngüdeki `ticker` (kayıtların içinde ayrıca `ticker` alanı YOK).
+    acik = sorted({e["ticker"] for e in bundle["evren"]
+                   if e.get("acik_tahminler")})
+
     L = [
         f"# Görev — BIST analizi, {bundle['asof']}", "",
         "Sen deneyimli bir portföy yöneticisisin. `context.md` dosyasındaki "
@@ -419,15 +446,76 @@ def render_prompt(cfg: dict, bundle: dict) -> str:
         "## Sert kurallar", "",
     ]
     L += [f"{i + 1}. {k}" for i, k in enumerate(bundle["kurallar_ozeti"])]
-    L += ["", "## En değerli katkın: VETO", "",
+
+    # ---------------------------------------------------------- kalibrasyon
+    L += ["", "## Duruş: TEMKİN VARSAYILANDIR", "",
+          "Bu sistem kâr vaat etmiyor; ölçüm pozitif kenar bulamadı. Dolayısıyla "
+          "iyimser bir yorum, temkinli bir yorumdan daha riskli — çünkü eyleme "
+          "dönüşür. Şüphedeysen `izle` de, `buy` deme. Emin olmadığın bir tezi "
+          "güçlü yazmak katkı değil, gürültüdür.", "",
+          "Güvenini abartma: `confidence` alanında şüphedeysen `dusuk` seç. "
+          "Elindeki bilgi sıralama + geometri + haber başlıklarıdır; bunlar "
+          "yüksek güveni nadiren hak eder.", ""]
+
+    # ---------------------------------------------------------- alan sözleşmesi
+    L += ["## Denetimden geçmenin ŞARTLARI (en sık düşülen yerler)", "",
+          f"**Prose uzunluğu.** `thesis`, `counter_scenario`, `key_risk` ve "
+          f"`falsifier` alanlarının HER BİRİ en az **{min_kr} karakter** olmalı. "
+          f"Bu dördü bir hisse için de boş bırakılamaz. (En sık düşülen kural bu.)",
+          "",
+          "**Sinyal ↔ aksiyon çelişemez.** `strong_buy` / `buy` / `accumulate` "
+          "derken `plan_reddet` ya da `islem_yok` YAZAMAZSIN. Boğa sinyali "
+          "veriyorsan aksiyon `plan_sec` ya da `izle` olmalı.", "",
+          "**`selected_plan_id` yalnız `plan_sec` ile gelir.** Başka bir "
+          "aksiyonda `null` olmalı. Plan seçiyorsan kimlik paketteki "
+          "`plan_ids` listesinden BİREBİR gelmeli; planı olmayan hisseye plan "
+          "seçilemez.", "",
+          "**`veto_code` yalnız `plan_reddet` ile gelir** ve şu listeden olmalı: "
+          + ", ".join(f"`{v}`" for v in E["veto_code"]) + ". Başka aksiyonlarda "
+          "`null`.", "",
+          f"**`strong_buy` yalnız** faktör yüzdeliği ≥ "
+          f"{D['strong_buy_min_yuzdelik']:.0f} olan hisselerde kullanılabilir. "
+          "Skorlanmamış ya da kapıdan elenmiş bir isme verilemez.", "",
+          "**Rejim tavanı.** `plan_sec` sayısı paketteki "
+          "`rejim.pozisyon_politikasi.maks_pozisyon` değerini AŞAMAZ; sektör "
+          "başına tavan da geçerli. Rejim `risk-off` iken `portfolio_action` "
+          "`risk_artir` OLAMAZ.", "",
+          "**Kapsam.** Evrendeki HER hisse ya `stocks[]` ya `not_covered` "
+          "içinde olmalı; ikisinde birden olamaz.", ""]
+    if acik:
+        L += ["**Açık tahmini olan hisseler `stocks[]` içinde OLMAK ZORUNDA** "
+              "(`not_covered`'a atılamaz) — taşınan tez sessizce düşürülemez: "
+              + ", ".join(f"`{t}`" for t in acik) + ".", ""]
+
+    # ---------------------------------------------------------- sayı yasağı
+    L += ["## Sayı yasağı — en pratik tavsiye: PROSE'DA HİÇ RAKAM KULLANMA", "",
+          "Prose'da yazdığın her sayı pakette BİREBİR bulunmak zorunda; "
+          "bulunmazsa çıktı reddedilir. Ayrıca pakette bulunan bir sayıya "
+          "başka bir ANLAM yüklemek de yasaktır (bir stop fiyatını "
+          "\"%X potansiyel\" diye kullanmak gibi).", "",
+          "Bu kuralı tutturmanın en güvenli yolu rakamları tamamen bırakmaktır: "
+          "*\"iki yüz günlük ortalama\"* yerine **\"uzun vadeli ortalama\"**, "
+          "*\"52 hafta zirvesi\"* yerine **\"yıllık zirve\"**, "
+          "*\"RSI 31\"* yerine **\"aşırılık göstergesi satım bölgesinde\"** yaz. "
+          "Anlam kaybolmaz, denetim de patlamaz.", "",
+          "Fiyat / stop / hedef / boyut / R:R / yüzde güven ZATEN yasak — "
+          "onları plan seçerek gösterirsin, yazarak değil.", ""]
+
+    # ---------------------------------------------------------- veto
+    L += ["## En değerli katkın: VETO", "",
           "Bir plan geometrik olarak geçerli olabilir ama yine de kötü bir fikir "
           "olabilir — haber riski, kurumsal işlem, likidite, sektör yoğunluğu. "
           "`action: \"plan_reddet\"` + `veto_code` bunun içindir. Veto gerçek bir "
           "karardır ve performansı AYRI ölçülür: veto ettiklerin seçtiklerinden "
           "iyi giderse veto negatif değerlidir ve kapatılır.", "",
+          "`falsifier` alanı da ciddiye alınmalı: **beş işlem günü içinde "
+          "GÖZLEMLENEBİLİR** bir olay yaz (bir kapanışın bir seviyeyi geçmesi, "
+          "hacmin düşmesi gibi). Jenerik cümle şablon sayılır ve reddedilir; "
+          "aynı cümleyi iki hissede tekrarlama.", "",
           "## Çıktı", "",
           f"`llm/out/{bundle['asof']}/analysis.json` — TEK JSON nesnesi, "
-          "ilk karakter `{`, son karakter `}`. Markdown yok, açıklama yok.", "",
+          "ilk karakter `{`, son karakter `}`. Markdown yok, açıklama yok. "
+          "Şemada olmayan alan EKLEME.", "",
           "```json", util.json_dump(iskelet), "```", "",
           "## Denetim", "", "Çıktın `bist denetle` ile denetlenecek. "
           "HF kodlarından biri patlarsa journal'a GİRMEZ.",

@@ -505,95 +505,18 @@ def cmd_haber(args) -> int:
 def cmd_saglik(args) -> int:
     """Sessiz bozulmaya karşı ön uçuş kontrolü.
 
-    2026-07-27 denetiminin ürettiği risk listesi elle koşulacak SQL'ler olarak
-    kalırsa koşulmaz (LESSONS L-002). Hepsi burada, tek komutta. Çıkış kodu:
-    0 temiz · 1 uyarı var · 2 en az bir KRİTİK kontrol düştü.
+    Mantık `src/saglik.py`'de — otonom koşu da aynı kapıyı kullanır ve hiçbir
+    modül `cli`'ı import edemez (katman disiplini). Burası ince kabuk.
+    Çıkış kodu: 0 temiz · 1 uyarı var · 2 en az bir KRİTİK kontrol düştü.
     """
+    from . import saglik as sag
+
     cfg = _cfg()
     con = db.connect(cfg, readonly=True)
-    from . import news, universe
-
-    asof = db.scalar(con, "SELECT MAX(date) FROM bars_daily")
-    bulgular: list[tuple[str, str, str]] = []          # (seviye, ad, mesaj)
-
-    def ekle(seviye, ad, tamam, mesaj):
-        bulgular.append(("OK" if tamam else seviye, ad, mesaj))
-
-    # 1) Gösterge kapsaması — kesitsel her oranın PAYDASI
-    n_bar = db.scalar(con, "SELECT COUNT(DISTINCT ticker) FROM bars_daily") or 0
-    n_ind = db.scalar(con, "SELECT COUNT(DISTINCT ticker) FROM indicator_daily") or 0
-    ekle("KRİTİK", "gösterge kapsaması", n_ind >= n_bar,
-         f"{n_ind}/{n_bar} ticker" + ("" if n_ind >= n_bar else " → `bist gosterge`"))
-
-    # 2) Gösterge tazeliği
-    son_ind = db.scalar(con, "SELECT MAX(date) FROM indicator_daily")
-    ekle("KRİTİK", "gösterge tazeliği", son_ind == asof,
-         f"gösterge {son_ind} · bar {asof}"
-         + ("" if son_ind == asof else " → `bist gosterge`"))
-
-    # 3) Kalite kapısı açık mı
-    son_kal = db.scalar(con, "SELECT MAX(date) FROM data_quality")
-    ekle("KRİTİK", "kalite kapısı", son_kal == asof,
-         f"kalite {son_kal} · bar {asof}"
-         + ("" if son_kal == asof else " → `bist veri kalite`"))
-
-    # 4) Haber katmanı sağlığı
-    hd = news.kaynak_durumu(con, asof) if asof else {"ok": False, "not": "veri yok"}
-    ekle("KRİTİK", "haber katmanı", bool(hd["ok"]),
-         hd.get("not") or f"son bildirim {hd.get('son_bildirim')}")
-
-    # 5) Tick ızgarası — açık uçlu bant TEK İSİMLE ölçüldü (EGEEN, 2.50 TL).
-    # İkinci bir isim o banda GERÇEKTEN girerse (son kurumsal işlemden sonraki
-    # ham barlarla) ölçüm tekrarlanmalı; split-düzeltmeli eski fiyatlar ham
-    # ızgarada değildir ve yanlış alarm üretir.
-    ust = max((b["ust_sinir"] or 0) for b in cfg["risk"]["fiyat_adimlari"][:-1])
-    asan = db.fetch_all(
-        con,
-        "SELECT b.ticker, MAX(b.c) m FROM bars_daily b "
-        "  JOIN (SELECT ticker, MAX(date) d FROM corporate_actions GROUP BY ticker) k "
-        "    ON k.ticker = b.ticker AND b.date > k.d "
-        " WHERE b.c > ? GROUP BY b.ticker ORDER BY m DESC", (ust,))
-    ekle("UYARI", "tick ızgarası", len(asan) <= 1,
-         f"açık uçlu bant (>{ust:.2f} TL) {len(asan)} isimle ölçülü: "
-         + (", ".join(f"{r['ticker']}={r['m']:.0f}" for r in asan) or "gözlem yok")
-         + ("" if len(asan) <= 1 else " → ikinci isim girdi, YENİDEN ÖLÇ"))
-
-    # 6) Journal kaynak karışıklığı
-    arac = {r["tool"]: r["n"] for r in db.fetch_all(
-        con, "SELECT r.tool, COUNT(*) n FROM predictions p "
-             " JOIN llm_runs r ON r.run_id = p.run_id GROUP BY r.tool")}
-    ekle("UYARI", "journal kaynağı", len(arac) <= 1,
-         f"{arac or 'kayıt yok'}"
-         + ("" if len(arac) <= 1 else " → `bist degerlendir --tool ...` şart"))
-
-    # 7) Evren ↔ taban çizgisi tutarlılığı
-    n_out = db.scalar(con, "SELECT COUNT(*) FROM outcomes "
-                           "WHERE alpha_vs_ew IS NOT NULL") or 0
-    ekle("BİLGİ", "EW tabanlı sonuç", True,
-         f"{n_out} kayıt · evren {len(universe.live(con))} canlı / "
-         f"{len(universe.measure(con))} ölçüm")
-
-    # 8) Şema sürümü
-    sv = con.execute("PRAGMA user_version").fetchone()[0]
-    from . import migrations
-    ekle("KRİTİK", "şema sürümü", sv == migrations.target_version(),
-         f"v{sv} / hedef v{migrations.target_version()}")
-
-    kritik = [b for b in bulgular if b[0] == "KRİTİK"]
-    uyari = [b for b in bulgular if b[0] == "UYARI"]
-    isaret = {"OK": "✓", "KRİTİK": "🛑", "UYARI": "⚠", "BİLGİ": "·"}
-    print(f"Sağlık kontrolü — {asof}\n")
-    for seviye, ad, mesaj in bulgular:
-        print(f"  {isaret[seviye]} {ad:22} {mesaj}")
-    print()
-    if kritik:
-        print(f"🛑 {len(kritik)} KRİTİK kontrol düştü — sessiz yanlış sonuç riski var.")
-    elif uyari:
-        print(f"⚠ {len(uyari)} uyarı.")
-    else:
-        print("✅ Tüm kontroller temiz.")
+    sonuc = sag.kontrol(cfg, con)
+    print(sag.bicimle(sonuc))
     con.close()
-    return 2 if kritik else (1 if uyari else 0)
+    return sag.cikis_kodu(sonuc)
 
 
 # ---------------------------------------------------------------- seviye ölçümü
@@ -667,6 +590,80 @@ def cmd_revizyon(args) -> int:
     print(f"\n\nRapor yazıldı: {yol}")
     con.close()
     return 0 if r["karar"]["gecti"] else 2
+
+
+# ---------------------------------------------------------------- bildir
+def cmd_bildir(args) -> int:
+    """Telegram hattının ayakta olduğunu doğrular.
+
+    Kurulumda tek gereken şey bu: token/chat doğru mu, mesaj gerçekten
+    düşüyor mu? Actions'ta ilk kez öğrenmek istemeyeceğin bir şey.
+    """
+    from . import report, telegram_bist as tg
+
+    cfg = _cfg()
+
+    # Kurulum sırası: token → bota mesaj yaz → chat_id'yi öğren → .env'e yaz.
+    # `--chat-id` yalnız TOKEN ister; chat_id henüz bilinmiyor olabilir.
+    if args.chat_id:
+        if not util.env("TELEGRAM_BOT_TOKEN"):
+            print("🛑 TELEGRAM_BOT_TOKEN tanımlı değil (.env).")
+            return 1
+        sohbetler = tg.sohbetleri_bul()
+        if not sohbetler:
+            print("Bota yazan sohbet bulunamadı.\n"
+                  "Telegram'da botunu aç, ona herhangi bir mesaj yaz "
+                  "(ör. /start), sonra bu komutu tekrar koş.")
+            return 1
+        print("Bota yazan sohbetler — `TELEGRAM_CHAT_ID`'ye bunu yaz:\n")
+        for s in sohbetler:
+            print(f"  {s['id']}   ({s['tur']}) {s['ad']}")
+        return 0
+
+    if not tg.yapilandirilmis():
+        print("🛑 TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID tanımlı değil (.env).")
+        return 1
+    metin = (f"✅ BIST bildirim testi — {report.bugun()}\n"
+             "Hat çalışıyor. Bu mesaj `bist bildir --test` ile gönderildi.")
+    n = tg.send_message(cfg, metin)
+    print(f"Gönderildi ({n} parça).")
+    return 0
+
+
+# ---------------------------------------------------------------- otonom
+def cmd_otonom(args) -> int:
+    """Actions'ın çağırdığı tek komut. Mantık `src/otonom.py`'de.
+
+    Çıkış kodu: 0 başarılı (ya da işlem günü değil) · 1 KRİTİK adım düştü.
+    Kritik olmayan adımların düşmesi çıkışı kırmızıya çevirmez ama rapora ve
+    Telegram özetine yazılır — sessiz bozulma bu projede en pahalı hata sınıfı.
+    """
+    from . import otonom
+
+    cfg = _cfg()
+    con = db.connect(cfg)
+    if args.alt == "gunluk":
+        sonuc = otonom.gunluk(cfg, con, analist_calistir=not args.analistsiz)
+    else:
+        sonuc = otonom.haftalik(cfg, con)
+    con.close()
+
+    if sonuc.get("atlandi"):
+        print(sonuc["atlandi"])
+        return 0
+    for ad, mesaj in sonuc.get("adimlar", {}).items():
+        print(f"  ✓ {ad:12} {mesaj}")
+    for ad, mesaj in sorted(sonuc.get("hatalar", {}).items()):
+        print(f"  ✗ {ad:12} {mesaj}")
+    for u in sonuc.get("uyarilar", []):
+        print(f"  ⚠ {u}")
+
+    dusen = otonom.basarisiz_mi(sonuc)
+    if dusen:
+        print(f"\n🛑 KRİTİK ADIM BAŞARISIZ: {', '.join(dusen)}")
+        return 1
+    print("\n✅ Otonom koşu tamam.")
+    return 0
 
 
 # ---------------------------------------------------------------- db
@@ -794,6 +791,18 @@ def build_parser() -> argparse.ArgumentParser:
 
     rv = sub.add_parser("revizyon", help="ön kayıtlı revizyon turu #1")
     rv.set_defaults(fn=cmd_revizyon)
+
+    ot = sub.add_parser("otonom", help="tam otomatik koşu (GitHub Actions)")
+    ot.add_argument("alt", choices=["gunluk", "haftalik"])
+    ot.add_argument("--analistsiz", action="store_true",
+                    help="LLM zincirini atla, yalnız deterministik katman")
+    ot.set_defaults(fn=cmd_otonom)
+
+    bd = sub.add_parser("bildir", help="Telegram bildirim testi / kurulum")
+    bd.add_argument("--test", action="store_true", help="deneme mesajı gönder")
+    bd.add_argument("--chat-id", action="store_true",
+                    help="bota yazan sohbetlerin kimliğini listele (kurulum)")
+    bd.set_defaults(fn=cmd_bildir)
 
     d = sub.add_parser("db", help="veritabanı dump/restore/durum")
     d.add_argument("alt", choices=["dump", "restore", "durum"])

@@ -39,7 +39,9 @@ raporunda basılır**. "Ne zaman bilebiliriz?" bir his değil, hesaplanmış bir
 - Günlük bar; ana karar ufku **20 işlem günü** (swing)
 - 3 faktör + 1 hipotez, kesitsel z-skor, kapılar (sektör nötralizasyonu KAPALI — ölçüldü, zarar veriyor)
 - Deterministik plan menüsü (entry/stop/hedef/boyut) — LLM sayı üretmez
-- LLM katmanı **IDE içinde manuel** (Claude Code / Codex / Antigravity / Kiro)
+- LLM katmanı iki yoldan çalışır: **otonom zincir** (`bist otonom gunluk`,
+  ADR #013) ve **IDE içinde manuel** (Claude Code / Codex / Antigravity / Kiro).
+  İkisi journal'da ayrı `tool` olarak durur ve ayrı ölçülür.
 - HF-01..HF-31 sert hata denetimi — geçmeyen çıktı journal'a giremez
 - Değişmez tahmin günlüğü + **deterministik** üçlü bariyer sonuç çözümü
 - Ölçüm harness'i: walk-forward, örtüşmeyen pencere, maliyetli, in-sample/OOS
@@ -56,10 +58,16 @@ raporunda basılır**. "Ne zaman bilebiliriz?" bir his değil, hesaplanmış bir
 - **Sayısal haber/duygu skoru** — TR finans haberi büyük ölçüde gürültü; LLM'e prose
   olarak bırakılır, sayıya çevrilmez
 - **Sektör nötralizasyonu (varsayılan)** — ölçüldü, kenarı düşürüyor
-- **GitHub Actions + Telegram** — Faz 8, şimdi değil (ama kod buna hazır yazılır)
+- **Telegram komut arayüzü** (`/durum`, `/rapor` gibi) — bildirim TEK YÖNLÜ:
+  dışarı. Gelen komutları dinlemek sürekli çalışan bir süreç ister; ihtiyaç
+  kanıtlanmadan kurulmaz.
 
 ## Kısıtlar
-- **Bütçe:** ücretsiz kalmalı. LLM API maliyeti YOK — IDE içinde manuel çalışır.
+- **Bütçe:** ücretsiz-ÖNCELİKLİ. LLM analisti sıralı bir zincirdir; ilk üç
+  halka ücretsiz katmanı olan Gemini modelleridir ve günde 1 istek attığımız
+  için kota pratikte hiç dolmaz. Ücretli halkalara düşmek İSTİSNA;
+  ay tavanı ~$3 (ADR #013 — gerçek paketle ölçüldü). Elle IDE turu (Claude)
+  hâlâ mümkün ve bedava; journal ikisini ayrı `tool` olarak kaydeder.
 - **Ortam:** macOS, Python 3.12 (poetry). Veri: yfinance + TCMB EVDS (ücretsiz).
 - **Araç bağımsızlığı:** hiçbir IDE'nin özel özelliğine bağlanılmaz; girdi/çıktı düz dosya.
 - **Veri:** yfinance BIST için tek ücretsiz kaynak. Kırılganlığı testle izlenir,

@@ -138,8 +138,11 @@ class TestConfigAtiflari:
 
 
 # ============================================================ dosya atıfları
+# ⚠ `jsonl` `json`DAN ÖNCE gelmeli: alternasyon soldan eşleşir ve `json` önce
+# yazılırsa `outbox.jsonl` atfı `outbox.json` diye KIRPILIR — sonra da var
+# olmayan bir dosyaya atıf gibi raporlanır (2026-07-29'da yaşandı).
 _YOL = re.compile(r"`((?:docs|ai|src|tests|reports|data|llm)/"
-                  r"[A-Za-z0-9_./-]+\.(?:md|py|yaml|sql|json))")
+                  r"[A-Za-z0-9_./-]+\.(?:md|py|yaml|sql|jsonl|json))")
 
 # Şablon/örnek/tarihsel atıflar — gerçek dosya olmaları BEKLENMEZ.
 YER_TUTUCULAR = {

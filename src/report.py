@@ -648,6 +648,75 @@ def daily_report(cfg: dict, bundle: dict, *, holdings: dict | None = None,
     return "\n".join(L)
 
 
+def telegram_ozet(cfg: dict, bundle: dict, *, analiz: list[dict] | None = None,
+                  holdings: dict | None = None, cozulen: list[dict] | None = None,
+                  analist_model: str | None = None,
+                  saglik: str | None = None) -> str:
+    """Telefonda okunacak KISA özet (Faz 8).
+
+    Tam rapor `reports/` altında ve repoda duruyor; bunun işi onu tekrarlamak
+    değil, **bakılmaya değer bir şey olup olmadığını** söylemek. Bu yüzden
+    tasarım kuralı: bildirimin uzunluğu O GÜN OLAN BİTENLE orantılı olsun.
+    Sakin bir günde üç satır çıkar; veto/plan/çözüm varsa uzar.
+
+    Sıra tam raporla AYNI ve aynı ölçüme dayanıyor (ADR: alt kuyruk üst
+    kuyruğun 1.8 katı): önce elindekiler, sonra veto, en sonda yeni plan.
+    Bildirimi "ne al" ile başlatmak, ölçümün söylediğinin tersi olurdu.
+    """
+    r = bundle["rejim"]
+    pol = r["pozisyon_politikasi"]
+    an = {a["ticker"]: a for a in (analiz or [])}
+    tutulan = holdings or {}
+    L: list[str] = []
+    A = L.append
+
+    A(f"📊 BIST — {bundle['asof']}")
+    A(f"Rejim: {r['etiket']} · nakit %{pol['nakit_pct']:.0f} · maks "
+      f"{pol['maks_pozisyon']} pozisyon")
+    if saglik:
+        A(saglik)
+
+    # 1) Elindekiler — azaltma sinyali varsa ÖNCE o
+    azalt = [t for t, a in an.items()
+             if t in tutulan and a.get("signal") in ("reduce", "sell", "avoid")]
+    if azalt:
+        A("")
+        A(f"⚠️ AZALT: {', '.join(sorted(azalt))}")
+
+    # 2) Veto — analistin en ölçülebilir katkısı
+    vetolar = [(t, a.get("veto_code")) for t, a in sorted(an.items())
+               if a.get("action") == "plan_reddet"]
+    if vetolar:
+        A("")
+        A("🚫 Veto: " + " · ".join(f"{t} ({v})" for t, v in vetolar))
+
+    # 3) Seçilen planlar
+    secilen = [t for t, a in sorted(an.items()) if a.get("action") == "plan_sec"]
+    if secilen:
+        A("")
+        A(f"📌 Plan seçildi: {', '.join(secilen)}")
+
+    # 4) Bugün kapanan tahminler — "sistem kendi karnesini de bildirir"
+    if cozulen:
+        ozet: dict[str, int] = {}
+        for c in cozulen:
+            k = c.get("resolution", "?")
+            ozet[k] = ozet.get(k, 0) + 1
+        A("")
+        A("✅ Çözülen: " + " · ".join(f"{k}={v}" for k, v in sorted(ozet.items())))
+
+    if not analiz:
+        A("")
+        A("ℹ️ Analist çıktısı yok — yalnız deterministik katman.")
+    elif analist_model:
+        A("")
+        A(f"🤖 {analist_model}")
+
+    A("")
+    A("Ölçülen kenar yok — plan geometrisi, yön iddiası değil.")
+    return "\n".join(L)
+
+
 def write(cfg: dict, ad: str, icerik: str) -> str:
     """Raporu `reports/` altına yazar ve yolu döner."""
     p = util.ensure_parent(f"{cfg['paths']['reports_dir']}/{ad}")

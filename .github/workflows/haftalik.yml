@@ -1,0 +1,63 @@
+name: Haftalik degerlendirme
+
+# Pazar 17:00 UTC (20:00 TR). Hafta kapandiktan sonra: arac BASINA olcum
+# (`bist degerlendir --tool ...`) + Telegram ozeti.
+#
+# Neden arac basina: `replay` VEKIL bir analisttir ve alfasi gercek LLM
+# kayitlariyla ayni potaya girmez (`evaluate.kaynak_sec`). Ayni sebeple
+# zincirdeki her model de AYRI olculur — hangi modelin daha iyi analist
+# oldugu sorusu boylece kanaatle degil veriyle cevaplanir (ADR #013).
+
+on:
+  schedule:
+    - cron: "0 17 * * 0"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: repo-commit
+  cancel-in-progress: false
+
+jobs:
+  haftalik:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      # Bagimliliklar pyproject.toml'dan gelir — burada IKINCI bir liste
+      # tutulsaydi, yeni bir bagimlilik eklendiginde workflow sessizce eskir
+      # ve hata CI'da "modul yok" diye gorunurdu.
+      - name: Bagimliliklar
+        run: pip install --quiet -e .
+
+      - name: Veritabanini dump'tan kur
+        run: python -m src.cli db restore
+
+      - name: Haftalik degerlendirme
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python -m src.cli otonom haftalik
+
+      - name: Commit + push
+        if: always()
+        run: |
+          git config user.name "bist-otonom"
+          git config user.email "actions@github.com"
+          git add data/ reports/ || true
+          if git diff --cached --quiet; then
+            echo "degisiklik yok"
+          else
+            git commit -m "otonom: haftalik degerlendirme $(date -u +%Y-%m-%d)"
+            for i in 1 2 3; do
+              git pull --rebase origin main && git push && break
+              echo "push denemesi $i basarisiz"; sleep 5
+            done
+          fi

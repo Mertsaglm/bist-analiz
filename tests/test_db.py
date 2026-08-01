@@ -68,6 +68,21 @@ class TestSema:
         assert con.execute("PRAGMA foreign_keys").fetchone()[0] == 1
 
 
+def _bolum_satirlari(icerik: str, tablo: str) -> list[str]:
+    """Dump'ın `-- ---- <tablo> ----` bölümündeki VERİ satırları.
+
+    Tabloya göre süzmek şart: `('TEST',` ile başlayan satır hem `bars_daily`
+    hem `universe` bölümünde bulunur ve süzmeyen bir sayım ikisini toplar.
+    """
+    out, icinde = [], False
+    for s in icerik.splitlines():
+        if s.startswith("-- ---- "):
+            icinde = s == f"-- ---- {tablo} ----"
+        elif icinde and s.startswith("("):
+            out.append(s)
+    return out
+
+
 class TestDump:
     def _doldur(self, con):
         add_universe(con, "TEST")
@@ -101,6 +116,62 @@ class TestDump:
         icerik = dbdump.dump(cfg).read_text(encoding="utf-8")
         for t in dbdump.ATLA:
             assert f"INSERT INTO {t} " not in icerik
+
+    def test_kolon_basligi_HER_SATIRDA_tekrarlanmaz(self, cfg, con):
+        """⚠ Faz 8: dump artık repoya giriyor ve her işlem günü commit'leniyor.
+
+        NE OLMUŞTU: her satır kendi `INSERT INTO ... (kolonlar) VALUES`
+        başlığını taşıyordu. Ölçüldü (2026-08-01, 197.191 bar): başlık tekrarı
+        tek başına **16,7 MB** — dosyanın üçte biri. Çok satırlı INSERT'e
+        geçince 52,3 MB → 32,9 MB.
+        """
+        add_universe(con, "TEST")
+        add_bars(con, "TEST", [
+            (f"2026-01-{g:02d}", 10.0, 11.0, 9.0, 10.0, 1000, 10.0)
+            for g in range(1, 21)])
+        icerik = dbdump.dump(cfg).read_text(encoding="utf-8")
+
+        baslik = icerik.count("INSERT INTO bars_daily (")
+        kayit = len(_bolum_satirlari(icerik, "bars_daily"))
+        assert kayit == 20, f"20 bar bekleniyordu, {kayit} bulundu"
+        assert baslik == 1, f"20 satır için {baslik} başlık yazılmış (küme bozuk)"
+
+    def test_satir_basina_BIR_kayit(self, cfg, con):
+        """Boyut kazanımı diff'lenebilirliği FEDA ETMEMELİ.
+
+        Değerleri tek satıra doldurmak dosyayı daha da küçültürdü ama tek bir
+        barın değişmesi kilobaytlık bir satırı değiştirirdi — o noktada
+        `.db`'yi doğrudan commit'lemekten farkı kalmazdı.
+        """
+        add_universe(con, "TEST")
+        add_bars(con, "TEST", [
+            (f"2026-01-{g:02d}", 10.0, 11.0, 9.0, 10.0, 1000, 10.0)
+            for g in range(1, 21)])
+        icerik = dbdump.dump(cfg).read_text(encoding="utf-8")
+
+        veri_satirlari = _bolum_satirlari(icerik, "bars_daily")
+        assert len(veri_satirlari) == 20
+        for s in veri_satirlari:
+            assert s.count("('TEST',") == 1, f"bir satırda birden çok kayıt: {s[:80]}"
+
+    def test_kume_sinirinda_gidis_donus_BOZULMAZ(self, cfg, con, monkeypatch):
+        """Küme sınırı (`SATIR_KUME`) tam denk gelirse INSERT'ler doğru kapanmalı.
+
+        Sınır aritmetiği klasik bir kapalı-aralık hatası yeridir: son kümenin
+        noktalı virgülü unutulursa dump SÖZDİZİMSEL olarak bozulur ve bunu
+        ancak restore denenince öğrenirsin — yani Actions'ta.
+        """
+        monkeypatch.setattr(dbdump, "SATIR_KUME", 5)
+        add_universe(con, "TEST")
+        add_bars(con, "TEST", [
+            (f"2026-01-{g:02d}", 10.0, 11.0, 9.0, 10.0, 1000, 10.0)
+            for g in range(1, 11)])            # tam 2 küme
+        dbdump.dump(cfg)
+        con.execute("DELETE FROM bars_daily")
+        con.execute("DELETE FROM universe")
+        con.commit()
+        con.close()
+        assert dbdump.restore(cfg)["bars_daily"] == 10
 
     def test_restore_dolu_dbye_yazmaz(self, cfg, con):
         """Üzerine yazmak veri kaybıdır — açıkça reddeder."""

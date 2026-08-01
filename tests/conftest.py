@@ -83,7 +83,19 @@ def cfg(tmp_path: Path) -> dict:
                         "log_dir": str(tmp_path / "logs"),
                         "llm_in_dir": str(tmp_path / "llm" / "in"),
                         "llm_out_dir": str(tmp_path / "llm" / "out"),
-                        "reports_dir": str(tmp_path / "reports")}}
+                        "reports_dir": str(tmp_path / "reports")},
+         # ⚠ `paths` DIŞINDAKİ yol anahtarları da yönlendirilmeli. Yaşandı
+         # (2026-08-01): `telegram.outbox_file` başka bir blokta olduğu için
+         # gözden kaçtı ve Telegram testleri kullanıcının repo'sundaki
+         # `data/telegram_outbox.jsonl` dosyasına 33 satır yazdı. Yani "pytest
+         # yan etkisizdir" kuralı, kuralın YAZILDIĞI blokta tutuyor ama
+         # simetriğinde tutmuyordu (L-008: düzeltme aynı hatanın BİR DAHA
+         # yapılamayacağı yeri de kapsamalı).
+         #
+         # Yeni bir yol anahtarı eklerken sor: `cfg` fixture'ı bunu geçici
+         # dizine taşıyor mu? Taşımıyorsa test suite'in yan etkisi var demektir.
+         "telegram": {**c["telegram"],
+                      "outbox_file": str(tmp_path / "telegram_outbox.jsonl")}}
     return c
 
 
