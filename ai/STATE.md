@@ -90,9 +90,8 @@ Kurallar teste devredildi (#011, L-008): sözleşme · mekanizma · uçtan uca.
   boşluk venv konsol script'inin shebang'ini kırıyor. Çalışan biçim
   `poetry run python -m src.cli <komut>` (Actions'ta sorun yok — Linux yolunda
   boşluk yok). Seçenek: (a) klasörü boşluksuz adlandır, (b) README'yi çevir.
-- **Replay'i yeniden koş?** (#012) `asof 2024-12-18` tahmini bir gün geniş
-  bariyerle çözüldü; yeniden koşmak journal'ı yeniden yazar → ayrı karar.
-  20 kayıttan 1'i, 13 alfa gözleminden en fazla 1'i etkilenir.
+- **Replay'i yeniden koş?** (#012) `asof 2024-12-18` bir gün geniş bariyerle
+  çözüldü; yeniden koşmak journal'ı yeniden yazar → ayrı karar (20 kayıttan 1'i).
 - **`bist saglik`'e kısmi seans kontrolü** (#012): bir gün 0 < hisse barı <
   eşik olursa uyarsın — şu an böyle bir gün yok.
 - **`high52_prox` hipotezi** — OOS'ta tek başına +1.61pp (t=1.81), IC 0.113
