@@ -1,0 +1,1557 @@
+{
+  "bundle_version": "bist_bundle_v1",
+  "asof": "2026-08-03",
+  "karar_gunu": "2026-08-31",
+  "generated_utc": "2026-08-03T18:23:13+00:00",
+  "uyari": "Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir.",
+  "takvim": {
+    "son_kapali_seans": "2026-08-03",
+    "zaman_bariyeri_tarihi": "2026-08-31",
+    "islem_gunu_sayisi": 20
+  },
+  "kesit": {
+    "istenen": 67,
+    "skorlanan": 67,
+    "uygun": 23,
+    "not": "`yuzdelik` YALNIZ 'uygun' sütunundaki isimler arasında hesaplanır; 'istenen' ile 'skorlanan' arasındaki fark, göstergesi hesaplanmamış isimlerdir (`bist gosterge`)."
+  },
+  "haber_taramasi": {
+    "ok": true,
+    "son_bildirim": "2026-08-03T18:11:53+00:00",
+    "gecikme_gun": 0,
+    "not": null
+  },
+  "rejim": {
+    "etiket": "risk-off",
+    "xu100_sma200_farki_pct": 6.038359664348225,
+    "genislik_sma50_ustu_pct": 23.88059701492537,
+    "genislik_n": 67,
+    "genislik_istenen_n": 67,
+    "xu100_vol_yillik_21g": 18.197110925630582,
+    "makro": {
+      "politika_faizi": 40.0,
+      "tufe_yoy": 30.89232832318265,
+      "tufe_tarih": "2025-12-01",
+      "enf_bek_12ay": 23.95,
+      "mevduat_1yil_brut": 46.92,
+      "mevduat_1yil_net": 39.882,
+      "usdtry": 47.4305,
+      "reel_net_mevduat": 12.853569987898329
+    },
+    "pozisyon_politikasi": {
+      "nakit_pct": 80.0,
+      "maks_pozisyon": 2,
+      "sektor_basi_maks": 2
+    }
+  },
+  "evren": [
+    {
+      "ticker": "AKBNK",
+      "sektor": "banka",
+      "fiyat": {
+        "kapanis": 66.0,
+        "onceki_kapanis": 63.4,
+        "gunluk_degisim_pct": 4.1,
+        "yuksek_52h": 93.5,
+        "dusuk_52h": 53.0499992371
+      },
+      "gostergeler": {
+        "rsi14": 42.95516674157205,
+        "macd_hist": -0.2608289394552936,
+        "atr14": 2.3454659918671594,
+        "atr_pct": 3.5537363513138778,
+        "adx14": 24.51430715249871,
+        "sma20": 67.49249973296803,
+        "sma50": 70.32599952696921,
+        "sma200": 72.0552499008168,
+        "bb_pctb": 0.37366436119981944
+      },
+      "faktorler": {
+        "skor": -0.0582,
+        "sira": null,
+        "yuzdelik": null,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": 1.1293,
+        "mom_12_1": 19.1827,
+        "zirve_yakinlik": -29.4118,
+        "kapilar": {
+          "uygun": false,
+          "nedenler": [
+            "sma200_alti"
+          ]
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 9000015665.181526
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "plan_menusu": [],
+      "plan_yok_nedeni": "2 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-AKBNK-1",
+          "asof": "2026-07-29",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-07-30-AKBNK-1",
+          "asof": "2026-07-30",
+          "signal": "avoid",
+          "bariyer": null
+        }
+      ],
+      "haberler": [
+        {
+          "id": "kap-1642158",
+          "tarih": "2026-08-03 13:48",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "XS2980939446 ISIN Kodlu Sürdürülebilir Tahvilin İtfası",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1642158"
+        },
+        {
+          "id": "kap-1642157",
+          "tarih": "2026-08-03 13:48",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "XS3264754832 ISIN Kodlu Yurtdışı Piyasalara İhraç Edilen Tahvilin Kupon Ödemesi",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1642157"
+        },
+        {
+          "id": "kap-1642156",
+          "tarih": "2026-08-03 13:48",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "XS3087166438 ISIN Kodlu Tahvilin İtfası",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1642156"
+        }
+      ],
+      "haber_tarama_baslangici": "2026-07-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "ASELS",
+      "sektor": "savunma",
+      "fiyat": {
+        "kapanis": 336.25,
+        "onceki_kapanis": 337.5,
+        "gunluk_degisim_pct": -0.37,
+        "yuksek_52h": 450.0,
+        "dusuk_52h": 167.0
+      },
+      "gostergeler": {
+        "rsi14": 37.589506181320296,
+        "macd_hist": -2.048589071294633,
+        "atr14": 16.158066840061245,
+        "atr_pct": 4.80537303793643,
+        "adx14": 14.110105924410396,
+        "sma20": 364.1375,
+        "sma50": 374.505,
+        "sma200": 308.361499938964,
+        "bb_pctb": 0.1010101453189078
+      },
+      "faktorler": {
+        "skor": 1.1597,
+        "sira": 5.0,
+        "yuzdelik": 81.8182,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": 14.8492,
+        "mom_12_1": 106.1692,
+        "zirve_yakinlik": -25.2778,
+        "kapilar": {
+          "uygun": true,
+          "nedenler": []
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 11343431799.0
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "plan_menusu": [],
+      "plan_yok_nedeni": "2 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-ASELS-1",
+          "asof": "2026-07-29",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-07-30-ASELS-1",
+          "asof": "2026-07-30",
+          "signal": "hold",
+          "bariyer": null
+        }
+      ],
+      "haberler": [],
+      "haber_tarama_baslangici": "2026-07-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "ASTOR",
+      "sektor": "elektrik_ekipman",
+      "fiyat": {
+        "kapanis": 290.5,
+        "onceki_kapanis": 295.5,
+        "gunluk_degisim_pct": -1.69,
+        "yuksek_52h": 385.75,
+        "dusuk_52h": 88.1999969482
+      },
+      "gostergeler": {
+        "rsi14": 47.08266880848916,
+        "macd_hist": -1.717134820913178,
+        "atr14": 16.326141316581168,
+        "atr_pct": 5.620014222575273,
+        "adx14": 13.809989409732069,
+        "sma20": 302.6,
+        "sma50": 305.245,
+        "sma200": 197.0767496871925,
+        "bb_pctb": 0.2987142973979252
+      },
+      "faktorler": {
+        "skor": null,
+        "sira": null,
+        "yuzdelik": null,
+        "weights_hash": "4a547ff26723",
+        "kapilar": {
+          "uygun": false,
+          "nedenler": [
+            "skorlanmadı"
+          ]
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 10480207549.0
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "plan_menusu": [],
+      "plan_yok_nedeni": "1 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-ASTOR-1",
+          "asof": "2026-07-29",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-07-30-ASTOR-1",
+          "asof": "2026-07-30",
+          "signal": "avoid",
+          "bariyer": null
+        }
+      ],
+      "haberler": [],
+      "haber_tarama_baslangici": "2026-07-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "BIMAS",
+      "sektor": "perakende",
+      "fiyat": {
+        "kapanis": 379.0,
+        "onceki_kapanis": 390.25,
+        "gunluk_degisim_pct": -2.88,
+        "yuksek_52h": 425.0,
+        "dusuk_52h": 241.625
+      },
+      "gostergeler": {
+        "rsi14": 47.92283691604547,
+        "macd_hist": -0.5961264079115556,
+        "atr14": 12.13291918297444,
+        "atr_pct": 3.201297937460274,
+        "adx14": 18.038937821066817,
+        "sma20": 383.725,
+        "sma50": 380.24,
+        "sma200": 333.635,
+        "bb_pctb": 0.37606021769757936
+      },
+      "faktorler": {
+        "skor": 0.5662,
+        "sira": 10.0,
+        "yuzdelik": 59.0909,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": 14.9958,
+        "mom_12_1": 37.7363,
+        "zirve_yakinlik": -10.8235,
+        "kapilar": {
+          "uygun": true,
+          "nedenler": []
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 4004317786.0
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "plan_menusu": [],
+      "plan_yok_nedeni": "2 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-BIMAS-1",
+          "asof": "2026-07-29",
+          "signal": "buy",
+          "bariyer": "2026-08-26"
+        },
+        {
+          "prediction_id": "2026-07-30-BIMAS-1",
+          "asof": "2026-07-30",
+          "signal": "buy",
+          "bariyer": null
+        }
+      ],
+      "haberler": [],
+      "haber_tarama_baslangici": "2026-07-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "EKGYO",
+      "sektor": "gyo",
+      "fiyat": {
+        "kapanis": 18.19,
+        "onceki_kapanis": 17.91,
+        "gunluk_degisim_pct": 1.56,
+        "yuksek_52h": 27.1200008392,
+        "dusuk_52h": 17.559999465942383
+      },
+      "gostergeler": {
+        "rsi14": 35.86068408204687,
+        "macd_hist": -0.23381123981659152,
+        "atr14": 0.6519347396338686,
+        "atr_pct": 3.584028150044493,
+        "adx14": 25.52776215343063,
+        "sma20": 19.60150003433849,
+        "sma50": 20.070199966439397,
+        "sma200": 20.950200023652847,
+        "bb_pctb": 0.18451194219065645
+      },
+      "faktorler": {
+        "skor": -0.2546,
+        "sira": null,
+        "yuzdelik": null,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": -3.7005,
+        "mom_12_1": 14.0069,
+        "zirve_yakinlik": -32.9277,
+        "kapilar": {
+          "uygun": false,
+          "nedenler": [
+            "sma200_alti"
+          ]
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 2267368736.5
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "plan_menusu": [],
+      "plan_yok_nedeni": "2 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-EKGYO-1",
+          "asof": "2026-07-29",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-07-30-EKGYO-1",
+          "asof": "2026-07-30",
+          "signal": "avoid",
+          "bariyer": null
+        }
+      ],
+      "haberler": [
+        {
+          "id": "kap-1640901",
+          "tarih": "2026-07-31 13:08",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Konya Meram 2. Etap İhalesi 1. Oturum Sonucu",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1640901"
+        }
+      ],
+      "haber_tarama_baslangici": "2026-07-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "ENKAI",
+      "sektor": "insaat",
+      "fiyat": {
+        "kapanis": 87.05,
+        "onceki_kapanis": 87.6,
+        "gunluk_degisim_pct": -0.63,
+        "yuksek_52h": 114.3000030518,
+        "dusuk_52h": 65.5500030518
+      },
+      "gostergeler": {
+        "rsi14": 40.586084364245714,
+        "macd_hist": -0.15486497031982216,
+        "atr14": 2.481476925098657,
+        "atr_pct": 2.850633932342577,
+        "adx14": 24.555138817665743,
+        "sma20": 89.4200004577679,
+        "sma50": 92.38000030517917,
+        "sma200": 89.60775001525879,
+        "bb_pctb": 0.13843410682967516
+      },
+      "faktorler": {
+        "skor": 0.4671,
+        "sira": 13.0,
+        "yuzdelik": 45.4545,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": 11.5781,
+        "mom_12_1": 38.371,
+        "zirve_yakinlik": -23.8408,
+        "kapilar": {
+          "uygun": true,
+          "nedenler": []
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 987177833.2071304
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "plan_menusu": [],
+      "plan_yok_nedeni": "2 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-ENKAI-1",
+          "asof": "2026-07-29",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-07-30-ENKAI-1",
+          "asof": "2026-07-30",
+          "signal": "hold",
+          "bariyer": null
+        }
+      ],
+      "haberler": [],
+      "haber_tarama_baslangici": "2026-07-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "EREGL",
+      "sektor": "demir_celik",
+      "fiyat": {
+        "kapanis": 40.7,
+        "onceki_kapanis": 42.54,
+        "gunluk_degisim_pct": -4.33,
+        "yuksek_52h": 45.099998474121094,
+        "dusuk_52h": 23.4599990845
+      },
+      "gostergeler": {
+        "rsi14": 45.16636323176534,
+        "macd_hist": -0.25977216602556197,
+        "atr14": 1.5912676158846768,
+        "atr_pct": 3.9097483686871355,
+        "adx14": 28.028380234323183,
+        "sma20": 42.19300022125637,
+        "sma50": 40.702399978638546,
+        "sma200": 31.395199966426638,
+        "bb_pctb": 0.21370437403194456
+      },
+      "faktorler": {
+        "skor": 1.7725,
+        "sira": 3.0,
+        "yuzdelik": 90.9091,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": 50.7098,
+        "mom_12_1": 54.7708,
+        "zirve_yakinlik": -9.7561,
+        "kapilar": {
+          "uygun": true,
+          "nedenler": []
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 5215386429.875954
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "plan_menusu": [],
+      "plan_yok_nedeni": "1 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-EREGL-1",
+          "asof": "2026-07-29",
+          "signal": "accumulate",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-07-30-EREGL-1",
+          "asof": "2026-07-30",
+          "signal": "accumulate",
+          "bariyer": null
+        }
+      ],
+      "haberler": [],
+      "haber_tarama_baslangici": "2026-07-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "EUPWR",
+      "sektor": "elektrik_ekipman",
+      "fiyat": {
+        "kapanis": 90.1,
+        "onceki_kapanis": 85.1,
+        "gunluk_degisim_pct": 5.88,
+        "yuksek_52h": 108.5999984741211,
+        "dusuk_52h": 25.5
+      },
+      "gostergeler": {
+        "rsi14": 50.76425019650769,
+        "macd_hist": -1.3516808541253384,
+        "atr14": 5.8886837303143125,
+        "atr_pct": 6.5357201221326156,
+        "adx14": 23.38791491817034,
+        "sma20": 91.34249954223739,
+        "sma50": 87.94199951171497,
+        "sma200": 49.78649998665024,
+        "bb_pctb": 0.4475221512955277
+      },
+      "faktorler": {
+        "skor": null,
+        "sira": null,
+        "yuzdelik": null,
+        "weights_hash": "4a547ff26723",
+        "kapilar": {
+          "uygun": false,
+          "nedenler": [
+            "skorlanmadı"
+          ]
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 2183658561.876709
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "plan_menusu": [
+        {
+          "plan_id": "EUPWR-2026-08-03-A",
+          "ticker": "EUPWR",
+          "asof": "2026-08-03",
+          "kind": "dogrudan",
+          "entry_low": 89.6,
+          "entry_high": 90.1,
+          "entry_trigger": "direct",
+          "stop_price": 78.3,
+          "stop_method": "atr_2x",
+          "stop_atr_multiple": 2.0,
+          "targets": [
+            {
+              "price": 107.9,
+              "rr": 1.51,
+              "atr_distance": 3.02,
+              "basis": "pivot@2026-07-22 (2 dokunuş)"
+            }
+          ],
+          "rr_at_t1": 1.51,
+          "time_barrier_days": 20,
+          "time_barrier_date": "2026-08-31",
+          "position_size_pct": 1.53,
+          "max_loss_pct_of_portfolio": 0.2,
+          "entry_zone_status": "in_zone",
+          "daily_limit_note": "stop girişten %13.1 uzakta; girildikten sonra tek günde tetiklenemez — ±%10 marj dışında",
+          "ex_date_in_window": null,
+          "invalidations": [
+            "SMA50 (87.94) altına günlük kapanış",
+            "44.33 desteğinin altına kapanış",
+            "hacim 20 günlük ortalamanın %50 altına inerse tez zayıflar"
+          ],
+          "notes": [
+            "1 direnç, 3 destek seviyesi kullanıldı"
+          ],
+          "rr_secim": "1. giriş bandı (dogrudan), stop atr_2x",
+          "elenen_adaylar": [],
+          "uyari": "Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir."
+        }
+      ],
+      "plan_yok_nedeni": null,
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-EUPWR-1",
+          "asof": "2026-07-29",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-07-30-EUPWR-1",
+          "asof": "2026-07-30",
+          "signal": "hold",
+          "bariyer": null
+        }
+      ],
+      "haberler": [],
+      "haber_tarama_baslangici": "2026-07-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "FROTO",
+      "sektor": "otomotiv",
+      "fiyat": {
+        "kapanis": 79.05,
+        "onceki_kapanis": 80.1,
+        "gunluk_degisim_pct": -1.31,
+        "yuksek_52h": 135.3999938965,
+        "dusuk_52h": 75.05000305175781
+      },
+      "gostergeler": {
+        "rsi14": 41.7244630782989,
+        "macd_hist": 0.05962939385477206,
+        "atr14": 2.19598446574883,
+        "atr_pct": 2.777968856384501,
+        "adx14": 41.485052017630856,
+        "sma20": 80.52000045777106,
+        "sma50": 84.46699966430242,
+        "sma200": 97.94099983215112,
+        "bb_pctb": 0.3320782726390352
+      },
+      "faktorler": {
+        "skor": -0.9756,
+        "sira": null,
+        "yuzdelik": null,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": -20.7211,
+        "mom_12_1": -3.0411,
+        "zirve_yakinlik": -41.6174,
+        "kapilar": {
+          "uygun": false,
+          "nedenler": [
+            "sma200_alti"
+          ]
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 1941750353.25
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "plan_menusu": [],
+      "plan_yok_nedeni": "1 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-FROTO-1",
+          "asof": "2026-07-29",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-07-30-FROTO-1",
+          "asof": "2026-07-30",
+          "signal": "avoid",
+          "bariyer": null
+        }
+      ],
+      "haberler": [],
+      "haber_tarama_baslangici": "2026-07-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "GARAN",
+      "sektor": "banka",
+      "fiyat": {
+        "kapanis": 127.9,
+        "onceki_kapanis": 123.4,
+        "gunluk_degisim_pct": 3.65,
+        "yuksek_52h": 169.6999969482,
+        "dusuk_52h": 115.4000015259
+      },
+      "gostergeler": {
+        "rsi14": 47.964170184169795,
+        "macd_hist": 0.06495351040507646,
+        "atr14": 3.6188462659467246,
+        "atr_pct": 2.8294341069374407,
+        "adx14": 18.773612869502166,
+        "sma20": 127.46499938964578,
+        "sma50": 131.0239994812003,
+        "sma200": 137.87200019836408,
+        "bb_pctb": 0.5364424800353258
+      },
+      "faktorler": {
+        "skor": -0.3268,
+        "sira": null,
+        "yuzdelik": null,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": -1.9041,
+        "mom_12_1": 0.9811,
+        "zirve_yakinlik": -24.6317,
+        "kapilar": {
+          "uygun": false,
+          "nedenler": [
+            "sma200_alti"
+          ]
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 3704857456.4020157
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "plan_menusu": [],
+      "plan_yok_nedeni": "3 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-GARAN-1",
+          "asof": "2026-07-29",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-07-30-GARAN-1",
+          "asof": "2026-07-30",
+          "signal": "avoid",
+          "bariyer": null
+        }
+      ],
+      "haberler": [],
+      "haber_tarama_baslangici": "2026-07-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "KCHOL",
+      "sektor": "holding",
+      "fiyat": {
+        "kapanis": 196.7,
+        "onceki_kapanis": 196.9,
+        "gunluk_degisim_pct": -0.1,
+        "yuksek_52h": 229.1000061035,
+        "dusuk_52h": 146.0
+      },
+      "gostergeler": {
+        "rsi14": 52.42440162137868,
+        "macd_hist": -0.10902131355976186,
+        "atr14": 5.4580970236153945,
+        "atr_pct": 2.7748333036586614,
+        "adx14": 15.724981973163775,
+        "sma20": 194.3750007629379,
+        "sma50": 192.9880001830992,
+        "sma200": 189.43100013733175,
+        "bb_pctb": 0.6132846019739774
+      },
+      "faktorler": {
+        "skor": -0.1127,
+        "sira": 20.0,
+        "yuzdelik": 13.6364,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": 1.4861,
+        "mom_12_1": 12.0705,
+        "zirve_yakinlik": -14.1423,
+        "kapilar": {
+          "uygun": true,
+          "nedenler": []
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 3677923701.882492
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "plan_menusu": [],
+      "plan_yok_nedeni": "3 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-KCHOL-1",
+          "asof": "2026-07-29",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-07-30-KCHOL-1",
+          "asof": "2026-07-30",
+          "signal": "hold",
+          "bariyer": null
+        }
+      ],
+      "haberler": [
+        {
+          "id": "kap-1641513",
+          "tarih": "2026-07-31 15:16",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Bağlı ortaklığımız Otokar Otomotiv ve Savunma Sanayi A.Ş.?nin sermaye artırımına katılım hakkında karar",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1641513"
+        },
+        {
+          "id": "kap-1641508",
+          "tarih": "2026-07-31 15:16",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Bağlı Ortaklık Sermaye Artırımına Katılım",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1641508"
+        }
+      ],
+      "haber_tarama_baslangici": "2026-07-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "KRDMD",
+      "sektor": "demir_celik",
+      "fiyat": {
+        "kapanis": 40.22,
+        "onceki_kapanis": 41.2,
+        "gunluk_degisim_pct": -2.38,
+        "yuksek_52h": 47.0,
+        "dusuk_52h": 23.5
+      },
+      "gostergeler": {
+        "rsi14": 46.81344237300346,
+        "macd_hist": -0.17315508095030685,
+        "atr14": 1.6423286897541154,
+        "atr_pct": 4.083363102706053,
+        "adx14": 14.813017112389506,
+        "sma20": 40.767000198363206,
+        "sma50": 40.20320022583128,
+        "sma200": 32.590600090026825,
+        "bb_pctb": 0.44184394415699424
+      },
+      "faktorler": {
+        "skor": 1.1009,
+        "sira": 7.0,
+        "yuzdelik": 72.7273,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": 32.8581,
+        "mom_12_1": 41.1977,
+        "zirve_yakinlik": -14.4255,
+        "kapilar": {
+          "uygun": true,
+          "nedenler": []
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 2408394924.0812798
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "plan_menusu": [
+        {
+          "plan_id": "KRDMD-2026-08-03-A",
+          "ticker": "KRDMD",
+          "asof": "2026-08-03",
+          "kind": "dogrudan",
+          "entry_low": 40.0,
+          "entry_high": 40.24,
+          "entry_trigger": "direct",
+          "stop_price": 36.94,
+          "stop_method": "atr_2x",
+          "stop_atr_multiple": 2.01,
+          "targets": [
+            {
+              "price": 47.0,
+              "rr": 2.05,
+              "atr_distance": 4.12,
+              "basis": "52 hafta zirvesi"
+            }
+          ],
+          "rr_at_t1": 2.05,
+          "time_barrier_days": 20,
+          "time_barrier_date": "2026-08-31",
+          "position_size_pct": 4.88,
+          "max_loss_pct_of_portfolio": 0.4,
+          "entry_zone_status": "in_zone",
+          "daily_limit_note": "stop girişten %8.2 uzakta; girildikten sonra tek günde tetiklenebilir (boşluk riski var)",
+          "ex_date_in_window": null,
+          "invalidations": [
+            "SMA50 (40.20) altına günlük kapanış",
+            "36.12 desteğinin altına kapanış",
+            "hacim 20 günlük ortalamanın %50 altına inerse tez zayıflar"
+          ],
+          "notes": [
+            "0 direnç, 3 destek seviyesi kullanıldı"
+          ],
+          "rr_secim": "1. giriş bandı (dogrudan), stop atr_2x",
+          "elenen_adaylar": [],
+          "uyari": "Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir."
+        },
+        {
+          "plan_id": "KRDMD-2026-08-03-B",
+          "ticker": "KRDMD",
+          "asof": "2026-08-03",
+          "kind": "destek_retest",
+          "entry_low": 35.92,
+          "entry_high": 36.68,
+          "entry_trigger": "support_retest",
+          "stop_price": 33.38,
+          "stop_method": "atr_2x",
+          "stop_atr_multiple": 2.01,
+          "targets": [
+            {
+              "price": 47.0,
+              "rr": 3.13,
+              "atr_distance": 6.28,
+              "basis": "52 hafta zirvesi"
+            }
+          ],
+          "rr_at_t1": 3.13,
+          "time_barrier_days": 20,
+          "time_barrier_date": "2026-08-31",
+          "position_size_pct": 4.45,
+          "max_loss_pct_of_portfolio": 0.4,
+          "entry_zone_status": "above_zone",
+          "daily_limit_note": "stop girişten %9.0 uzakta; girildikten sonra tek günde tetiklenebilir (boşluk riski var)",
+          "ex_date_in_window": null,
+          "invalidations": [
+            "SMA50 (40.20) altına günlük kapanış",
+            "36.12 desteğinin altına kapanış",
+            "hacim 20 günlük ortalamanın %50 altına inerse tez zayıflar"
+          ],
+          "notes": [
+            "0 direnç, 3 destek seviyesi kullanıldı"
+          ],
+          "rr_secim": "2. giriş bandı (destek_retest), stop atr_2x",
+          "elenen_adaylar": [],
+          "uyari": "Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir."
+        }
+      ],
+      "plan_yok_nedeni": null,
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-KRDMD-1",
+          "asof": "2026-07-29",
+          "signal": "buy",
+          "bariyer": "2026-08-26"
+        },
+        {
+          "prediction_id": "2026-07-30-KRDMD-1",
+          "asof": "2026-07-30",
+          "signal": "buy",
+          "bariyer": "2026-08-27"
+        }
+      ],
+      "haberler": [],
+      "haber_tarama_baslangici": "2026-07-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "PETKM",
+      "sektor": "kimya",
+      "fiyat": {
+        "kapanis": 19.08,
+        "onceki_kapanis": 19.12,
+        "gunluk_degisim_pct": -0.21,
+        "yuksek_52h": 28.0599994659,
+        "dusuk_52h": 16.1200008392
+      },
+      "gostergeler": {
+        "rsi14": 41.14734104814582,
+        "macd_hist": -0.19717098872289887,
+        "atr14": 0.8713759005779071,
+        "atr_pct": 4.566959664896335,
+        "adx14": 20.31998668177363,
+        "sma20": 20.247000122078944,
+        "sma50": 20.49420009613558,
+        "sma200": 19.317049942018897,
+        "bb_pctb": 0.2678770905914511
+      },
+      "faktorler": {
+        "skor": -0.0247,
+        "sira": 18.0,
+        "yuzdelik": 22.7273,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": 5.1282,
+        "mom_12_1": 10.2924,
+        "zirve_yakinlik": -32.0029,
+        "kapilar": {
+          "uygun": true,
+          "nedenler": []
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 1509327476.425724
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "plan_menusu": [],
+      "plan_yok_nedeni": "2 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-PETKM-1",
+          "asof": "2026-07-29",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-07-30-PETKM-1",
+          "asof": "2026-07-30",
+          "signal": "hold",
+          "bariyer": null
+        }
+      ],
+      "haberler": [],
+      "haber_tarama_baslangici": "2026-07-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "SISE",
+      "sektor": "cam_sanayi",
+      "fiyat": {
+        "kapanis": 42.14,
+        "onceki_kapanis": 41.74,
+        "gunluk_degisim_pct": 0.96,
+        "yuksek_52h": 54.0999984741,
+        "dusuk_52h": 32.4399986267
+      },
+      "gostergeler": {
+        "rsi14": 42.13881768416161,
+        "macd_hist": -0.12191177252521923,
+        "atr14": 1.1982922019540823,
+        "atr_pct": 2.8435980524680287,
+        "adx14": 17.2405196415365,
+        "sma20": 43.03999977111045,
+        "sma50": 44.375999908446175,
+        "sma200": 42.55100002288854,
+        "bb_pctb": 0.2674098786257772
+      },
+      "faktorler": {
+        "skor": 0.2797,
+        "sira": 15.0,
+        "yuzdelik": 36.3636,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": 10.9758,
+        "mom_12_1": 22.6288,
+        "zirve_yakinlik": -22.1072,
+        "kapilar": {
+          "uygun": true,
+          "nedenler": []
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 2217714504.5
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "plan_menusu": [],
+      "plan_yok_nedeni": "2 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-SISE-1",
+          "asof": "2026-07-29",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-07-30-SISE-1",
+          "asof": "2026-07-30",
+          "signal": "hold",
+          "bariyer": null
+        }
+      ],
+      "haberler": [
+        {
+          "id": "kap-1642323",
+          "tarih": "2026-08-03 15:18",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Şirketimiz ana ortağı Türkiye İş Bankası A.Ş.'nin 30.06.2026 tarihli finansal sonuçlarının ilanı hakkında",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1642323"
+        }
+      ],
+      "haber_tarama_baslangici": "2026-07-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "TAVHL",
+      "sektor": "ulasim",
+      "fiyat": {
+        "kapanis": 278.0,
+        "onceki_kapanis": 271.75,
+        "gunluk_degisim_pct": 2.3,
+        "yuksek_52h": 369.0,
+        "dusuk_52h": 217.6000061035
+      },
+      "gostergeler": {
+        "rsi14": 56.233556473764104,
+        "macd_hist": 1.4545068303949957,
+        "atr14": 9.49107984825511,
+        "atr_pct": 3.4140574993723414,
+        "adx14": 11.748850225912198,
+        "sma20": 267.45,
+        "sma50": 271.196000061036,
+        "sma200": 292.1682500457765,
+        "bb_pctb": 0.9700462794693928
+      },
+      "faktorler": {
+        "skor": -0.605,
+        "sira": null,
+        "yuzdelik": null,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": -15.1994,
+        "mom_12_1": 14.6257,
+        "zirve_yakinlik": -24.6612,
+        "kapilar": {
+          "uygun": false,
+          "nedenler": [
+            "sma200_alti"
+          ]
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 953722020.5
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "plan_menusu": [],
+      "plan_yok_nedeni": "3 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-TAVHL-1",
+          "asof": "2026-07-29",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-07-30-TAVHL-1",
+          "asof": "2026-07-30",
+          "signal": "avoid",
+          "bariyer": null
+        }
+      ],
+      "haberler": [
+        {
+          "id": "kap-1641991",
+          "tarih": "2026-08-03 10:26",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Şirket Genel Bilgi Formu",
+          "ozet": null,
+          "url": "https://www.kap.org.tr/tr/Bildirim/1641991"
+        }
+      ],
+      "haber_tarama_baslangici": "2026-07-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "TCELL",
+      "sektor": "telekom",
+      "fiyat": {
+        "kapanis": 104.5,
+        "onceki_kapanis": 99.95,
+        "gunluk_degisim_pct": 4.55,
+        "yuksek_52h": 129.6000061035,
+        "dusuk_52h": 87.0500030518
+      },
+      "gostergeler": {
+        "rsi14": 46.05936212978223,
+        "macd_hist": -0.5446290808782943,
+        "atr14": 3.307564833492735,
+        "atr_pct": 3.1651338119547705,
+        "adx14": 22.450079168241757,
+        "sma20": 106.30749931334921,
+        "sma50": 107.7769995117137,
+        "sma200": 107.01499996185294,
+        "bb_pctb": 0.37714062081363636
+      },
+      "faktorler": {
+        "skor": -0.264,
+        "sira": 22.0,
+        "yuzdelik": 4.5455,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": -5.2448,
+        "mom_12_1": 18.4294,
+        "zirve_yakinlik": -19.3673,
+        "kapilar": {
+          "uygun": true,
+          "nedenler": []
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 2329085525.8970337
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "plan_menusu": [],
+      "plan_yok_nedeni": "2 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-TCELL-1",
+          "asof": "2026-07-29",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-07-30-TCELL-1",
+          "asof": "2026-07-30",
+          "signal": "avoid",
+          "bariyer": null
+        }
+      ],
+      "haberler": [],
+      "haber_tarama_baslangici": "2026-07-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "THYAO",
+      "sektor": "ulasim",
+      "fiyat": {
+        "kapanis": 317.0,
+        "onceki_kapanis": 314.0,
+        "gunluk_degisim_pct": 0.96,
+        "yuksek_52h": 355.5,
+        "dusuk_52h": 262.75
+      },
+      "gostergeler": {
+        "rsi14": 47.00406225177081,
+        "macd_hist": -1.8774213898658283,
+        "atr14": 9.143968242226682,
+        "atr_pct": 2.884532568525767,
+        "adx14": 15.890818033526593,
+        "sma20": 325.4875,
+        "sma50": 317.01,
+        "sma200": 300.68,
+        "bb_pctb": 0.32168674959187205
+      },
+      "faktorler": {
+        "skor": 0.3081,
+        "sira": 14.0,
+        "yuzdelik": 40.9091,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": 13.254,
+        "mom_12_1": 16.9041,
+        "zirve_yakinlik": -10.8298,
+        "kapilar": {
+          "uygun": true,
+          "nedenler": []
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 14381094810.0
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "plan_menusu": [],
+      "plan_yok_nedeni": "2 giriş bandı denendi; hiçbiri stop∈[1.5, 4.0]×ATR + R:R≥1.5 kurallarını birlikte sağlayamadı",
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-THYAO-1",
+          "asof": "2026-07-29",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-07-30-THYAO-1",
+          "asof": "2026-07-30",
+          "signal": "hold",
+          "bariyer": null
+        }
+      ],
+      "haberler": [],
+      "haber_tarama_baslangici": "2026-07-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "TUPRS",
+      "sektor": "rafineri",
+      "fiyat": {
+        "kapanis": 290.5,
+        "onceki_kapanis": 295.25,
+        "gunluk_degisim_pct": -1.61,
+        "yuksek_52h": 320.25,
+        "dusuk_52h": 159.1999969482
+      },
+      "gostergeler": {
+        "rsi14": 58.3725252646657,
+        "macd_hist": -1.7816414228929212,
+        "atr14": 10.293151248508225,
+        "atr_pct": 3.5432534418272725,
+        "adx14": 44.17723425512553,
+        "sma20": 285.719999694825,
+        "sma50": 254.01699951172003,
+        "sma200": 230.20199981689248,
+        "bb_pctb": 0.560480105869648
+      },
+      "faktorler": {
+        "skor": 0.5461,
+        "sira": 12.0,
+        "yuzdelik": 50.0,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": 9.874,
+        "mom_12_1": 53.701,
+        "zirve_yakinlik": -9.2896,
+        "kapilar": {
+          "uygun": true,
+          "nedenler": []
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 6321103666.5
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "plan_menusu": [
+        {
+          "plan_id": "TUPRS-2026-08-03-A",
+          "ticker": "TUPRS",
+          "asof": "2026-08-03",
+          "kind": "sma20_geri_cekilme",
+          "entry_low": 282.75,
+          "entry_high": 288.75,
+          "entry_trigger": "pullback_to_sma20",
+          "stop_price": 268.0,
+          "stop_method": "atr_2x",
+          "stop_atr_multiple": 2.02,
+          "targets": [
+            {
+              "price": 320.25,
+              "rr": 1.52,
+              "atr_distance": 3.06,
+              "basis": "52 hafta zirvesi"
+            }
+          ],
+          "rr_at_t1": 1.52,
+          "time_barrier_days": 20,
+          "time_barrier_date": "2026-08-31",
+          "position_size_pct": 5.57,
+          "max_loss_pct_of_portfolio": 0.4,
+          "entry_zone_status": "in_zone",
+          "daily_limit_note": "stop girişten %7.2 uzakta; girildikten sonra tek günde tetiklenebilir (boşluk riski var)",
+          "ex_date_in_window": null,
+          "invalidations": [
+            "SMA50 (254.02) altına günlük kapanış",
+            "279.50 desteğinin altına kapanış",
+            "hacim 20 günlük ortalamanın %50 altına inerse tez zayıflar"
+          ],
+          "notes": [
+            "0 direnç, 3 destek seviyesi kullanıldı"
+          ],
+          "rr_secim": "2. giriş bandı (sma20_geri_cekilme), stop atr_2x",
+          "elenen_adaylar": [
+            "dogrudan/atr_2x: R:R 1.43 < 1.5",
+            "dogrudan/atr_2.5x: R:R 1.16 < 1.5",
+            "dogrudan/atr_3x: R:R 0.96 < 1.5",
+            "dogrudan/swing_low: 1.21×ATR ∉ [1.5,4.0]",
+            "dogrudan/sma_break_buffer: 0.9×ATR ∉ [1.5,4.0]",
+            "dogrudan/sma_break_buffer: R:R 0.73 < 1.5"
+          ],
+          "uyari": "Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir."
+        },
+        {
+          "plan_id": "TUPRS-2026-08-03-B",
+          "ticker": "TUPRS",
+          "asof": "2026-08-03",
+          "kind": "destek_retest",
+          "entry_low": 278.0,
+          "entry_high": 283.75,
+          "entry_trigger": "support_retest",
+          "stop_price": 263.0,
+          "stop_method": "atr_2x",
+          "stop_atr_multiple": 2.02,
+          "targets": [
+            {
+              "price": 320.25,
+              "rr": 1.76,
+              "atr_distance": 3.55,
+              "basis": "52 hafta zirvesi"
+            }
+          ],
+          "rr_at_t1": 1.76,
+          "time_barrier_days": 20,
+          "time_barrier_date": "2026-08-31",
+          "position_size_pct": 5.47,
+          "max_loss_pct_of_portfolio": 0.4,
+          "entry_zone_status": "above_zone",
+          "daily_limit_note": "stop girişten %7.3 uzakta; girildikten sonra tek günde tetiklenebilir (boşluk riski var)",
+          "ex_date_in_window": null,
+          "invalidations": [
+            "SMA50 (254.02) altına günlük kapanış",
+            "279.50 desteğinin altına kapanış",
+            "hacim 20 günlük ortalamanın %50 altına inerse tez zayıflar"
+          ],
+          "notes": [
+            "0 direnç, 3 destek seviyesi kullanıldı"
+          ],
+          "rr_secim": "3. giriş bandı (destek_retest), stop atr_2x",
+          "elenen_adaylar": [
+            "dogrudan/atr_2x: R:R 1.43 < 1.5",
+            "dogrudan/atr_2.5x: R:R 1.16 < 1.5",
+            "dogrudan/atr_3x: R:R 0.96 < 1.5",
+            "dogrudan/swing_low: 1.21×ATR ∉ [1.5,4.0]",
+            "dogrudan/sma_break_buffer: 0.9×ATR ∉ [1.5,4.0]",
+            "dogrudan/sma_break_buffer: R:R 0.73 < 1.5"
+          ],
+          "uyari": "Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir."
+        }
+      ],
+      "plan_yok_nedeni": null,
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-TUPRS-1",
+          "asof": "2026-07-29",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-07-30-TUPRS-1",
+          "asof": "2026-07-30",
+          "signal": "accumulate",
+          "bariyer": "2026-08-27"
+        }
+      ],
+      "haberler": [],
+      "haber_tarama_baslangici": "2026-07-30T20:59:59+00:00"
+    }
+  ],
+  "portfoy": {
+    "pozisyonlar": []
+  },
+  "izin_verilen_degerler": {
+    "signal": [
+      "strong_buy",
+      "buy",
+      "accumulate",
+      "hold",
+      "reduce",
+      "sell",
+      "avoid"
+    ],
+    "action": [
+      "plan_sec",
+      "plan_reddet",
+      "izle",
+      "islem_yok"
+    ],
+    "confidence": [
+      "yuksek",
+      "orta",
+      "dusuk"
+    ],
+    "veto_code": [
+      "haber_riski",
+      "kurumsal_islem",
+      "likidite_zayif",
+      "sektor_yogunlugu",
+      "tez_zayif",
+      "veri_supheli",
+      "rejim_uyumsuz"
+    ],
+    "regime_agreement": [
+      "katiliyorum",
+      "katilmiyorum"
+    ],
+    "portfolio_action": [
+      "risk_azalt",
+      "koru",
+      "risk_artir"
+    ],
+    "tool": [
+      "claude-code",
+      "codex",
+      "antigravity",
+      "kiro",
+      "diger",
+      "gemini-3.5-flash",
+      "gemini-3.6-flash",
+      "gemini-2.5-pro",
+      "gemini-3.1-pro-preview",
+      "gpt-5.6-luna",
+      "gpt-5-mini"
+    ],
+    "plan_ids": {
+      "AKBNK": [],
+      "ASELS": [],
+      "ASTOR": [],
+      "BIMAS": [],
+      "EKGYO": [],
+      "ENKAI": [],
+      "EREGL": [],
+      "EUPWR": [
+        "EUPWR-2026-08-03-A"
+      ],
+      "FROTO": [],
+      "GARAN": [],
+      "KCHOL": [],
+      "KRDMD": [
+        "KRDMD-2026-08-03-A",
+        "KRDMD-2026-08-03-B"
+      ],
+      "PETKM": [],
+      "SISE": [],
+      "TAVHL": [],
+      "TCELL": [],
+      "THYAO": [],
+      "TUPRS": [
+        "TUPRS-2026-08-03-A",
+        "TUPRS-2026-08-03-B"
+      ]
+    }
+  },
+  "kurallar_ozeti": [
+    "Hiçbir sayı ÜRETME. Prose içinde kullandığın her sayı bu paketten BİREBİR gelmeli; paket dışı sayı denetimde reddedilir (HF-17).",
+    "Fiyat / stop / hedef / pozisyon boyutu YAZMA — `selected_plan_id` seç, sayılar plandan okunur.",
+    "Güveni yüzde olarak verme; `yuksek|orta|dusuk` enum'u kullan.",
+    "Evrendeki HER hisse ya `stocks[]` içinde ya `not_covered` içinde olmalı.",
+    "`falsifier`: 5 işlem günü içinde GÖZLEMLENEBİLİR bir olay yaz. Jenerik cümle yazma; şablon tespiti var (HF-27).",
+    "Haber yorumu yapıyorsan `news_refs`'e paketteki haber id'lerini koy. Pakette olmayan id uydurma (HF-28).",
+    "Bir planı beğenmiyorsan `plan_reddet` + `veto_code` kullan — bu gerçek bir karardır ve performansı ölçülür.",
+    "Bu sistemde ÖLÇÜLEN KENAR YOKTUR (ADR #008). Seviyeler planlama geometrisidir; yön iddiası üretme."
+  ],
+  "bundle_sha": "26b914c59f982c197d351aa575ae31d3675e0852347184e4b974470524bfe709"
+}
