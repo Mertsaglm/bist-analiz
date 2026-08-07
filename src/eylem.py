@@ -83,7 +83,9 @@ def _riskler(e: dict, vetolar: list[dict]) -> list[str]:
         out.append("bilanço penceresi BİLİNMİYOR (risk yok demek değil)")
     for v in vetolar:
         out.append(f"yürürlükte veto `{v['veto_code']}` "
-                   f"({v['kalan_islem_gunu']} işlem günü kaldı)")
+                   f"({v['kalan_islem_gunu']} işlem günü kaldı"
+                   + (f", {v['tekrar']}× üst üste konuldu)" if v.get("tekrar", 1) > 1
+                      else ")"))
     ld = e.get("limit_durumu") or {}
     if ld.get("durum") == "limite_yakin":
         out.append("günlük marja yakın kapandı")

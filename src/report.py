@@ -675,12 +675,14 @@ def daily_report(cfg: dict, bundle: dict, *, holdings: dict | None = None,
         A("_Veto artık tek koşuya bağlı değil: süresi dolana kadar yürürlükte "
           "kalır. Bugün analiz koşmasan bile bunlar geçerlidir._")
         A("")
-        A("| Hisse | veto | konuldu | bitiş | kalan |")
-        A("|---|---|---|---|---|")
+        A("| Hisse | veto | son konuldu | bitiş | kalan | tekrar |")
+        A("|---|---|---|---|---|---|")
         for t, vs in aktif:
             for v in vs:
                 A(f"| {t} | `{v['veto_code']}` | {v['konuldu']} | {v['bitis']} "
-                  f"| {v['kalan_islem_gunu']} işlem günü |")
+                  f"| {v['kalan_islem_gunu']} işlem günü"
+                  + (f" | {v['tekrar']}× üst üste |" if v.get("tekrar", 1) > 1
+                     else " | — |"))
         A("")
 
     # --------------------------------------------------- 1b) VETO

@@ -38,6 +38,12 @@ Güvenini abartma: `confidence` alanında şüphedeysen `dusuk` seç. Elindeki b
 
 **Kapsam.** Evrendeki HER hisse ya `stocks[]` ya `not_covered` içinde olmalı; ikisinde birden olamaz.
 
+**Deterministik katman bir TAVANDIR.** Onun izin verdiğinden daha iddialı olamazsın: aşağı inebilirsin (veto, `izle`, `islem_yok`), yukarı çıkamazsın. Somut olarak — `plan_yok_sinifi` `veri` ya da `limit` ise sistem o ismin verisine güvenmiyor ya da hisse bugün işlem görmüyor demektir; orada en fazla `hold` diyebilirsin, `accumulate`/`buy`/`strong_buy` YASAKTIR. `geometri` ve `kurumsal` sınıflarında bu kısıt YOK — orada fiyat sağlamdır, yalnız plan iskeleti kurulamamıştır.
+
+**Yürürlükteki veto.** Bir hissede `AKTİF VETO` yazıyorsa o veto önceki bir koşuda konuldu ve süresi DOLMADI. Fikrini değiştirebilirsin — ama `plan_sec` diyeceksen vetoyu neyin geçersiz kıldığını `thesis` içinde AÇIKÇA yaz. Sessizce geri almak, ölçülemeyen bir geri almadır.
+
+**Bilanço penceresi.** `bilanco_penceresi.durum` `acik` ise şirketin finansal raporu plan ufkunda açıklanacak — bu bir volatilite olayıdır ve `key_risk` içinde geçmelidir. `bilinmiyor` ise **'risk yok' DEĞİLDİR**; bilmediğimiz anlamına gelir ve güveni yükseltmez.
+
 **Açık tahmini olan hisseler `stocks[]` içinde OLMAK ZORUNDA** (`not_covered`'a atılamaz) — taşınan tez sessizce düşürülemez: `AKBNK`, `ASELS`, `ASTOR`, `BIMAS`, `EKGYO`, `ENKAI`, `EREGL`, `EUPWR`, `FROTO`, `GARAN`, `KCHOL`, `KRDMD`, `PETKM`, `SISE`, `TAVHL`, `TCELL`, `THYAO`, `TUPRS`.
 
 ## Sayı yasağı — en pratik tavsiye: PROSE'DA HİÇ RAKAM KULLANMA
@@ -62,7 +68,7 @@ Bir plan geometrik olarak geçerli olabilir ama yine de kötü bir fikir olabili
 {
   "schema_version": "bist_llm_v1",
   "asof": "2026-08-05",
-  "bundle_sha": "2081993dd33d7aaa2d8b6faf549798bbb1afabe0b3e82737e67650909adcf85b",
+  "bundle_sha": "847565d9b96cc01f397882bb421145f96681749a8164604d05bf91644db96f82",
   "tool": "<araç>",
   "market_view": {
     "regime_agreement": "katiliyorum|katilmiyorum",

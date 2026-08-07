@@ -157,7 +157,7 @@ class TestSureliVeto:
              "weights_hash", "indicator_set_version", "regime", "thesis",
              "counter_scenario", "key_risk", "falsifier", "close_at_asof",
              "created_utc"],
-            [(f"p-{ticker}-{asof}", run, asof, ticker, "hold", "plan_reddet",
+            [(f"p-{ticker}-{asof}-{run}", run, asof, ticker, "hold", "plan_reddet",
               "orta", 0.5, kod, "v1", "h", "v1", "neutral", "t", "c",
               "GEREKÇE-METNİ", "f", 10.0, "now")])
 
@@ -222,3 +222,42 @@ class TestSureliVeto:
             [("pz", "r0", g[10], "ZZZ", "hold", "izle", "orta", 0.5, "v1", "h",
               "v1", "neutral", "t", "c", "k", "f", 10.0, "now")])
         assert "ZZZ" not in journal.aktif_vetolar(cfg, con, g[11])
+
+    def test_AYNI_veto_tekrar_ederse_TEK_SATIR(self, cfg, con):
+        """⚠ Gerçek koşuda görüldü (2026-08-05): EUPWR'de `rejim_uyumsuz`
+        DÖRT kez listeleniyordu — art arda koşan günlük analiz aynı vetoyu her
+        gün yeniden koyuyor. Hepsini basmak bilgi değil GÜRÜLTÜ üretir ve
+        okuyanı asıl uyarılardan uzaklaştırır.
+        """
+        from src import journal
+        from tests.conftest import add_index, is_gunleri
+        g = is_gunleri(30, "2026-07-01")
+        add_index(con, "XU100", g)
+        for i, gun in enumerate(g[8:11]):
+            self._veto(con, "AAA", gun, "rejim_uyumsuz", run=f"r{i}")
+        v = journal.aktif_vetolar(cfg, con, g[11])["AAA"]
+        assert len(v) == 1, f"aynı veto {len(v)} kez listelendi"
+        assert v[0]["tekrar"] == 3, "tekrar sayısı kayboldu"
+
+    def test_tekrarda_EN_GEC_biten_kazanir(self, cfg, con):
+        """Koruma en UZUN süreye göre yaşamalı — erken bitene indirgenmemeli."""
+        from src import journal
+        from tests.conftest import add_index, is_gunleri
+        g = is_gunleri(30, "2026-07-01")
+        add_index(con, "XU100", g)
+        self._veto(con, "AAA", g[8], "rejim_uyumsuz", run="rA")
+        self._veto(con, "AAA", g[10], "rejim_uyumsuz", run="rB")   # daha geç
+        v = journal.aktif_vetolar(cfg, con, g[11])["AAA"][0]
+        assert v["konuldu"] == g[10]
+        assert v["kalan_islem_gunu"] >= 1
+
+    def test_FARKLI_veto_kodlari_AYRI_kalir(self, cfg, con):
+        """Tekilleştirme koda göredir; iki ayrı sebep tek satıra sıkışmaz."""
+        from src import journal
+        from tests.conftest import add_index, is_gunleri
+        g = is_gunleri(30, "2026-07-01")
+        add_index(con, "XU100", g)
+        self._veto(con, "AAA", g[10], "rejim_uyumsuz", run="rA")
+        self._veto(con, "AAA", g[10], "likidite_zayif", run="rB")
+        assert len({x["veto_code"] for x in
+                    journal.aktif_vetolar(cfg, con, g[11])["AAA"]}) == 2

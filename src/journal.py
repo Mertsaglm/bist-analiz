@@ -250,7 +250,13 @@ def aktif_vetolar(cfg: dict, con: sqlite3.Connection, asof: str,
                                   if k != "varsayilan"])
     bas = (util.parse_date(asof) - timedelta(days=enfazla * 2 + 14)).isoformat()
 
-    out: dict[str, list[dict]] = {}
+    # ⚠ (ticker, veto_code) başına TEK satır. Art arda koşan günlük analiz aynı
+    # vetoyu her gün yeniden koyar; hepsini listelemek bilgi değil GÜRÜLTÜ
+    # üretir (ölçüldü 2026-08-05: EUPWR'de `rejim_uyumsuz` dört kez). En GEÇ
+    # biten kayıt tutulur — koruma en uzun süreye göre yaşar. Tekrar sayısı
+    # atılmaz, `tekrar` alanına yazılır: "üç gün üst üste aynı veto" gerçek bir
+    # bilgidir ve tek satıra sıkıştırılırken kaybedilmemeli.
+    tekil: dict[tuple[str, str], dict] = {}
     for r in db.fetch_all(
             con,
             "SELECT p.ticker, p.asof, p.veto_code, p.key_risk, r.tool "
@@ -261,10 +267,24 @@ def aktif_vetolar(cfg: dict, con: sqlite3.Connection, asof: str,
         bitis = cal.add_trading_days(r["asof"], gun).isoformat()
         if bitis < asof:
             continue                       # süresi dolmuş
-        kalan = cal.trading_days_between(asof, bitis)
-        out.setdefault(r["ticker"], []).append({
-            "veto_code": r["veto_code"], "konuldu": r["asof"], "bitis": bitis,
-            "kalan_islem_gunu": kalan, "arac": r["tool"],
-            "gerekce": r["key_risk"],
-        })
+        k = (r["ticker"], r["veto_code"])
+        onceki = tekil.get(k)
+        if onceki is None:
+            tekil[k] = {
+                "veto_code": r["veto_code"], "konuldu": r["asof"], "bitis": bitis,
+                "kalan_islem_gunu": cal.trading_days_between(asof, bitis),
+                "arac": r["tool"], "gerekce": r["key_risk"], "tekrar": 1,
+            }
+        else:
+            onceki["tekrar"] += 1
+            if bitis > onceki["bitis"]:    # en GEÇ biten kazanır
+                onceki.update(konuldu=r["asof"], bitis=bitis, arac=r["tool"],
+                              gerekce=r["key_risk"],
+                              kalan_islem_gunu=cal.trading_days_between(asof, bitis))
+
+    out: dict[str, list[dict]] = {}
+    for (t, _), v in tekil.items():
+        out.setdefault(t, []).append(v)
+    for v in out.values():
+        v.sort(key=lambda x: (-x["kalan_islem_gunu"], x["veto_code"]))
     return out
