@@ -472,6 +472,97 @@ class TestUyarilar:
 
 # ⚠ Bu sınıf dosyanın SONUNDA durmalı: `GORULEN_KODLAR`'ı yukarıdaki tüm
 # testler doldurur ve pytest bir dosyayı tanım sırasına göre koşar.
+class TestDeterministikTavan:
+    """HF-32 — deterministik katman bir TAVANDIR, model onu aşamaz.
+
+    Fikir borsaci'nin `skill/borsaci/references/buffett.md` dosyasından
+    (2026-08-07 repo incelemesi): *"Niteliksel katman kararı YALNIZCA AŞAĞI
+    çekebilir, asla yukarı çıkaramaz."* Bizde bu örtük olarak doğruydu
+    (LLM sayı üretemez, menüden seçer, rejim tavanı var) ama HİÇBİR YERDE
+    YAZMIYOR ve HİÇBİR KOD ZORLAMIYORDU.
+
+    ⚠ NE AÇIKTI: HF-20 boğa sinyalini yalnız `plan_reddet`/`islem_yok` ile
+    eşleşince yakalıyor. Yani veri kalitesi düştüğü ya da hisse tavana kilitli
+    olduğu için plan BİLE ÜRETİLMEMİŞ bir isme `strong_buy` + `izle` demek
+    denetimden temiz geçiyordu: sistem "bu ismin verisine güvenmiyorum" derken
+    model en güçlü sinyali verebiliyordu.
+    """
+
+    def test_HF32_veri_sinifinda_boga_sinyali_YASAK(self, cfg, con, temiz):
+        b, o = temiz
+        b["evren"][1]["plan_menusu"] = []
+        b["evren"][1]["plan_yok_nedeni"] = "veri kalitesi: sıfır hacim %46"
+        b["evren"][1]["plan_yok_sinifi"] = "veri"
+        o["stocks"][1]["signal"] = "buy"
+        o["stocks"][1]["action"] = "izle"
+        o["stocks"][1]["selected_plan_id"] = None
+        assert "HF-32" in _kodlar(audit.audit(cfg, b, o, con))
+
+    def test_HF32_limit_sinifinda_da_YASAK(self, cfg, con, temiz):
+        """Tavana kilitli hisse bugün işlem görmüyor — 'al' diyemezsin."""
+        b, o = temiz
+        b["evren"][1]["plan_menusu"] = []
+        b["evren"][1]["plan_yok_sinifi"] = "limit"
+        o["stocks"][1]["signal"] = "accumulate"
+        o["stocks"][1]["action"] = "izle"
+        o["stocks"][1]["selected_plan_id"] = None
+        assert "HF-32" in _kodlar(audit.audit(cfg, b, o, con))
+
+    def test_HF32_GEOMETRI_sinifinda_boga_sinyali_SERBEST(self, cfg, con, temiz):
+        """Fiyat sağlam, yalnız plan iskeleti kurulamadı — `izle` tam da odur.
+
+        Bu testin işi kuralın FAZLA GENİŞ olmadığını kanıtlamak. Geometri
+        sınıfını da kapatmak, sistemin "R:R yetmedi" dediği her isimde
+        analistin görüş bildirmesini yasaklardı.
+        """
+        b, o = temiz
+        b["evren"][1]["plan_menusu"] = []
+        b["evren"][1]["plan_yok_nedeni"] = "R:R yetmedi"
+        b["evren"][1]["plan_yok_sinifi"] = "geometri"
+        o["stocks"][1]["signal"] = "buy"
+        o["stocks"][1]["action"] = "izle"
+        o["stocks"][1]["selected_plan_id"] = None
+        assert "HF-32" not in _kodlar(audit.audit(cfg, b, o, con))
+
+    def test_HF32_veri_sinifinda_HOLD_serbest(self, cfg, con, temiz):
+        """Aşağı inmek daima serbest — tavan yalnız YUKARI kapalı."""
+        b, o = temiz
+        b["evren"][1]["plan_menusu"] = []
+        b["evren"][1]["plan_yok_sinifi"] = "veri"
+        o["stocks"][1]["signal"] = "hold"
+        o["stocks"][1]["action"] = "izle"
+        o["stocks"][1]["selected_plan_id"] = None
+        assert "HF-32" not in _kodlar(audit.audit(cfg, b, o, con))
+
+    def test_HF32_temiz_ciktida_atesLENMEZ(self, cfg, con, temiz):
+        b, o = temiz
+        assert "HF-32" not in _kodlar(audit.audit(cfg, b, o, con))
+
+
+class TestSureliVetoUyarisi:
+    """W-04 — aktif veto varken plan seçmek. ENGELLEMEZ ama görünür olur."""
+
+    def test_W04_aktif_veto_ustune_plan_secilirse_uyarir(self, cfg, con, temiz):
+        b, o = temiz
+        b["evren"][0]["aktif_vetolar"] = [
+            {"veto_code": "haber_riski", "konuldu": "2026-07-28",
+             "bitis": "2026-08-04", "kalan_islem_gunu": 3, "arac": "test",
+             "gerekce": "x"}]
+        o["stocks"][0]["action"] = "plan_sec"
+        # ⚠ `_kodlar` YALNIZ sert hataları döner; W-xx uyarıları oraya girmez.
+        bulgular = audit.audit(cfg, b, o, con)
+        w = [f for f in bulgular if f.code == "W-04"]
+        assert w, f"W-04 ateşlenmedi: {[f.code for f in bulgular]}"
+        # SERT HATA DEĞİL: modelin fikrini değiştirme hakkı var, SESSİZCE
+        # değiştirme hakkı yok.
+        assert all(f.severity == audit.UYARI for f in w)
+        assert "W-04" not in _kodlar(bulgular)
+
+    def test_W04_vetosuz_isimde_atesLENMEZ(self, cfg, con, temiz):
+        b, o = temiz
+        assert not [f for f in audit.audit(cfg, b, o, con) if f.code == "W-04"]
+
+
 class TestKapsam:
     def test_her_HF_kodu_GERCEKTEN_atesLENDI(self):
         """Bir kod hiç tetiklenemiyorsa o kontrol ÖLÜDÜR ve yanlış güven verir.

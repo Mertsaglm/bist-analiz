@@ -141,3 +141,132 @@ class TestBicimleme:
         metin = sag.bicimle(s)
         for _, ad, _ in s["bulgular"]:
             assert ad in metin
+
+
+class TestKesitselDevreKesici:
+    """⚠ REGRESYON KİLİDİ (2026-08-07, Merdiven M6'dan uyarlandı).
+
+    Merdiven'in cümlesi: *"aynı mumda 30'dan fazla AL sinyali gelirse bypass —
+    30 hisse aynı anda underpriced olamaz."* Genellenmiş hâli: **kesit tek yöne
+    düştüyse bozulan piyasa değil, ölçüm aracıdır.**
+
+    Yakaladığı iki boşluk:
+    (a) L-007 "payda sessizce daralır" dedi; bunun aynadaki görüntüsü olan
+        "pay sessizce şişer" hiçbir yerde kontrol edilmiyordu.
+    (b) L-008 "simetriğini ara": rejim tavanı LLM tarafında HF-23 ile zorlanıyor,
+        deterministik plan üretiminde ve `signal` alanında hiç zorlanmıyordu.
+
+    Eşikler ÖLÇÜLDÜ (23 asof günü): medyan 2/18 isim, gözlemlenen maks 9/18=%50.
+    Tel %60 — kalibrasyon değil, "bu hiç olmadı" çizgisi.
+    """
+
+    @staticmethod
+    def _plan_gunleri(con, gunler: dict[str, int]):
+        """{asof: kaç isim} → plan_options satırları."""
+        from src import db
+        rows = []
+        for asof, n in gunler.items():
+            for i in range(n):
+                t = f"T{i:02d}"
+                rows.append((f"{t}-{asof}-A", asof, t, "dogrudan", "{}", "now"))
+        db.upsert_many(con, "plan_options",
+                       ["plan_id", "asof", "ticker", "kind", "payload", "created_utc"],
+                       rows)
+
+    @staticmethod
+    def _evren(con, n: int):
+        for i in range(n):
+            add_universe(con, f"T{i:02d}", sector=f"s{i}")
+
+    def _bul(self, cfg, con, ad: str):
+        return next(b for b in sag.kontrol(cfg, con)["bulgular"] if b[1] == ad)
+
+    def test_evrenin_cogunda_plan_UYARI(self, cfg, con):
+        self._evren(con, 10)
+        self._plan_gunleri(con, {"2026-07-30": 7})        # 7/10 = %70 > %60
+        seviye, _, mesaj = self._bul(cfg, con, "plan üretim oranı")
+        assert seviye == sag.UYARI, mesaj
+        assert "telini AŞTI" in mesaj
+
+    def test_normal_oranda_SESSIZ(self, cfg, con):
+        """Kontrol grubu: tel her gün ateşliyorsa tel değil, gürültüdür."""
+        self._evren(con, 10)
+        self._plan_gunleri(con, {"2026-07-30": 2})        # %20 — gözlenen medyan
+        seviye, _, _ = self._bul(cfg, con, "plan üretim oranı")
+        assert seviye == sag.OK
+
+    def test_payda_MESAJDA_gorunur(self, cfg, con):
+        """L-007: bir oran yazıyorsan paydasını da yaz."""
+        self._evren(con, 10)
+        self._plan_gunleri(con, {"2026-07-30": 3})
+        _, _, mesaj = self._bul(cfg, con, "plan üretim oranı")
+        assert "3/10" in mesaj and "plan gününde ort." in mesaj
+
+    def test_ON_KAYIT_tetikleyicisi_kosulabilir(self, cfg, con):
+        """STATE.md Backlog'undaki '20 günde ort. <2 plan' artık KOD."""
+        self._evren(con, 10)
+        n = int(cfg["saglik"]["kesit"]["pencere_gun"])
+        self._plan_gunleri(con, {f"2026-01-{i+1:02d}": 1 for i in range(n)})
+        seviye, _, mesaj = self._bul(cfg, con, "plan üretim oranı")
+        assert seviye == sag.UYARI
+        assert "ön kayıt" in mesaj and "on-kayit-seviye-02" in mesaj
+
+    def test_pencere_dolmadan_on_kayit_tetiklenmez(self, cfg, con):
+        """Az günle tetiklemek yanlış alarm üretir — pencere DOLMALI."""
+        self._evren(con, 10)
+        self._plan_gunleri(con, {f"2026-01-{i+1:02d}": 1 for i in range(3)})
+        seviye, _, _ = self._bul(cfg, con, "plan üretim oranı")
+        assert seviye == sag.OK
+
+    def test_plan_options_bossa_TEMIZ_DEMEZ(self, cfg, con):
+        self._evren(con, 10)
+        seviye, _, mesaj = self._bul(cfg, con, "plan üretim oranı")
+        assert "ölçülecek gün yok" in mesaj
+
+    # ---------------------------------------------------------- sinyal dağılımı
+    @staticmethod
+    def _tahminler(con, sinyaller: list[str], asof="2026-07-30"):
+        from src import db
+        db.upsert_many(
+            con, "llm_runs",
+            ["run_id", "asof", "tool", "bundle_sha", "output_path",
+             "audit_passed", "created_utc"],
+            [("r1", asof, "test-model", "sha", "/dev/null", 1, "now")])
+        db.upsert_many(
+            con, "predictions",
+            ["prediction_id", "run_id", "asof", "ticker", "signal", "action",
+             "confidence", "confidence_p", "factor_set_version", "weights_hash",
+             "indicator_set_version", "regime", "thesis", "counter_scenario",
+             "key_risk", "falsifier", "close_at_asof", "created_utc"],
+            [(f"p{i}", "r1", asof, f"T{i:02d}", s, "izle", "orta", 0.5,
+              "v1", "h", "v1", "neutral", "t", "c", "k", "f", 10.0, "now")
+             for i, s in enumerate(sinyaller)])
+
+    def test_sinyallerin_cogu_tek_yonde_UYARI(self, cfg, con):
+        """HF-23 `plan_sec` SAYISINI kapıyor; `signal` alanına hiç tavan yoktu."""
+        self._evren(con, 12)
+        self._tahminler(con, ["buy"] * 10 + ["hold"] * 2)     # %83 > %70
+        seviye, _, mesaj = self._bul(cfg, con, "sinyal dağılımı")
+        assert seviye == sag.UYARI and "telini AŞTI" in mesaj
+
+    def test_dengeli_dagilim_SESSIZ(self, cfg, con):
+        self._evren(con, 12)
+        self._tahminler(con, ["buy"] * 3 + ["hold"] * 5 + ["reduce"] * 4)
+        seviye, _, _ = self._bul(cfg, con, "sinyal dağılımı")
+        assert seviye == sag.OK
+
+    def test_kucuk_paydada_ORAN_DEGERLENDIRILMEZ(self, cfg, con):
+        """Replay koşuları n=1-2 üretiyor; orada %100 boğa anlamsızdır."""
+        self._evren(con, 3)
+        self._tahminler(con, ["buy", "buy"])                 # n=2 < min_n
+        seviye, _, mesaj = self._bul(cfg, con, "sinyal dağılımı")
+        assert seviye == sag.OK
+        assert "DEĞERLENDİRİLMEDİ" in mesaj, \
+            "küçük paydada 'temiz' demek, ölçmediğini ölçmüş gibi göstermektir"
+
+    def test_ayi_tarafi_da_TEL_ATEŞLER(self, cfg, con):
+        """Tel simetrik olmalı — yalnız boğa tarafını kapamak yarım savunmadır."""
+        self._evren(con, 12)
+        self._tahminler(con, ["sell"] * 10 + ["hold"] * 2)
+        seviye, _, _ = self._bul(cfg, con, "sinyal dağılımı")
+        assert seviye == sag.UYARI

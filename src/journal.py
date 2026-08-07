@@ -18,6 +18,8 @@ DEĞİŞMEZ — yeni kayıtlar yeni haritayla yazılır ve fark izlenebilir kal�
 
 from __future__ import annotations
 
+from datetime import timedelta
+
 import logging
 import sqlite3
 from dataclasses import asdict
@@ -210,3 +212,59 @@ def set_holding(con: sqlite3.Connection, ticker: str, qty: float,
 
 def holdings(con: sqlite3.Connection) -> dict[str, dict]:
     return {r["ticker"]: r for r in db.fetch_all(con, "SELECT * FROM holdings")}
+
+
+# ---------------------------------------------------------------- süreli veto
+def aktif_vetolar(cfg: dict, con: sqlite3.Connection, asof: str,
+                  cal=None) -> dict[str, list[dict]]:
+    """`asof` gününde HÂLÂ GEÇERLİ olan vetolar — {ticker: [veto, ...]}.
+
+    NE EKSİKTİ (2026-08-07, Merdiven'in "bypass" fikrinden): veto bir KOŞUYA
+    bağlıydı, takvime değil. Bugün `haber_riski` diye veto edilen bir isim,
+    hiçbir şey değişmeden yarın tertemiz görünüyordu — ertesi günün paketinde
+    vetonun izi yoktu. ADR #008'den beri veto sistemin kalan ana ürünü; ömrü
+    tek bir koşu kadar olamaz.
+
+    Süre veto SEBEBİNE göre değişir (`config.llm.veto_suresi_gun`) ve İŞLEM
+    GÜNÜ cinsindendir — H=20 ufkuyla aynı takvim. Duvar saati kullanmak, uzun
+    tatillerde vetoyu erken düşürürdü (AGENTS.md §11 madde 6: zaman kaynağını
+    açıkça belirt).
+
+    `predictions` DEĞİŞMEZDİR ve veto oradan TÜRETİLİR — ayrı bir "vetolar"
+    tablosu tutmak aynı gerçeği iki yerde saklamak olurdu ve ikisi ayrışırdı.
+    """
+    from .calendar_bist import BistCalendar
+
+    sure = cfg["llm"]["veto_suresi_gun"]
+    varsayilan = int(sure.get("varsayilan", 5))
+    cal = cal or BistCalendar(cfg, con)
+    # En geniş süre kadar geriye bak; daha eskisi hiçbir şekilde aktif olamaz.
+    #
+    # ⚠ Alt sınır TAKVİM GÜNÜYLE hesaplanır, işlem günüyle DEĞİL — bilerek.
+    # `add_trading_days` geriye giderken bar bulamazsa (verinin başlangıcından
+    # önce, ya da bir veri boşluğunda) sonsuza yürür. Burada gereken şey
+    # kesinlik değil, YETERİNCE ERKEN bir sınır: bu yalnız taranacak satır
+    # sayısını kısıtlar, hangi vetonun aktif olduğunu belirlemez. Kesinlik
+    # gereken yer aşağıdaki `bitis` hesabıdır ve orası İLERİ gider (güvenli).
+    enfazla = max([varsayilan] + [int(v) for k, v in sure.items()
+                                  if k != "varsayilan"])
+    bas = (util.parse_date(asof) - timedelta(days=enfazla * 2 + 14)).isoformat()
+
+    out: dict[str, list[dict]] = {}
+    for r in db.fetch_all(
+            con,
+            "SELECT p.ticker, p.asof, p.veto_code, p.key_risk, r.tool "
+            "  FROM predictions p JOIN llm_runs r ON r.run_id = p.run_id "
+            " WHERE p.veto_code IS NOT NULL AND p.asof <= ? AND p.asof >= ? "
+            " ORDER BY p.asof DESC", (asof, bas)):
+        gun = int(sure.get(r["veto_code"], varsayilan))
+        bitis = cal.add_trading_days(r["asof"], gun).isoformat()
+        if bitis < asof:
+            continue                       # süresi dolmuş
+        kalan = cal.trading_days_between(asof, bitis)
+        out.setdefault(r["ticker"], []).append({
+            "veto_code": r["veto_code"], "konuldu": r["asof"], "bitis": bitis,
+            "kalan_islem_gunu": kalan, "arac": r["tool"],
+            "gerekce": r["key_risk"],
+        })
+    return out

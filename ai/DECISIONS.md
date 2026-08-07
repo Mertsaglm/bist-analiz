@@ -6,6 +6,164 @@
 
 ---
 
+## #016 — 2026-08-07 — Ölçüm paneli: düzeltilmemiş kurumsal işlem GÖZLEMİ düşer, İSİM düşmez
+
+**Bağlam.** ADR #015 turunda yapılan "bedelsiz kapsaması" ölçümü, aranmayan bir
+şey buldu: panelde **5 sahte getiri barı** var.
+
+    CCOLA 2024-08-01  −%90.7   (11:1 bölünme; yfinance kaydı 08-13'e yazmış,
+                                seriyi geriye DÜZELTMEMİŞ — 07-31 kapanışı 846 TL)
+    TSPOR 2025-06-19  +%94.6   (kayıt yok)
+    AYGAZ 2022-09-01  +%72.5   (kayıt yok)
+    HEKTS 2024-09-09  −%64.8   (kayıt yok)
+    HEKTS 2021-04-30  +%44.1   (kayıt var, oran 2.02 — ama fiyat YUKARI gitmiş)
+
+Dördü de `in_measure=1`, **hiçbiri `in_live` değil** → günlük karar hattı temiz.
+Ama ADR #007'nin kapıyı kapatan backtest'i bu panelle koştu.
+
+İki mekanizma arızası birden ortaya çıktı:
+
+1. **Kalite kapısı kayan pencereli.** `_quality_row` son 252 bara bakıyor;
+   2024-08-01 bugün o pencerenin dışında, tablo `unexplained_jump=0` yazıyor ve
+   isim "temiz" görünüyor. Kontrol yeşil yanarken bozulma yerinde duruyor (L-014).
+2. **Ölçüm hattında kayıt bazlı kalite kapısı HİÇ YOK.**
+   `backtest.eligible_mask`'in "veri" kapısı yalnız *momentum hesaplanabiliyor mu*
+   diye soruyor. Yani canlı katman "bu ismin verisine güvenmiyorum" derken ölçüm
+   katmanı aynı barları sessizce kullanıyordu — L-008'in "simetriğini ara"
+   kuralının tam hedefi.
+
+**Seçenekler ve ÖLÇÜLEN sonuçları** (üçü de gerçek veriyle koşuldu):
+
+| Seçenek | evren | alfa vs EW | t | IC(tüm) | hüküm |
+|---|---|---|---|---|---|
+| A) Değişiklik yok, ifşa yeter | 67 | −0.861pp | −1.85 | 0.0420 | kenar yok |
+| B) 4 ismi `in_measure=0` yap | **63** | −0.946pp | −2.06 | 0.0376 | kenar yok |
+| C) **Yalnız KİRLİ GÖZLEMİ düşür** | 67 | −0.920pp | −1.98 | 0.0412 | kenar yok |
+
+**Karar: C.**
+
+**Neden C:**
+
+- **Sorun isimde değil, bir avuç barda.** B, dört ismi tamamen eleyerek ölçüm
+  evrenini 67→63'e indiriyor — yani beş bozuk bar yüzünden ~11 yıllık dört
+  temiz seriyi çöpe atıyor. C, **tam 5 gözlem** düşürüyor (~2200 gözlem
+  yuvasından) ve başka hiçbir şeye dokunmuyor.
+- **A yetersiz, çünkü sorun bilgi eksikliği değil mekanizma asimetrisi.** Canlı
+  hat bu veriye zaten dokunmuyor; ölçüm hattının dokunması bir tasarım tercihi
+  değil, kimsenin fark etmediği bir boşluktu. İfşa etmek onu kapatmaz.
+- **−%90.7 bir getiri değildir.** ±%10 marjlı bir piyasada bu bir veri hatasıdır.
+  Veri hatasını dışarıda bırakmak bir *yöntem* tercihi değil, girdi hijyenidir —
+  eşik ayarlamakla aynı şey değil.
+
+**ÖN KAYIT NEDEN GEREKMİYOR — ve bu gerekçe sınanabilir olsun diye yazılıyor:**
+
+`on-kayit-revizyon-01.md` §5'in yasağı şudur: *sonucu görüp çıtayı indirmek.*
+Burada tam tersi oldu — **temizlemek sonucu KÖTÜLEŞTİRDİ** (−0.861 → −0.920pp,
+t −1.85 → −1.98). Sonucu iyileştirmeyen bir değişiklik, sonuç kovalama olamaz.
+Ayrıca `docs/on-kayit-seviye-02.md` §4'ün yönettiği üç parametrenin
+(`min_rr_t1`, `kumeleme_atr_carpani`, `min_dokunus`) hiçbirine dokunulmadı ve
+**hiçbir dilimde hüküm değişmedi** (tam / in-sample / OOS → hepsi `kenar yok`,
+kapı `[]`). ADR #007'nin sonucu ayakta: mevcut faktör seti bu evrende pozitif
+kenar üretmiyor.
+
+Eşik `evren.duzeltilmemis_kurumsal_pct = 35.0` ve UYDURULMADI: gerçek piyasa
+ucu ölçüldü (+%22.2 → 2023-02-15 deprem kapanışı sonrası açılış, 25 isim
+birden; −%28.3 → 2020-03-12 COVID), en küçük artefakt +%44. Eşik aradaki
+boşluğa kondu ve `risk`/`prices`/`backtest` üçü de AYNI anahtardan okuyor.
+
+**Sessiz eleme YOK:** düşürülen gözlem sayısı `n_atlanan.kirli_gozlem` alanında
+taşınır ve ölçüm raporunda basılır. Raporda görünmeyen bir eleme, bir sonraki
+okuyucu için görünmez bir varsayımdır.
+
+**Veri DÜZELTİLMEDİ, bilerek.** CCOLA'nın 2024-07-31 öncesi barlarını 10.81'e
+bölmek "doğru" fiyatı üretirdi ama o fiyat bizim ürettiğimiz bir sayı olurdu.
+Bu proje veri uydurmaz; ölçemediğini eler (bkz. `prices.quality_for`).
+
+**Tekrar gözden geçir:** (a) yfinance CCOLA'yı düzeltirse maske kendiliğinden
+boşalır, ekstra iş yok. (b) `kirli_gozlem` sayısı 20'yi aşarsa bu artık "birkaç
+bozuk bar" değil sistematik bir kaynak sorunudur ve ikinci veri kaynağı kıyası
+(STATE Backlog) öne alınır. (c) Canlı evrene böyle bir bar girerse `bist saglik`
+KRİTİK basar — o an karar yeniden açılır.
+
+---
+
+## #015 — 2026-08-07 — Günlük rapor tek SIRALI EYLEM listesiyle başlar; sıra bir GETİRİ iddiası değildir
+
+**Bağlam.** Üç dış repo incelendi (Merdiven · borsaci · borsapy, rapor:
+`reports/repo-inceleme-2026-08-07.md`). Karar öncesi her boyutta (veri kalitesi,
+takvim, kesitsel sıralama, plan geometrisi, denetim, ölçüm, test) bizim proje
+açık ara önde çıktı. **Karar ANINDA ise geride:** 34 satırlık karşılaştırmada
+9 satırda bizde "—" vardı ve hepsinin ortak imzası aynıydı — *dünyanın durumunu
+titizlikle okuyoruz, "şu anda ne yapılabilir"i hiç sormuyoruz.*
+
+Merdiven'in çekirdek fikri şuydu: kararı hisse-hisse değil **fırsat maliyeti**
+üzerinden ver — "A'yı satıp B'ye geçmek, gidiş-dönüş maliyeti çıktıktan sonra
+hâlâ daha iyi mi?" Bizim `build_menu` 19 hisse için birbirinden habersiz 19 plan
+üretiyor; hangisinin önce geldiğini, sermayenin nereye yeteceğini, elde zaten
+ne olduğunu HİÇ sormuyor.
+
+Mert'in isteği de buydu: *"hisselerin gidecekleri yönden ne yapacağımı daha net
+belirtebilmeli."*
+
+**Seçenekler:**
+
+- **A) Merdiven'in ΔEV'sini birebir al.** Her aday için beklenen getiri hesapla,
+  elde tutulanla karşılaştır, maliyeti çıkar, farkı bir tamponla eşikle.
+- **B) Sıralama YOK, bugünkü hâl kalsın.** Rapor hisse hisse listelemeye
+  devam etsin.
+- **C) SIRALI eylem listesi — ama sıra bir UYGULANABİLİRLİK ve RİSK sırası
+  olsun, bir getiri sırası DEĞİL.**
+
+**Karar: C.**
+
+**A neden reddedildi — ve bu kararın en önemli cümlesi bu.** ΔEV bir **beklenen
+getiri** karşılaştırmasıdır. Bizim beklenen getirimiz **yok** ve olmadığı
+ÖLÇÜLDÜ: ADR #007 kapıyı kapattı, PROJECT.md'nin ilk sayfasında
+`required_n ≈ 193 dönem ≈ 11,5 yıl` yazıyor. Aynı formülü "EV" diye kurmak,
+ölçülmemiş bir kenar iddiasını sisteme **arka kapıdan** sokmak olurdu — üstelik
+çıktı çok ikna edici görünürdü. Sıralanmış bir liste, sıralamanın bir şey
+BİLDİĞİNİ ima eder. Merdiven'in kendi eşiklerinin tamamı README'sinde
+"deneme-yanılma" diye yazılı; biz o formülü ödünç alırken ölçülmemişliğini de
+ödünç alırdık.
+
+**B neden reddedildi.** Bugünkü rapor doğru bilgiyi veriyor ama **sıralamıyor**:
+19 ayrı başlık, aralarında öncelik yok, sermayenin nereye gideceği yok. Kullanıcı
+her gün aynı sentezi kafasında yeniden yapmak zorunda ve sistemin ürettiği
+disiplin tam da orada kayboluyor.
+
+**C'nin sözleşmesi — dört madde, hepsi bağlayıcı:**
+
+1. **Sıralama ölçütlerinin HEPSİ deterministik ve ölçülmüş/gözlemlenmiş
+   olgulardır:** bugün işlem görebilirlik (limit durumu), bilanço penceresi,
+   veri kalitesi, yürürlükteki veto, planın tetiklenebilirliği
+   (`entry_zone_status`), riske edilen sermaye, maliyet düşülmüş R:R, rejim
+   tavanında kalan kontenjan. **Hiçbiri bir yön tahmini değildir.**
+2. **Skor YOK, tek sayı YOK.** Sıralama sözlükbilimsel (lexicographic): önce
+   uygulanabilirlik, sonra risk, sonra geometri. Bileşenleri tek bir sayıda
+   toplamak, ağırlıklarını uydurmak olurdu — borsaci'nin Buffett skorunda tam
+   olarak bu yapılmış ve toplam skor modelin kendi uydurduğu alt skorlardan
+   besleniyor.
+3. **SEÇİMİ DEĞİŞTİRMEZ.** Liste hangi planların ÜRETİLECEĞİNİ etkilemez;
+   yalnız üretilmiş olanları sıraya koyar. Sıralamanın seçime dokunduğu gün
+   `docs/on-kayit-seviye-02.md` disiplini devreye girer — o an ön kayıt şart.
+4. **Başlığı iddiayı taşır.** Liste "en iyi fırsatlar" DEĞİL, *"bugün
+   uygulanabilir işler — uygulanabilirlik ve risk sırasına göre"* diye
+   sunulur ve `edge_verdict` dili korunur.
+
+**Neden bu, isteği yine de karşılıyor:** "ne yapacağımı net söyle" cümlesinin
+içindeki yedi sorunun hiçbiri yön hakkında değil — bugün işlem görebilir mi,
+önünde bilanço var mı, maliyetten sonra hâlâ geçiyor mu, elimdekinin yerine mi
+geçiyor, kaç lira riske ediyorum, dünkü veto geçerli mi, sıra ne. Bir
+profesyoneli amatörden ayıran şey yönü daha iyi bilmesi değil; uygulanamaz işlem
+açmaması, bilanço gününe kör girmemesi, sermayesini sıraya koyması.
+
+**Tekrar gözden geçir:** `bist degerlendir` N ≥ 30 çözülmüş tahmine ulaştığında
+"sıralamanın kendisi bir şey biliyor mu" ilk kez sorulabilir hale gelir. O gün
+sıra bir getiri iddiasına dönüştürülecekse **ön kayıt şarttır** ve bu ADR o
+turun referansıdır.
+
+---
+
 ## #014 — 2026-08-01 — Depolama SQLite + git arşivi kalır; Supabase'e geçilmez
 
 **Bağlam:** Mert "veriyi bir yerde tutmak iyi olur" diye Supabase sordu. Asıl

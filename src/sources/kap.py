@@ -269,3 +269,97 @@ def fetch_incremental(cfg: dict, *, since: str | None, until: str | None = None,
     kayitlar = [tekil[k] for k in sorted(tekil)]
     atlanan = " · ".join(durum["kirpilan"]) if durum["kirpilan"] else None
     return FetchSonuc(kayitlar, durum["hata"], durum["tickersiz"], atlanan)
+
+
+# ==================================================== beklenen bildirim (ileriye dönük)
+@dataclass(frozen=True, slots=True)
+class BeklenenSonuc:
+    """Beklenen bildirim çekiminin sonucu.
+
+    `kirpik=True` ise liste TAVANA DAYANMIŞTIR ve içindeki YOKLUK hiçbir şey
+    kanıtlamaz — "bu şirketin bildirimi yok" ile "listede göremedim" aynı
+    çıktıya düşer. Bu yüzden kırpık yanıt SAKLANMAZ (bkz. `news.sync_beklenen`).
+    """
+    kayitlar: list[dict]
+    hata: str | None = None
+    kirpik: bool = False
+    ham: int = 0
+    sirket: int = 0
+
+    @property
+    def ok(self) -> bool:
+        return self.hata is None and not self.kirpik
+
+
+def _bb_tarih(s: str | None) -> str | None:
+    """'01.07.2026' → '2026-07-01'. Beklenen bildirim ucu SAAT taşımaz."""
+    if not s:
+        return None
+    p = str(s).strip().split(" ")[0].split(".")
+    if len(p) != 3:
+        return None
+    try:
+        return date(int(p[2]), int(p[1]), int(p[0])).isoformat()
+    except ValueError:
+        return None
+
+
+def fetch_beklenen(cfg: dict) -> BeklenenSonuc:
+    """KAP'ın HENÜZ AÇIKLANMAMIŞ bildirim takvimi (finansal rapor pencereleri).
+
+    Uç, bir şirket raporunu yayımladığında onu listeden DÜŞÜRÜR — yani canlı
+    bir geri sayımdır. Doğrulandı 2026-08-07: AKBNK (07-28) ve GARAN (07-30)
+    bilançolarını açıkladıktan sonra listede yoklar.
+
+    `stockCode` alanı kayıtların yalnız %6.7'sinde dolu olduğu için ticker'a
+    ORADAN bağlanmaz; bağlama `kapTitle` ↔ `disclosures.company` üzerinden
+    `news` katmanında yapılır (o eşleme KAP'ın kendi verisinden, `stockCodes`
+    ile birlikte gelmiştir — yani inşaen doğrudur).
+    """
+    k = cfg["sources"]["kap"]
+    b = k.get("beklenen_bildirim") or {}
+    if not b.get("enabled", False):
+        return BeklenenSonuc([], "beklenen_bildirim kapalı")
+    gun = int(b.get("pencere_gun", 45))
+    bugun = util.today_local(cfg["takvim"]["timezone"]) if hasattr(util, "today_local") \
+        else date.today()
+    body = {
+        "startDate": bugun.isoformat(),
+        "endDate": (bugun + timedelta(days=gun)).isoformat(),
+        "memberTypes": ["IGS"], "mkkMemberOidList": [], "disclosureClass": "",
+        "subjects": [], "mainSector": "", "sector": "", "subSector": "",
+        "market": "", "index": "", "year": "", "term": "", "ruleType": "",
+    }
+    h = dict(_headers(cfg))
+    h["Origin"] = "https://kap.org.tr"
+    h["Referer"] = "https://kap.org.tr/tr/beklenen-bildirim-sorgu"
+    try:
+        r = requests.post("https://kap.org.tr" + b.get("path", ""),
+                          json=body, headers=h, timeout=TIMEOUT)
+        r.raise_for_status()
+        ham = r.json()
+    except Exception as e:                                       # noqa: BLE001
+        log.warning("KAP beklenen bildirim çekilemedi: %s", e)
+        return BeklenenSonuc([], f"{type(e).__name__}: {e}")
+    if not isinstance(ham, list):
+        return BeklenenSonuc([], f"beklenmeyen yanıt tipi: {type(ham).__name__}")
+
+    tavan = int(b.get("tavan_kayit", 1950))
+    kayitlar = []
+    for x in ham:
+        bas, son = _bb_tarih(x.get("startDate")), _bb_tarih(x.get("endDate"))
+        baslik = (x.get("kapTitle") or "").strip()
+        konu = (x.get("subject") or "").strip()
+        if not (baslik and konu and bas and son):
+            continue
+        kayitlar.append({
+            "kap_title": baslik, "subject": konu,
+            "period": (x.get("ruleTypeTerm") or "").strip() or None,
+            "year": x.get("year"), "start_date": bas, "end_date": son,
+        })
+    sirket = len({k_["kap_title"] for k_ in kayitlar})
+    kirpik = len(ham) >= tavan
+    if kirpik:
+        log.warning("KAP beklenen bildirim TAVANA DAYANDI (%d ≥ %d) — "
+                    "liste kırpık, SAKLANMAYACAK", len(ham), tavan)
+    return BeklenenSonuc(kayitlar, None, kirpik, len(ham), sirket)

@@ -208,6 +208,45 @@ def action_dates(con: sqlite3.Connection, ticker: str) -> set[str]:
         con, "SELECT date FROM corporate_actions WHERE ticker = ?", (ticker.upper(),))}
 
 
+def limit_map(cfg: dict, con: sqlite3.Connection, asof: str,
+              tickers: list[str] | None = None) -> dict[str, dict]:
+    """{ticker: günlük fiyat marjı durumu} — `asof` barı için, TEK sorguda.
+
+    Neden ayrı bir fonksiyon: hem `planner.build_menu` (kapı) hem
+    `llm_io.build_bundle` (görünürlük) aynı cevabı ister. İki yerde iki ayrı
+    hesap, ikisinin sessizce ayrışabileceği bir kapıdır (AGENTS.md §12).
+
+    Kalite kapısından ELENEN isimler de kapsanır: analistin "bu isim neden
+    yok" sorusunu cevaplayabilmesi için limit durumu bağımsız bir olgudur.
+
+    Eksik ticker `{durum: None}` döner — "serbest" DEĞİL. Bilinmeyeni serbest
+    saymak, tam olarak L-007'nin yasakladığı şeydir.
+    """
+    from . import risk
+
+    sql = ("SELECT ticker, date, h, l, c FROM ("
+           "  SELECT ticker, date, h, l, c,"
+           "         ROW_NUMBER() OVER (PARTITION BY ticker ORDER BY date DESC) rn"
+           "    FROM bars_daily WHERE date <= ?"
+           + ("" if not tickers else
+              "     AND ticker IN (" + ",".join("?" * len(tickers)) + ")")
+           + ") WHERE rn <= 2 ORDER BY ticker, date")
+    params: list = [asof] + [t.upper() for t in (tickers or [])]
+    per: dict[str, list] = {}
+    for r in db.fetch_all(con, sql, tuple(params)):
+        per.setdefault(r["ticker"], []).append(r)
+
+    out: dict[str, dict] = {}
+    for t, rows in per.items():
+        if len(rows) < 2:
+            out[t] = risk.limit_durumu(prev_close=None, c=None, cfg=cfg)
+            continue
+        onceki, son = rows[0], rows[1]
+        out[t] = risk.limit_durumu(
+            prev_close=onceki["c"], c=son["c"], h=son["h"], l=son["l"], cfg=cfg)
+    return out
+
+
 # ---------------------------------------------------------------- kalite kapısı
 def assess_quality(cfg: dict, con: sqlite3.Connection, asof: str | None = None,
                    tickers: list[str] | None = None,
@@ -237,12 +276,54 @@ def assess_quality(cfg: dict, con: sqlite3.Connection, asof: str | None = None,
         db.upsert_many(
             con, "data_quality",
             ["ticker", "date", "bars_252", "zero_vol_ratio_252", "max_gap_days",
-             "stale_close_days", "unexplained_jump", "ok", "reasons"],
+             "stale_close_days", "unexplained_jump", "ohlc_ihlal",
+             "duzeltilmemis_kurumsal", "ok", "reasons"],
             [(r["ticker"], r["date"], r["bars_252"], r["zero_vol_ratio_252"],
               r["max_gap_days"], r["stale_close_days"], r["unexplained_jump"],
+              r["ohlc_ihlal"], r["duzeltilmemis_kurumsal"],
               1 if r["ok"] else 0, util.json_dump(r["reasons"], pretty=False))
              for r in sonuc])
     return sonuc
+
+
+def ohlc_ihlalleri(df: pd.DataFrame) -> pd.Series:
+    """Barın KENDİ İÇİNDE tutarsız olduğu satırlar — boolean maske.
+
+    Fikir Merdiven'in `sanitizeQuotes`'undan (2026-08-07 repo incelemesi).
+    Kalite kapısı bar SAYISINA, sıfır hacme, boşluğa, donuk kapanışa ve
+    açıklanamayan sıçramaya bakıyordu; barın `h ≥ l` ve `l ≤ o,c ≤ h` olup
+    olmadığına HİÇ bakmıyordu. `l > c` olan tek bir bar `levels.build_levels`
+    içindeki swing tespitini ve ATR'yi sessizce bozar — hata fırlatmaz.
+
+    ÖLÇÜLDÜ (2026-08-07): `bars_daily`'nin 197.191 barında **0 ihlal**. Yani bu
+    bir temizlik değil, bir TELDİR: ateşlerse kaynak regresyona gitmiştir.
+
+    ⚠ TOLERANS YOK ve olmamalı. Hisse barlarında `h ≥ l` bir muhasebe kimliği,
+    bir yaklaşıklık değil.
+
+    ⚠ Bu fonksiyon `index_daily` için KULLANILMAZ ve kullanılmamalı. Ölçüldü:
+    orada 54 ihlal var, **tamamı USDTRY'de** (3.013 barın %1.8'i) — BIST
+    endekslerinin (XU100/XU030/XBANK/XUSIN) hepsi temiz. Sebep yapısal: 24 saat
+    işlem gören bir kurda "günlük kapanış" Yahoo'da intraday high/low'dan farklı
+    bir andan gelir. Sapmanın medyanı %0.007 (gürültü) ama KUYRUĞU gerçek:
+    maksimum **%1.80** (2021-03-22 — TCMB başkanının görevden alınmasının
+    ardından TL'nin boşluklu açtığı gün) ve %1.53 (2024-01-01, tatil).
+    Bizim için sonuç doğurmuyor: `regime.classify` USDTRY'den yalnız `c`
+    kolonunu okuyor ve ürettiği `usdtry_vol_ann_21` kaydedilen bir girdi,
+    rejim eşiği değil. Ama BİLİNMEZSE bir gün "veri bozuldu" diye teşhis edilir
+    (L-003) — `tests/test_prices.py::TestGercekVerideOhlc` bunu sabitler.
+    """
+    if df.empty:
+        return pd.Series(dtype=bool)
+    o, h, l, c = (df[k].astype(float) for k in ("o", "h", "l", "c"))
+    sonlu = o.notna() & h.notna() & l.notna() & c.notna()
+    return (
+        (~sonlu)
+        | (h < l)
+        | (c > h) | (c < l)
+        | (o > h) | (o < l)
+        | (c <= 0) | (h <= 0) | (l <= 0) | (o <= 0)
+    )
 
 
 def _quality_row(ticker: str, df: pd.DataFrame, act_dates: set[str], ev: dict) -> dict:
@@ -250,7 +331,9 @@ def _quality_row(ticker: str, df: pd.DataFrame, act_dates: set[str], ev: dict) -
     if df.empty:
         return {"ticker": ticker, "bars_252": 0, "zero_vol_ratio_252": None,
                 "max_gap_days": None, "stale_close_days": None,
-                "unexplained_jump": None, "ok": False, "reasons": ["veri yok"]}
+                "unexplained_jump": None, "ohlc_ihlal": None,
+                "duzeltilmemis_kurumsal": None,
+                "ok": False, "reasons": ["veri yok"]}
 
     c = df["c"].astype(float)
     v = df["v"].astype(float).fillna(0.0)
@@ -264,6 +347,14 @@ def _quality_row(ticker: str, df: pd.DataFrame, act_dates: set[str], ev: dict) -
     esik = ev["aciklanamayan_sicrama_pct"] / 100.0
     buyuk = df.loc[ret.abs() > esik, "date"].tolist()
     unexplained = sum(1 for dt in buyuk if dt not in act_dates)
+    ihlal = int(ohlc_ihlalleri(df).sum())
+    # Düzeltilmemiş kurumsal işlem — `unexplained_jump`tan FARKLI bir soru.
+    # O "bu sıçramanın kaydı var mı?" diye sorar ve kayıt varsa affeder.
+    # Bu ise "bu sıçrama HİÇ olmamalıydı" der: düzgün düzeltilmiş bir seride
+    # −%50'lik bar bulunmaz, kaydı olsa bile. CCOLA vakası tam bunu gösterdi —
+    # kayıt VARDI (2024-08-13) ama seri düzeltilmemişti ve düşüş 2024-08-01'de.
+    duzeltilmemis = int(
+        (ret.abs() > ev["duzeltilmemis_kurumsal_pct"] / 100.0).sum())
 
     if len(df) < 60:
         reasons.append(f"yetersiz bar ({len(df)})")
@@ -277,10 +368,22 @@ def _quality_row(ticker: str, df: pd.DataFrame, act_dates: set[str], ev: dict) -
     if unexplained:
         reasons.append(f"{unexplained} açıklanamayan sıçrama "
                        f"(|getiri|>%{ev['aciklanamayan_sicrama_pct']:.0f}, kurumsal işlem yok)")
+    # Tolerans YOK: `h ≥ l` bir muhasebe kimliğidir, yaklaşıklık değil.
+    # Tek ihlal bile kapıyı kapatır — bar bozuksa ondan türeyen ATR, swing ve
+    # seviyeler de bozuktur ve hiçbiri hata fırlatmaz.
+    if ihlal:
+        reasons.append(f"{ihlal} bar KENDİ İÇİNDE tutarsız "
+                       "(h<l ya da o/c bandın dışında ya da fiyat ≤0)")
+    if duzeltilmemis:
+        reasons.append(
+            f"{duzeltilmemis} bar DÜZELTİLMEMİŞ kurumsal işlem gibi görünüyor "
+            f"(|getiri|>%{ev['duzeltilmemis_kurumsal_pct']:.0f}; ±%10 marjlı "
+            "bir piyasada bu bir fiyat hareketi olamaz)")
 
     return {"ticker": ticker, "bars_252": int(len(df)),
             "zero_vol_ratio_252": zero_ratio, "max_gap_days": max_gap,
             "stale_close_days": stale, "unexplained_jump": int(unexplained),
+            "ohlc_ihlal": ihlal, "duzeltilmemis_kurumsal": duzeltilmemis,
             "ok": not reasons, "reasons": reasons}
 
 

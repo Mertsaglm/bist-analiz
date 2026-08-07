@@ -205,12 +205,89 @@ def _m006(con: sqlite3.Connection) -> None:
         "WHERE disclosure_id = ? AND ticker = ?", guncel)
 
 
+def _m007(con: sqlite3.Connection) -> None:
+    """data_quality.ohlc_ihlal — barın KENDİ İÇİNDE tutarlı olduğunun sayacı.
+
+    Gerekçe (2026-08-07, Merdiven `sanitizeQuotes` fikrinden): kalite kapısı bar
+    SAYISINA, sıfır hacme, boşluğa, donuk kapanışa ve açıklanamayan sıçramaya
+    bakıyordu — ama barın `h ≥ l`, `l ≤ c ≤ h` gibi kendi iç tutarlılığına HİÇ
+    bakmıyordu. `l > c` olan tek bir bar `levels.py`'deki swing tespitini ve
+    ATR'yi sessizce bozar; hiçbir kontrol patlamaz.
+
+    ÖLÇÜLDÜ: `bars_daily`'nin 197.191 barında **0 ihlal** — yani bu bir temizlik
+    değil, bir TELDİR. (`index_daily`'de 54 ihlal var ama tamamı USDTRY'de ve
+    Yahoo'nun bilinen FX kusuru; bkz. tests/test_prices.py.)
+
+    Türev sayaç: geri doldurma gerekmez, `bist veri kalite` satırları yeniden
+    yazar. Eski satırlarda NULL kalır ve NULL "ihlal yok" DEĞİL "ölçülmedi"dir.
+    """
+    _add_column(con, "data_quality", "ohlc_ihlal", "INTEGER")
+
+
+def _m008(con: sqlite3.Connection) -> None:
+    """data_quality.duzeltilmemis_kurumsal — düzeltilmemiş bedelsiz/bölünme sayacı.
+
+    ⚠ AYRI BİR ADIM, v7'nin İÇİNE YAZILMADI: v7 zaten uygulanmış bir
+    veritabanı vardı ve migration yayınlandıktan sonra değiştirilmez
+    (bu dosyanın başındaki kural). Üstüne yazsaydım o veritabanı kolonu
+    ASLA almazdı.
+
+    Gerekçe — 2026-08-07'de #10 ölçümünden çıkan gerçek bulgu: CCOLA'nın
+    2024-08-01 barı **−%90.7**. `corporate_actions`'ta kayıt VAR ama tarihi
+    2024-08-13 ve seri geriye düzeltilmemiş. Yani yfinance bölünmeyi yanlış
+    güne yazmış ve öncesini düzeltmemiş. `unexplained_jump` bunu YAKALAYAMAZ:
+    o "kaydı var mı" diye sorar ve tarih tutmadığı için yanlış günü suçlar.
+
+    Ayrıca aynı taramada 3 vaka daha çıktı (TSPOR +%94.6, AYGAZ +%72.5,
+    HEKTS −%64.8) — hiçbirinin kaydı yok. Dördü de `in_measure=1`, yani
+    faktör ağırlıklarını kalibre eden panelde. Hiçbiri `in_live` DEĞİL.
+    """
+    _add_column(con, "data_quality", "duzeltilmemis_kurumsal", "INTEGER")
+
+
+_BEKLENEN_SQL = """
+CREATE TABLE IF NOT EXISTS expected_disclosures (
+    ticker      TEXT NOT NULL,
+    kap_title   TEXT NOT NULL,
+    subject     TEXT NOT NULL,   -- 'Finansal Rapor', 'Faaliyet Raporu' ...
+    period      TEXT,            -- '6 Aylık', 'Yıllık'
+    year        INTEGER,
+    start_date  TEXT NOT NULL,   -- beklenti penceresinin BAŞI
+    end_date    TEXT NOT NULL,   -- SONU (bu tarihe kadar açıklanması bekleniyor)
+    fetched_utc TEXT NOT NULL,
+    PRIMARY KEY (ticker, subject, start_date, end_date)
+);
+CREATE INDEX IF NOT EXISTS ix_beklenen_ticker ON expected_disclosures(ticker, end_date);
+"""
+
+
+def _m009(con: sqlite3.Connection) -> None:
+    """`expected_disclosures` — KAP'ın ileriye dönük bildirim takvimi.
+
+    Gerçek boşluk (2026-08-07 repo incelemesi, borsapy P2): 20 işlem günlük
+    ufkun EN BÜYÜK tek olay riski bilançodur ve sistemde HİÇ yoktu. Ex-temettü
+    tarihini plan penceresinden eliyorduk (`planner._ex_date_in_window`) ama
+    çok daha büyük fiyat hareketi üreten bilanço tarihini görmüyorduk.
+
+    Uç canlı doğrulandı: HTTP 200, 45 günde 1863 kayıt / 576 şirket. Şirket
+    raporunu yayımlayınca listeden DÜŞÜYOR — yani canlı bir geri sayım
+    (AKBNK 07-28, GARAN 07-30 açıkladıktan sonra listede yoklar).
+
+    ⚠ Tablo yalnız TAM anlık görüntü tutar; kırpık yanıt yazılmaz. Kırpık
+    listede "kayıt yok" demek "bildirimi yok" değil "göremedim"dir.
+    """
+    con.executescript(_BEKLENEN_SQL)
+
+
 MIGRATIONS: list[Migration] = [
     (2, "indicator_daily: sma50_tr / sma200_tr (trend kapısı toplam getiri uzayında)", _m002),
     (3, "predictions.score/rank/pct nullable — 'skorlanmadı' gerçek bir durumdur", _m003),
     (4, "v3'ün bozduğu outcomes FK'sını onar (legacy_alter_table tuzağı)", _m004),
     (5, "disclosures: (disclosure_id, ticker) bileşik anahtar + önem/özet", _m005),
     (6, "disclosures.published_utc: İstanbul yerel → gerçek UTC (+00:00)", _m006),
+    (7, "data_quality.ohlc_ihlal — barın kendi içinde tutarlılığı", _m007),
+    (8, "data_quality.duzeltilmemis_kurumsal — düzeltilmemiş bedelsiz sayacı", _m008),
+    (9, "expected_disclosures — KAP ileriye dönük bildirim takvimi", _m009),
 ]
 
 BASELINE_VERSION = 1

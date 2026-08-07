@@ -576,6 +576,18 @@ class TestConfigButunlugu:
         "rapor.once_azalt_bolumu",        # rapor sırası testte sabitlenir
     }
 
+    # `llm.veto_suresi_gun` alt anahtarları DİNAMİK okunur
+    # (`journal.aktif_vetolar`: `sure.get(r["veto_code"], varsayilan)`), yani
+    # literal metin araması onları göremez. Gevşetmek yerine DAHA SIKI bir
+    # sözleşmeye bağlandılar: aşağıdaki test, anahtar kümesinin `veto_code`
+    # enum'uyla BİREBİR aynı olmasını zorlar (AGENTS.md §12, yapı eşliği).
+    # Böylece "okunmayan anahtar" testi gevşemiş olmuyor; başka bir testin
+    # kapsamına giriyor.
+    DINAMIK_OKUNAN = {f"llm.veto_suresi_gun.{k}" for k in
+                      ("haber_riski", "kurumsal_islem", "likidite_zayif",
+                       "sektor_yogunlugu", "tez_zayif", "veri_supheli",
+                       "rejim_uyumsuz")}
+
     def test_yeni_OKUNMAYAN_config_anahtari_eklenmedi(self, real_cfg):
         kaynak = " ".join(p.read_text(encoding="utf-8") for p in SRC.rglob("*.py"))
 
@@ -596,10 +608,26 @@ class TestConfigButunlugu:
                     okunmayan.append(tam)
 
         gez(real_cfg)
-        yeni = sorted(set(okunmayan) - self.DEKLARATIF)
+        yeni = sorted(set(okunmayan) - self.DEKLARATIF - self.DINAMIK_OKUNAN)
         assert not yeni, (
             f"Kodda okunmayan YENİ config anahtarı: {yeni}. Ya bağla, ya "
             f"kaldır, ya da gerekçesiyle `DEKLARATIF` listesine ekle.")
+
+    def test_veto_suresi_anahtarlari_ENUM_ile_BIREBIR(self, real_cfg):
+        """⚠ YAPI EŞLİĞİ (AGENTS.md §12). Eksik anahtar SESSİZCE varsayılana düşer.
+
+        Yeni bir `veto_code` eklenip süresi yazılmazsa, o veto varsayılan süreyi
+        alır ve kimse fark etmez — yani bir karar, config düzenlemesi olarak
+        değil, config'i DÜZENLEMEYEREK alınmış olur. Bu test onu görünür kılar.
+        """
+        kodlar = set(real_cfg["llm"]["enums"]["veto_code"])
+        sureler = set(real_cfg["llm"]["veto_suresi_gun"]) - {"varsayilan"}
+        assert sureler == kodlar, (
+            f"veto_code enum'u ile veto_suresi_gun ayrıştı — "
+            f"süresi olmayan: {sorted(kodlar - sureler)}, "
+            f"karşılığı olmayan: {sorted(sureler - kodlar)}")
+        assert all(int(v) > 0 for k, v in real_cfg["llm"]["veto_suresi_gun"].items()), \
+            "veto süresi 0 ya da negatif olamaz — veto anında düşer"
 
     def test_fiyat_adimlari_artan_ve_acik_uclu(self, real_cfg):
         bantlar = real_cfg["risk"]["fiyat_adimlari"]

@@ -75,10 +75,29 @@ CREATE TABLE IF NOT EXISTS data_quality (
     max_gap_days       INTEGER,
     stale_close_days   INTEGER,
     unexplained_jump   INTEGER,         -- |getiri|>eşik ve kayıtlı kurumsal işlem yok
+    ohlc_ihlal         INTEGER,         -- barın KENDİ İÇİNDE tutarsız olduğu gün sayısı
+    duzeltilmemis_kurumsal INTEGER,     -- |getiri| ±%10 marjla açıklanamayacak kadar büyük
     ok                 INTEGER NOT NULL,
     reasons            TEXT,            -- JSON liste
     PRIMARY KEY (ticker, date)
 );
+
+-- İleriye dönük bildirim takvimi (KAP "beklenen bildirim"). 20 günlük plan
+-- ufkunun en büyük tek olay riski BİLANÇODUR ve uzun süre görünmezdi.
+-- ⚠ Yalnız TAM anlık görüntü tutulur: kırpık yanıt yazılmaz, çünkü kırpık
+-- listede "kayıt yok" demek "bildirimi yok" değil "göremedim"dir (L-007).
+CREATE TABLE IF NOT EXISTS expected_disclosures (
+    ticker      TEXT NOT NULL,
+    kap_title   TEXT NOT NULL,
+    subject     TEXT NOT NULL,
+    period      TEXT,
+    year        INTEGER,
+    start_date  TEXT NOT NULL,
+    end_date    TEXT NOT NULL,
+    fetched_utc TEXT NOT NULL,
+    PRIMARY KEY (ticker, subject, start_date, end_date)
+);
+CREATE INDEX IF NOT EXISTS ix_beklenen_ticker ON expected_disclosures(ticker, end_date);
 
 -- ======================== Analitik (dondurulmuş) ========================
 -- ⚠ `indicator_daily` KESİTSEL İSTATİSTİKLERİN PAYDASIDIR. `factors._panel` ve

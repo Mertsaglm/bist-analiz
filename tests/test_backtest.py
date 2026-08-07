@@ -98,7 +98,10 @@ class TestSessizKirpmaYok:
         p = _panel(n_gun=600, n_ticker=8)
         r = backtest.walk_forward(cfg_test, p, horizon=20, cost_pct=0.0)
         assert "n_atlanan" in r
-        assert set(r["n_atlanan"]) == {"veri_yok", "uygun_yok"}
+        # ⚠ Bu küme BİR SÖZLEŞMEDİR. 2026-08-07'de bilerek büyüdü (ADR #016):
+        # düzeltilmemiş kurumsal işlem barı yüzünden düşürülen gözlemler de
+        # sayılır. Sessiz eleme yok — her eleme türünün adı ve sayısı burada.
+        assert set(r["n_atlanan"]) == {"veri_yok", "uygun_yok", "kirli_gozlem"}
 
     def test_havuz_kucukse_donem_atilmaz_portfoy_kuculur(self, cfg_test):
         """Eski hata: `uygun < top_n` olan dönemler düşürülüyordu ve bu,
@@ -229,3 +232,114 @@ class TestAgirlikParmakIzi:
     def test_ufuk_argumani_imzaya_giriyor(self, cfg):
         from src import factors
         assert factors.weights_hash(cfg, 20) != factors.weights_hash(cfg, 42)
+
+
+class TestBozukBarMaskesi:
+    """⚠ REGRESYON KİLİDİ — ADR #016.
+
+    NE OLMUŞTU: `eligible_mask`'in "veri" kapısı yalnız *momentum
+    hesaplanabiliyor mu* diye soruyordu; kayıt bazlı kalite kapısı
+    (`prices.assess_quality`) YALNIZ canlı hatta koşuyordu. Yani canlı katman
+    "bu ismin verisine güvenmiyorum" derken ölçüm katmanı aynı barları sessizce
+    kullanıyordu — L-008'in "simetriğini ara" kuralının tam hedefi.
+
+    ÖLÇÜLDÜ (gerçek panel): 5 sahte getiri barı — CCOLA 2024-08-01 **−%90.7**
+    (11:1 bölünme, seri geriye düzeltilmemiş) · TSPOR +%94.6 · AYGAZ +%72.5 ·
+    HEKTS −%64.8 / +%44.1.
+
+    Karar: ismin TAMAMI değil, yalnız ZEHİRLENEN GÖZLEM düşer (ADR #016).
+    Ölçülen etki: alfa −0.861 → −0.920pp, hüküm HER DİLİMDE aynı (`kenar yok`).
+    """
+
+    KIRLI_T = 700          # kirlilik hangi barda başlıyor
+    KIRLI_J = 1            # hangi isimde
+
+    @staticmethod
+    def _panel(n=900, kirlilik=None):
+        """DETERMİNİSTİK panel; `kirlilik=(t, j, oran)` verilirse o bardan
+        İTİBAREN j'inci ismin seviyesi orana bölünür (düzeltilmemiş bölünme).
+
+        ⚠ Seriler FARKLI eğimli olmak zorunda: özdeş serilerde kesitsel z-skor
+        tanımsızdır (std=0 → NaN) ve havuz boş kalır. İlk kurgum bu yüzden
+        yanlış alarm veriyordu — testin kendisi bozuktu, kod değil.
+        """
+        import numpy as np
+        from src.backtest import Panel
+        t_, k = n, 4
+        adim = np.arange(t_).reshape(-1, 1)
+        egim = np.array([0.05, 0.08, 0.11, 0.14]).reshape(1, -1)
+        dalga = 3.0 * np.sin(adim / 15.0 + np.arange(k).reshape(1, -1))
+        c = 100.0 + adim * egim + dalga
+        if kirlilik:
+            ti, j, oran = kirlilik
+            c[ti:, j] /= oran
+        return Panel(
+            dates=[f"2020-{1 + i // 300:02d}-{1 + i % 28:02d}" for i in range(t_)],
+            tickers=["AAA", "BBB", "CCC", "DDD"],
+            c=c.copy(), c_tr=c.copy(),
+            h=c * 1.01, turnover=np.full((t_, k), 1e9),
+            xu100=100.0 + np.arange(t_) * 0.07)
+
+    def test_temiz_panelde_maske_BOS(self, cfg_test):
+        from src import backtest
+        assert not backtest.bozuk_bar_mask(self._panel(), cfg_test).any()
+
+    def test_duzeltilmemis_bolunme_YAKALANIR(self, cfg_test):
+        from src import backtest
+        m = backtest.bozuk_bar_mask(
+            self._panel(kirlilik=(self.KIRLI_T, self.KIRLI_J, 11.0)), cfg_test)
+        assert m[self.KIRLI_T, self.KIRLI_J], "−%90'lık bar yakalanmadı"
+        assert m.sum() == 1, "yalnız kırılma barı işaretlenmeliydi"
+
+    def test_GERCEK_piyasa_ucu_yakalanMAZ(self, cfg_test):
+        """+%22.2 (2023-02-15 deprem sonrası açılış) bir veri hatası DEĞİLDİR.
+
+        Eşik oraya inerse ölçüm, kriz günlerini örneklemden atarak yalnız sakin
+        dönemlerde yapılmış olur — sistematik iyimserlik.
+        """
+        from src import backtest
+        m = backtest.bozuk_bar_mask(self._panel(kirlilik=(self.KIRLI_T, self.KIRLI_J, 1 / 1.222)), cfg_test)
+        assert not m.any()
+
+    def test_esik_config_ten_okunur_TEK_KAYNAK(self, cfg_test):
+        """`risk`, `prices` ve `backtest` aynı anahtarı okumalı (L-011)."""
+        import copy
+        from src import backtest
+        gevsek = copy.deepcopy(cfg_test)
+        gevsek["evren"]["duzeltilmemis_kurumsal_pct"] = 95.0
+        p = self._panel(kirlilik=(self.KIRLI_T, self.KIRLI_J, 11.0))
+        assert backtest.bozuk_bar_mask(p, cfg_test).any()
+        assert not backtest.bozuk_bar_mask(p, gevsek).any()
+
+    def test_walk_forward_ZEHIRLENEN_gozlemi_DUSURUR(self, cfg_test):
+        from src import backtest
+        r = backtest.walk_forward(cfg_test, self._panel(kirlilik=(self.KIRLI_T, self.KIRLI_J, 11.0)),
+                                  horizon=20, use_gates=False)
+        assert r["n_atlanan"]["kirli_gozlem"] >= 1, \
+            "kirli gözlem düşürülmedi — ölçüm hattı hâlâ sahte getiriyi okuyor"
+
+    def test_temiz_panelde_HIC_gozlem_dusmez(self, cfg_test):
+        """Kontrol grubu: maske her şeyi eliyorsa maske değil, arızadır."""
+        from src import backtest
+        r = backtest.walk_forward(cfg_test, self._panel(), horizon=20, use_gates=False)
+        assert r["n_atlanan"]["kirli_gozlem"] == 0
+
+    def test_ISIM_TAMAMEN_dusmez(self, cfg_test):
+        """ADR #016'nın çekirdeği: sorun isimde değil, bir avuç barda.
+
+        İsmi elemek ölçüm evrenini değiştirmek olurdu (ölçüldü: 67→63,
+        alfa −0.861 → −0.946pp); oysa kirli gözlem sayısı yalnız 5.
+        """
+        from src import backtest
+        p = self._panel(kirlilik=(self.KIRLI_T, self.KIRLI_J, 11.0))
+        r = backtest.walk_forward(cfg_test, p, horizon=20, use_gates=False)
+        # Kirlenmeden ÖNCEKİ dönemlerde o isim hâlâ havuzda olmalı.
+        onceki = [d for d in r["donemler"] if d["n_havuz"] > 0]
+        assert onceki, "isim tamamen düştü — cerrahi eleme yapılmamış"
+
+    def test_SESSIZ_eleme_YOK_sayac_raporlanir(self, cfg_test):
+        """Raporda görünmeyen eleme, bir sonraki okuyucu için görünmez varsayımdır."""
+        from src import backtest
+        r = backtest.walk_forward(cfg_test, self._panel(kirlilik=(self.KIRLI_T, self.KIRLI_J, 11.0)),
+                                  horizon=20, use_gates=False)
+        assert "kirli_gozlem" in r["n_atlanan"]

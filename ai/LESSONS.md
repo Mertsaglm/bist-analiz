@@ -6,6 +6,104 @@
 
 ---
 
+## L-014 — 2026-08-07 — Kalite kapısının PENCERESİ, kapının kendisi kadar önemlidir
+
+**Olay:** Dış repo incelemesinden çıkan "bedelsiz kapsaması ölçülsün" maddesi
+koşuldu. Beklenen sonuç "yfinance bedelsizleri kaçırıyor mu?" idi ve cevabı
+HAYIR çıktı — 8 bedelsiz doğru oranlarla kayıtlı. Ama tarama yolda başka bir
+şey buldu: **CCOLA'nın 2024-08-01 barı −%90.7.**
+
+`corporate_actions`'ta kayıt VARDI (2024-08-13, oran 11.0) ama iki şey bozuktu:
+tarih 12 gün kaymıştı ve seri geriye düzeltilmemişti (2024-07-31 kapanışı hâlâ
+846 TL, ertesi gün 78.27). Aynı taramada üç vaka daha çıktı: TSPOR +%94.6,
+AYGAZ +%72.5, HEKTS −%64.8 — hiçbirinin kaydı yok. Dördü de `in_measure=1`,
+yani faktör ağırlıklarını kalibre eden panelde.
+
+**Asıl mesele bunların var olması değil, GÖRÜNMEZ olmasıydı.** Kalite kapısı
+(`_quality_row`) yalnız **son 252 bara** bakıyor. 2024-08-01 bugün o pencerenin
+dışında; tablo `unexplained_jump=0` yazıyor ve isim "temiz" görünüyor. Yani
+kapı bir zamanlar ateşlemiş olabilir, ama bugün soruyu sorduğunda cevap
+"sorun yok". Bozuk bar hâlâ orada ve `backtest` hâlâ onu okuyor.
+
+**Ders:** Kayan pencereli bir kontrol, pencerenin GERİSİNDE kalan bozulmayı
+onaylamış olur. Bu L-007'nin ("veri sessizce dar") zaman eksenindeki hâli:
+veri dar değil, **kontrolün görüş alanı** dar. Ve fark edilmesi daha zor,
+çünkü kontrol yeşil yanar.
+
+Ayrıca: `unexplained_jump` "bu sıçramanın kaydı var mı?" diye sorup kayıt
+varsa affediyordu. CCOLA'nın kaydı vardı. Doğru soru daha güçlüydü ve kayıttan
+bağımsızdı: **±%10 marjlı bir piyasada −%50'lik bar hiçbir gerekçeyle meşru
+değildir.**
+
+**Kural:** Pencerelenmiş her kontrolün yanına, aynı olguyu **TÜM GEÇMİŞTE**
+tarayan kalıcı bir kontrol koy (`saglik.duzeltilmemis_kurumsal_tara`). Ve bir
+kontrol yazarken sor: *"bunu bir kaydın varlığı affedebilir mi? Affetmemeli
+olduğu bir durum var mı?"* Kaydın varlığı bir açıklamadır, bir aklama değil.
+
+---
+
+## L-013 — 2026-08-07 — Kısmi örnekten genelleme: "en son 8 kayda baktım" bir ölçüm değildir
+
+**Olay:** `index_daily`'de 54 OHLC tutarsızlığı bulundu, hepsi USDTRY'de. En
+son 8 ihlale bakıldı, sapmalar %0.0009–%0.06 arasındaydı ve koda şu yazıldı:
+*"sapma ≤ %0.06, Yahoo'nun bilinen FX kusuru, zararsız."* Sonra o iddiayı
+sabitlemek için yazılan test **hemen düştü**: gerçek maksimum **%1.796**.
+
+Tam dağılım bakılınca ortaya bambaşka bir şey çıktı: medyan %0.0068 (gerçekten
+gürültü) ama kuyruk gerçek ve AÇIKLANABİLİR — 2021-03-22 (TCMB başkanının
+görevden alınmasının ardından TL boşluklu açtı) ve 2024-01-01 / 2023-12-25
+(tatil, donuk kotasyon). Yani "gürültü" değil, **medyanı gürültü, kuyruğu olay**
+olan bir dağılım. İki farklı olgu, tek kelimeye sıkıştırılmıştı (L-003).
+
+**Ders:** `ORDER BY date DESC LIMIT 8` bir örnektir, bir dağılım değil. En yeni
+kayıtlar sistematik olarak en sıradan olanlardır — çünkü olağanüstü olaylar
+geçmişte birikir. Bu yüzden "son N kayda baktım, hepsi küçük" cümlesi, tam da
+aradığın şeyi (uç değerleri) dışarıda bırakan bir örnekleme yöntemidir.
+
+**Kural:** Bir veri kusuru hakkında büyüklük iddiası yazacaksan **min, medyan,
+maksimum ve eşik üstü sayımı** birlikte çıkar. Ve o iddiayı teste çevirirken
+MAKSİMUMA eşik koyma — maksimum çoğu zaman geçmişte donmuş tek bir olaydır ve
+ona eşik koymak geçmişi test etmektir. Dağılımın ŞEKLİNİ test et (medyan,
+oran), tepe noktasını değil.
+
+---
+
+## L-012 — 2026-08-07 — Kendi yorumunu greplemek: naif metin araması yalancı tanıktır
+
+**Olay:** `min_rr_t1` kapısının brüt R:R'a uygulandığını sabitlemek için bir
+sözleşme testi yazıldı:
+
+    kaynak = inspect.getsource(planner.build_options)
+    i = kaynak.index('min_rr_t1')
+    pencere = kaynak[i-300 : i+200]
+    assert 'hedefler[0]["rr"]' in pencere
+
+Test düştü. Sebep koddaki bir hata değildi: `min_rr_t1` ifadesinin İLK geçtiği
+yer, aynı commit'te yazılmış bir **yorum satırıydı** ("nete geçmek `min_rr_t1`'i
+fiilen 1.5 → ~1.60 yükseltir"). Yani test, kodu değil kendi açıklamamı okudu.
+
+Aynı gün ikinci kez tekrarladı: `expected_disclosures` hata mesajı, var
+olmayan bir `haber` alt komutuna yönlendiriyordu (çekim aslında mevcut bir alt
+komutun içine katlanmıştı) ve doküman tutarlılık testi onu yakaladı. İkisinin
+ortak yanı: **metin, koddan daha hızlı çoğalır.**
+
+Üçüncü kez de bu dersi YAZARKEN oldu: yukarıdaki paragraf ilk hâlinde o
+olmayan komutu birebir alıntılıyordu ve aynı test yine düştü — çünkü bir test
+alıntılanan hatayı gerçek atıftan ayırt edemez. Ders metni bile kurala tabidir.
+
+**Ders:** AGENTS.md §11'in kapatma tuzağı #2'si ("kontrol listesini kodla
+doğrula, gözle değil; ama naif metin araması kendi yorumlarını yakalar") bu
+projede teorik bir uyarı değil — iki kez, aynı oturumda gerçekleşti. Bir
+kuralı kaynak metnine bakarak zorlamak meşrudur, ama metin **yorumlardan
+arındırılmadan** değil.
+
+**Kural:** Kaynak metnine bakan her testte önce yorum satırlarını SOY
+(`if not l.strip().startswith("#")`), sonra ara. Ve mümkünse metin yerine
+DAVRANIŞ test et: "brütü geçip neti geçemeyen bir plan üretiliyor mu?" sorusu
+grep'ten hem daha sağlam hem daha anlamlıdır.
+
+---
+
 ## L-011 — 2026-08-01 — Denetimde yaşayan ama istemde yazmayan kural, modelden imkânsızı istemektir
 
 **Olay:** İlk otonom turda zincirdeki **altı modelin altısı da** denetimden

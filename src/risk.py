@@ -86,6 +86,85 @@ def reachable_in_one_day(prev_close: float, hedef: float, cfg: dict) -> bool:
     return alt <= hedef <= ust
 
 
+# ---------------------------------------------------------------- limit durumu
+LIMIT_DURUMLARI = ("serbest", "limite_yakin", "kilitli", "limit_disi")
+
+#: `limit_disi` barların ölçülen oranı — `daily_limit_note`'un standing uyarısı.
+#: Canlı evren, 50.999 bar (2026-08-07 ölçümü). Son 2 yılda 0.
+LIMIT_DISI_ORAN_PCT = 0.14
+
+
+def limit_durumu(*, prev_close: float | None, c: float | None,
+                 h: float | None = None, l: float | None = None,
+                 cfg: dict) -> dict:
+    """Bir barın günlük fiyat marjına göre durumu — DÖRT hâl, üçü değil.
+
+    Neden gerekli (Merdiven'den alınan fikir, 2026-08-07 repo incelemesi):
+    tavana kilitli bir hissede alıcı doludur, satıcı yoktur. O barın kapanışı
+    **bastırılmış** bir fiyattır ve gerçek denge fiyatı bilinmez. Bu kapanışın
+    üzerine kurulan giriş bandı, stop ve ATR uygulanabilir değildir — yani
+    "doğru hesaplanmış ama gerçek dünyada karşılığı olmayan" bir çıktı üretir.
+    Bu, L-007'nin imzasıdır ve `plan_yok` ile kapatılır (bkz. planner.build_menu).
+
+    DÖRDÜNCÜ hâl (`limit_disi`) neden var: ölçüm, ±%10 modelinin barların
+    %0.14'ünde GEÇERSİZ olduğunu gösterdi (canlı evren, 50.999 bar). Hepsi
+    piyasa geneli olağanüstü gün (15 Temmuz, COVID, deprem sonrası açılış, kur
+    krizi). Bunu "kilitli" diye raporlamak iki farklı olguyu aynı kelimeye
+    sıkıştırmak olurdu (L-003). Ayrıca o günlerde `daily_limit_note`'un
+    "stop tek günde tetiklenemez" iddiası **kanıtlanmış biçimde yanlıştır**.
+
+    Döner: {durum, getiri_pct, yon, intraday_dokunma, band, aciklama}
+    `prev_close` yoksa `durum='serbest'` DEĞİL, `None` döner — "bilmiyorum" ile
+    "sorun yok" aynı değere düşmez (L-007).
+    """
+    if not prev_close or prev_close <= 0 or c is None or c <= 0:
+        return {"durum": None, "getiri_pct": None, "yon": None,
+                "intraday_dokunma": None, "band": None,
+                "aciklama": "önceki kapanış yok — limit durumu değerlendirilmedi"}
+
+    L = float(cfg["risk"]["gunluk_fiyat_limiti_pct"]) / 100.0
+    b = cfg["risk"]["limit_bandi"]
+    kilit_alt = L * float(b["kilit_alt_orani"])
+    disi_ust = L * float(b["disi_ust_orani"])
+    yakin = L * float(b["yakin_orani"])
+
+    g = c / prev_close - 1.0
+    alt, ust = daily_limit_band(prev_close, cfg)
+    yon = "tavan" if g > 0 else "taban"
+
+    # intraday dokunma: kapanış limitte olmasa bile gün içinde banda değdi mi?
+    dokunma = False
+    if h is not None and h > 0:
+        dokunma = dokunma or (kilit_alt <= (h / prev_close - 1.0) <= disi_ust)
+    if l is not None and l > 0:
+        dokunma = dokunma or (kilit_alt <= -(l / prev_close - 1.0) <= disi_ust)
+
+    if abs(g) > disi_ust:
+        durum = "limit_disi"
+        aciklama = (f"getiri %{g*100:+.2f} — ±%{L*100:.0f} marjının ÖTESİNDE. "
+                    "Bu bar için günlük limit modeli geçerli değil (olağanüstü "
+                    "piyasa günü); 'tek günde tetiklenemez' iddiaları bugün "
+                    "GÜVENİLMEZ.")
+    elif abs(g) >= kilit_alt:
+        durum = "kilitli"
+        aciklama = (f"{yon.upper()}DA kapandı (getiri %{g*100:+.2f}). Kapanış "
+                    "bastırılmış bir fiyattır; karşı taraf boştur ve gerçek "
+                    "denge fiyatı bilinmez.")
+    elif dokunma or abs(g) >= yakin:
+        durum = "limite_yakin"
+        aciklama = (f"getiri %{g*100:+.2f}"
+                    + (", gün içinde limite değdi" if dokunma else "")
+                    + f" — ±%{L*100:.0f} marjına yakın.")
+    else:
+        durum = "serbest"
+        aciklama = f"getiri %{g*100:+.2f} — marjdan uzak."
+
+    return {"durum": durum, "getiri_pct": round(g * 100.0, 2),
+            "yon": yon if durum in ("kilitli", "limit_disi") else None,
+            "intraday_dokunma": bool(dokunma),
+            "band": [round(alt, 4), round(ust, 4)], "aciklama": aciklama}
+
+
 # ---------------------------------------------------------------- boyut
 def position_size_pct(*, entry: float, stop: float, cfg: dict,
                       regime_multiplier: float = 1.0,
@@ -141,6 +220,33 @@ def rr(entry_high: float, stop: float, target: float) -> float | None:
     if risk <= 0:
         return None
     return round((target - entry_high) / risk, 2)
+
+
+def rr_net(entry_high: float, stop: float, target: float, cfg: dict) -> float | None:
+    """R:R'ın GİDİŞ-DÖNÜŞ MALİYETİ düşülmüş hâli.
+
+    Neden gerekti (2026-08-07, Merdiven'in ΔEV fikrinin çekirdeği): maliyet
+    bu projede yalnız `backtest.py`'de yaşıyordu. Yani aynı sistem bir yerde
+    "maliyet var" diyor, plan üretirken yok sayıyordu. Rapor "R:R 1.52" yazıyor,
+    gerçekte 1.42.
+
+    Maliyet İKİ TARAFI DA vurur ve asimetrik değil: giriş+çıkış komisyonu
+    kaybederken de kazanırken de ödenir.
+        net_risk = (giriş − stop) + giriş × maliyet
+        net_ödül = (hedef − giriş) − giriş × maliyet
+
+    ⚠ BU DEĞER KAPI DEĞİLDİR ve olmamalı — bkz. `planner.build_options`.
+    `min_rr_t1` NET'e uygulanırsa eşik fiilen 1.5 → ~1.60 yükselir ve bu,
+    `docs/on-kayit-seviye-02.md` §4'ün ön kayıt gerektiren üç parametresinden
+    biridir. ÖLÇÜLDÜ (58 geçmiş plan): net eşiğe geçmek planların **%33'ünü**
+    (19/58) elerdi. Bu sayı, ön kayıt turu koşulduğunda kanıt olarak kullanılmak
+    üzere buraya yazıldı — bugün ona göre karar VERİLMEZ.
+    """
+    m = float(cfg["risk"]["islem_maliyeti_gidis_donus_pct"]) / 100.0
+    net_risk = (entry_high - stop) + entry_high * m
+    if net_risk <= 0:
+        return None
+    return round(((target - entry_high) - entry_high * m) / net_risk, 2)
 
 
 def stop_atr_multiple(entry_high: float, stop: float, atr: float) -> float | None:

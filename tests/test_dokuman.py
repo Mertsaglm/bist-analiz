@@ -108,6 +108,10 @@ class TestKomutAtiflari:
         metin = _oku("README.md")
         assert "0 temiz · 1 uyarı · 2 KRİTİK" in metin
         assert "0 temiz · 1 aralık atlandı · 2 hata" in metin
+        # 2026-08-07: `haber cek` artık beklenen-bildirim takvimini de çekiyor
+        # ve o düşerse de 1 döndürüyor. Çıkış kodunun ANLAMI genişledi; yazılı
+        # sözleşme de genişlemeli, yoksa 1 gören kişi yanlış yere bakar.
+        assert "takvim kırpık/çekilemedi de 1 döndürür" in metin
 
 
 # ============================================================ config atıfları

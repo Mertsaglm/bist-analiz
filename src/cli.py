@@ -483,6 +483,17 @@ def cmd_haber(args) -> int:
                       f"     Bu bir 'haber yok' durumu DEĞİL. Paketteki boş "
                       f"haber listelerine güvenme.")
                 kod = 2
+        # İleriye dönük takvim AYNI komutta çekilir. L-002: "bir kere elle
+        # çalıştırdım, gerisi otomatik" varsayımı yanlıştır — otomatik boru
+        # hattına bağlı olmayan tablo donar ve hiçbir hata fırlatmaz. Donması
+        # burada `bilinmiyor`un sessizce kalıcılaşması demekti.
+        bb = news.sync_beklenen(cfg, con)
+        if bb.get("not") and not bb["ok"]:
+            print(f"  ⚠ beklenen bildirim takvimi: {bb['not']}")
+            kod = max(kod, 1)
+        elif bb["ok"]:
+            print(f"  beklenen bildirim: {bb['ham']} kayıt tarandı → "
+                  f"{bb['yazilan']} satır ({bb.get('ticker', 0)} ticker)")
     elif args.alt == "durum":
         s = news.summary(con)
         asof = db.scalar(con, "SELECT MAX(date) FROM bars_daily") or ""
@@ -732,7 +743,7 @@ def build_parser() -> argparse.ArgumentParser:
     gn.add_argument("--asof", help="YYYY-MM-DD")
     gn.set_defaults(fn=cmd_gunluk)
 
-    dn = sub.add_parser("denetle", help="analist çıktısını HF-01..HF-31 ile denetle")
+    dn = sub.add_parser("denetle", help="analist çıktısını HF-01..HF-32 ile denetle")
     dn.add_argument("--asof", help="YYYY-MM-DD")
     dn.set_defaults(fn=cmd_denetle)
 

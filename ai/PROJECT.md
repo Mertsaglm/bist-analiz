@@ -42,7 +42,7 @@ raporunda basılır**. "Ne zaman bilebiliriz?" bir his değil, hesaplanmış bir
 - LLM katmanı iki yoldan çalışır: **otonom zincir** (`bist otonom gunluk`,
   ADR #013) ve **IDE içinde manuel** (Claude Code / Codex / Antigravity / Kiro).
   İkisi journal'da ayrı `tool` olarak durur ve ayrı ölçülür.
-- HF-01..HF-31 sert hata denetimi — geçmeyen çıktı journal'a giremez
+- HF-01..HF-32 sert hata denetimi — geçmeyen çıktı journal'a giremez
 - Değişmez tahmin günlüğü + **deterministik** üçlü bariyer sonuç çözümü
 - Ölçüm harness'i: walk-forward, örtüşmeyen pencere, maliyetli, in-sample/OOS
 - Yerel CLI + Türkçe markdown rapor

@@ -149,3 +149,147 @@ def summary(con: sqlite3.Connection) -> dict:
             con, "SELECT importance, COUNT(*) n FROM disclosures "
                  "GROUP BY importance ORDER BY n DESC")},
     }
+
+
+# ================================================== beklenen bildirim (ileriye dönük)
+BEKLENEN_YOK = {
+    "durum": "bilinmiyor", "bildirimler": [],
+    "not": "beklenen bildirim takvimi değerlendirilmedi",
+}
+
+#: Takvimde görünmeyen bir ismin "zaten açıkladı" sayılabilmesi için finansal
+#: rapor bildiriminin en fazla kaç gün önce olması gerektiği. Çeyreklik raporlama
+#: döngüsü ~90 gün; 75 gün, bir sonraki dönemin penceresi açılmadan önceki
+#: güvenli aralıktır.
+BEKLENEN_FR_KANIT_GUN = 75
+
+
+def sync_beklenen(cfg: dict, con: sqlite3.Connection) -> dict:
+    """KAP'ın ileriye dönük bildirim takvimini çeker ve TAM İSE saklar.
+
+    ⚠ KIRPIK YANIT SAKLANMAZ. Tavana dayanmış bir listede bir şirketin
+    bulunmaması "bildirimi yok" değil "göremedim" demektir; ikisini aynı satıra
+    yazmak L-007'nin tam kendisidir. Kırpıldığında eski (tam) anlık görüntü
+    korunur ve yaşı `pencere()`yi `bilinmiyor`a düşürür.
+
+    ⚠ TABLO HER ÇEKİMDE SIFIRLANIR. Bir şirket raporunu yayımlayınca uçtan
+    DÜŞER; eski satır silinmezse "hâlâ bekleniyor" diye yaşamaya devam eder.
+    Yani burada üstüne yazmak değil, DEĞİŞTİRMEK gerekiyor.
+    """
+    from .sources import kap
+
+    s = kap.fetch_beklenen(cfg)
+    if not s.ok:
+        return {"ok": False, "hata": s.hata, "kirpik": s.kirpik,
+                "ham": s.ham, "yazilan": 0,
+                "not": ("yanıt TAVANA dayandı, saklanmadı — eski anlık görüntü "
+                        "korunuyor" if s.kirpik else s.hata)}
+
+    # ad → ticker: KAP'ın KENDİ verisinden (stockCodes ile birlikte gelmişti),
+    # yani eşleme inşaen doğrudur. Kendi sözlüğümüzü kurmak, kırılgan bir HTML
+    # kazımasına (borsapy'nin memberOid yolu) bağımlı olmamızı engelliyor.
+    ad2t: dict[str, str] = {
+        (r["company"] or "").strip(): r["ticker"]
+        for r in db.fetch_all(
+            con, "SELECT company, ticker FROM disclosures "
+                 " WHERE company IS NOT NULL GROUP BY company, ticker")}
+
+    now = util.utc_now_iso()
+    rows = []
+    for k in s.kayitlar:
+        t = ad2t.get(k["kap_title"])
+        if not t:
+            continue                      # evrenimiz dışındaki şirket
+        rows.append((t, k["kap_title"], k["subject"], k["period"], k["year"],
+                     k["start_date"], k["end_date"], now))
+    con.execute("DELETE FROM expected_disclosures")
+    n = db.upsert_many(
+        con, "expected_disclosures",
+        ["ticker", "kap_title", "subject", "period", "year",
+         "start_date", "end_date", "fetched_utc"], rows)
+    con.commit()
+    log.info("beklenen bildirim: %d ham kayıt → %d satır (%d ticker)",
+             s.ham, n, len({r[0] for r in rows}))
+    return {"ok": True, "hata": None, "kirpik": False, "ham": s.ham,
+            "yazilan": n, "ticker": len({r[0] for r in rows}), "not": None}
+
+
+def beklenen_durumu(cfg: dict, con: sqlite3.Connection, asof: str) -> dict:
+    """Takvimin SAĞLIĞI — `kaynak_durumu`nun beklenen-bildirim karşılığı.
+
+    Boş bir sonuç iki farklı olgu olabilir: "bu şirketin bekleyen bildirimi
+    yok" ve "takvim hiç çekilmedi / bayat". Ayrımı tek alana indirger.
+    """
+    b = (cfg["sources"]["kap"].get("beklenen_bildirim") or {})
+    if not b.get("enabled", False):
+        return {"ok": False, "not": "beklenen bildirim katmanı kapalı"}
+    son = db.scalar(con, "SELECT MAX(fetched_utc) FROM expected_disclosures")
+    if not son:
+        return {"ok": False, "son_cekim": None,
+                "not": "takvim hiç çekilmedi — `bist haber cek`"}
+    d_son, d_asof = util.parse_date(son[:10]), util.parse_date(asof)
+    yas = (d_asof - d_son).days if (d_son and d_asof) else None
+    maks = int(b.get("maks_yas_gun", 7))
+    if yas is not None and yas > maks:
+        return {"ok": False, "son_cekim": son, "yas_gun": yas,
+                "not": f"takvim {yas} gün bayat (>{maks}) — bu arada bilanço "
+                       "açıklanmış olabilir; boş sonuç 'risk yok' DEĞİLDİR"}
+    return {"ok": True, "son_cekim": son, "yas_gun": yas, "not": None}
+
+
+def beklenen_pencere(con: sqlite3.Connection, ticker: str, asof: str,
+                     bitis: str, *, saglik: dict | None = None) -> dict:
+    """Bu hissenin plan penceresine düşen beklenen bildirimleri.
+
+    Üç hâl, ve üçü ASLA aynı değere düşmez (L-007):
+        acik       — pencerede bekleyen bildirim VAR (bilanço riski)
+        kapali     — takvim sağlıklı ve bu isimde bekleyen bildirim YOK
+        bilinmiyor — takvim bayat/eksik ya da bu isim hiç eşleşmedi
+
+    ⚠ `bilinmiyor` "risk yok" DEĞİLDİR. Bilanço tarihini bilmemek, bilanço
+    olmadığı anlamına gelmez — tam tersine, en tehlikeli durum budur.
+    """
+    if saglik is not None and not saglik.get("ok", False):
+        return {**BEKLENEN_YOK, "not": saglik.get("not") or "takvim güvenilmez"}
+    rows = db.fetch_all(
+        con,
+        "SELECT subject, period, year, start_date, end_date "
+        "  FROM expected_disclosures "
+        " WHERE ticker = ? AND start_date <= ? AND end_date >= ? "
+        " ORDER BY end_date, subject",
+        (ticker.upper(), bitis, asof))
+    if rows:
+        return {"durum": "acik", "bildirimler": [dict(r) for r in rows],
+                "not": (f"{len(rows)} bekleyen bildirim plan penceresine "
+                        f"({asof} … {bitis}) düşüyor")}
+    var = db.scalar(con, "SELECT COUNT(*) FROM expected_disclosures WHERE ticker = ?",
+                    (ticker.upper(),))
+    if var:
+        return {"durum": "kapali", "bildirimler": [],
+                "not": "takvimde var, plan penceresinde bekleyen bildirim yok"}
+
+    # Takvimde HİÇ yok. İki sebebi olabilir ve bunlar aynı şey DEĞİL:
+    #   (a) şirket raporunu ZATEN AÇIKLADI → uç onu listeden düşürür
+    #   (b) ad eşleşmesi kurulamadı        → görmüyoruz
+    # (a)'nın KANITI kendi verimizde: yakın tarihli bir `FR` bildirimi.
+    # Doğrulandı 2026-08-07: AKBNK 07-28, GARAN 07-30 finansal rapor yayımladı
+    # ve ikisi de beklenen-bildirim ucunda YOK. Yani kanıt varsa `kapali`
+    # demek bir varsayım değil, bir gözlemdir.
+    son_fr = db.scalar(
+        con,
+        "SELECT MAX(published_utc) FROM disclosures "
+        " WHERE ticker = ? AND (category = 'FR' OR title LIKE '%Finansal Rapor%') "
+        "   AND published_utc <= ?",
+        (ticker.upper(), asof + "T23:59:59+00:00"))
+    if son_fr:
+        d_fr, d_asof = util.parse_date(son_fr[:10]), util.parse_date(asof)
+        gun = (d_asof - d_fr).days if (d_fr and d_asof) else None
+        if gun is not None and gun <= BEKLENEN_FR_KANIT_GUN:
+            return {"durum": "kapali", "bildirimler": [],
+                    "not": (f"takvimde yok; {son_fr[:10]} tarihli finansal rapor "
+                            f"bildirimi var ({gun} gün önce) → dönemin raporunu "
+                            "AÇIKLAMIŞ")}
+    return {**BEKLENEN_YOK,
+            "not": "bu isim takvimde hiç görünmüyor ve yakın tarihli finansal "
+                   "rapor bildirimi de yok — açıkladı mı, ad eşleşmesi mi "
+                   "kurulamadı, AYIRT EDİLEMİYOR"}

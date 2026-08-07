@@ -1,4 +1,4 @@
-"""Denetim — HF-01..HF-31. Geçmeyen çıktı journal'a GİREMEZ.
+"""Denetim — HF-01..HF-32. Geçmeyen çıktı journal'a GİREMEZ.
 
 ⚠ Yukarıdaki aralık elle yazılır ve BAYATLAYABİLİR: HF-31 eklendikten sonra
 dört ayrı yer (bu dosya, `cli.py`, `README.md`, `ai/PROJECT.md`) üst ucu
@@ -240,6 +240,27 @@ def audit(cfg: dict, bundle: dict, out: dict, con: sqlite3.Connection | None = N
             f.append(Finding("HF-20", SERT, t,
                              "boğa sinyali ile aksiyon çelişiyor",
                              f"{s.get('signal')} / {s.get('action')}"))
+        # HF-32 — DETERMİNİSTİK KATMAN BİR TAVANDIR (2026-08-07, borsaci
+        # `references/buffett.md` §"Karar Çerçevesi" fikrinden: niteliksel
+        # katman kararı YALNIZ AŞAĞI çekebilir, asla yukarı çıkaramaz).
+        #
+        # NE AÇIKTI: HF-20 boğa sinyalini yalnız `plan_reddet`/`islem_yok` ile
+        # eşleşince yakalıyordu. Yani veri kalitesi düştüğü ya da hisse tavana
+        # kilitli olduğu için plan bile ÜRETİLMEMİŞ bir isme `strong_buy` +
+        # `izle` demek denetimden TEMİZ geçiyordu. Sistem "bu ismin verisine
+        # güvenmiyorum" derken model en güçlü sinyali verebiliyordu.
+        #
+        # `geometri` ve `kurumsal` sınıfları BU KAPSAMDA DEĞİL — orada fiyat
+        # sağlamdır, yalnız plan iskeleti kurulamamıştır ve boğa görüşü
+        # meşrudur (`izle` tam da odur).
+        sinif = ev_map.get(t, {}).get("plan_yok_sinifi")
+        if sinif in ("veri", "limit") and s.get("signal") in bogaci:
+            f.append(Finding(
+                "HF-32", SERT, t,
+                f"deterministik katman bu ismi '{sinif}' sebebiyle eledi — "
+                "veriye güvenilmeyen ya da bugün işlem görmeyen bir isme boğa "
+                "sinyali verilemez (en fazla `hold`)",
+                s.get("signal"), "hold/reduce/sell/avoid"))
         if s.get("signal") == "sell" and t not in tutulan:
             f.append(Finding("HF-21", SERT, t,
                              "olmayan pozisyon satılamaz — holdings'te yok"))
@@ -368,6 +389,18 @@ def audit(cfg: dict, bundle: dict, out: dict, con: sqlite3.Connection | None = N
         if s.get("confidence") == "yuksek" and pct is not None and pct < 60:
             f.append(Finding("W-02", UYARI, t,
                              "yüksek güven ama skor yüzdeliği düşük", pct))
+        # W-04 — süresi dolmamış bir vetonun üstüne plan seçmek.
+        # ENGELLEMEZ, bilerek: yeni bilgi gelmiş olabilir ve modelin fikrini
+        # değiştirme hakkı var. Ama bunu SESSİZCE yapamaz — veto ADR #008'den
+        # beri sistemin kalan ana ürünü ve `bist degerlendir` onu ayrı ölçüyor.
+        # Görünmeyen bir geri alma, ölçülemeyen bir geri almadır.
+        av = ev_map.get(t, {}).get("aktif_vetolar") or []
+        if av and s.get("action") == "plan_sec":
+            f.append(Finding(
+                "W-04", UYARI, t,
+                "aktif veto varken plan seçildi — gerekçe prose'da olmalı",
+                [v["veto_code"] for v in av]))
+
     nc = out.get("not_covered") or []
     if evren and len(nc) > len(evren) / 2:
         f.append(Finding("W-03", UYARI, None,
@@ -465,4 +498,4 @@ def _normalize_hash(metin: str) -> str:
 
 
 def all_codes() -> list[str]:
-    return [f"HF-{i:02d}" for i in range(1, 32)]
+    return [f"HF-{i:02d}" for i in range(1, 33)]

@@ -202,6 +202,31 @@ def score_at(p: Panel, feat: dict, cfg: dict, t: int, *,
         return np.where(payda > 0, skor / payda, np.nan)
 
 
+def bozuk_bar_mask(p: Panel, cfg: dict) -> np.ndarray:
+    """Düzeltilmemiş kurumsal işlem BARLARI — (tarih × ticker) boolean maske.
+
+    ⚠ NE OLMUŞTU (2026-08-07): `eligible_mask`'in "veri" kapısı yalnız
+    *momentum hesaplanabiliyor mu* diye soruyordu. Kayıt bazlı kalite kapısı
+    (`prices.assess_quality`) ise YALNIZ CANLI hatta koşuyordu. Yani canlı
+    katman "bu ismin verisine güvenmiyorum" derken ölçüm katmanı aynı barları
+    sessizce kullanıyordu — L-008'in "simetriğini ara" kuralı tam buraya
+    bakıyordu.
+
+    ÖLÇÜLDÜ: panelde 5 böyle bar var (CCOLA 2024-08-01 **−%90.7** ·
+    TSPOR +%94.6 · AYGAZ +%72.5 · HEKTS −%64.8 / +%44.1). ±%10 marjlı bir
+    piyasada bunlar getiri DEĞİL, düzeltilmemiş bölünmedir.
+
+    Eşik `evren.duzeltilmemis_kurumsal_pct` — gerçek piyasa ucundan (+%22.2,
+    2023-02-15 deprem sonrası açılış) yukarıda, en küçük artefakttan (+%44)
+    aşağıda. `risk`/`prices` ile AYNI config anahtarından okunur.
+    """
+    esik = float(cfg["evren"]["duzeltilmemis_kurumsal_pct"]) / 100.0
+    onceki = _shift(p.c_tr, 1)
+    with np.errstate(invalid="ignore", divide="ignore"):
+        g = p.c_tr / onceki - 1.0
+    return np.isfinite(g) & (np.abs(g) > esik)
+
+
 # ============================================================ yürüyen ileri
 def walk_forward(cfg: dict, p: Panel, *, horizon: int, top_frac: float = 1 / 3,
                  cost_pct: float = 0.0, weights: dict[str, float] | None = None,
@@ -230,12 +255,14 @@ def walk_forward(cfg: dict, p: Panel, *, horizon: int, top_frac: float = 1 / 3,
     yani ölçüm yalnız geniş boğa dönemlerinde yapılıyordu.
     """
     feat = build_features(p, cfg)
+    bozuk = bozuk_bar_mask(p, cfg)
     bas = max(start_idx or ISINMA_BAR, ISINMA_BAR)
     son = (end_idx if end_idx is not None else p.n) - horizon - 1
 
     kayit: list[dict] = []
     ic_tum_seri: list[float] = []
     atlanan = {"veri_yok": 0, "uygun_yok": 0}
+    n_kirli_gozlem = 0
 
     for t in range(bas, son, horizon):
         giris, cikis = t + 1, t + 1 + horizon
@@ -246,6 +273,16 @@ def walk_forward(cfg: dict, p: Panel, *, horizon: int, top_frac: float = 1 / 3,
                         weights=weights, sector_map=sector_map)
         with np.errstate(invalid="ignore"):
             fwd = (p.c_tr[cikis] / p.c_tr[giris] - 1.0) * 100.0
+
+        # ⚠ CERRAHİ ELEME: ismin TAMAMI değil, yalnız ZEHİRLENEN gözlem düşer.
+        # Pencerede düzeltilmemiş bir kurumsal işlem barı varsa o dönemin
+        # ileri getirisi bir getiri değil, bir veri hatasıdır. İsmi tamamen
+        # çıkarmak ölçüm evrenini değiştirmek olurdu (ölçüldü: 67→63 isim,
+        # alfa −0.861 → −0.946pp) — oysa sorun isimde değil, o bir avuç barda.
+        kirli = bozuk[giris + 1:cikis + 1].any(axis=0)
+        if kirli.any():
+            n_kirli_gozlem += int(kirli.sum())
+            fwd = np.where(kirli, np.nan, fwd)
 
         # --- (1) sıralama kalitesi: KAPISIZ, tüm geçerli kesit ---
         tum = np.isfinite(skor) & np.isfinite(fwd)
@@ -283,6 +320,12 @@ def walk_forward(cfg: dict, p: Panel, *, horizon: int, top_frac: float = 1 / 3,
             "secilenler": [p.tickers[i] for i in secilen],
         })
 
+    # ⚠ Sayaç HER İKİ dönüş dalında da taşınır. İlk sürüm yalnız normal dalda
+    # yazıyordu; `kayit` boş dönen bir ölçümde anahtar hiç oluşmuyordu ve
+    # tüketici tarafta `KeyError` üretiyordu. Bir eleme sayacının bazı
+    # dallarda var bazı dallarda yok olması, tam da "sessiz eleme"nin
+    # kılık değiştirmiş hâlidir.
+    atlanan["kirli_gozlem"] = n_kirli_gozlem
     o = cfg["olcum"]
     zn = o["zayif_n_esigi"]
     if not kayit:

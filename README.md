@@ -71,25 +71,45 @@ Aşağıdakiler tahmin değil, ölçüm. Ayrıntı: `ai/DECISIONS.md`.
 ## Mimari
 
 ```
-Fiyat + Makro + KAP  →  Göstergeler (dondurulmuş, versiyonlu)
+Fiyat + Makro + KAP (bildirim + BEKLENEN bildirim)
+                              ↓
+              Kalite kapısı (kayıt bazlı, fail-closed)
+                              ↓
+                     Göstergeler (dondurulmuş, versiyonlu)
                               ↓
                      Faktörler (kesitsel z, kapılar)
                               ↓
-                  Plan Menüsü (DETERMİNİSTİK — entry/stop/hedef/boyut)
+      Plan Menüsü (DETERMİNİSTİK — entry/stop/hedef/boyut/net R:R)
+      ├─ kilitli hisse → plan YOK        ├─ ex-tarih → plan YOK
                               ↓
                     LLM (enum seç + prose yaz + VETO)
                               ↓
-                    Denetim (HF-01..HF-31) ── başarısız → journal'a giremez
+                    Denetim (HF-01..HF-32) ── başarısız → journal'a giremez
                               ↓
                   Journal (değişmez)  →  Resolver (üçlü bariyer, KOD)
                               ↓
               Değerlendirme (IC, eşleştirilmiş alfa, LLM katkısı)
+
+Rapor §0  ←  SIRALI EYLEM LİSTESİ (uygulanabilirlik + risk sırası, ADR #015)
 ```
 
-**Tek sert kural: LLM hesaplanabilir hiçbir sayıyı üretmez.** Çıktı şemasında fiyat /
+**İki sert kural.**
+
+1. **LLM hesaplanabilir hiçbir sayıyı üretmez.** Çıktı şemasında fiyat /
 hedef / stop / boyut / sayısal güven alanı **yoktur**; LLM `plan_id` seçer, enum verir,
 prose yazar. Ayrıca HF-17 prose'daki her sayısal token'ı girdi paketine karşı doğrular —
 asıl hata modu yapısal değil, metinsel ("hedef 324 TL civarı makul").
+
+2. **Deterministik katman bir TAVANDIR** (ADR #015, HF-32). Model aşağı inebilir
+   (veto, `izle`, `islem_yok`) ama yukarı çıkamaz: sistem bir ismin verisine
+   güvenmediği ya da hisse o gün tavana/tabana kilitli olduğu için plan bile
+   üretmediyse, orada en fazla `hold` denebilir.
+
+**Rapor §0 — sıralı eylem listesi.** Rapor tek bir sıralı liste ile başlar:
+bugün ne yapılabilir, hangi sırayla, neyi riske ederek. ⚠ Sıra bir **getiri**
+sırası DEĞİLDİR — uygulanabilirlik ve risk sırasıdır (ADR #015). Ölçülen kenar
+yok; sıralamanın bir yön bildiği iddiası da yok. Skor üretilmez, sıralama
+sözlükbilimseldir.
 
 **İki ayrı öğrenme döngüsü:**
 - **Yavaş** (yılda 1-2, elle): tüm geçmişle walk-forward backtest → faktör ağırlıkları
@@ -138,12 +158,14 @@ Adımları elle koşmak istersen hepsi ayrı ayrı da var:
 ```bash
 poetry run bist veri gunluk          # fiyat + hayalet bar ayıklama + kalite kapısı
 poetry run bist gosterge             # HER YENİ BAR için gerekli
-poetry run bist haber cek            # KAP · çıkış: 0 temiz · 1 aralık atlandı · 2 hata
+poetry run bist haber cek            # KAP bildirim + BEKLENEN bildirim takvimi
+                                     # çıkış: 0 temiz · 1 aralık atlandı · 2 hata
+                                     # (takvim kırpık/çekilemedi de 1 döndürür)
 poetry run bist gunluk               # llm/in/<tarih>/ paketini yazar
 # → IDE'de llm/in/<tarih>/prompt.md çalıştır, llm/out/<tarih>/analysis.json kaydet
-poetry run bist denetle              # HF-01..HF-31 — geçmeyen journal'a giremez
+poetry run bist denetle              # HF-01..HF-32 — geçmeyen journal'a giremez
 poetry run bist kaydet               # journal'a yaz
-poetry run bist rapor                # Türkçe markdown: AZALT + tez + VETO
+poetry run bist rapor                # §0 sıralı eylem listesi + AZALT + tez + VETO
 ```
 
 ## Otonom koşu — Actions + model zinciri + Telegram

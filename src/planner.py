@@ -58,6 +58,12 @@ class PlanOption:
     stop_atr_multiple: float
     targets: list[dict]
     rr_at_t1: float
+    # Gidiş-dönüş maliyeti düşülmüş R:R. **KAPI DEĞİL** — `min_rr_t1` brüte
+    # uygulanır, çünkü nete geçmek eşiği fiilen yükseltir ve bu
+    # `docs/on-kayit-seviye-02.md` §4'ün ön kayıt gerektiren parametrelerinden
+    # biridir. Alan, raporun "R:R 1.52" derken 1.42'yi gizlememesi için var.
+    rr_at_t1_net: float | None
+    maliyet_pct: float
     time_barrier_days: int
     time_barrier_date: str
     position_size_pct: float
@@ -65,6 +71,10 @@ class PlanOption:
     entry_zone_status: str
     daily_limit_note: str
     ex_date_in_window: str | None
+    # `asof` barının günlük fiyat marjına göre durumu (serbest / limite_yakin /
+    # kilitli / limit_disi). `kilitli` isimlerde plan zaten ÜRETİLMEZ; bu alan
+    # kalan iki uyarı hâlini plana taşır. Bkz. risk.limit_durumu.
+    limit_durumu: str | None = None
     invalidations: list[str] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
     # R:R'ın hangi giriş bandı / stop yöntemi kombinasyonuyla sağlandığı ve
@@ -103,7 +113,8 @@ def _stop_candidates(price: float, atr: float, sma20: float | None,
 def build_options(cfg: dict, *, ticker: str, asof: str, bars: pd.DataFrame,
                   ind: dict, seviyeler: list[lv.Level], regime: dict,
                   ex_date: str | None = None, tier: str | None = None,
-                  time_barrier_date: str | None = None
+                  time_barrier_date: str | None = None,
+                  limit: dict | None = None
                   ) -> tuple[list[PlanOption], str | None]:
     """Geçerli plan menüsü ve — üretilemediyse — SEBEBİ.
 
@@ -192,11 +203,19 @@ def build_options(cfg: dict, *, ticker: str, asof: str, bars: pd.DataFrame,
                     continue
                 hedefler.append({
                     "price": hp, "rr": risk.rr(e_high, stop, hp),
+                    "rr_net": risk.rr_net(e_high, stop, hp, cfg),
                     "atr_distance": round((hp - e_high) / atr, 2),
                     "basis": dayanak})
             if not hedefler:
                 elenen.append(f"{kind}/{yontem}: girişin üstünde hedef yok")
                 continue
+            # ⚠ KAPI BRÜT R:R'a UYGULANIR — bilerek. Nete geçmek `min_rr_t1`'i
+            # fiilen 1.5 → ~1.60 yükseltir; `docs/on-kayit-seviye-02.md` §4 bu
+            # parametreyi ön kayıtlı tura bağlamış ve §3'teki tetikleyicilerin
+            # hiçbiri oluşmadı. ÖLÇÜLDÜ (58 geçmiş plan): nete geçmek %33'ünü
+            # elerdi. Sayıyı görüp eşik oynatmak, `on-kayit-revizyon-01.md` §5'in
+            # açıkça yasakladığı harekettir. Net değer plana YAZILIR, kapıya
+            # GİRMEZ — `tests/test_planner.py::TestNetRR` bunu zorlar.
             if (hedefler[0]["rr"] or 0) < float(p["min_rr_t1"]):
                 elenen.append(f"{kind}/{yontem}: R:R {hedefler[0]['rr']} < "
                               f"{p['min_rr_t1']}")
@@ -219,19 +238,17 @@ def build_options(cfg: dict, *, ticker: str, asof: str, bars: pd.DataFrame,
                 entry_low=e_low, entry_high=e_high, entry_trigger=trigger,
                 stop_price=stop, stop_method=yontem, stop_atr_multiple=katsayi,
                 targets=hedefler[:3], rr_at_t1=hedefler[0]["rr"],
+                rr_at_t1_net=hedefler[0]["rr_net"],
+                maliyet_pct=float(cfg["risk"]["islem_maliyeti_gidis_donus_pct"]),
                 time_barrier_days=int(p["zaman_bariyeri_gun"]),
                 time_barrier_date=time_barrier_date or "",
                 position_size_pct=boyut,
                 max_loss_pct_of_portfolio=risk.max_loss_pct_of_portfolio(
                     entry=e_high, stop=stop, position_size_pct_=boyut),
                 entry_zone_status=entry_zone_status(fiyat, e_low, e_high, atr),
-                daily_limit_note=(
-                    f"stop girişten %{stop_uzaklik:.1f} uzakta; girildikten sonra "
-                    + ("tek günde tetiklenebilir (boşluk riski var)"
-                       if bosluk_riski else
-                       f"tek günde tetiklenemez — ±%"
-                       f"{cfg['risk']['gunluk_fiyat_limiti_pct']:.0f} marj dışında")),
+                daily_limit_note=_limit_notu(cfg, stop_uzaklik, bosluk_riski, limit),
                 ex_date_in_window=ex_date,
+                limit_durumu=(limit or {}).get("durum"),
                 invalidations=_invalidations(sma50, destekler),
                 notes=[f"{len(direncler)} direnç, {len(destekler)} destek seviyesi kullanıldı"],
                 # ⚠ R:R BİR SONUÇ DEĞİL, BİR SEÇİM ÜRÜNÜ. Hedef sabittir (en
@@ -259,6 +276,29 @@ def build_options(cfg: dict, *, ticker: str, asof: str, bars: pd.DataFrame,
     return [], (f"{len(bantlar)} giriş bandı denendi; hiçbiri "
                 f"stop∈{p['stop_atr_bandi']}×ATR + R:R≥{p['min_rr_t1']} "
                 f"kurallarını birlikte sağlayamadı")
+
+
+def _limit_notu(cfg: dict, stop_uzaklik: float, bosluk_riski: bool,
+                limit: dict | None) -> str:
+    """Stop'un tek günde tetiklenip tetiklenemeyeceği — ve o iddianın SINIRI.
+
+    ⚠ Eski sürüm koşulsuz "tek günde tetiklenemez" diyordu. ÖLÇÜLDÜ
+    (2026-08-07, canlı evren 50.999 bar): barların **%0.14'ünde** günlük getiri
+    ±%10 marjını AŞIYOR — yani o günlerde bu cümle yanlış. Hepsi piyasa geneli
+    olağanüstü gün (15 Temmuz sonrası açılış, COVID, deprem sonrası açılış, kur
+    krizi). Yorum bir iddiadır (AGENTS.md §8); iddianın ölçülmüş istisnası
+    varsa cümlenin içinde durmalı, dipnotta değil.
+    """
+    L = float(cfg["risk"]["gunluk_fiyat_limiti_pct"])
+    bas = f"stop girişten %{stop_uzaklik:.1f} uzakta; girildikten sonra "
+    if bosluk_riski:
+        return bas + "tek günde tetiklenebilir (boşluk riski var)"
+    son = (f"tek günde tetiklenemez — ±%{L:.0f} marj dışında "
+           f"(ölçülen istisna: barların %{risk.LIMIT_DISI_ORAN_PCT:.2f}'ünde "
+           "marj aşılmış — olağanüstü piyasa günleri)")
+    if (limit or {}).get("durum") == "limit_disi":
+        son += ". ⚠ BUGÜN TAM O İSTİSNADA: " + limit["aciklama"]
+    return bas + son
 
 
 def _invalidations(sma50: float | None, destekler: list[lv.Level]) -> list[str]:
@@ -353,11 +393,34 @@ def build_menu(cfg: dict, con: sqlite3.Connection, asof: str,
 
     menu: dict[str, list[PlanOption]] = {}
     atlanan: dict[str, str] = {}
+    # Plan üretilmeme SEBEBİNİN SINIFI. Metin ayrıştırmak kırılgandır ve
+    # denetim katmanının buna ihtiyacı var: "veri güvenilmez" ile "geometri
+    # kurulamadı" TAMAMEN farklı iki şeydir. Birincisinde boğa sinyali
+    # savunulamaz, ikincisinde gayet meşrudur (`izle` tam da odur).
+    #   veri     → veriye güvenmiyoruz / hesaplayamadık
+    #   limit    → bugün işlem görmüyor (tavan/taban kilidi)
+    #   kurumsal → mekanik fiyat düzeltmesi penceresi
+    #   geometri → fiyat sağlam, plan iskeleti kurulamadı
+    atlanan_sinif: dict[str, str] = {}
+    # Limit durumu TÜM isimler için hesaplanır — kalite kapısından eleneni de
+    # kapsar, çünkü "bu isim neden yok" sorusunun cevabı bağımsız bir olgudur.
+    limitler = prices.limit_map(cfg, con, asof, tickers)
+
+    # Bilanço penceresi. ⚠ ELEYİCİ DEĞİL, İŞARETLEYİCİ — ex-temettüden farkı bu:
+    # ex-tarihte fiyat MEKANİK olarak düşer ve stop'u yapay tetikler, bu yüzden
+    # plan üretilmez. Bilanço mekanik bir düzeltme değil, bir VOLATİLİTE
+    # olayıdır. Üstelik ölçüldü (2026-08-07): 19 ismin 9'unda pencere açık —
+    # elemek, sistemi her çeyrek yarı yarıya susturmak olurdu.
+    from . import news
+    bb_saglik = news.beklenen_durumu(cfg, con, asof)
+    bilancolar = {t: news.beklenen_pencere(con, t, asof, bariyer, saglik=bb_saglik)
+                  for t in tickers}
 
     for t in tickers:
         ind = snap.get(t)
         if not ind:
             atlanan[t] = "gösterge yok"
+            atlanan_sinif[t] = "veri"
             continue
         # Eksik kalite kaydı "sorun yok" DEĞİLDİR — `quality_for` onu
         # `ok=False, kalite değerlendirilmedi` olarak döndürür. Aksi halde
@@ -365,16 +428,35 @@ def build_menu(cfg: dict, con: sqlite3.Connection, asof: str,
         k = prices.quality_for(kalite, t)
         if not k["ok"]:
             atlanan[t] = "veri kalitesi: " + "; ".join(k["uyarilar"])
+            atlanan_sinif[t] = "veri"
             continue
 
         bars = prices.bars(con, t, end=asof)
         if len(bars) < 260:
             atlanan[t] = f"yetersiz bar ({len(bars)})"
+            atlanan_sinif[t] = "veri"
             continue
 
         ex = _ex_date_in_window(con, t, asof, bariyer)
         if ex:
             atlanan[t] = f"plan penceresinde kurumsal işlem ex-tarihi: {ex}"
+            atlanan_sinif[t] = "kurumsal"
+            continue
+
+        # --- LİMİT KAPISI (2026-08-07, Merdiven'den alınan fikir) -----------
+        # Tavana/tabana kilitli bir barın kapanışı BASTIRILMIŞ bir fiyattır:
+        # karşı taraf boştur, gerçek denge fiyatı bilinmez. O kapanışın üzerine
+        # kurulan giriş bandı / stop / ATR "doğru hesaplanmış ama uygulanamaz"
+        # bir plan üretir — L-007'nin tam imzası.
+        #
+        # Neden ELEME, sadece uyarı değil: ADR #008'e göre planlar zaten kenar
+        # iddiası taşımıyor, dolayısıyla bir planı ÜRETMEMENİN ölçülebilir bir
+        # maliyeti yok; uygulanamaz bir plan yayımlamanın ise var. Fail-closed,
+        # kalite kapısıyla aynı desen. Frekans ölçüldü: canlı evrende %0.97.
+        lim = limitler.get(t) or risk.limit_durumu(prev_close=None, c=None, cfg=cfg)
+        if lim["durum"] == "kilitli":
+            atlanan[t] = f"günlük fiyat marjı: {lim['aciklama']}"
+            atlanan_sinif[t] = "limit"
             continue
 
         sev = lv.build_levels(bars, cfg, atr=ind.get("atr14"))
@@ -383,18 +465,22 @@ def build_menu(cfg: dict, con: sqlite3.Connection, asof: str,
         lv.store(cfg, con, t, asof, sev)
         opts, neden = build_options(cfg, ticker=t, asof=asof, bars=bars, ind=ind,
                                     seviyeler=sev, regime=rej, tier=tiers.get(t),
-                                    time_barrier_date=bariyer)
+                                    time_barrier_date=bariyer, limit=lim)
         gecerli = [o for o in opts if not validate_option(o, cfg)]
         if gecerli:
             menu[t] = gecerli
         elif opts:
             atlanan[t] = (f"{len(opts)} aday üretildi, hepsi doğrulamadan geçemedi: "
                           + "; ".join(validate_option(opts[0], cfg)[:2]))
+            atlanan_sinif[t] = "geometri"
         else:
             atlanan[t] = neden or "bilinmeyen"
+            atlanan_sinif[t] = "veri" if neden == "ATR hesaplanamadı" else "geometri"
 
     return {"asof": asof, "rejim": rej, "menu": menu, "atlanan": atlanan,
-            "zaman_bariyeri": bariyer, "uyari": UYARI}
+            "zaman_bariyeri": bariyer, "uyari": UYARI, "limitler": limitler,
+            "atlanan_sinif": atlanan_sinif,
+            "bilancolar": bilancolar, "bilanco_saglik": bb_saglik}
 
 
 def _ex_date_in_window(con: sqlite3.Connection, ticker: str, asof: str,

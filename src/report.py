@@ -83,6 +83,12 @@ def backtest_report(cfg: dict, sonuc: dict) -> str:
     A(f"- Ölçülen dönem: **{b['n_donem']}**")
     A(f"- Atlanan: veri yetersiz {atl.get('veri_yok', 0)}, "
       f"uygun isim <2 → {atl.get('uygun_yok', 0)}")
+    # ⚠ İFŞA: düşürülen gözlem sayısı SESSİZ kalamaz. Bir eleme raporda
+    # görünmüyorsa, o eleme bir sonraki okuyucu için görünmez bir varsayımdır.
+    A(f"- **Kirli gözlem düşürüldü: {atl.get('kirli_gozlem', 0)}** — plan "
+      "penceresine düzeltilmemiş bir kurumsal işlem barı düşen (ticker, dönem) "
+      "çiftleri. Bunlar getiri değil, veri hatasıdır (bkz. "
+      "`backtest.bozuk_bar_mask`); ismin TAMAMI değil yalnız o gözlem düşer.")
     A(f"- Ortalama uygun havuz: {_s(b.get('ort_havuz'), 1)} / {sonuc['n_ticker']} isim")
     A("")
     A("Uygun isim azaldığında dönem ATILMAZ, portföy küçülür. Aksi halde "
@@ -495,6 +501,20 @@ def evaluate_report(cfg: dict, e: dict) -> str:
 
 AZALT_SINYALLERI = ("reduce", "sell", "avoid")
 
+#: Günlük fiyat marjı durumunun rapor hücresi. `None` "serbest" DEĞİLDİR —
+#: değerlendirilmemiş bir durumu olumluya çevirmek L-007'nin yasakladığı şey.
+_LIMIT_HUCRE = {
+    "serbest": "serbest",
+    "limite_yakin": "⚠ limite yakın",
+    "kilitli": "🚧 **KİLİTLİ**",
+    "limit_disi": "⚠ marj dışı (olağanüstü gün)",
+    None: "— değerlendirilmedi",
+}
+
+
+def _limit_hucre(ld: dict | None) -> str:
+    return _LIMIT_HUCRE.get((ld or {}).get("durum"), "— değerlendirilmedi")
+
 
 def daily_report(cfg: dict, bundle: dict, *, holdings: dict | None = None,
                  analiz: list[dict] | None = None) -> str:
@@ -539,6 +559,57 @@ def daily_report(cfg: dict, bundle: dict, *, holdings: dict | None = None,
           "haber listeleri 'bildirim yok' anlamına GELMEZ.")
     A("")
 
+    # --------------------------------------------------- 0) SIRALI EYLEM LİSTESİ
+    # ADR #015. Raporun en üstünde TEK bir sıralı liste. ⚠ Sıra bir GETİRİ
+    # sırası DEĞİL, uygulanabilirlik ve risk sırasıdır — başlık bunu taşır.
+    from . import eylem as _ey
+    sr = _ey.siralama(bundle, holdings=tutulan, analiz=analiz)
+    A("## 0. Bugün yapılabilir işler — sırayla")
+    A("")
+    A("_Sıra **uygulanabilirlik ve risk** sırasıdır, bir getiri sırası DEĞİL "
+      "(ADR #015). Hiçbir satır bir yön iddiası taşımaz; hepsi \"bu bugün "
+      "yapılabilir mi ve neyi riske eder\" sorusunu cevaplar._")
+    A("")
+    if sr["kontenjan"] is not None:
+        A(f"**Kontenjan:** {sr['tutulan_n']}/{sr['maks_pozisyon']} pozisyon dolu "
+          f"→ rejim (`{sr['rejim']}`) **{sr['kontenjan']}** yeni pozisyona izin "
+          f"veriyor · hedef nakit %{_s(sr['nakit_pct'], 0)}")
+        A("")
+    if not sr["analist_var"]:
+        A("> ⚠ Analist çıktısı yok — \"azalt\" satırları YALNIZ deterministik "
+          "engellerden gelir. Boş bir azaltma listesi \"azaltacak bir şey yok\" "
+          "anlamına GELMEZ.")
+        A("")
+
+    _sira = 0
+    for kume, etiket in (("azalt", "ELDEKİLER"), ("gir", "YENİ GİRİŞ"),
+                         ("izle", "İZLE / BEKLE")):
+        if not sr[kume]:
+            continue
+        A(f"**{etiket}**")
+        A("")
+        for x in sr[kume]:
+            _sira += 1
+            isaret = "🔻" if x.tur == "azalt" else ("🟢" if x.tur == "gir" else "👀")
+            satir = f"{_sira}. {isaret} **{x.ticker}** — {x.baslik}"
+            if x.plan_id:
+                satir += (f" · `{x.plan_id}` · riske edilen "
+                          f"%{_s(x.riske_edilen_pct, 2)} · R:R net {_s(x.rr_net)}")
+            A(satir)
+            for g in x.gerekce:
+                if g:
+                    A(f"   - {g}")
+            for g in x.engeller:
+                A(f"   - 🚧 {g}")
+        A("")
+    if sr["engelli"]:
+        A(f"**BUGÜN YAPILAMAZ ({len(sr['engelli'])})** — "
+          + "; ".join(f"{x.ticker} ({x.engeller[0]})" for x in sr["engelli"]))
+        A("")
+    if not (sr["azalt"] or sr["gir"] or sr["izle"]):
+        A("_Bugün sıralanacak uygulanabilir bir iş yok._")
+        A("")
+
     # --------------------------------------------------- 1) AZALT (önce)
     A("## 1. Elindekiler — azaltma adayları")
     A("")
@@ -547,8 +618,9 @@ def daily_report(cfg: dict, bundle: dict, *, holdings: dict | None = None,
           "ile ekleyebilirsin — sistemin en savunulabilir çıktısı bu bölüm ve "
           "neyi tuttuğunu bilmeden çalışamaz.")
     else:
-        A("| Hisse | adet | kapanış | **sinyal** | veri kalitesi | plan durumu |")
-        A("|---|---|---|---|---|---|")
+        A("| Hisse | adet | kapanış | **sinyal** | işlem görebilirlik | "
+          "veri kalitesi | plan durumu |")
+        A("|---|---|---|---|---|---|---|")
         ev = {e["ticker"]: e for e in bundle["evren"]}
         for t, h in sorted(tutulan.items()):
             e = ev.get(t, {})
@@ -563,7 +635,17 @@ def daily_report(cfg: dict, bundle: dict, *, holdings: dict | None = None,
                 sinyal = f"**{sinyal.upper()}**"
             A(f"| {t} | {h['qty']:.0f} | "
               f"{_s((e.get('fiyat') or {}).get('kapanis'))} | {sinyal} | "
-              f"{kal} | {durum} |")
+              f"{_limit_hucre(e.get('limit_durumu'))} | {kal} | {durum} |")
+
+        kilitli = [t for t in sorted(tutulan)
+                   if ((ev.get(t, {}).get("limit_durumu") or {}).get("durum")
+                       == "kilitli")]
+        if kilitli:
+            A("")
+            A(f"🚧 **{', '.join(kilitli)} tavana/tabana kilitli kapandı.** Karşı "
+              "taraf boş demektir: azaltmak istesen de bugünkü fiyattan alıcı "
+              "bulamayabilirsin ve bu kapanış gerçek denge fiyatı değildir. "
+              "Bu isimlerde plan geometrisi de üretilmedi.")
 
         azalt = [an[t] for t in sorted(tutulan)
                  if t in an and an[t]["signal"] in AZALT_SINYALLERI]
@@ -581,6 +663,25 @@ def daily_report(cfg: dict, bundle: dict, *, holdings: dict | None = None,
             A("")
             A("_Analist elindekilerin hiçbirinde `reduce`/`sell`/`avoid` demedi._")
     A("")
+
+    # --------------------------------------------------- 1a) AKTİF VETOLAR
+    # Süresi dolmamış, ÖNCEKİ koşulardan kalan vetolar. Bunlar bugünkü analiz
+    # olmasa da geçerlidir — vetonun ömrü artık koşuya değil takvime bağlı.
+    aktif = [(e["ticker"], e["aktif_vetolar"]) for e in bundle["evren"]
+             if e.get("aktif_vetolar")]
+    if aktif:
+        A("## 1a. Yürürlükteki vetolar (önceki günlerden)")
+        A("")
+        A("_Veto artık tek koşuya bağlı değil: süresi dolana kadar yürürlükte "
+          "kalır. Bugün analiz koşmasan bile bunlar geçerlidir._")
+        A("")
+        A("| Hisse | veto | konuldu | bitiş | kalan |")
+        A("|---|---|---|---|---|")
+        for t, vs in aktif:
+            for v in vs:
+                A(f"| {t} | `{v['veto_code']}` | {v['konuldu']} | {v['bitis']} "
+                  f"| {v['kalan_islem_gunu']} işlem günü |")
+        A("")
 
     # --------------------------------------------------- 1b) VETO
     vetolar = [a for a in (analiz or []) if a.get("veto_code")]
@@ -620,10 +721,20 @@ def daily_report(cfg: dict, bundle: dict, *, holdings: dict | None = None,
         A(f"- `{p['plan_id']}` {p['kind']} · giriş {p['entry_low']}–{p['entry_high']} "
           f"({p['entry_zone_status']}) · stop {p['stop_price']} "
           f"({p['stop_atr_multiple']}×ATR)")
-        A(f"- T1 {t1.get('price')} (R:R {t1.get('rr')}, dayanak: {t1.get('basis')}) "
-          f"· boyut %{p['position_size_pct']} · maks kayıp "
+        A(f"- T1 {t1.get('price')} · R:R **{t1.get('rr')} brüt / "
+          f"{t1.get('rr_net')} net** (%{p.get('maliyet_pct')} gidiş-dönüş maliyet "
+          f"düşülmüş) · dayanak: {t1.get('basis')}")
+        A(f"- boyut %{p['position_size_pct']} · maks kayıp "
           f"%{p['max_loss_pct_of_portfolio']}")
         A(f"- {p['daily_limit_note']}")
+        bp = e.get("bilanco_penceresi") or {}
+        if bp.get("durum") == "acik":
+            A(f"- 📅 **BİLANÇO PENCEREDE:** {bp['not']}"
+              + ("" if not bp.get("bildirimler") else " — "
+                 + "; ".join(f"{b['subject']} {b['start_date']}→{b['end_date']}"
+                             for b in bp["bildirimler"][:2])))
+        elif bp.get("durum") == "bilinmiyor":
+            A(f"- ❔ Bilanço penceresi bilinmiyor: {bp.get('not')}")
         if p.get("rr_secim"):
             A(f"- _R:R nasıl sağlandı:_ {p['rr_secim']}"
               + (f" · elenen: {len(p.get('elenen_adaylar') or [])} aday"

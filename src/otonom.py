@@ -107,6 +107,19 @@ def gunluk(cfg: dict, con: sqlite3.Connection, *, bugun: date | None = None,
         if r.get("atlanan_aralik"):
             sonuc.setdefault("uyarilar", []).append(
                 f"KAP atlanan aralık: {r['atlanan_aralik']}")
+        # İleriye dönük takvim AYNI adımda — L-002: otomatik boru hattına
+        # bağlı olmayan tablo donar ve bayat takvim `bilinmiyor`u kalıcı hale
+        # getirir. Ayrı bir `try` çünkü uç ayrı: biri düşerse diğeri koşsun.
+        try:
+            bb = news.sync_beklenen(cfg, con)
+            sonuc["adimlar"]["beklenen_bildirim"] = (
+                f"{bb.get('yazilan', 0)} satır / {bb.get('ticker', 0)} ticker"
+                if bb["ok"] else f"BAŞARISIZ: {bb.get('not')}")
+            if not bb["ok"]:
+                sonuc.setdefault("uyarilar", []).append(
+                    f"beklenen bildirim takvimi: {bb.get('not')}")
+        except Exception as e:                              # noqa: BLE001
+            _hata(sonuc, "beklenen_bildirim", e)
     except Exception as e:                                  # noqa: BLE001
         _hata(sonuc, "haber", e)
 

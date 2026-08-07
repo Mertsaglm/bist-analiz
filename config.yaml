@@ -95,6 +95,31 @@ sources:
     # doyma sınırına iki kat pay bırakır. Dilim yine de kırpılırsa
     # `bist haber cek` bunu ATLANAN ARALIK olarak basar ve 1 döner.
     parca_gun: 7
+    # --- BEKLENEN BİLDİRİM (ileriye dönük bilanço takvimi) — 2026-08-07 ------
+    # KAP `beklenen-bildirim-sorgu`: hangi şirketin finansal raporu HENÜZ
+    # AÇIKLANMAMIŞ ve hangi pencerede beklendiği. 20 işlem günlük ufkumuzun
+    # EN BÜYÜK tek olay riski budur ve sistemde hiç yoktu; ex-temettü tarihini
+    # eliyorduk ama bilançoyu görmüyorduk.
+    #
+    # ÖLÇÜLDÜ (2026-08-07, canlı API):
+    #   HTTP 200 · 20 gün → 1804 kayıt/571 şirket · 45 gün → 1863/576
+    #   180 gün → **2000** · 365 gün → **2000**  ← TAVAN, liste kırpık
+    #   `stockCode` kayıtların yalnız %6.7'sinde dolu → ticker'a ORADAN bağlanmaz
+    #   `kapTitle` ↔ bizim `disclosures.company` eşleşiyor: 70 ticker'ımızın
+    #   42'si 20 günlük pencerede çözüldü (kalan 28 zaten açıklamış).
+    #
+    # ⚠ Tavana dayanan yanıt SAKLANMAZ. Kırpık listede "yok" demek "bildirimi
+    # yok" değil "göremedim"dir ve bu ikisi aynı değere düşerse tam olarak
+    # L-007'ye düşeriz. Kırpılırsa eski (tam) anlık görüntü korunur ve yaşı
+    # `bilinmiyor`u tetikler.
+    beklenen_bildirim:
+      enabled: true
+      path: "/tr/api/expected-disclosure-inquiry/company"
+      pencere_gun: 45          # 1863 kayıt — 2000 tavanına pay bırakır
+      tavan_kayit: 1950        # bu sayıya ulaşan yanıt KIRPIK sayılır
+      # Anlık görüntü bu yaştan eskiyse `bilinmiyor` — bayat takvim, olmayan
+      # takvimden daha tehlikelidir (bugün açıklanmış olabilir).
+      maks_yas_gun: 7
     # Bir dilim bu kadar kayıt döndürdüyse yanıt TAVANA DAYANMIŞ demektir.
     # Ölçülen tavan ~1578; 1400 güvenli pay bırakır. Yalnız bu eşik AŞILDIĞINDA
     # ve dönen en eski kayıt istenen başlangıçtan yeniyse "kırpıldı" denir —
@@ -144,6 +169,23 @@ evren:
   maks_bar_bosluk_gun: 10
   maks_bayat_kapanis_gun: 5                  # aynı kapanış üst üste kaç gün
   aciklanamayan_sicrama_pct: 15.0            # |getiri| bu eşiğin üstü + kurumsal işlem yok → bayrak
+  # --- DÜZELTİLMEMİŞ KURUMSAL İŞLEM eşiği (2026-08-07) -----------------------
+  # `aciklanamayan_sicrama_pct` ile AYNI ŞEY DEĞİL, farklı bir soru sorar:
+  #   o    → "bu sıçramanın KAYDI var mı?"      kayıt varsa AFFEDER
+  #   bu   → "bu sıçrama HİÇ OLMAMALIYDI"       kayıt olsa da affetmez
+  # Kural: **düzgün geriye düzeltilmiş bir seride −%50'lik bar bulunmaz.** Bir
+  # bedelsiz düzeltildiğinde ex-tarihteki getiri ~0 olur; seride duruyorsa
+  # düzeltme başarısız olmuştur. CCOLA tam bunu gösterdi: kayıt VARDI
+  # (2024-08-13) ama seri düzeltilmemişti ve gerçek düşüş 2024-08-01'deydi —
+  # yani kayda bakan kontrol bunu ya affeder ya da yanlış günü suçlar.
+  #
+  # ÖLÇÜLDÜ (2026-08-07, 197.191 bar, 70 isim) — getiri dağılımının uçları:
+  #   GERÇEK piyasa ucu : +%22.2 (2023-02-15 deprem kapanışı sonrası açılış;
+  #                       25 isim birden +%18…+%22) · −%28.3 (2020-03-12 COVID)
+  #   ARTEFAKT          : +%94.6 TSPOR · −%90.7 CCOLA · +%72.5 AYGAZ ·
+  #                       −%64.8 HEKTS · +%44.1 HEKTS
+  # İki küme arasında %28–%44 BOŞLUĞU var; eşik oraya konur.
+  duzeltilmemis_kurumsal_pct: 35.0
 
 # ----------------------------------------------------------------------------
 # Göstergeler — tek kaynak, dondurulmuş, versiyonlu
@@ -249,6 +291,32 @@ risk:
   # Gidiş-dönüş maliyet: komisyon + BSMV + spread. Ölçüm: maliyet kenarın ~1/3'ünü yiyor.
   islem_maliyeti_gidis_donus_pct: 0.30
 
+  # --- Limit durumu sınıflandırıcısı (2026-08-07) --------------------------
+  # ÖLÇÜLDÜ, uydurulmadı. Yöntem: her bar için getiri = c/önceki_c - 1, canlı
+  # evren 19 isim × 50.999 bar (tüm geçmiş) ve 9.424 bar (son 2 yıl).
+  #
+  #   GERÇEK KİLİT  |getiri| ∈ [%9.0, %10.5]   496 bar  %0.97   (son 2y %0.87)
+  #   İNTRADAY DOKUNMA (h/l banda değdi)       891 bar  %1.75
+  #   LİMİT ÖTESİ   |getiri| > %10.5            70 bar  %0.14   (son 2y **0**)
+  #
+  # Yani ~100 barda 1'i limitte kapanıyor — ihmal edilebilir değil, üstelik tam
+  # da bir şeyler olan günlerde oluyor.
+  #
+  # ⚠ "LİMİT ÖTESİ" bir ölçüm hatası DEĞİL, AYRI BİR OLGU (L-003: iki farklı
+  # olguyu aynı kelimeyle raporlama). Tarihlerine bakıldığında hepsi piyasa
+  # geneli olağanüstü gün: 2016-07-18 (15 Temmuz sonrası ilk seans),
+  # 2020-03-12/16 (COVID), 2023-02-15 (deprem kapanışından sonra açılış),
+  # 2018-06/07 (kur krizi). O günlerde ±%10 modeli geçerli değildir ve
+  # `daily_limit_note`'un "tek günde tetiklenemez" iddiası YANLIŞTIR.
+  #
+  # Oranlar `gunluk_fiyat_limiti_pct`e GÖRELİDİR — limit değişirse bantlar
+  # kendiliğinden kayar (L-011: eşiği koda gömme, tek kaynaktan oku).
+  limit_bandi:
+    kilit_alt_orani: 0.90    # |getiri| ≥ limit×0.90 (= %9.0)  → kilitli
+    disi_ust_orani: 1.05     # |getiri| > limit×1.05 (= %10.5) → limit_disi
+    yakin_orani: 0.75        # |getiri| ≥ limit×0.75 (= %7.5)  → limite_yakin
+
+
 # ----------------------------------------------------------------------------
 # Plan üretici (deterministik menü)
 # ----------------------------------------------------------------------------
@@ -294,6 +362,30 @@ llm:
            gemini-3.1-pro-preview, gpt-5.6-luna, gpt-5-mini]
   # confidence_p'yi KOD yazar; LLM enum verir. Sayısal güven LLM'den ASLA gelmez.
   # Bu haritanın kendisi kalibre edilecek (Faz 6+, 2 yıl "ölçüm yetersiz" diyecek).
+  # --- VETO SÜRESİ (2026-08-07, Merdiven'in "bypass" fikrinden) --------------
+  # NE EKSİKTİ: veto bir KOŞUYA bağlıydı, takvime değil. Bugün `haber_riski`
+  # diye veto edilen bir isim, hiçbir şey değişmeden yarın tertemiz görünüyordu
+  # — çünkü ertesi günün paketinde vetonun izi yoktu. ADR #008'den beri veto
+  # sistemin KALAN ANA ÜRÜNÜ; ömrü tek bir koşu kadar olmamalı.
+  #
+  # Merdiven bunu sembol başına saat cinsinden süreli "bypass" ile çözüyor.
+  # Bizde birim İŞLEM GÜNÜ (H=20 ufkuyla aynı takvim). Süre veto SEBEBİNE göre
+  # değişir: bir haber riski birkaç günde soğur, likidite sorunu soğumaz.
+  #
+  # ⚠ Bu süreler ÖLÇÜLMEDİ — vetonun kendi isabeti henüz ölçülemiyor
+  # (`bist degerlendir`, ~1 yıl gerekiyor). Şu an makul varsayımlar ve
+  # bilerek KISA tutuldular: uzun veto, ölçülmemiş bir inancı uzun süre
+  # dayatmaktır. Veto değeri ölçülünce buraya ölçüm gelir.
+  veto_suresi_gun:
+    varsayilan: 5
+    haber_riski: 3          # haber etkisi hızla fiyata geçer
+    kurumsal_islem: 20      # ex-tarih plan ufku boyunca geçerli
+    likidite_zayif: 20      # yapısal, hızlı değişmez
+    sektor_yogunlugu: 10
+    tez_zayif: 5
+    veri_supheli: 10
+    rejim_uyumsuz: 5
+
   guven_olasilik: { yuksek: 0.65, orta: 0.50, dusuk: 0.38 }
   min_prose_karakter: 80
   strong_buy_min_yuzdelik: 70.0    # HF-22: LLM sıralamayı bu bandın ötesinde ezemez
@@ -390,6 +482,36 @@ olcum:
   zayif_n_esigi: 15
   min_anlamli_fark_puan: 1.0
   maliyet_duyarliligi_pct: [0.0, 0.15, 0.30, 0.50]
+
+# ============================================================================
+# SAĞLIK — kesitsel akıl sağlığı devre kesicisi (2026-08-07)
+#
+# Fikir Merdiven'den: "aynı mumda 30'dan fazla AL sinyali gelirse bypass —
+# 30 hisse aynı anda ucuz olamaz." Genelleştirilmiş hâli: **kesit tek yöne
+# düştüyse bozulan piyasa değil, ölçüm aracıdır.**
+#
+# L-007 "payda sessizce daralır" demişti; bu onun aynadaki görüntüsü:
+# **pay sessizce şişer.** Ve L-008 "simetriğini ara" diyor: LLM tarafında bu
+# kural HF-23 (rejim tavanı) ile ZORLANIYOR, deterministik tarafta hiç yoktu.
+#
+# ÖLÇÜLDÜ (2026-08-07, plan_options, 23 asof günü, canlı evren 18 isim):
+#     plan üretilen isim sayısı: min=1  medyan=2  ort=2.00  maks=9
+#     oran olarak             : %5.6 … %11.1 … %50.0
+#     dağılım: 1 isim→11 gün · 2→9 · 3→1 · 5→1 · 9→1
+#
+# ⚠ `ust_tel_orani` BİR KALİBRASYON DEĞİL, BİR TELDİR. Gözlemlenen maksimum
+# %50; tel onun ÜSTÜNE konur ki normal davranışta hiç ateşlenmesin ve
+# ateşlediğinde "bu daha önce hiç olmadı" desin.
+saglik:
+  kesit:
+    pencere_gun: 20          # son N plan GÜNÜ (ardışık seans değil — replay karışık)
+    ust_tel_orani: 0.60      # bir günde evrenin >%60'ında plan → araç şüphesi
+    # STATE.md Backlog'undaki ön kayıt tetikleyicisi ("20 günde ort. <2 plan")
+    # burada KOŞULABİLİR hâle geldi. Yazılı bir tetikleyici, onu hatırlayan
+    # kişinin ömrü kadar yaşar (AGENTS.md §12).
+    alt_tetik_ort: 2.0
+    sinyal_ust_tel: 0.70     # analist sinyallerinin >%70'i tek yönde → şüphe
+    sinyal_min_n: 10         # altında oran anlamsız (replay koşuları n=1-2)
 
 rapor:
   dil: "tr"

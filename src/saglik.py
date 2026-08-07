@@ -122,12 +122,147 @@ def kontrol(cfg: dict, con: sqlite3.Connection) -> dict:
     ekle(KRITIK, "şema sürümü", sv == migrations.target_version(),
          f"v{sv} / hedef v{migrations.target_version()}")
 
+    # 9-10) KESİTSEL AKIL SAĞLIĞI — iki uçtan da
+    for seviye, ad, tamam, mesaj in _kesit_kontrolleri(cfg, con):
+        ekle(seviye, ad, tamam, mesaj)
+
+    # 11) DÜZELTİLMEMİŞ KURUMSAL İŞLEM — TÜM GEÇMİŞ, pencere YOK
+    seviye, ad, tamam, mesaj = _duzeltilmemis_kurumsal(cfg, con)
+    ekle(seviye, ad, tamam, mesaj)
+
     return {
         "asof": asof,
         "bulgular": bulgular,
         "kritik": [b for b in bulgular if b[0] == KRITIK],
         "uyari": [b for b in bulgular if b[0] == UYARI],
     }
+
+
+def _kesit_kontrolleri(cfg: dict, con: sqlite3.Connection
+                       ) -> list[tuple[str, str, bool, str]]:
+    """Kesit tek yöne mi düştü? — Merdiven'in devre kesicisinin genellenmiş hâli.
+
+    İki AYRI soru, iki ayrı kontrol (L-003: farklı olguları aynı satıra sıkıştırma):
+
+    **9. plan üretim oranı** — bir günde evrenin çoğunda plan çıkıyorsa bozulan
+    piyasa değil, seviye/R:R mantığıdır. Ölçüldü (23 asof günü): medyan 2/18,
+    gözlemlenen maksimum 9/18 = %50. Tel %60'a konur — yani "bu daha önce hiç
+    olmadı" eşiği. Aynı satır, TERS uçtaki tetikleyiciyi de basar: STATE.md
+    Backlog'undaki "20 günde ort. <2 plan → ön kayıtlı seviye turu" koşulu.
+    Yazılı bir tetikleyici hatırlanmaya bırakılırsa hatırlanmaz (AGENTS.md §12).
+
+    **10. analist sinyal dağılımı** — HF-23 rejim tavanını `plan_sec` SAYISINA
+    uyguluyor ama `signal` alanına hiçbir tavan yok. L-008'in "simetriğini ara"
+    kuralı tam buraya bakıyor: 18 ismin 15'ine `buy` demek, aracın bozulduğunu
+    gösterir ve hiçbir HF kodu bunu yakalamaz.
+
+    Salt-okunur: yalnız `plan_options` ve `predictions` okunur, `build_menu`
+    ÇAĞRILMAZ (o yazar; sağlık kontrolü hiçbir şeyi değiştirmez).
+    """
+    k = cfg["saglik"]["kesit"]
+    n_canli = len(universe.live(con)) or 1
+    out: list[tuple[str, str, bool, str]] = []
+
+    gunler = db.fetch_all(
+        con, "SELECT asof, COUNT(DISTINCT ticker) n FROM plan_options "
+             " GROUP BY asof ORDER BY asof DESC LIMIT ?", (int(k["pencere_gun"]),))
+    if not gunler:
+        out.append((BILGI, "plan üretim oranı", True,
+                    "plan_options boş — henüz ölçülecek gün yok"))
+    else:
+        son = gunler[0]
+        oran = son["n"] / n_canli
+        ort = sum(g["n"] for g in gunler) / len(gunler)
+        tel = float(k["ust_tel_orani"])
+        alt = float(k["alt_tetik_ort"])
+        # Payda GÖRÜNÜR: kaç gün üzerinden, kaç isimlik evrende (L-007).
+        ozet = (f"son gün {son['asof']}: {son['n']}/{n_canli} isim (%{oran*100:.0f}) "
+                f"· son {len(gunler)} plan gününde ort. {ort:.2f} isim")
+        if oran > tel:
+            out.append((UYARI, "plan üretim oranı", False,
+                        ozet + f" → **%{tel*100:.0f} telini AŞTI**; gözlemlenen "
+                               "maksimum %50'ydi. Kesit tek yöne düştüyse önce "
+                               "seviye/R:R mantığından şüphelen"))
+        elif len(gunler) >= int(k["pencere_gun"]) and ort < alt:
+            out.append((UYARI, "plan üretim oranı", False,
+                        ozet + f" → ortalama {alt} altında: STATE.md'deki ön "
+                               "kayıtlı seviye turu tetikleyicisi OLUŞTU "
+                               "(docs/on-kayit-seviye-02.md)"))
+        else:
+            out.append((BILGI, "plan üretim oranı", True, ozet))
+
+    son_run = db.fetch_one(
+        con, "SELECT p.run_id, p.asof, r.tool, COUNT(*) n,"
+             "  SUM(CASE WHEN p.signal IN ('strong_buy','buy','accumulate') "
+             "           THEN 1 ELSE 0 END) boga,"
+             "  SUM(CASE WHEN p.signal IN ('reduce','sell','avoid') "
+             "           THEN 1 ELSE 0 END) ayi "
+             "  FROM predictions p JOIN llm_runs r ON r.run_id = p.run_id "
+             " GROUP BY p.run_id ORDER BY p.asof DESC, p.run_id DESC LIMIT 1")
+    if not son_run or not son_run["n"]:
+        out.append((BILGI, "sinyal dağılımı", True, "journal'da tahmin yok"))
+    elif son_run["n"] < int(k["sinyal_min_n"]):
+        # Payda küçükken oran anlamsızdır ve "temiz" demek de yanıltıcıdır.
+        out.append((BILGI, "sinyal dağılımı", True,
+                    f"{son_run['asof']} ({son_run['tool']}): n={son_run['n']} "
+                    f"< {k['sinyal_min_n']} → oran DEĞERLENDİRİLMEDİ"))
+    else:
+        tel = float(k["sinyal_ust_tel"])
+        pb, pa = son_run["boga"] / son_run["n"], son_run["ayi"] / son_run["n"]
+        ozet = (f"{son_run['asof']} ({son_run['tool']}): n={son_run['n']} · "
+                f"boğa %{pb*100:.0f} · ayı %{pa*100:.0f}")
+        tek_yon = max(pb, pa) > tel
+        out.append((UYARI if tek_yon else BILGI, "sinyal dağılımı", not tek_yon,
+                    ozet + (f" → **%{tel*100:.0f} telini AŞTI**; 18 ismin çoğuna "
+                            "aynı şeyi demek araç şüphesidir" if tek_yon else "")))
+    return out
+
+
+def duzeltilmemis_kurumsal_tara(cfg: dict, con: sqlite3.Connection) -> list[dict]:
+    """TÜM GEÇMİŞTE düzeltilmemiş bedelsiz/bölünme şüphesi taşıyan barlar.
+
+    Neden `data_quality`'ye güvenilmez: o yalnız SON 252 BARA bakar ve CCOLA'yı
+    görünmez kılan tam olarak buydu. 2024-08-01'deki −%90.7'lik bar bugün
+    pencerenin dışında kalıyor, `unexplained_jump=0` yazıyor ve tablo "temiz"
+    diyor — oysa bar hâlâ orada ve backtest paneli hâlâ onu okuyor.
+
+    Bu yüzden burası **pencerelenmez.** Bulgu, düzeltilene ya da bilinçli
+    olarak kabul edilene kadar HER GÜN görünür. (AGENTS.md §11: düzeltilemeyen
+    bulgu sessizce bırakılmaz, ifşa edilir.)
+    """
+    esik = float(cfg["evren"]["duzeltilmemis_kurumsal_pct"]) / 100.0
+    rows = db.fetch_all(
+        con,
+        "SELECT ticker, date, getiri, in_live, in_measure FROM ("
+        "  SELECT b.ticker, b.date,"
+        "         b.c / LAG(b.c) OVER (PARTITION BY b.ticker ORDER BY b.date) - 1 getiri,"
+        "         u.in_live, u.in_measure"
+        "    FROM bars_daily b LEFT JOIN universe u ON u.ticker = b.ticker"
+        ") WHERE getiri IS NOT NULL AND ABS(getiri) > ? ORDER BY ABS(getiri) DESC",
+        (esik,))
+    return [{**r, "getiri_pct": round(r["getiri"] * 100, 1)} for r in rows]
+
+
+def _duzeltilmemis_kurumsal(cfg: dict, con: sqlite3.Connection
+                            ) -> tuple[str, str, bool, str]:
+    esik = cfg["evren"]["duzeltilmemis_kurumsal_pct"]
+    try:
+        bulgular = duzeltilmemis_kurumsal_tara(cfg, con)
+    except sqlite3.OperationalError as e:              # pencere fonksiyonu yoksa
+        return BILGI, "düzeltilmemiş kurumsal", True, f"taranamadı: {e}"
+    if not bulgular:
+        return OK, "düzeltilmemiş kurumsal", True, f"|getiri|>%{esik:.0f} bar yok"
+    canli = [b for b in bulgular if b["in_live"]]
+    # ŞİDDET, ETKİLENEN HATTA GÖRE: canlı evrende bir bar varsa günlük kararı
+    # doğrudan besliyor demektir (KRİTİK); yalnız ölçüm evrenindeyse geçmişe
+    # dönük bir kalibrasyon sorunudur (UYARI) — ikisi aynı şey değil (L-003).
+    ilk = "; ".join(f"{b['ticker']} {b['date']} {b['getiri_pct']:+.1f}%"
+                    for b in bulgular[:4])
+    return ((KRITIK if canli else UYARI), "düzeltilmemiş kurumsal", False,
+            f"{len(bulgular)} bar (|getiri|>%{esik:.0f}) · "
+            f"canlı evrende {len(canli)} · ölçüm evreninde "
+            f"{sum(1 for b in bulgular if b['in_measure'])} → {ilk}"
+            + ("" if len(bulgular) <= 4 else f" … (+{len(bulgular)-4})"))
 
 
 def cikis_kodu(sonuc: dict) -> int:

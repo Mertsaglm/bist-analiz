@@ -188,3 +188,77 @@ class TestYuksekFiyatIzgarasi:
         """1234.00 eski varsayımla geçerliydi; gerçek ızgarada DEĞİL."""
         assert not risk.on_tick_grid(1234.00, cfg)
         assert risk.on_tick_grid(1235.00, cfg)      # 494 × 2.50
+
+
+class TestLimitDurumu:
+    """Günlük fiyat marjı sınıflandırıcısı (2026-08-07, Merdiven'den fikir).
+
+    ⚠ REGRESYON KİLİDİ. Yakaladığı hata sınıfı: tavana kilitli bir barın
+    kapanışı BASTIRILMIŞ bir fiyattır (karşı taraf boş), ama hiçbir kontrol
+    bunu söylemiyordu — sistem o kapanışın üzerine giriş bandı, stop ve ATR
+    kurup "doğru hesaplanmış ama uygulanamaz" bir plan üretiyordu. L-007'nin
+    imzası: kod doğru, çıktı geçerli görünüyor, gerçek dünyada karşılığı yok.
+
+    Eşikler ÖLÇÜLDÜ (canlı evren, 50.999 bar): kilit %0.97, intraday dokunma
+    %1.75, limit ötesi %0.14 (son 2 yılda 0).
+    """
+
+    def test_serbest(self, cfg):
+        r = risk.limit_durumu(prev_close=100.0, c=102.0, h=103.0, l=99.0, cfg=cfg)
+        assert r["durum"] == "serbest"
+        assert r["getiri_pct"] == 2.0
+
+    def test_tavanda_kilit(self, cfg):
+        r = risk.limit_durumu(prev_close=100.0, c=110.0, h=110.0, l=104.0, cfg=cfg)
+        assert r["durum"] == "kilitli"
+        assert r["yon"] == "tavan"
+
+    def test_tabanda_kilit(self, cfg):
+        r = risk.limit_durumu(prev_close=100.0, c=90.0, h=97.0, l=90.0, cfg=cfg)
+        assert r["durum"] == "kilitli"
+        assert r["yon"] == "taban"
+
+    def test_kilit_alt_siniri_yuzde_9(self, cfg):
+        """%9.0 kilit sayılır, %8.9 sayılmaz — bant `kilit_alt_orani`×limit."""
+        assert risk.limit_durumu(prev_close=100.0, c=109.0, cfg=cfg)["durum"] == "kilitli"
+        assert risk.limit_durumu(
+            prev_close=100.0, c=108.9, cfg=cfg)["durum"] == "limite_yakin"
+
+    def test_limit_OTESI_kilit_DEGIL(self, cfg):
+        """±%10.5 üstü AYRI bir olgudur (L-003: iki olguyu aynı kelimeyle anma).
+
+        Ölçüm bunları buldu: 2016-07-18 (15 Temmuz sonrası ilk seans),
+        2020-03-12 (COVID), 2023-02-15 (deprem kapanışı sonrası açılış).
+        O günlerde ±%10 modeli geçerli DEĞİLDİR ve "tek günde tetiklenemez"
+        iddiası kanıtlanmış biçimde yanlıştır.
+        """
+        r = risk.limit_durumu(prev_close=115.0, c=139.9, cfg=cfg)   # THYAO 2023-02-15
+        assert r["durum"] == "limit_disi"
+        assert r["durum"] != "kilitli"
+        assert "geçerli değil" in r["aciklama"]
+
+    def test_intraday_dokunma_kapanis_limitte_olmasa_da(self, cfg):
+        """Gün içi limite değip geri dönen bar `limite_yakin`dır."""
+        r = risk.limit_durumu(prev_close=100.0, c=103.0, h=110.0, l=99.0, cfg=cfg)
+        assert r["durum"] == "limite_yakin"
+        assert r["intraday_dokunma"] is True
+
+    def test_onceki_kapanis_yoksa_SERBEST_DEGIL_None(self, cfg):
+        """Bilinmeyen bir durumu 'serbest' saymak L-007'nin yasakladığı şey."""
+        r = risk.limit_durumu(prev_close=None, c=100.0, cfg=cfg)
+        assert r["durum"] is None
+        assert r["durum"] != "serbest"
+
+    def test_esik_config_ten_okunur_koda_gomulu_degil(self, cfg):
+        """L-011: eşiği koda gömme. Limit %20 olursa bantlar KENDİLİĞİNDEN kayar."""
+        import copy
+        c2 = copy.deepcopy(cfg)
+        c2["risk"]["gunluk_fiyat_limiti_pct"] = 20.0
+        # %10 hareket, %20 limitli dünyada artık kilit değil
+        assert risk.limit_durumu(prev_close=100.0, c=110.0, cfg=c2)["durum"] != "kilitli"
+        assert risk.limit_durumu(prev_close=100.0, c=120.0, cfg=c2)["durum"] == "kilitli"
+
+    def test_durumlar_enum_disina_cikmaz(self, cfg):
+        for c in (90.0, 95.0, 100.0, 108.0, 110.0, 140.0, 60.0):
+            d = risk.limit_durumu(prev_close=100.0, c=c, cfg=cfg)["durum"]
+            assert d in risk.LIMIT_DURUMLARI

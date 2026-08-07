@@ -457,3 +457,155 @@ class TestUyarlanabilirBolme:
         s = kap.fetch_incremental(cfg, since=None, until="2026-07-25",
                                   tam_gun=6, parca_gun=7)
         assert s.atlanan_aralik is not None
+
+
+class TestBeklenenBildirim:
+    """⚠ REGRESYON KİLİDİ (2026-08-07, borsapy P2'den — canlı doğrulandı).
+
+    NE EKSİKTİ: 20 işlem günlük plan ufkunun EN BÜYÜK tek olay riski bilançodur
+    ve sistemde HİÇ yoktu. Ex-temettü tarihini plan penceresinden eliyorduk
+    (`planner._ex_date_in_window`) ama çok daha büyük fiyat hareketi üreten
+    bilanço tarihini görmüyorduk.
+
+    ⚠ ASIL TEHLİKE VE BU SINIFIN ASIL İŞİ: "bilgi yok"un sessizce "risk yok"a
+    düşmesi. Üç hâl ASLA aynı değere düşmemeli:
+        acik       → pencerede bekleyen bildirim var
+        kapali     → takvim sağlıklı VE bu isimde bekleyen bildirim yok
+        bilinmiyor → takvim bayat/kırpık ya da isim eşleşmedi
+    """
+
+    @staticmethod
+    def _kur(con, satirlar, *, fetched="2026-08-07T05:00:00+00:00"):
+        from src import db
+        db.upsert_many(
+            con, "expected_disclosures",
+            ["ticker", "kap_title", "subject", "period", "year",
+             "start_date", "end_date", "fetched_utc"],
+            [(t, f"{t} A.Ş.", s, "6 Aylık", 2026, b, e, fetched)
+             for t, s, b, e in satirlar])
+
+    def test_pencereye_dusen_bildirim_ACIK(self, cfg, con):
+        from src import news
+        self._kur(con, [("AAA", "Finansal Rapor", "2026-08-01", "2026-08-20")])
+        r = news.beklenen_pencere(con, "AAA", "2026-08-07", "2026-09-04",
+                                  saglik={"ok": True})
+        assert r["durum"] == "acik"
+        assert len(r["bildirimler"]) == 1
+
+    def test_pencere_DISINDA_kalan_bildirim_ACIK_DEGIL(self, cfg, con):
+        from src import news
+        self._kur(con, [("AAA", "Finansal Rapor", "2026-11-01", "2026-11-20")])
+        r = news.beklenen_pencere(con, "AAA", "2026-08-07", "2026-09-04",
+                                  saglik={"ok": True})
+        assert r["durum"] == "kapali"
+
+    def test_takvim_bayatsa_BILINMIYOR_kapali_DEGIL(self, cfg, con):
+        """Bayat takvim, olmayan takvimden TEHLİKELİDİR: o arada açıklanmış olabilir."""
+        from src import news
+        self._kur(con, [("AAA", "Finansal Rapor", "2026-11-01", "2026-11-20")])
+        r = news.beklenen_pencere(con, "AAA", "2026-08-07", "2026-09-04",
+                                  saglik={"ok": False, "not": "takvim 30 gün bayat"})
+        assert r["durum"] == "bilinmiyor"
+        assert r["durum"] != "kapali"
+        assert "bayat" in r["not"]
+
+    def test_hic_eslesmeyen_isim_BILINMIYOR(self, cfg, con):
+        """Takvimde hiç görünmeyen + finansal rapor kanıtı olmayan isim."""
+        from src import news
+        self._kur(con, [("AAA", "Finansal Rapor", "2026-08-01", "2026-08-20")])
+        r = news.beklenen_pencere(con, "ZZZ", "2026-08-07", "2026-09-04",
+                                  saglik={"ok": True})
+        assert r["durum"] == "bilinmiyor"
+        assert "AYIRT EDİLEMİYOR" in r["not"]
+
+    def test_ACIKLAMIS_olanin_KANITI_kapali_yapar(self, cfg, con):
+        """Takvimde yok AMA yakın tarihli FR bildirimi var → açıklamış.
+
+        Doğrulandı 2026-08-07: AKBNK (07-28) ve GARAN (07-30) bilançolarını
+        yayımladıktan sonra beklenen-bildirim ucunda YOKLAR. Yani `kapali`
+        demek bir varsayım değil, bir gözlemdir.
+        """
+        from src import db, news
+        self._kur(con, [("AAA", "Finansal Rapor", "2026-08-01", "2026-08-20")])
+        db.upsert_many(
+            con, "disclosures",
+            ["disclosure_id", "ticker", "published_utc", "tier", "title",
+             "category", "fetched_utc"],
+            [("d1", "BBB", "2026-08-04T10:00:00+00:00", "kap", "Finansal Rapor",
+              "FR", "x")])
+        r = news.beklenen_pencere(con, "BBB", "2026-08-07", "2026-09-04",
+                                  saglik={"ok": True})
+        assert r["durum"] == "kapali"
+        assert "AÇIKLAMIŞ" in r["not"]
+
+    def test_ESKI_finansal_rapor_kanit_SAYILMAZ(self, cfg, con):
+        """6 ay önceki rapor, BU dönemin raporunun açıklandığını göstermez."""
+        from src import db, news
+        self._kur(con, [("AAA", "Finansal Rapor", "2026-08-01", "2026-08-20")])
+        db.upsert_many(
+            con, "disclosures",
+            ["disclosure_id", "ticker", "published_utc", "tier", "title",
+             "category", "fetched_utc"],
+            [("d2", "CCC", "2026-01-04T10:00:00+00:00", "kap", "Finansal Rapor",
+              "FR", "x")])
+        r = news.beklenen_pencere(con, "CCC", "2026-08-07", "2026-09-04",
+                                  saglik={"ok": True})
+        assert r["durum"] == "bilinmiyor"
+
+    def test_takvim_hic_cekilmediyse_saglik_OK_DEMEZ(self, cfg, con):
+        from src import news
+        d = news.beklenen_durumu(cfg, con, "2026-08-07")
+        assert d["ok"] is False
+        assert "hiç çekilmedi" in d["not"]
+
+    def test_bayat_takvim_saglikta_yakalanir(self, cfg, con):
+        from src import news
+        self._kur(con, [("AAA", "Finansal Rapor", "2026-08-01", "2026-08-20")],
+                  fetched="2026-06-01T05:00:00+00:00")
+        d = news.beklenen_durumu(cfg, con, "2026-08-07")
+        assert d["ok"] is False
+        assert "bayat" in d["not"]
+
+    def test_KIRPIK_yanit_SAKLANMAZ(self, cfg, con, monkeypatch):
+        """Tavana dayanan listede YOKLUK hiçbir şey kanıtlamaz (L-007).
+
+        Kırpık yanıt yazılırsa eski TAM anlık görüntü de bozulur ve `kapali`
+        cevapları sessizce yalan söylemeye başlar.
+        """
+        from src import news
+        from src.sources import kap
+        self._kur(con, [("AAA", "Finansal Rapor", "2026-08-01", "2026-08-20")])
+        onceki = con.execute("SELECT COUNT(*) FROM expected_disclosures").fetchone()[0]
+        monkeypatch.setattr(
+            kap, "fetch_beklenen",
+            lambda c: kap.BeklenenSonuc([{"kap_title": "X", "subject": "Y",
+                                          "period": None, "year": 2026,
+                                          "start_date": "2026-08-01",
+                                          "end_date": "2026-08-20"}],
+                                        None, kirpik=True, ham=2000))
+        r = news.sync_beklenen(cfg, con)
+        assert r["ok"] is False and r["kirpik"] is True
+        assert con.execute("SELECT COUNT(*) FROM expected_disclosures").fetchone()[0] \
+            == onceki, "kırpık yanıt tabloyu değiştirdi"
+
+    def test_sync_tabloyu_DEGISTIRIR_ustune_yazmaz(self, cfg, con, monkeypatch):
+        """Rapor yayımlanınca uçtan düşer; eski satır silinmezse 'hâlâ bekleniyor'
+        diye yaşamaya devam eder ve takvim kalıcı olarak yalan söyler."""
+        from src import db, news
+        from src.sources import kap
+        db.upsert_many(con, "disclosures",
+                       ["disclosure_id", "ticker", "published_utc", "tier",
+                        "company", "title", "fetched_utc"],
+                       [("d9", "AAA", "2026-07-01T00:00:00+00:00", "kap",
+                         "AAA A.Ş.", "x", "x")])
+        self._kur(con, [("AAA", "ESKİ KAYIT", "2026-08-01", "2026-08-20")])
+        monkeypatch.setattr(
+            kap, "fetch_beklenen",
+            lambda c: kap.BeklenenSonuc(
+                [{"kap_title": "AAA A.Ş.", "subject": "YENİ KAYIT", "period": None,
+                  "year": 2026, "start_date": "2026-09-01",
+                  "end_date": "2026-09-20"}], None, ham=1))
+        news.sync_beklenen(cfg, con)
+        konular = {r[0] for r in con.execute(
+            "SELECT subject FROM expected_disclosures")}
+        assert konular == {"YENİ KAYIT"}, f"eski kayıt hayatta kaldı: {konular}"

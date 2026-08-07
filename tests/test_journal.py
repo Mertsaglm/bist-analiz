@@ -128,3 +128,97 @@ class TestPortfoy:
         assert journal.holdings(con)["TEST"]["qty"] == 100
         journal.set_holding(con, "TEST", 0)
         assert "TEST" not in journal.holdings(con)
+
+
+class TestSureliVeto:
+    """⚠ REGRESYON KİLİDİ (2026-08-07, Merdiven'in süreli "bypass" fikrinden).
+
+    NE EKSİKTİ: veto bir KOŞUYA bağlıydı, takvime değil. Bugün `haber_riski`
+    diye veto edilen bir isim, hiçbir şey değişmeden yarın tertemiz görünüyordu
+    — ertesi günün paketinde vetonun izi yoktu. ADR #008'den beri veto sistemin
+    kalan ANA ürünü; ömrü tek bir koşu kadar olamaz.
+
+    Süre İŞLEM GÜNÜ cinsindendir (duvar saati değil): uzun tatillerde vetoyu
+    erken düşürmek, tam da piyasanın kapalı olduğu için hiçbir şeyin
+    değişmediği günlerde korumayı kaldırmak olurdu.
+    """
+
+    @staticmethod
+    def _veto(con, ticker, asof, kod, run="r1"):
+        from src import db
+        db.upsert_many(con, "llm_runs",
+                       ["run_id", "asof", "tool", "bundle_sha", "output_path",
+                        "audit_passed", "created_utc"],
+                       [(run, asof, "test", "sha", "/dev/null", 1, "now")])
+        db.upsert_many(
+            con, "predictions",
+            ["prediction_id", "run_id", "asof", "ticker", "signal", "action",
+             "confidence", "confidence_p", "veto_code", "factor_set_version",
+             "weights_hash", "indicator_set_version", "regime", "thesis",
+             "counter_scenario", "key_risk", "falsifier", "close_at_asof",
+             "created_utc"],
+            [(f"p-{ticker}-{asof}", run, asof, ticker, "hold", "plan_reddet",
+              "orta", 0.5, kod, "v1", "h", "v1", "neutral", "t", "c",
+              "GEREKÇE-METNİ", "f", 10.0, "now")])
+
+    def test_veto_ERTESI_GUN_de_aktif(self, cfg, con):
+        from src import journal
+        from tests.conftest import add_index, is_gunleri
+        g = is_gunleri(30, "2026-07-01")
+        add_index(con, "XU100", g)
+        self._veto(con, "AAA", g[10], "haber_riski")        # süre 3 işlem günü
+        v = journal.aktif_vetolar(cfg, con, g[11])
+        assert "AAA" in v, "veto ertesi gün buharlaştı"
+        assert v["AAA"][0]["kalan_islem_gunu"] >= 1
+
+    def test_suresi_dolan_veto_DUSER(self, cfg, con):
+        from src import journal
+        from tests.conftest import add_index, is_gunleri
+        g = is_gunleri(30, "2026-07-01")
+        add_index(con, "XU100", g)
+        self._veto(con, "AAA", g[5], "haber_riski")         # 3 işlem günü
+        assert "AAA" not in journal.aktif_vetolar(cfg, con, g[12])
+
+    def test_sure_VETO_KODUNA_gore_degisir(self, cfg, con):
+        """`likidite_zayif` yapısaldır, `haber_riski` hızla soğur."""
+        from src import journal
+        from tests.conftest import add_index, is_gunleri
+        g = is_gunleri(40, "2026-07-01")
+        add_index(con, "XU100", g)
+        self._veto(con, "AAA", g[5], "haber_riski", run="rA")
+        self._veto(con, "BBB", g[5], "likidite_zayif", run="rB")
+        v = journal.aktif_vetolar(cfg, con, g[15])
+        assert "AAA" not in v, "kısa süreli veto hâlâ aktif"
+        assert "BBB" in v, "uzun süreli veto erken düştü"
+
+    def test_gerekce_ve_arac_TASINIR(self, cfg, con):
+        """Veto neden konuldu ve hangi araç koydu — ikisi de kayıpsız gelmeli."""
+        from src import journal
+        from tests.conftest import add_index, is_gunleri
+        g = is_gunleri(20, "2026-07-01")
+        add_index(con, "XU100", g)
+        self._veto(con, "AAA", g[10], "tez_zayif")
+        x = journal.aktif_vetolar(cfg, con, g[11])["AAA"][0]
+        assert x["gerekce"] == "GEREKÇE-METNİ"
+        assert x["arac"] == "test"
+        assert x["konuldu"] == g[10] and x["bitis"] > g[10]
+
+    def test_vetosuz_tahmin_LISTEYE_GIRMEZ(self, cfg, con):
+        from src import journal
+        from tests.conftest import add_index, is_gunleri
+        g = is_gunleri(20, "2026-07-01")
+        add_index(con, "XU100", g)
+        from src import db
+        db.upsert_many(con, "llm_runs",
+                       ["run_id", "asof", "tool", "bundle_sha", "output_path",
+                        "audit_passed", "created_utc"],
+                       [("r0", g[10], "test", "s", "/dev/null", 1, "now")])
+        db.upsert_many(
+            con, "predictions",
+            ["prediction_id", "run_id", "asof", "ticker", "signal", "action",
+             "confidence", "confidence_p", "factor_set_version", "weights_hash",
+             "indicator_set_version", "regime", "thesis", "counter_scenario",
+             "key_risk", "falsifier", "close_at_asof", "created_utc"],
+            [("pz", "r0", g[10], "ZZZ", "hold", "izle", "orta", 0.5, "v1", "h",
+              "v1", "neutral", "t", "c", "k", "f", 10.0, "now")])
+        assert "ZZZ" not in journal.aktif_vetolar(cfg, con, g[11])

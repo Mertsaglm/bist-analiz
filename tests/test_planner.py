@@ -144,8 +144,10 @@ class TestDogrulama:
             plan_id="X-1", ticker="X", asof="2024-06-01", kind="dogrudan",
             entry_low=99.0, entry_high=100.0, entry_trigger="direct",
             stop_price=95.0, stop_method="atr_2x", stop_atr_multiple=2.0,
-            targets=[{"price": 110.0, "rr": 2.0, "atr_distance": 4.0, "basis": "pivot"}],
-            rr_at_t1=2.0, time_barrier_days=20, time_barrier_date="2024-06-28",
+            targets=[{"price": 110.0, "rr": 2.0, "rr_net": 1.87,
+                      "atr_distance": 4.0, "basis": "pivot"}],
+            rr_at_t1=2.0, rr_at_t1_net=1.87, maliyet_pct=0.30,
+            time_barrier_days=20, time_barrier_date="2024-06-28",
             position_size_pct=5.0, max_loss_pct_of_portfolio=0.25,
             entry_zone_status="in_zone", daily_limit_note="", ex_date_in_window=None)
         return planner.PlanOption(**{**temel, **kw})
@@ -251,3 +253,159 @@ class TestKaliteKapisiVeReplay:
         from src import replay
         kaynak = inspect.getsource(replay.run)
         assert "assess_quality" in kaynak and "store=False" in kaynak
+
+
+class TestLimitKapisi:
+    """⚠ REGRESYON KİLİDİ (2026-08-07, Merdiven repo incelemesinden).
+
+    Yakaladığı hata: tavana/tabana kilitli bir barın kapanışı BASTIRILMIŞ bir
+    fiyattır — karşı taraf boştur ve gerçek denge fiyatı bilinmez. Sistem o
+    kapanışın üzerine giriş bandı, stop ve ATR kurup **uygulanamaz** bir plan
+    üretiyordu ve hiçbir kontrol bunu söylemiyordu. L-007'nin imzası: kod
+    doğru, çıktı geçerli görünüyor, gerçek dünyada karşılığı yok.
+
+    Frekans ÖLÇÜLDÜ (canlı evren, 50.999 bar): kilit %0.97 — yani ~100 barda
+    1. İhmal edilebilir değil, üstelik tam da bir şeyler olan günlerde oluyor.
+    """
+
+    @staticmethod
+    def _kur(cfg, con, *, son_bar_carpani: float):
+        """300 barlık seri; SON bar bir önceki kapanışın `carpan` katı."""
+        from tests.conftest import add_bars, add_universe, bar_serisi
+        add_universe(con, "AAA")
+        rows = bar_serisi(300, fiyat=100.0, gunluk_egim=0.0008, dalga=3.0)
+        d, o, h, low, c, v, ctr = rows[-1]
+        onceki_c = rows[-2][4]
+        yeni_c = round(onceki_c * son_bar_carpani, 4)
+        rows[-1] = (d, onceki_c, max(yeni_c, onceki_c), min(yeni_c, onceki_c),
+                    yeni_c, v, yeni_c)
+        add_bars(con, "AAA", rows)
+        con.execute(
+            "INSERT OR REPLACE INTO indicator_daily "
+            "(ticker,date,set_version,atr14,sma20,sma50,computed_utc) "
+            "VALUES (?,?,?,?,?,?,?)",
+            ("AAA", d, "core_indicators_v1", 2.5, yeni_c * 0.97, yeni_c * 0.94, "x"))
+        con.commit()
+        return d
+
+    def test_tavanda_kilitli_isimde_PLAN_URETILMEZ(self, cfg, con):
+        asof = self._kur(cfg, con, son_bar_carpani=1.10)
+        r = planner.build_menu(cfg, con, asof, tickers=["AAA"],
+                               kalite={"AAA": {"ok": True, "reasons": []}})
+        assert "AAA" not in r["menu"], "kilitli isimde plan üretildi"
+        assert "günlük fiyat marjı" in r["atlanan"]["AAA"]
+        assert "TAVANDA" in r["atlanan"]["AAA"]
+
+    def test_tabanda_kilitli_isimde_PLAN_URETILMEZ(self, cfg, con):
+        asof = self._kur(cfg, con, son_bar_carpani=0.90)
+        r = planner.build_menu(cfg, con, asof, tickers=["AAA"],
+                               kalite={"AAA": {"ok": True, "reasons": []}})
+        assert "AAA" not in r["menu"]
+        assert "TABANDA" in r["atlanan"]["AAA"]
+
+    def test_serbest_barda_kapi_ACIK_KALIR(self, cfg, con):
+        """Kontrol grubu: kapı her şeyi elemiyor olmalı (yoksa özellik değil, arıza)."""
+        asof = self._kur(cfg, con, son_bar_carpani=1.005)
+        r = planner.build_menu(cfg, con, asof, tickers=["AAA"],
+                               kalite={"AAA": {"ok": True, "reasons": []}})
+        assert "günlük fiyat marjı" not in (r["atlanan"].get("AAA") or "")
+
+    def test_limit_OTESI_bar_ELENMEZ_ama_ISARETLENIR(self, cfg, con):
+        """Olağanüstü piyasa günü (2023-02-15 gibi) kilit DEĞİLDİR.
+
+        O gün fiyat gerçektir, sadece çok hareket etmiştir. Elemek, sistemin
+        Mert'in en çok merak ettiği günde susması olurdu. Ama plan notundaki
+        "tek günde tetiklenemez" iddiası o gün YANLIŞTIR ve bunu söylemeli.
+        """
+        asof = self._kur(cfg, con, son_bar_carpani=1.22)     # THYAO 2023-02-15
+        r = planner.build_menu(cfg, con, asof, tickers=["AAA"],
+                               kalite={"AAA": {"ok": True, "reasons": []}})
+        assert "günlük fiyat marjı" not in (r["atlanan"].get("AAA") or "")
+        assert r["limitler"]["AAA"]["durum"] == "limit_disi"
+
+    def test_limitler_TUM_isimleri_kapsar_elenenler_dahil(self, cfg, con):
+        """Analistin 'bu isim neden yok' sorusu limit durumundan bağımsızdır."""
+        asof = self._kur(cfg, con, son_bar_carpani=1.10)
+        r = planner.build_menu(cfg, con, asof, tickers=["AAA"])   # kalite YOK → elenir
+        assert "AAA" in r["limitler"], \
+            "kalite kapısından elenen isim limit haritasından da düştü"
+
+    def test_limit_disi_plan_notuna_YANSIR(self, cfg, con):
+        """`daily_limit_note` iddiasının ölçülmüş istisnası cümlenin İÇİNDE."""
+        n = planner._limit_notu(cfg, 6.5, False, {"durum": "limit_disi",
+                                                  "aciklama": "TEST-AÇIKLAMA"})
+        assert "ölçülen istisna" in n
+        assert "TAM O İSTİSNADA" in n and "TEST-AÇIKLAMA" in n
+        temiz = planner._limit_notu(cfg, 6.5, False, {"durum": "serbest"})
+        assert "TAM O İSTİSNADA" not in temiz
+
+
+class TestNetRR:
+    """⚠ SÖZLEŞME KİLİDİ (2026-08-07, Merdiven ΔEV fikrinin çekirdeği).
+
+    NE OLMUŞTU: `islem_maliyeti_gidis_donus_pct` yalnız `backtest.py`'de
+    yaşıyordu. Yani aynı sistem ölçerken "maliyet var", plan üretirken "yok"
+    diyordu ve rapor "R:R 1.52" yazarken gerçekte eline 1.42 geçiyordu.
+
+    ⚠ AMA KAPI BRÜTTE KALIR ve bu testin ASIL işi onu korumak. Nete geçmek
+    `min_rr_t1`'i fiilen 1.5 → ~1.60 yükseltir; `docs/on-kayit-seviye-02.md`
+    §4 bu parametreyi ön kayıtlı tura bağlamış ve §3'teki tetikleyicilerin
+    hiçbiri oluşmadı. ÖLÇÜLDÜ (58 geçmiş plan): nete geçmek **19'unu (%33)**
+    elerdi. O sayıyı görüp eşik oynatmak `on-kayit-revizyon-01.md` §5'in
+    açıkça yasakladığı harekettir.
+    """
+
+    def test_net_rr_brutten_KUCUK(self, cfg):
+        assert risk.rr_net(100.0, 90.0, 120.0, cfg) < risk.rr(100.0, 90.0, 120.0)
+
+    def test_maliyet_HER_IKI_tarafi_da_vurur(self, cfg):
+        """Risk BÜYÜR, ödül KÜÇÜLÜR — tek taraflı uygulamak iyimserlik olur."""
+        import copy
+        c0 = copy.deepcopy(cfg); c0["risk"]["islem_maliyeti_gidis_donus_pct"] = 0.0
+        assert risk.rr_net(100.0, 90.0, 120.0, c0) == risk.rr(100.0, 90.0, 120.0)
+        m = float(cfg["risk"]["islem_maliyeti_gidis_donus_pct"]) / 100.0
+        beklenen = round(((120.0 - 100.0) - 100.0 * m) / ((100.0 - 90.0) + 100.0 * m), 2)
+        assert risk.rr_net(100.0, 90.0, 120.0, cfg) == beklenen
+
+    def test_uretilen_her_planda_net_alan_DOLU(self, kurulum):
+        cfg, bars, ind, sev, rej = kurulum
+        opts, _ = planner.build_options(cfg, ticker="TEST", asof="2024-06-01",
+                                        bars=bars, ind=ind, seviyeler=sev, regime=rej)
+        assert opts
+        for o in opts:
+            assert o.rr_at_t1_net is not None
+            assert o.rr_at_t1_net < o.rr_at_t1
+            assert o.maliyet_pct > 0
+            for t in o.targets:
+                assert t["rr_net"] is not None and t["rr_net"] < t["rr"]
+
+    def test_KAPI_BRUTE_uygulanir_ON_KAYIT_siniri(self, cfg):
+        """Ön kayıt sınırı KOŞULABİLİR hâle getirildi (AGENTS.md §12).
+
+        Brüt R:R eşiği geçen ama NET geçmeyen bir plan ÜRETİLMELİ. Üretilmiyorsa
+        kapı sessizce nete kaymış ve ön kayıtsız bir eşik değişikliği olmuş
+        demektir.
+        """
+        import inspect
+        # ⚠ YORUMLAR SOYULUR. Naif metin araması KENDİ yorumlarını yakalar ve
+        # yanlış alarm verir (AGENTS.md §11, kapatma tuzağı #2) — burada
+        # `min_rr_t1` ilk olarak benim yazdığım açıklama satırında geçiyor.
+        kod = "\n".join(
+            l for l in inspect.getsource(planner.build_options).split("\n")
+            if not l.strip().startswith("#"))
+        kapi = [l for l in kod.split("\n") if "min_rr_t1" in l and "<" in l]
+        assert kapi, "min_rr_t1 karşılaştırması kodda bulunamadı"
+        birlesik = " ".join(kapi)
+        assert 'hedefler[0]["rr"]' in birlesik, \
+            f"min_rr_t1 kapısı brüt `rr` alanına uygulanmıyor: {birlesik}"
+        assert '"rr_net"' not in birlesik, \
+            "min_rr_t1 kapısı NET değere kaymış — bu, ön kayıt gerektiren bir " \
+            "eşik değişikliğidir (docs/on-kayit-seviye-02.md §4)"
+
+    def test_brutu_gecip_neti_gecemeyen_plan_URETILIR(self, cfg):
+        """Davranış düzeyinde aynı sınır — kaynak metni değil, SONUÇ."""
+        esik = float(cfg["planlayici"]["min_rr_t1"])
+        # brüt 1.52, net ~1.42: kapı brütteyse GEÇER
+        e, s, t1 = 100.0, 90.0, 115.2
+        assert risk.rr(e, s, t1) >= esik
+        assert risk.rr_net(e, s, t1, cfg) < esik
