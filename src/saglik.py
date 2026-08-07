@@ -130,6 +130,10 @@ def kontrol(cfg: dict, con: sqlite3.Connection) -> dict:
     seviye, ad, tamam, mesaj = _duzeltilmemis_kurumsal(cfg, con)
     ekle(seviye, ad, tamam, mesaj)
 
+    # 12) ATLANAN OTONOM KOŞU — bildirimin ULAŞAMADIĞI arıza sınıfı
+    seviye, ad, tamam, mesaj = _atlanan_kosu(cfg, con, asof)
+    ekle(seviye, ad, tamam, mesaj)
+
     return {
         "asof": asof,
         "bulgular": bulgular,
@@ -216,6 +220,47 @@ def _kesit_kontrolleri(cfg: dict, con: sqlite3.Connection
                     ozet + (f" → **%{tel*100:.0f} telini AŞTI**; 18 ismin çoğuna "
                             "aynı şeyi demek araç şüphesidir" if tek_yon else "")))
     return out
+
+
+def _atlanan_kosu(cfg: dict, con: sqlite3.Connection, asof: str | None
+                  ) -> tuple[str, str, bool, str]:
+    """Analiz KOŞMADIĞI günleri yakalar — bildirimin ulaşamadığı arıza sınıfı.
+
+    ⚠ GERÇEK OLAY (2026-08-06): planlanmış otonom koşu GitHub tarafında
+    "The job was not acquired by Runner of type hosted" ile düştü. İş HİÇ
+    BAŞLAMADI; dolayısıyla `otonom.py` koşmadı, Telegram bildirimi de çıkmadı.
+    Kullanıcı açısından o gün **tamamen sessizdi** — ne rapor geldi, ne uyarı.
+    Fark edilmesi yalnızca eksik bir commit'e gözle rastlamaya kalmıştı.
+
+    Bu, L-010'un kardeşi ve bir adım daha kötüsü: L-010'da kontroller kendi
+    verisine bakıyordu; burada **bildirim mekanizması, gözlediği sürecin
+    İÇİNDE yaşıyor.** Bir süreç kendi yokluğunu haber veremez.
+
+    Çözüm, bir sonraki koşan sürecin GERİYE bakması: journal'daki son analiz
+    günü ile beklenen son seans arasındaki işlem günü farkı. Fark ≥1 ise
+    aradaki bir koşu atlanmıştır. Bu kontrol elle `bist saglik` ile de
+    koşulabilir, yani hiç Actions çalışmasa bile görünür.
+    """
+    if not asof:
+        return BILGI, "atlanan koşu", True, "veri yok"
+    son_analiz = db.scalar(con, "SELECT MAX(asof) FROM predictions")
+    if not son_analiz:
+        return BILGI, "atlanan koşu", True, "journal boş — henüz analiz yok"
+    try:
+        from .calendar_bist import BistCalendar
+        cal = BistCalendar(cfg, con)
+        fark = cal.trading_days_between(son_analiz, asof)
+    except Exception:                                       # noqa: BLE001
+        return BILGI, "atlanan koşu", True, "takvim kurulamadı"
+    ozet = f"son analiz {son_analiz} · son bar {asof}"
+    if fark <= 0:
+        return OK, "atlanan koşu", True, ozet
+    # Şiddet kademeli: bir gün gecikme (yfinance bekleyişi, tek seferlik runner
+    # arızası) olağan; iki gün üst üste analiz yoksa zincir gerçekten duruyor.
+    return ((KRITIK if fark >= 2 else UYARI), "atlanan koşu", False,
+            ozet + f" → **{fark} işlem günü analizsiz**. Planlı koşu düşmüş "
+                   "olabilir; iş hiç başlamazsa Telegram bildirimi de ÇIKMAZ "
+                   "(gözlendi 2026-08-06). Actions geçmişini kontrol et.")
 
 
 def duzeltilmemis_kurumsal_tara(cfg: dict, con: sqlite3.Connection) -> list[dict]:

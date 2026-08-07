@@ -11,7 +11,8 @@ Suite **1078 → 1185**. Şema **v6 → v9**.
 
 ## ✅ Tamamlananlar
 
-**Faz 9 — karar anı katmanı** (2026-08-07) — ADR **#015** · L-012/13/14
+**Faz 9 — karar anı katmanı** (2026-08-07) — ADR **#015**, **#016** ·
+L-012/13/14/15
 Rapor: `reports/repo-inceleme-2026-08-07.md` (34 satırlık karşılaştırma).
 Bulgu: karar ÖNCESİ her boyutta öndeyiz, **karar ANINDA** 9 satırda "—" vardı.
 
@@ -33,10 +34,12 @@ Yeni: `src/eylem.py` · `prices.limit_map` / `ohlc_ihlalleri` ·
 `journal.aktif_vetolar` · `saglik.duzeltilmemis_kurumsal_tara` ·
 migration v7/v8/v9.
 
-**Üç ders yolda çıktı:** L-012 (naif grep kendi yorumunu yakalar — aynı gün
+**Dört ders yolda çıktı:** L-012 (naif grep kendi yorumunu yakalar — aynı gün
 **iki kez**), L-013 (son 8 kayda bakıp "sapma ≤%0.06" demiştim; gerçek maks
 **%1.796**), L-014 (kayan pencereli kontrol, pencerenin gerisindeki bozulmayı
-onaylar).
+onaylar), **L-015** (2026-08-06 otonom koşusu GitHub runner kapasitesinden hiç
+başlamadı → Telegram bildirimi de çıkmadı; bir süreç kendi yokluğunu haber
+veremez → `saglik`'e "atlanan koşu" kontrolü eklendi).
 
 **Faz 8 — otonom koşu** (2026-08-01) — ADR **#013**, L-010/011 · İlk canlı tur
 6/6 modelde düştü, sebep modeller değil GÖRÜNMEZ kurallardı; istem sözleşmeyle
@@ -51,21 +54,32 @@ Takvim iki kaynaktan (#012). Kurallar teste devredildi (#011).
 - _(yok)_
 
 ## 🧱 Bloklar / Bekleyenler
-- 🔑 **Faz 8 kurulumu — son iki adım.** ✅ bot · ✅ EVDS · ✅ Gemini · ✅ private
-  repo · ✅ ilk canlı tur. Kalan: (1) `python scripts/set_secrets.py <pat_dosyasi>`,
-  (2) `gunluk.yml`'yi Actions'ta `workflow_dispatch` ile elle tetikleyip yeşil
-  gördükten sonra cron'a bırak.
+- _(yok)_ — **Faz 8 KAPANDI.** Doğrulandı 2026-08-07: 5 secret 08-01'de
+  yüklenmiş, cron hafta içi koşuyor (08-03/04/05 commit'leri), Test workflow
+  yeni kodla yeşil. STATE bu maddede bayatmış, düzeltildi.
 
 ## 🎯 Sıradaki 3 İş
-1. **Faz 8'i canlıya al.** DoD: `workflow_dispatch` yeşil; repoda yeni commit
-   (`data/bist.sql`, `reports/`, `llm/`); Telegram'a özet düşüyor; `tool` alanı
-   zincirdeki bir model. Ardından cron KENDİLİĞİNDEN koşuyor.
-2. **Faz 9'u canlı bir günde uçtan uca gör.** DoD: `bist veri gunluk` →
-   `gosterge` → `haber cek` → `saglik` → `gunluk` zinciri koşuyor ve raporun
-   **§0 sıralı listesi** taze veriyle doluyor. Not: yerel DB 5 seans geride
-   (L-001), önce `veri gunluk`.
-3. **İlk çözüm turu.** DoD: bariyer dolunca `bist coz` çözüyor; ardından
+
+Üçü de **ZAMAN KAPILI** — yapılacak iş kalmadı, beklenecek olay var.
+
+1. **İlk çözüm turu — 2026-08-26'dan sonra.** En yakın bariyer o tarihte;
+   bugün `bist coz` doğru olarak 0 çözüyor (29 `plan_sec` tahminin hepsinin
+   bariyeri ileride). DoD: bariyer dolunca `bist coz` çözüyor, ardından
    `bist degerlendir` KARIŞIK KAYNAK nedeniyle durup `--tool` istiyor (çıkış 2).
+   ⚠ `araclar()` yalnız ÇÖZÜLMÜŞ tahminleri sayar; bugün hepsi `replay`
+   olduğu için çıkış 0 — bu bir hata değil, o kapı henüz açılmadı.
+2. **Faz 9'u ANALİSTLİ bir günde gör.** Deterministik zincir 2026-08-05
+   verisiyle uçtan uca koşuldu (CI taklidi dahil, çıkış 0); kalan yalnız
+   analist halkasıyla birlikte görmek. Elle iş yok, cron yapacak.
+   DoD: bir sonraki `reports/gunluk_*.md` dosyasının **§0 listesinde** en az
+   bir satır analist sinyaliyle (`AZALT — analist ...`) çıkıyor VE aynı gün
+   `bist saglik` "atlanan koşu" satırı ✓ basıyor.
+3. **`kirli_gozlem` ve `plan üretim oranı` sayaçlarını izle.** İkisi de
+   `bist saglik`'te ve ölçüm raporunda basılıyor.
+   DoD: haftada bir `bist saglik` çıktısına bakılıyor; `kirli_gozlem > 20`
+   ya da `plan üretim oranı` ortalaması `< 2.0` görülürse STATE Backlog'undaki
+   ilgili madde (sırasıyla ikinci kaynak kıyası · ön kayıtlı seviye turu)
+   "devam eden"e taşınıyor.
 
 _Not: `reports/olcum_2026-08-07.md` ADR #016 sonrası yeniden üretildi —
 kirli gözlem sayısı raporun "Kapsama" bölümünde basılıyor._

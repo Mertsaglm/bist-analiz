@@ -6,6 +6,42 @@
 
 ---
 
+## L-015 — 2026-08-07 — Bir süreç kendi YOKLUĞUNU haber veremez
+
+**Olay:** 2026-08-06'daki planlı otonom koşu GitHub tarafında düştü:
+*"The job was not acquired by Runner of type hosted even after multiple
+attempts."* İş 15 dakika kuyrukta bekledi ve HİÇ BAŞLAMADI.
+
+Sonuç şuydu: `otonom.py` koşmadı → sağlık kontrolü koşmadı → Telegram
+bildirimi ÇIKMADI. Kullanıcı açısından o gün **tamamen sessizdi**. Ne rapor
+geldi, ne uyarı, ne hata. Fark edilmesi yalnızca `git log`'da eksik bir
+commit'e gözle rastlamaya kalmıştı — ve bu, ancak başka bir iş için oraya
+bakıldığı için oldu.
+
+Kod kusursuzdu. Zincirin her halkası doğruydu. Bozulan şey zincirin
+KOŞMAMASIYDI ve zincirin içindeki hiçbir kontrol bunu göremezdi.
+
+**Ders:** L-010 "kontroller birbirini doğruluyorsa hiçbiri dış dünyaya
+bakmıyordur" demişti. Bu onun bir üst katmanı: **bildirim mekanizması,
+gözlediği sürecin İÇİNDE yaşıyorsa, o sürecin hiç çalışmamasını asla
+bildiremez.** Bir sağlık kontrolü ne kadar iyi olursa olsun, koşmadığı gün
+sıfır değerlidir; ve tam olarak koşmadığı günler en çok ihtiyaç duyulan
+günlerdir.
+
+Bu, "sessiz bozulma"nın en saf hâli: burada bozulan veri de değil, kontrol
+de değil — **olayın kendisi hiç gerçekleşmedi** ve yokluğun bıraktığı iz
+yalnızca başka bir şeyin eksikliği.
+
+**Kural:** Zamanlanmış her iş için sor: *"bu iş HİÇ çalışmazsa bunu kim, ne
+zaman fark eder?"* Cevap "işin kendisi" ise cevap yoktur. Tespit, bir SONRAKİ
+koşanın GERİYE bakmasıyla kurulur: son başarılı çıktının damgası ile beklenen
+takvim arasındaki fark. Bu kontrol dışarıdan elle de koşulabilmelidir
+(`bist saglik` → "atlanan koşu"), yoksa aynı tuzağa bir kat daha girilir.
+Ve şiddet kademeli olmalı: tek seferlik altyapı arızası olağandır, üst üste
+iki gün değildir.
+
+---
+
 ## L-014 — 2026-08-07 — Kalite kapısının PENCERESİ, kapının kendisi kadar önemlidir
 
 **Olay:** Dış repo incelemesinden çıkan "bedelsiz kapsaması ölçülsün" maddesi

@@ -270,3 +270,84 @@ class TestKesitselDevreKesici:
         self._tahminler(con, ["sell"] * 10 + ["hold"] * 2)
         seviye, _, _ = self._bul(cfg, con, "sinyal dağılımı")
         assert seviye == sag.UYARI
+
+
+class TestAtlananKosu:
+    """⚠ REGRESYON KİLİDİ — GERÇEK OLAY 2026-08-06.
+
+    Planlanmış otonom koşu GitHub tarafında düştü:
+    *"The job was not acquired by Runner of type hosted even after multiple
+    attempts"*. İş HİÇ BAŞLAMADI → `otonom.py` koşmadı → Telegram bildirimi de
+    ÇIKMADI. Kullanıcı açısından o gün tamamen SESSİZDİ; fark edilmesi eksik
+    bir commit'e gözle rastlamaya kalmıştı.
+
+    Bu L-010'un bir adım kötüsü: orada kontroller kendi verisine bakıyordu,
+    burada **bildirim mekanizması gözlediği sürecin İÇİNDE yaşıyor.** Bir
+    süreç kendi yokluğunu haber veremez. Çözüm, bir sonraki koşanın GERİYE
+    bakması — ve bu kontrol elle de koşulabildiği için Actions hiç çalışmasa
+    bile görünür.
+    """
+
+    @staticmethod
+    def _kur(con, cfg, bar_gunleri, analiz_gunu):
+        from src import db
+        from tests.conftest import add_index
+        _veri_kur(con, cfg, bar_gunleri)
+        add_index(con, "XU100", bar_gunleri)
+        db.upsert_many(con, "llm_runs",
+                       ["run_id", "asof", "tool", "bundle_sha", "output_path",
+                        "audit_passed", "created_utc"],
+                       [("r1", analiz_gunu, "test", "s", "/dev/null", 1, "now")])
+        db.upsert_many(
+            con, "predictions",
+            ["prediction_id", "run_id", "asof", "ticker", "signal", "action",
+             "confidence", "confidence_p", "factor_set_version", "weights_hash",
+             "indicator_set_version", "regime", "thesis", "counter_scenario",
+             "key_risk", "falsifier", "close_at_asof", "created_utc"],
+            [("p1", "r1", analiz_gunu, "THYAO", "hold", "izle", "orta", 0.5,
+              "v1", "h", "v1", "neutral", "t", "c", "k", "f", 10.0, "now")])
+
+    def _bul(self, cfg, con):
+        return next(b for b in sag.kontrol(cfg, con)["bulgular"]
+                    if b[1] == "atlanan koşu")
+
+    def test_analiz_guncelse_TEMIZ(self, cfg, con):
+        from tests.conftest import is_gunleri
+        g = is_gunleri(5, "2026-08-03")
+        self._kur(con, cfg, g, g[-1])
+        assert self._bul(cfg, con)[0] == sag.OK
+
+    def test_BIR_gun_analizsizse_UYARI(self, cfg, con):
+        from tests.conftest import is_gunleri
+        g = is_gunleri(5, "2026-08-03")
+        self._kur(con, cfg, g, g[-2])          # son bar var, analiz bir gün geride
+        seviye, _, mesaj = self._bul(cfg, con)
+        assert seviye == sag.UYARI
+        assert "1 işlem günü analizsiz" in mesaj
+
+    def test_IKI_gun_analizsizse_KRITIK(self, cfg, con):
+        """Bir gün gecikme olağan; iki gün üst üste zincir gerçekten durmuştur."""
+        from tests.conftest import is_gunleri
+        g = is_gunleri(6, "2026-08-03")
+        self._kur(con, cfg, g, g[-3])
+        assert self._bul(cfg, con)[0] == sag.KRITIK
+
+    def test_journal_bossa_ALARM_VERMEZ(self, cfg, con):
+        """Henüz hiç analiz koşmamış bir kurulumda bu bir arıza değildir."""
+        from tests.conftest import is_gunleri
+        from src import db
+        g = is_gunleri(4, "2026-08-03")
+        _veri_kur(con, cfg, g)
+        from tests.conftest import add_index
+        add_index(con, "XU100", g)
+        seviye, _, mesaj = self._bul(cfg, con)
+        assert seviye == sag.OK and "journal boş" in mesaj
+
+    def test_mesaj_SEBEBI_ve_NEREYE_BAKILACAGINI_yazar(self, cfg, con):
+        """L-011: uyarıyı gören kişi nereye bakacağını mesajdan öğrenmeli."""
+        from tests.conftest import is_gunleri
+        g = is_gunleri(5, "2026-08-03")
+        self._kur(con, cfg, g, g[-2])
+        _, _, mesaj = self._bul(cfg, con)
+        assert "Telegram bildirimi de ÇIKMAZ" in mesaj
+        assert "Actions geçmişini" in mesaj
