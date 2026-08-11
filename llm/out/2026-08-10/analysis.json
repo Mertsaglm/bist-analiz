@@ -1,0 +1,313 @@
+{
+  "schema_version": "bist_llm_v1",
+  "asof": "2026-08-10",
+  "bundle_sha": "feb5df83f5bf29a7ab88bac9304948accf5e6efb2aec829b79bd53c66c974229",
+  "tool": "gemini-3.5-flash",
+  "market_view": {
+    "regime_agreement": "katiliyorum",
+    "regime_note": "Piyasa genelinde zayiflik ve hareketli ortalamalarin altindaki seyir risk-off durusunun korunmasini gerektiriyor.",
+    "portfolio_action": "koru"
+  },
+  "stocks": [
+    {
+      "ticker": "AKBNK",
+      "signal": "avoid",
+      "action": "islem_yok",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "dusuk",
+      "thesis": "Bankacilik sektorundeki genel ivme kaybi ve hareketli ortalamalarin altindaki seyir baskiyi artirmaktadir.",
+      "counter_scenario": "Sektor genelinde yasanacak guclu bir sermaye girisi ve hacimli yukselis baskiyi sonlandirabilir.",
+      "key_risk": "Yurtdisi piyasalardaki borclanma maliyetlerinin artmasi ve sendikasyon yenileme sureclerindeki tikanmadir.",
+      "falsifier": "Gelecek bes is gunu icinde senedin gunluk kapanisinin uzun vadeli hareketli ortalamanin uzerinde gerceklesmesi.",
+      "news_refs": [
+        "kap-1646543",
+        "kap-1646541",
+        "kap-1646531",
+        "kap-1646530",
+        "kap-1646529",
+        "kap-1645072"
+      ],
+      "news_reading": null
+    },
+    {
+      "ticker": "ASELS",
+      "signal": "hold",
+      "action": "izle",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "dusuk",
+      "thesis": "Savunma sanayi alanindaki siparis yogunlugu ve guclu durus senedi endekse gore daha direncli kilmaktadir.",
+      "counter_scenario": "Kamu harcamalarinda yasanabilecek kesintiler ve teslimat takvimindeki olasi aksamalar geri cekilmeye yol acar.",
+      "key_risk": "Jeopolitik gerilimlerin azalmasi ve kuresel tedarik zincirindeki aksamalarin operasyonlari etkilemesidir.",
+      "falsifier": "Hissenin gelecek bes is gunu icinde kisa vadeli ortalamasinin altinda gunluk kapanis yapmasi durumu.",
+      "news_refs": [],
+      "news_reading": null
+    },
+    {
+      "ticker": "ASTOR",
+      "signal": "avoid",
+      "action": "islem_yok",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "dusuk",
+      "thesis": "Elektrik ekipmanlari sektorundeki siparis akislari olumlu olsa da genel endeks baskisi yukselisi sinirlamaktadir.",
+      "counter_scenario": "Yeni alinan buyuk ihalelerin yani sira bilanco doneminde beklenti ustu finansal sonuclarin aciklanmasidir.",
+      "key_risk": "Onumuzdeki gunlerde aciklanacak olan alti aylik bilanco doneminin yaratacagi yuksek fiyat dalgalanmalaridir.",
+      "falsifier": "Gelecek bes is gununde en yuksek hacimli gunun negatif yonlu bir fiyat kapanisi ile sonuclanmasi durumu.",
+      "news_refs": [
+        "kap-1646205",
+        "kap-1645631",
+        "kap-1645630",
+        "kap-1645625",
+        "kap-1645624",
+        "kap-1645544"
+      ],
+      "news_reading": null
+    },
+    {
+      "ticker": "BIMAS",
+      "signal": "hold",
+      "action": "izle",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "dusuk",
+      "thesis": "Gida perakendeciligi sektorunun defansif yapisi enflasyonist ortamda senedi kismi olarak korumaya devam etmektedir.",
+      "counter_scenario": "Tuketici guven endeksindeki sert dusus ve marjlardaki daralma senedin destek seviyelerini kirmasina yol acar.",
+      "key_risk": "Onumuzdeki haftalarda aciklanacak olan alti aylik bilanco sonuclarinin marjlarda daralma yaratma riskidir.",
+      "falsifier": "Hissenin gelecek bes is gunu icinde yillik zirvesinin altinda zayif kapanislar serisi gerceklestirmesidir.",
+      "news_refs": [],
+      "news_reading": null
+    },
+    {
+      "ticker": "EKGYO",
+      "signal": "avoid",
+      "action": "islem_yok",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "dusuk",
+      "thesis": "Gayrimenkul sektorundeki yuksek faiz ortami konut satislari uzerinde baski kurmaya devam etmektedir.",
+      "counter_scenario": "Konut kredisi faiz oranlarinda yasanabilecek olasi bir dusus sektore hizli ve guclu bir canlilik getirebilir.",
+      "key_risk": "Aciklanacak alti aylik bilanco ve finansal rapor doneminde stok maliyetlerinin yuksek cikmasidir.",
+      "falsifier": "Senedin gelecek bes is gunu boyunca en dusuk seviyesinin altinda kapanislar yaparak yeni dip olusturmasi.",
+      "news_refs": [
+        "kap-1644421"
+      ],
+      "news_reading": null
+    },
+    {
+      "ticker": "ENKAI",
+      "signal": "hold",
+      "action": "izle",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "dusuk",
+      "thesis": "Insaat ve taahhut sektorundeki kuresel projeler senede doviz bazli nakit akisi saglayarak direnci korumaktadir.",
+      "counter_scenario": "Yurtdisi taahhut projelerinde yasanabilecek iptaller veya kuresel yavaslama siparis defterini olumsuz etkiler.",
+      "key_risk": "Yakin zamanda aciklanacak olan bilanco sonuclarinda kur farki giderlerinin karlilik uzerinde baski yaratmasidir.",
+      "falsifier": "Gelecek bes is gununde senedin gunluk islem hacminin son donem ortalamasinin cok altina gerilemesi durumu.",
+      "news_refs": [],
+      "news_reading": null
+    },
+    {
+      "ticker": "EREGL",
+      "signal": "accumulate",
+      "action": "plan_sec",
+      "selected_plan_id": "EREGL-2026-08-10-A",
+      "veto_code": null,
+      "confidence": "orta",
+      "thesis": "Finansal sonuclarin aciklanmasinin ardindan gerceklesen sert satislar sonrasi destek bolgesine geri cekilme yasanmaktadir.",
+      "counter_scenario": "Kuresel demir celik fiyatlarinda yasanabilecek yeni dusus dalgalari senedin destek seviyesini kirmasina yol acar.",
+      "key_risk": "Celik talebindeki kuresel daralmanin devam etmesi ve marjlarin beklentilerden daha yavas toparlanmasi riskidir.",
+      "falsifier": "Gelecek bes is gunu icinde gunluk kapanisin belirlenen stop seviyesinin altinda gerceklesmesi durumudur.",
+      "news_refs": [
+        "kap-1644587",
+        "kap-1644586",
+        "kap-1644585",
+        "kap-1644583"
+      ],
+      "news_reading": null
+    },
+    {
+      "ticker": "EUPWR",
+      "signal": "hold",
+      "action": "plan_reddet",
+      "selected_plan_id": null,
+      "veto_code": "rejim_uyumsuz",
+      "confidence": "dusuk",
+      "thesis": "Elektrik ekipmanlari segmentindeki siparislerin olumlu seyri surse de senedin uzerindeki genel baski devam etmektedir.",
+      "counter_scenario": "Yeni yenilenebilir enerji yatirimlarinin hizlanmasi durumunda hissede yukari yonlu sert bir tepki gorulebilir.",
+      "key_risk": "Alti aylik bilanco doneminin yaklasmasi ve yuksek borcluluk oranlarinin finansman giderlerini artirma riskidir.",
+      "falsifier": "Hissenin gelecek bes is gunu boyunca her gun bir onceki gunun en dusuk seviyesinin altinda kapanis yapmasidir.",
+      "news_refs": [],
+      "news_reading": null
+    },
+    {
+      "ticker": "FROTO",
+      "signal": "avoid",
+      "action": "islem_yok",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "dusuk",
+      "thesis": "Otomotiv sektorundeki ihracat pazarlarinin daralmasi ve ic talep zayifligi senedi baskilamaya devam etmektedir.",
+      "counter_scenario": "Avrupa pazarindaki canlilik ve ihracat adetlerindeki artis senedin destek seviyelerinden donmesini saglayabilir.",
+      "key_risk": "Faiz oranlarinin yuksek seyretmesinin ic piyasa satislari uzerindeki daraltici etkisinin artarak surmesidir.",
+      "falsifier": "Gelecek bes is gunu icinde hissenin kisa vadeli hareketli ortalamasinin altinda hacimli kapanislar yapmasi.",
+      "news_refs": [],
+      "news_reading": null
+    },
+    {
+      "ticker": "GARAN",
+      "signal": "avoid",
+      "action": "islem_yok",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "dusuk",
+      "thesis": "Bankacilik sektorundeki genel marj daralmasi ve fonlama maliyetlerinin yuksek seyri senedi baskilamaktadir.",
+      "counter_scenario": "Yabanci yatirimci ilgisinin bankacilik sektorune geri donmesi durumunda hizli bir toparlanma yasanabilir.",
+      "key_risk": "Kredi buyume sinirlamalarinin bankanin net faiz marjini beklenenden daha fazla olumsuz etkilemesi riskidir.",
+      "falsifier": "Gelecek bes is gunu icinde hissenin en yuksek islem hacmiyle gunluk en dusuk seviyesinden kapanmasidir.",
+      "news_refs": [
+        "kap-1646844",
+        "kap-1646837",
+        "kap-1645471"
+      ],
+      "news_reading": null
+    },
+    {
+      "ticker": "KCHOL",
+      "signal": "hold",
+      "action": "izle",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "dusuk",
+      "thesis": "Holding istiraklerinin otomotiv segmentindeki pay alimi senedin kisa vadede goreceli guclu durmasini saglamistir.",
+      "counter_scenario": "Holding bunyesindeki sirketlerin kar marjlarinda yasanabilecek hizli dususler senedi asagi cekecektir.",
+      "key_risk": "Ekonomik yavaslamanin holdingin bircok farkli sektorlerdeki faaliyetleri uzerinde yaratacagi ortak baskidir.",
+      "falsifier": "Gelecek bes is gunu icinde hisse senedinin uzun vadeli yukselis trend destegini asagi yonlu kirmasidir.",
+      "news_refs": [
+        "kap-1645518",
+        "kap-1644589"
+      ],
+      "news_reading": null
+    },
+    {
+      "ticker": "KRDMD",
+      "signal": "buy",
+      "action": "plan_sec",
+      "selected_plan_id": "KRDMD-2026-08-10-A",
+      "veto_code": null,
+      "confidence": "orta",
+      "thesis": "Hissenin kisa vadeli destek seviyelerinden aldigi tepkiyle birlikte dogrudan giris planina uygun hareket etmesidir.",
+      "counter_scenario": "Demir celik fiyatlarinin kuresel talepsizlik nedeniyle gerilemesi durumunda planin stop seviyesi tetiklenebilir.",
+      "key_risk": "Yakin donemde aciklanacak olan bilanco ve finansal raporun getirecegi yuksek oynaklik ve dalgalanmadir.",
+      "falsifier": "Gelecek bes is gunu icinde hisse senedinin belirlenen giris seviyesinin cok altinda gunluk kapanis yapmasidir.",
+      "news_refs": [],
+      "news_reading": null
+    },
+    {
+      "ticker": "PETKM",
+      "signal": "hold",
+      "action": "izle",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "dusuk",
+      "thesis": "Kimya sektorundeki marj daralmasina ragmen senedin ucuz carpanlarla islem gormesi asagi yonlu marji sinirlamaktadir.",
+      "counter_scenario": "Petrokimya urunlerine olan talebin kuresel olcekte daha da zayiflamasi senedi yeni dip seviyelerine tasiyabilir.",
+      "key_risk": "Rafineri marjlarinin baskilanmasi ve yuksek hammadde maliyetlerinin operasyonel karlilik uzerindeki olumsuz etkisidir.",
+      "falsifier": "Gelecek bes is gununde senedin gunluk en yuksek fiyat seviyesinin bir onceki gunun altinda kalmasi durumudur.",
+      "news_refs": [
+        "kap-1644695",
+        "kap-1644020",
+        "kap-1644018",
+        "kap-1644017",
+        "kap-1644016"
+      ],
+      "news_reading": null
+    },
+    {
+      "ticker": "SISE",
+      "signal": "hold",
+      "action": "izle",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "dusuk",
+      "thesis": "Cam sanayisindeki kuresel pazar liderligi ve doviz pozisyonu senedin defansif karakterini pekistirmektedir.",
+      "counter_scenario": "Avrupa pazarindaki insaat ve otomotiv sektorlerindeki yavaslamanin derinlesmesi senedi olumsuz etkileyecektir.",
+      "key_risk": "Onumuzdeki gunlerde yayinlanacak olan alti aylik bilanco verilerinde enerji maliyetlerinin karliligi dusurmesidir.",
+      "falsifier": "Gelecek bes is gunu icinde senedin gunluk hareketli ortalamasinin altinda ardisik kapanislar gerceklestirmesidir.",
+      "news_refs": [
+        "kap-1647286",
+        "kap-1647284",
+        "kap-1647283",
+        "kap-1646199",
+        "kap-1645473"
+      ],
+      "news_reading": null
+    },
+    {
+      "ticker": "TAVHL",
+      "signal": "avoid",
+      "action": "islem_yok",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "dusuk",
+      "thesis": "Havacilik segmentindeki mevsimsel guce ragmen kuresel ekonomik yavaslama endiseleri yukselisi baskilamaktadir.",
+      "counter_scenario": "Yolcu trafigindeki artisin beklentileri asmasi ve yeni terminal yatirimlarinin hizla devreye girmesi durumudur.",
+      "key_risk": "Kuresel jeopolitik risklerin havacilik sektoru ve ucus rotalari uzerinde yaratabilecegi olasi kisitlamalardir.",
+      "falsifier": "Gelecek bes is gunu icinde hisse senedinin en dusuk seviyeyi test ederek altinda kalici kapanislar yapmasi.",
+      "news_refs": [
+        "kap-1647177",
+        "kap-1645429",
+        "kap-1644907"
+      ],
+      "news_reading": null
+    },
+    {
+      "ticker": "TCELL",
+      "signal": "avoid",
+      "action": "islem_yok",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "dusuk",
+      "thesis": "Enflasyonist ortamda abone basi gelirlerin artmasi olumlu olsa da hisse senedi endeksle birlikte zayiflamistir.",
+      "counter_scenario": "Finansal sonuclarin aciklanmasiyla birlikte guclu nakit akisinin yatirimci ilgisini tekrar cekmesi beklenebilir.",
+      "key_risk": "Alti aylik bilanco aciklamasinda finansman giderlerinin ve kur farklarinin net kar uzerindeki baskisidir.",
+      "falsifier": "Gelecek bes is gunu boyunca hissenin en yuksek gunluk seviyelerinin surekli gerilemesi ve zayif seyretmesidir.",
+      "news_refs": [],
+      "news_reading": null
+    },
+    {
+      "ticker": "THYAO",
+      "signal": "hold",
+      "action": "izle",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "dusuk",
+      "thesis": "Mevsimsel olarak en guclu donem olunmasina ragmen yuksek kargo gelirleri disindaki segmentlerde yavaslama vardir.",
+      "counter_scenario": "Temmuz ayina ait trafik sonuclarinin ardindan kargo ve yolcu doluluk oranlarinda yasanacak hizli bir yukselistir.",
+      "key_risk": "Jet yakiti maliyetlerinin kuresel petrol fiyatlarindaki oynaklik nedeniyle beklenenden yuksek gerceklesmesidir.",
+      "falsifier": "Gelecek bes is gunu icinde senedin kisa vadeli ortalamasinin altinda yuksek hacimli bir satis dalgasi yemesidir.",
+      "news_refs": [
+        "kap-1645098"
+      ],
+      "news_reading": null
+    },
+    {
+      "ticker": "TUPRS",
+      "signal": "hold",
+      "action": "izle",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "dusuk",
+      "thesis": "Rafineri marjlarindaki dalgalanma hissenin kisa vadede zirve seviyelerinden geri cekilmesine neden olmaktadir.",
+      "counter_scenario": "Urun marjlarinin kuresel arz kisitlari nedeniyle aniden yukselmesi durumunda senede yeni alimlar gelebilir.",
+      "key_risk": "Kuresel ekonomik yavaslamanin dizel ve benzin talebini azaltarak rafineri karliligini ciddi baltalamasidir.",
+      "falsifier": "Gelecek bes is gununde senedin gunluk islem hacminin son bir ayin ortalamasinin altina sert gerilemesidir.",
+      "news_refs": [],
+      "news_reading": null
+    }
+  ],
+  "not_covered": [],
+  "analyst_notes": "Piyasanin genel zayifligi ve risk-off rejimine gecis nedeniyle temkinli durus korunmaktadir. Secilen iki demir celik pozisyonu disinda yeni risk alinmamistir."
+}
