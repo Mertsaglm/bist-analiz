@@ -230,3 +230,103 @@ class TestAdimSirasi:
         otonom.gunluk(cfg, con, bugun=date(2026, 7, 29), analist_calistir=False)
         assert cagrilan.index("veri") < cagrilan.index("gosterge")
         assert cagrilan.index("gosterge") < cagrilan.index("saglik")
+
+
+class TestNobetci:
+    """⚠ Gözcünün yapabileceği EN KÖTÜ hata: alarm vermesi gereken anda
+    "temiz" demek. Bu sınıf tam olarak onu kilitler.
+
+    İlk sürüm `son_analiz`i `son_bar`la karşılaştırıyordu. İkisi de günlük
+    koşunun ürünüdür: koşu hiç olmazsa yeni bar da girmez, analiz de yazılmaz
+    ve fark 0 çıkar — iki BAYAT sayı birbirini doğrular. L-010'un aynen
+    tekrarı: *"kontroller birbirini doğruluyorsa hiçbiri dış dünyaya
+    bakmıyordur."* Referans artık TAKVİM (`last_closed_session`), yani koşuya
+    bağlı olmayan tek şey.
+    """
+
+    @staticmethod
+    def _kur(con, cfg, bar_gunleri, analiz_gunu=None, kosu_gunu=None):
+        from src import db, journal
+        from tests.conftest import add_bars, add_index, add_universe
+        add_universe(con, "AAA")
+        add_bars(con, "AAA", [(d, 10.0, 11.0, 9.0, 10.0, 1000.0, 10.0)
+                              for d in bar_gunleri])
+        add_index(con, "XU100", bar_gunleri)
+        if kosu_gunu:
+            journal.kosu_bitir(
+                con, journal.kosu_basla(cfg, con, tur="gunluk",
+                                        tarih_tr=kosu_gunu), durum="tamam")
+        if analiz_gunu:
+            db.upsert_many(con, "llm_runs",
+                           ["run_id", "asof", "tool", "bundle_sha",
+                            "output_path", "audit_passed", "created_utc"],
+                           [("r", analiz_gunu, "test", "s", "", 1, "now")])
+            db.upsert_many(
+                con, "predictions",
+                ["prediction_id", "run_id", "asof", "ticker", "signal", "action",
+                 "confidence", "confidence_p", "factor_set_version", "weights_hash",
+                 "indicator_set_version", "regime", "thesis", "counter_scenario",
+                 "key_risk", "falsifier", "close_at_asof", "created_utc"],
+                [("p", "r", analiz_gunu, "AAA", "hold", "izle", "orta", 0.5,
+                  "v1", "h", "v1", "neutral", "t", "c", "k", "f", 10.0, "now")])
+
+    def _takvim(self, monkeypatch, son_seans):
+        from src.calendar_bist import BistCalendar
+        monkeypatch.setattr(BistCalendar, "last_closed_session",
+                            lambda s, ts=None: date.fromisoformat(son_seans))
+        monkeypatch.setattr(BistCalendar, "is_trading_day", lambda s, d: True)
+
+    def test_kosu_ve_analiz_guncelse_SESSIZ_DEGIL_TEMIZ(self, cfg, con, monkeypatch):
+        from src import otonom
+        from tests.conftest import is_gunleri
+        g = is_gunleri(4, "2026-08-03")
+        self._kur(con, cfg, g, analiz_gunu=g[-1], kosu_gunu=g[-1])
+        self._takvim(monkeypatch, g[-1])
+        n = otonom.nobetci(cfg, con, bugun_tr=g[-1])
+        assert not n["sessiz"] and n["satirlar"] == []
+
+    def test_bugun_KOSU_YOKSA_alarm(self, cfg, con, monkeypatch):
+        """2026-08-06 vakası: iş hiç başlamadı, o gün tamamen sessizdi."""
+        from src import otonom
+        from tests.conftest import is_gunleri
+        g = is_gunleri(4, "2026-08-03")
+        self._kur(con, cfg, g, analiz_gunu=g[-2], kosu_gunu=g[-2])
+        self._takvim(monkeypatch, g[-1])
+        n = otonom.nobetci(cfg, con, bugun_tr=g[-1])
+        assert n["sessiz"]
+        assert any("KAYDI YOK" in s for s in n["satirlar"])
+
+    def test_BAYAT_BAR_gozcuyu_KANDIRAMAZ(self, cfg, con, monkeypatch):
+        """⚠ ASIL KİLİT. Koşu hiç olmayınca bar da analiz de bayat kalır ve
+        `son_analiz == son_bar` olur. Eski sürüm burada "temiz" derdi."""
+        from src import otonom
+        from tests.conftest import is_gunleri
+        g = is_gunleri(6, "2026-08-03")
+        # Bar VE analiz ikisi de 3 seans geride — birbirleriyle "tutarlı".
+        self._kur(con, cfg, g[:-3], analiz_gunu=g[-4], kosu_gunu=g[-1])
+        self._takvim(monkeypatch, g[-1])          # takvim: bugün seans kapandı
+        n = otonom.nobetci(cfg, con, bugun_tr=g[-1])
+        assert n["son_analiz"] == n["son_bar"], "kurulum yanlış — ikisi eşit olmalı"
+        assert any("analizsiz" in s for s in n["satirlar"]), (
+            "iki bayat sayı birbirini doğruladı ve gözcü sustu — L-010 tekrarı")
+
+    def test_kosu_BASLAYIP_bitmemisse_alarm(self, cfg, con, monkeypatch):
+        """`durum='kosuyor'` kalması bilgidir: süreç bitmeden ölmüş."""
+        from src import journal, otonom
+        from tests.conftest import is_gunleri
+        g = is_gunleri(4, "2026-08-03")
+        self._kur(con, cfg, g, analiz_gunu=g[-1])
+        journal.kosu_basla(cfg, con, tur="gunluk", tarih_tr=g[-1])   # bitirilmedi
+        self._takvim(monkeypatch, g[-1])
+        n = otonom.nobetci(cfg, con, bugun_tr=g[-1])
+        assert n["sessiz"] and any("bitmedi" in s for s in n["satirlar"])
+
+    def test_islem_gunu_degilse_KOSU_BEKLENMEZ(self, cfg, con, monkeypatch):
+        from src import otonom
+        from src.calendar_bist import BistCalendar
+        from tests.conftest import is_gunleri
+        g = is_gunleri(4, "2026-08-03")
+        self._kur(con, cfg, g, analiz_gunu=g[-1], kosu_gunu=g[-1])
+        monkeypatch.setattr(BistCalendar, "is_trading_day", lambda s, d: False)
+        n = otonom.nobetci(cfg, con, bugun_tr="2026-08-08")
+        assert not n["sessiz"] and "işlem günü değil" in n["not"]

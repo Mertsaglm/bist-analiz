@@ -463,10 +463,27 @@ def nobetci(cfg: dict, con: sqlite3.Connection, *,
 
     # İkinci soru, ayrı: koşu oldu ama analiz üretti mi? (L-003: iki olgu,
     # iki satır — tek satıra sıkıştırılırsa hangisinin bozuk olduğu görünmez.)
-    if son_analiz and son_bar:
-        fark = cal.trading_days_between(son_analiz, son_bar)
-        if fark >= 2:
+    #
+    # ⚠⚠ REFERANS TAKVİMDİR, `son_bar` DEĞİL — ve bu ayrım L-010'un ta kendisi:
+    # *"kontroller birbirini doğruluyorsa hiçbiri dış dünyaya bakmıyordur."*
+    #
+    # İlk sürüm `son_analiz`i `son_bar`la karşılaştırıyordu. İkisi de günlük
+    # koşunun ürünü: koşu hiç olmazsa yeni bar da GİRMEZ, analiz de yazılmaz
+    # ve fark 0 çıkar. Yani gözcü, tam da alarm vermesi gereken durumda
+    # "temiz" derdi — iki bayat sayı birbirini doğruladığı için. Bir nöbetçinin
+    # yapabileceği en kötü hata bu.
+    #
+    # `last_closed_session()` takvimden gelir ve koşuya bağlı DEĞİLDİR; dış
+    # dünyanın referansı odur. Eşik 1: nöbetçi günlük işten SONRA koşar,
+    # dolayısıyla kapanmış son seansın analizini talep etmeye hakkı vardır.
+    beklenen = cal.last_closed_session().isoformat()
+    out["beklenen_seans"] = beklenen
+    if not son_analiz:
+        out["satirlar"].append("Journal boş — hiç analiz üretilmemiş.")
+    else:
+        fark = cal.trading_days_between(son_analiz, beklenen)
+        if fark >= 1:
             out["satirlar"].append(
-                f"Son analiz {son_analiz}, son bar {son_bar} → "
-                f"{fark} işlem günü analizsiz.")
+                f"Son analiz {son_analiz}, kapanmış son seans {beklenen} → "
+                f"{fark} işlem günü analizsiz. (son bar: {son_bar})")
     return out
