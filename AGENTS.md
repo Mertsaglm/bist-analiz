@@ -319,3 +319,41 @@ kendi başına doğrudur, kırılan şey aralarındaki varsayımdır.
 hedef **her KURALI** test etmek. Kapsam yüzdesi "kod çalıştı" der, "kural
 tutuyor" demez. Ve bir test yazarken yine §11 geçerli: testin neyi kanıtladığını
 sor — kaynak METNİNİ mi kontrol ediyor, DAVRANIŞI mı?
+
+### 12a. Bir kontrol ekliyorsan: gözlemci ile kapıyı ayır
+
+2026-08-11 denetimi, tek başına en pahalı **yeni** hata sınıfını gösterdi ve bu
+bölüm oradan doğdu. Bir sistemin dört işlem günü boyunca sessizce durmasının
+sebebi kod hatası değildi: bir sağlık kontrolü, gözlediği sürecin ÜRÜNÜNE
+bakıyordu ve o süreci durdurma yetkisi vardı. Kapı bir kez kapanınca açılması
+için gereken şey kapının arkasında kaldı — **kilit kalıcı oldu.**
+
+**Kural: bir gözlemci, gözlediği sürecin ürününe bakıp o süreci durduramaz.**
+
+Bir kontrol yazarken önce sınıfını belirle:
+
+| Sınıf | Soru | Durdurabilir mi? |
+|---|---|---|
+| **KAPI** | Girdiye/veriye güvenilir mi? | Evet |
+| **GÖZLEM** | Süreç sağlıklı mı? | **Hayır** — en fazla uyarır |
+
+Ayırt edici test tek cümle: **"bu bulguyu, bu koşunun KENDİSİ düzeltebilir
+mi?"** Evetse kapı olabilir. Hayırsa gözlemdir.
+
+Yanına üç soru daha:
+
+1. **Bu kontrol hangi adımın çıktısına bakıyor, o adım düşebilir mi?**
+   Düşebiliyorsa o adımın kritiklik sınıfını devralmışsındır — üstelik kimseye
+   söylemeden. Kritik olmayan bir adım, böyle bir kontrolle sessizce kritik olur.
+2. **Bu kural yorumda mı duruyor, yapıda mı?** Şiddeti kodda tavanla; sınıfı
+   bir kümeye yaz ve sınıflandırılmamış kontrolün eklenmesini hata yap.
+   L-015'i yazan kişi kuralı biliyordu ve yine de ihlal etti.
+3. **"Süreç hiç başlamadı"yı kim görecek?** İçerideki hiçbir kontrol göremez.
+   O gözcü DIŞARIDA olmak zorundadır: ayrı iş, ayrı zamanlama, salt-okur.
+   Ve gözcü hiçbir şeyi düzeltmez — tamir etmeye kalkan bir gözcü, hem
+   gözcülüğü hem tamiri bozar.
+
+**Testi de bu şekilde yaz:** "bir önceki koşu atlanmışken zincir tamamlanıyor mu?" senaryosunu
+KUR. Temiz bir başlangıçtan koşan otuz uçtan uca test, bu hatayı göremedi.
+Ve testin gerçekten kilit olduğunu **eski hatayı geri koyarak** doğrula —
+kırmızıya dönmüyorsa o test bir kilit değil, bir süstür.

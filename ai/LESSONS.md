@@ -6,6 +6,114 @@
 
 ---
 
+## L-018 — 2026-08-11 — Tarihe bağlı bir dosya yolu, kanıt değil GÖRÜŞTÜR
+
+**Olay.** `llm_runs.output_path` "bu tahmini üreten analist çıktısı şu
+dosyadadır" diyordu. 2026-07-30 için DOĞRU DEĞİLDİ: journal
+`gemini-3.6-flash` diyor, `output_path`in gösterdiği dosya
+`gemini-3.5-flash`'a ait ve TUPRS'ta hem `signal` (hold vs accumulate) hem
+seçilen plan (A vs B) farklı. Üstelik TUPRS o pencerenin en önemli ismiydi —
+iki kez hedefi vurdu ve tüm pozitif katkı ondan geldi.
+
+**Mekanizma.** Çıktı `llm/out/<asof>/analysis.json` yoluna yazılıyordu ve yol
+yalnız TARİHE bağlıydı. 2026-08-01'de asof 2026-07-30 için ÜÇ koşu atıldı.
+Biri 3.6-flash ile geçip journal'a yazdı. Sonrakinde 3.5-flash denetimden
+geçti ve **dosyayı yazdı**, ama journal'a kayıt adımı düştü. Dosya, kendisini
+sahiplenmeyen bir koşuya ait kaldı ve önceki koşunun kanıtı diye orada durdu.
+
+**Ders.** Bir kaydın gösterdiği dosya, o kayıttan BAĞIMSIZ olarak
+değişebiliyorsa, o dosya kanıt değildir. İki şey gerekir ve ikisi de:
+(a) yol kayda özel olmalı (`<run_id>.json`), (b) içerik mühürlenmeli
+(`output_sha`). Ve bu, L-008'in "simetriğini ara" kuralının tam örneğidir:
+GİRDİ `bundle_sha` ile mühürlüydü ve HF-02 bunu zorluyordu; **çıktının
+mührü hiç yazılmamıştı.** Bir savunma kurduğunda sor: bunun aynısı akışın
+öbür ucunda da olmalı mıydı?
+
+**Kural:** çıktıyı yazan adım ile onu journal'a bağlayan adım ayrıysa,
+aradaki boşlukta dosya sahipsiz kalır. Mühür o boşluğu kapatır.
+
+---
+
+## L-017 — 2026-08-11 — Kritik olmayan bir adım, başka bir kontrolün girdisi olduğu anda kritik olur
+
+**Olay.** ADR #013 bilinçli bir karar vermişti: `analist` KRİTİK adım DEĞİL.
+Gerekçe yazılıydı — *"zincirin tamamı düşse bile o gün üretilen plan
+geometrisi ve risk çerçevesi tek başına değerlidir."* `otonom.KRITIK_ADIMLAR`
+listesinde `analist` yoktu ve bu doğruydu.
+
+Sonra L-015'in kontrolü eklendi ve `MAX(predictions.asof)`e baktı.
+`predictions` yalnız analist başarılı olunca yazılır. Yani: **analistin iki
+gün üst üste düşmesi, artık deterministik katmanı da öldürüyordu.** Hiçbir
+yerde yazılı olmayan bir bağ, yazılı bir kararı sessizce iptal etti.
+
+Aynı sınıf ikinci bir kapı daha açmıştı: `--analistsiz` bayrağıyla atılan bir
+koşu hiç tahmin yazmaz, yani sistemi ertesi güne zehirli bırakırdı.
+
+**Ders:** yeni bir kontrol eklerken sorulacak soru "bu kontrol doğru mu?"
+değil, **"bu kontrol hangi adımın ÇIKTISINA bakıyor ve o adım düşebilir
+mi?"**. Düşebiliyorsa, o adımın kritiklik sınıfını devralmış olursun —
+üstelik kimseye söylemeden.
+
+**Kural:** bir kontrolün girdisi, o kontrolün şiddetinden daha düşük
+güvenilirlikte bir adımdan geliyorsa, kontrol o adımın sınıfını AŞAMAZ.
+
+---
+
+## L-016 — 2026-08-11 — Bir gözlemci, gözlediği sürecin ÜRÜNÜNE bakıp o süreci durduramaz
+
+**Olay — dört işlem günü süren tam sessizlik.** 2026-08-06'da GitHub runner
+günlük işi almadı (L-015'teki olay). Ertesi gün L-015'in çözümü devreye girdi
+ve sistemi **kilitledi**:
+
+```
+_atlanan_kosu:  fark = takvim(MAX(predictions.asof) → son bar)
+                fark >= 2  →  KRİTİK
+otonom.gunluk:  KRİTİK varsa adım 4'te DUR (5,6,7,8 hiç koşmaz)
+predictions'a yazan yer: adım 6 — yani KAPININ ARKASINDA
+```
+
+`MAX(asof)` yalnız kapının arkasında büyür; kapı ise o sayı büyümediği için
+kapalı kalır. Fark her işlem günü 1 arttı: 2 → 3 → 4 → … Sistem veri çekmeye
+ve commit atmaya devam etti, **sıfır analiz üretti** ve her gün aynı 🛑
+mesajını gönderdi. Bu bir gecikme değil, mutlak kilitlenmeydi.
+
+**En rahatsız edici kısım.** L-015'in kendi cümlesi şuydu: *"bir süreç kendi
+yokluğunu haber veremez."* O cümlenin doğru sonucu "çözüm sürecin DIŞINDA
+olmalı"ydı. Çözüm yine sürecin İÇİNE kondu — ve bu sefer süreci öldürdü.
+Doğru teşhis, yanlış yere uygulandı.
+
+**Testler neden görmedi.** 1193 test yeşildi. `test_saglik` "atlanan koşu
+bulgusu üretiliyor mu"yu sınıyordu; `test_uctan_uca`nın 30 senaryosunun hepsi
+TEMİZ bir başlangıç durumundan koşuyordu. *"Bir önceki seans atlanmışken
+zincir bugün tamamlanıyor mu?"* diye soran tek bir test yoktu.
+AGENTS.md §12'nin üçüncü katmanı
+(modüller arası varsayım kırılması) tam olarak burayı tarif ediyor.
+
+**Ders / kural.** Kontroller iki sınıfa ayrılır ve karıştırılamaz:
+
+| Sınıf | Soru | Şiddet tavanı |
+|---|---|---|
+| **KAPI** | Bugünkü VERİYE güvenilir mi? | KRİTİK olabilir |
+| **GÖZLEM** | Sistem SÜREÇ olarak sağlıklı mı? | en fazla UYARI |
+
+Ayırt edici test tek cümle: **"bu bulguyu, bu koşunun kendisi düzeltebilir
+mi?"** Evetse kapı olabilir (bayat bar → veri adımı çeker). Hayırsa gözlemdir
+ve durdurma yetkisi YOKTUR.
+
+**Uygulanışı — yorum değil, yapı:**
+* `saglik.ekle_gozlem` şiddeti UYARI'da TAVANLAR; gözlem kontrolü ne
+  döndürürse döndürsün kapıyı kapatamaz.
+* Sayaç `otonom_kosu` heartbeat'inden okunur ve o kayıt koşunun EN BAŞINDA,
+  kapıdan (hatta takvim kapısından) önce yazılır.
+* Gerçek nöbetçi DIŞARIDA: `.github/workflows/nobetci.yml` — ayrı iş, ayrı
+  zamanlama, ayrı runner talebi, salt-okur.
+* Davranışsal kilit: `TestKapiKendiCiktisinaBakmaz` (journal'ın yaşı kapı
+  kümesini değiştiremez, 0..30 gün parametrik) +
+  `test_ATLANMIS_gunden_sonra_zincir_UCTAN_UCA_TAMAMLANIR`. Eski hata geri
+  konarak DOĞRULANDI: 7 test kırmızıya döndü.
+
+---
+
 ## L-015 — 2026-08-07 — Bir süreç kendi YOKLUĞUNU haber veremez
 
 **Olay:** 2026-08-06'daki planlı otonom koşu GitHub tarafında düştü:

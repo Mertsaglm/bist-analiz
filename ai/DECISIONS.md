@@ -6,6 +6,67 @@
 
 ---
 
+## #017 — 2026-08-11 — Sağlık kontrolleri İKİYE ayrılır: KAPI ve GÖZLEM
+
+**Bağlam.** Sistem 2026-08-06'dan 08-11'e kadar dört işlem günü boyunca sıfır
+analiz üretti. Sebep kod hatası değildi: 1193 test yeşildi, veri her gün
+çekildi, commit her gün atıldı. Kırılan şey iki modül arasındaki varsayımdı.
+
+L-015'te eklenen "atlanan koşu" kontrolü `MAX(predictions.asof)`e bakıp fark
+≥2 ise KRİTİK dönüyordu. `predictions` ise sağlık kapısının ARKASINDA yazılır
+(`otonom.gunluk` adım 6). Kapı bir kez kapanınca — 2026-08-06'da GitHub
+runner işi almadı — açılması için gereken şey kapının arkasında kaldı. Fark
+her gün 1 arttı ve kilit KALICI oldu (L-016).
+
+**Karar.** `saglik`in bulguları iki sınıfa ayrılır ve **yalnız birincisi
+koşuyu durdurabilir:**
+
+| Sınıf | Soru | Şiddet tavanı | Örnek |
+|---|---|---|---|
+| **KAPI** | Bugünkü VERİYE güvenilir mi? | KRİTİK olabilir | bar tazeliği · gösterge kapsaması · kalite kapısı · **yarım bar** |
+| **GÖZLEM** | Sistem SÜREÇ olarak sağlıklı mı? | en fazla UYARI | atlanan koşu · analizsiz gün · açık plan · çıktı mührü |
+
+Ayırt edici test tek cümledir: **"bu bulguyu, bu koşunun KENDİSİ düzeltebilir
+mi?"** Bayat bar → veri adımı çeker, evet, kapı olabilir. Üç gün önce atlanmış
+bir koşu → bugünkü koşu onu geri getiremez, hayır, gözlemdir.
+
+**Neden yorum değil YAPI.** Kural yalnız yorumda dursaydı, ömrü onu hatırlayan
+kişinin ömrü kadar olurdu (AGENTS.md §12) — ve L-015'i yazan kişi de bu kuralı
+biliyordu, yine de ihlal etti. O yüzden:
+
+* `saglik.ekle_gozlem` şiddeti **koda gömülü olarak** UYARI'da tavanlar.
+  Bir gözlem kontrolü ileride `return KRITIK, ...` yazsa bile sistem durmaz.
+* `GOZLEM_KONTROLLERI` kümesi bir sözleşmedir: sınıflandırılmamış bir kontrol
+  `ekle_gozlem` ile eklenemez (RuntimeError).
+* Sayaç artık `otonom_kosu` heartbeat'inden okunur; o kayıt koşunun EN
+  BAŞINDA, kapıdan önce yazılır. Durdurulan koşu bile "koştum" der.
+* Davranışsal kilit: `TestKapiKendiCiktisinaBakmaz` — journal'ın yaşı
+  (0..30 gün) kapı kümesini DEĞİŞTİREMEZ. Diferansiyel test, çünkü mutlak
+  bir "hiç KRİTİK olmasın" iddiası fixture eksikliklerini de yakalar ve asıl
+  soruyu bulanıklaştırır.
+
+**Reddedilen alternatifler.**
+* *"Kontrolü UYARI'ya çevirelim, yeter"* → tek çağrı yerini düzeltmek kuralı
+  uygulamak DEĞİLDİR (L-008). Bir sonraki kontrol aynı çukura düşerdi.
+* *"Kapıyı tamamen kaldıralım"* → kapı gerçek bir işe yarıyor: bayat
+  göstergeyle üretilen paket boş ama şeklen geçerlidir (L-009) ve onu analiz
+  etmek sistemin en pahalı hata sınıfıdır.
+* *"Heartbeat'i `predictions`ten türetelim"* → sorunun ta kendisi.
+
+**Nöbetçi ayrı bir karardır ve bu ADR'nin parçasıdır.** İçerideki hiçbir
+kontrol "koşu hiç başlamadı"yı bildiremez. `.github/workflows/nobetci.yml`
+ayrı iş, ayrı zamanlama (19:40 UTC), ayrı runner talebi ve **salt-okur**
+(`permissions: contents: read`). Bir gözcünün tamir etmeye kalkması hem
+gözcülüğü hem tamiri bozar.
+
+**Tekrar gözden geçir:** nöbetçi de runner alamayan bir güne denk gelirse
+(ikisi birden düşerse) tamamen dış bir uptime/heartbeat servisi gerekir —
+gold projesindeki gibi. Bugün gerekmiyor: iki ayrı işin AYNI gün runner
+alamama olasılığı gözlenmedi ve GitHub'ın kendi "workflow failure" bildirimi
+üçüncü kanal olarak duruyor. Bir kez daha yaşanırsa bu satır kararı açar.
+
+---
+
 ## #016 — 2026-08-07 — Ölçüm paneli: düzeltilmemiş kurumsal işlem GÖZLEMİ düşer, İSİM düşmez
 
 **Bağlam.** ADR #015 turunda yapılan "bedelsiz kapsaması" ölçümü, aranmayan bir
