@@ -23,6 +23,19 @@ yok" ibaresini zaten basar (ADR #013).
 **Sağlık kapısı GERÇEK bir kapıdır:** `bist saglik` KRİTİK dönerse sonraki
 adımlar HİÇ koşmaz. Bayat göstergeyle üretilen paket boş ama şeklen geçerli
 olur (L-009) — ve o paketi analiz etmek, sistemin en pahalı hata sınıfıdır.
+
+⚠⚠ AMA KAPI YALNIZ VERİYE BAKAR — bu ayrım bir kilitlenmeden doğdu (L-016).
+2026-08-07'de eklenen "atlanan koşu" kontrolü `MAX(predictions.asof)`e bakıp
+KRİTİK dönüyordu. `predictions` ise bu dosyanın 6. adımında, yani KAPININ
+ARKASINDA yazılır. 2026-08-06'da GitHub runner işi almayınca fark 2 oldu,
+kapı kapandı ve bir daha açılamadı: açılması için gereken tahmin kapının
+arkasındaydı. Sistem dört işlem günü boyunca veri çekti, commit attı, sıfır
+analiz üretti — ve her gün aynı 🛑 mesajını gönderdi.
+
+Kural: **kapıyı yalnız KOŞUNUN KENDİSİNİN düzeltebileceği şeyler kapatır.**
+Sistemin kendi geçmişine bakan kontroller UYARI seviyesinde tavanlanır
+(`saglik.ekle_gozlem`). Koşunun varlığı artık `otonom_kosu` heartbeat'ine
+yazılır ve o kayıt kapının ÖNÜNDE, adımlar başlamadan önce atılır.
 """
 
 from __future__ import annotations
@@ -31,12 +44,12 @@ import logging
 import sqlite3
 from datetime import date
 
-from . import db, report, saglik as sag, telegram_bist as tg, util
+from . import db, journal, report, saglik as sag, telegram_bist as tg, util
 
 log = logging.getLogger(__name__)
 
 # Bu adımlardan biri düşerse koşu BAŞARISIZ sayılır (çıkış 1).
-# `analist` ve `haber` listede YOK: ikisi de düşse rapor hâlâ anlamlıdır.
+# `analist`, `haber` ve `makro` listede YOK: üçü de düşse rapor hâlâ anlamlıdır.
 KRITIK_ADIMLAR = ("veri", "gosterge", "saglik", "rapor")
 
 
@@ -67,26 +80,47 @@ def gunluk(cfg: dict, con: sqlite3.Connection, *, bugun: date | None = None,
 
     sonuc: dict = {"adimlar": {}}
     cal = BistCalendar(cfg, con)
-    gun = bugun or date.today()
+    gun = bugun or util.parse_date(util.bugun_tr(cfg["takvim"]["timezone"]))
 
-    # 0) Takvim kapısı. Cron hafta içi TATİLLERİ bilmez; bilseydi bile tatil
+    # ⚠⚠ 0) HEARTBEAT — HER ŞEYDEN ÖNCE, takvim kapısından bile önce.
+    #
+    # Bu satırın yeri tesadüf değil, kilidin çözümü. "Koşu atlandı mı?" sorusu
+    # koşunun ÜRÜNÜNE (tahminlere) bakarak cevaplanırsa, ürünü engelleyen her
+    # kapı gözlemcinin de gözünü kapatır — ve gözlemci kapıyı kapatabiliyorsa
+    # kilit kalıcı olur. 2026-08-06/11 arasında tam olarak bu yaşandı.
+    #
+    # Buradan sonra ne olursa olsun (kapı kapansın, süreç çöksün, tatil
+    # yüzünden atlansın) kayıt DURUR: "koştum" ile "iş ürettim" ayrı iki olgu.
+    kosu_id = None
+    try:
+        kosu_id = journal.kosu_basla(cfg, con, tur="gunluk",
+                                     tarih_tr=gun.isoformat())
+        sonuc["kosu_id"] = kosu_id
+    except Exception as e:                                  # noqa: BLE001
+        # Heartbeat yazılamazsa koşu YİNE DE devam eder: gözlem katmanının
+        # arızası, iş katmanını durdurmak için bir sebep değildir.
+        log.warning("heartbeat yazılamadı: %s", e)
+
+    # 1) Takvim kapısı. Cron hafta içi TATİLLERİ bilmez; bilseydi bile tatil
     # günü koşmak yeni bar olmadığı için `saglik`i boş yere KRİTİK yapardı.
     if not cal.is_trading_day(gun):
         sonuc["atlandi"] = f"{gun.isoformat()} işlem günü değil"
         log.info(sonuc["atlandi"])
+        _kosu_bitir(con, kosu_id, sonuc, "atlandi")
         return sonuc
 
-    # 1) Fiyat verisi (+ kalite kapısı otomatik koşar)
+    # 2) Fiyat verisi (+ yarım bar ayıklaması + kalite kapısı otomatik koşar)
     try:
         from . import prices
         r = prices.daily(cfg, con)
         sonuc["adimlar"]["veri"] = (
-            f"{r['tickers']} hisse · {r['hayalet_silinen']} hayalet bar ayıklandı "
+            f"{r['tickers']} hisse · {r['hayalet_silinen']} hayalet + "
+            f"{r['yarim_bar_silinen']} yarım bar ayıklandı "
             f"· kalite {r['kalite_gecmeyen']} isim geçemedi")
     except Exception as e:                                  # noqa: BLE001
         _hata(sonuc, "veri", e)
 
-    # 2) Göstergeler — L-009'UN KALICI ÇÖZÜMÜ.
+    # 3) Göstergeler — L-009'UN KALICI ÇÖZÜMÜ.
     # Bu adım akışın İÇİNDE olduğu için artık unutulamaz. Elle koşulan sırada
     # yoktu ve README'de de geçmiyordu; sonuç: 0 skorlanan isim, 0 plan, rejim
     # paydası 0 olan "geçerli görünen" boş bir paket. Sıfır hata koduyla.
@@ -98,7 +132,22 @@ def gunluk(cfg: dict, con: sqlite3.Connection, *, bugun: date | None = None,
     except Exception as e:                                  # noqa: BLE001
         _hata(sonuc, "gosterge", e)
 
-    # 3) Haber (KAP) — kritik DEĞİL; düşerse pakette `haber_taramasi.ok=False`
+    # 4) Makro (TCMB EVDS) — kritik DEĞİL.
+    #
+    # ⚠ BU ADIM 2026-08-11'e KADAR ZİNCİRDE YOKTU. `macro.daily`nin tek çağrı
+    # yeri `cli.cmd_makro` idi, yani EVDS verisi ancak Mert elle koştuğunda
+    # tazeleniyordu. Sonuç LESSONS L-002'nin bir kez daha tekrarı: bağlı
+    # olmayan tablo donar ve hiçbir hata fırlatmaz. TÜFE serisi 2025-12-01'de
+    # durmuştu ve Aralık 2025 enflasyonu Ağustos 2026'nın enflasyonu olarak
+    # pakete giriyordu. Artık hem çekiliyor hem tazeliği `saglik`te ölçülüyor.
+    try:
+        from . import macro
+        r = macro.daily(cfg, con)
+        sonuc["adimlar"]["makro"] = f"{sum(r.values())} satır / {len(r)} seri"
+    except Exception as e:                                  # noqa: BLE001
+        _hata(sonuc, "makro", e)
+
+    # 5) Haber (KAP) — kritik DEĞİL; düşerse pakette `haber_taramasi.ok=False`
     # olur ve analist "haber yok" ile "bakılmadı"yı ayırt edebilir.
     try:
         from . import news
@@ -123,7 +172,11 @@ def gunluk(cfg: dict, con: sqlite3.Connection, *, bugun: date | None = None,
     except Exception as e:                                  # noqa: BLE001
         _hata(sonuc, "haber", e)
 
-    # 4) SAĞLIK KAPISI — buradan sonrası veriye güvenir.
+    # 6) SAĞLIK KAPISI — buradan sonrası veriye güvenir.
+    #
+    # ⚠ Kapıyı YALNIZ veri bütünlüğü kontrolleri kapatabilir. Sistemin kendi
+    # geçmişine bakan kontroller (`saglik.GOZLEM_KONTROLLERI`) yapısal olarak
+    # UYARI'da tavanlanır ve buraya HİÇ düşemez — sebebi modül docstring'inde.
     try:
         s = sag.kontrol(cfg, con)
         sonuc["saglik"] = s
@@ -134,16 +187,18 @@ def gunluk(cfg: dict, con: sqlite3.Connection, *, bugun: date | None = None,
                   RuntimeError("KRİTİK: " + "; ".join(f"{ad} ({m})"
                                                       for _, ad, m in s["kritik"])))
             _bildir_hata(cfg, sonuc, gun)
+            _kosu_bitir(con, kosu_id, sonuc, "durduruldu")
             return sonuc
     except Exception as e:                                  # noqa: BLE001
         _hata(sonuc, "saglik", e)
         _bildir_hata(cfg, sonuc, gun)
+        _kosu_bitir(con, kosu_id, sonuc, "durduruldu")
         return sonuc
 
     asof = db.scalar(con, "SELECT MAX(date) FROM bars_daily")
     sonuc["asof"] = asof
 
-    # 5) LLM paketi
+    # 7) LLM paketi
     try:
         from . import llm_io
         bundle = llm_io.build_bundle(cfg, con, asof)
@@ -154,7 +209,7 @@ def gunluk(cfg: dict, con: sqlite3.Connection, *, bugun: date | None = None,
         _hata(sonuc, "paket", e)
         bundle = None
 
-    # 6) Analist zinciri — KRİTİK DEĞİL (docstring'deki gerekçe)
+    # 8) Analist zinciri — KRİTİK DEĞİL (docstring'deki gerekçe)
     if analist_calistir and bundle is not None:
         try:
             from . import analist
@@ -165,7 +220,7 @@ def gunluk(cfg: dict, con: sqlite3.Connection, *, bugun: date | None = None,
         except Exception as e:                              # noqa: BLE001
             _hata(sonuc, "analist", e)
 
-    # 7) Çözüm — rapordan ÖNCE. Gold dersi: bugün kapanan tahminler o günün
+    # 9) Çözüm — rapordan ÖNCE. Gold dersi: bugün kapanan tahminler o günün
     # raporundaki karneye girmeli, bir gün gecikmeli değil.
     try:
         from . import resolver
@@ -176,10 +231,9 @@ def gunluk(cfg: dict, con: sqlite3.Connection, *, bugun: date | None = None,
     except Exception as e:                                  # noqa: BLE001
         _hata(sonuc, "coz", e)
 
-    # 8) Rapor + Telegram (gold deseni: TG gönderimi rapor adımının İÇİNDE —
+    # 10) Rapor + Telegram (gold deseni: TG gönderimi rapor adımının İÇİNDE —
     # bildirimin sessizce kaybolması, bildirimin kendisinden tehlikelidir)
     try:
-        from . import journal
         b = bundle if bundle is not None else util.read_json(
             f"{cfg['paths']['llm_in_dir']}/{asof}/bundle.json")
         if b is None:
@@ -187,7 +241,10 @@ def gunluk(cfg: dict, con: sqlite3.Connection, *, bugun: date | None = None,
         analiz = db.fetch_all(
             con, "SELECT * FROM predictions WHERE asof = ? ORDER BY ticker", (asof,))
         tutulan = journal.holdings(con)
-        metin = report.daily_report(cfg, b, holdings=tutulan, analiz=analiz)
+        acik_plan = len([p for p in journal.open_predictions(con)
+                         if p["action"] == "plan_sec"])
+        metin = report.daily_report(cfg, b, holdings=tutulan, analiz=analiz,
+                                    acik_plan=acik_plan)
         sonuc["rapor"] = report.write(cfg, f"gunluk_{asof}.md", metin)
 
         ozet = report.telegram_ozet(
@@ -203,7 +260,27 @@ def gunluk(cfg: dict, con: sqlite3.Connection, *, bugun: date | None = None,
     except Exception as e:                                  # noqa: BLE001
         _hata(sonuc, "rapor", e)
 
+    _kosu_bitir(con, kosu_id, sonuc,
+                "durduruldu" if basarisiz_mi(sonuc) else "tamam")
     return sonuc
+
+
+def _kosu_bitir(con: sqlite3.Connection, kosu_id: str | None, sonuc: dict,
+                durum: str) -> None:
+    """Heartbeat'i kapatır. Her çıkış yolunda çağrılır.
+
+    Çağrılamadığı durum da bilgi taşır: `durum='kosuyor'` kalan bir kayıt,
+    sürecin bitmeden öldüğü (OOM, timeout, runner iptali) anlamına gelir ve
+    nöbetçi bunu görür.
+    """
+    if not kosu_id:
+        return
+    try:
+        journal.kosu_bitir(con, kosu_id, durum=durum, asof=sonuc.get("asof"),
+                           adimlar=sonuc.get("adimlar"),
+                           hatalar=sonuc.get("hatalar"))
+    except Exception as e:                                  # noqa: BLE001
+        log.warning("heartbeat kapatılamadı: %s", e)
 
 
 def _kaydet(cfg: dict, con: sqlite3.Connection, asof: str, bundle: dict,
@@ -215,7 +292,7 @@ def _kaydet(cfg: dict, con: sqlite3.Connection, asof: str, bundle: dict,
     koşmaz: `analist.calistir` yalnız sert hatasız çıktı döndürür — iki kez
     denetlemek, denetimin nerede yapıldığı sorusunu bulanıklaştırır.
     """
-    from . import journal, planner
+    from . import planner
 
     menu = planner.build_menu(cfg, con, asof)
     for opts in menu["menu"].values():
@@ -223,8 +300,14 @@ def _kaydet(cfg: dict, con: sqlite3.Connection, asof: str, bundle: dict,
 
     from . import llm_io
     run_id = journal.create_run(cfg, con, asof=asof, tool=out.get("tool", "diger"),
-                                bundle_sha=bundle["bundle_sha"],
-                                output_path=f"llm/out/{asof}/analysis.json")
+                                bundle_sha=bundle["bundle_sha"])
+    # ⚠ Çıktı MÜHÜRLENİR ve run'a özel bir dosyaya kopyalanır. `analysis.json`
+    # yolu yalnız tarihe bağlıydı ve aynı günün ikinci turu onu journal'a haber
+    # vermeden eziyordu (2026-07-30'da yaşandı: kayıt `gemini-3.6-flash`,
+    # dosya `gemini-3.5-flash`, TUPRS'ta hem sinyal hem plan farklı).
+    m = journal.muhurle_cikti(cfg, con, run_id=run_id, asof=asof)
+    if not m["ok"]:
+        log.warning("çıktı mühürlenemedi (%s): %s", run_id, m.get("not"))
     plan_map = {p["plan_id"]: p
                 for ps in planner.load_for_date(cfg, con, asof).values() for p in ps}
     ev = {e["ticker"]: e for e in bundle["evren"]}
@@ -273,6 +356,13 @@ def haftalik(cfg: dict, con: sqlite3.Connection) -> dict:
     from . import evaluate
 
     sonuc: dict = {"adimlar": {}}
+    bugun = util.bugun_tr(cfg["takvim"]["timezone"])
+    kosu_id = None
+    try:
+        kosu_id = journal.kosu_basla(cfg, con, tur="haftalik", tarih_tr=bugun)
+    except Exception as e:                                  # noqa: BLE001
+        log.warning("heartbeat yazılamadı: %s", e)
+
     L = [f"📈 BIST haftalık — {report.bugun()}", ""]
 
     try:
@@ -285,9 +375,17 @@ def haftalik(cfg: dict, con: sqlite3.Connection) -> dict:
             report.write(cfg, f"degerlendirme_{arac}_{report.bugun()}.md", metin)
             a = e.get("alfa") or {}
             ic = e.get("ic") or {}
-            L.append(f"🔹 {arac} (N={n})")
-            L.append(f"   alfa {_say(a.get('ort'), 2, 'pp')} · "
+            L.append(f"🔹 {arac} — {n} çözülmüş karar")
+            # ⚠ PAYDA AÇIK YAZILIR. Eski biçim "replay (N=20) alfa 4.27pp"
+            # diyordu ve iki farklı N'i yan yana basıyordu: 20 çözülmüş karar,
+            # 13 gözlemli alfa. Aradaki 7 plan hiç tetiklenmemişti ve paydadan
+            # SESSİZCE düşüyordu (AGENTS.md §11 madde 2 — 2026-08-11 denetimi).
+            L.append(f"   alfa {_say(a.get('ort'), 2, 'pp')} "
+                     f"(girişi olan {a.get('n', 0)}/{a.get('n_karar', n)}) · "
                      f"hüküm: {a.get('hukum', '—')}")
+            if a.get("n_girmeyen"):
+                L.append(f"   karar başına {_say(a.get('ort_karar_basina'), 2, 'pp')}"
+                         f" — {a['n_girmeyen']} plan hiç tetiklenmedi")
             if ic.get("n"):
                 L.append(f"   IC {_say(ic.get('ort'), 3)} (N={ic['n']})")
             L.append("")
@@ -302,4 +400,73 @@ def haftalik(cfg: dict, con: sqlite3.Connection) -> dict:
     except Exception as e:                                  # noqa: BLE001
         _hata(sonuc, "bildir", e)
     sonuc["ozet"] = "\n".join(L)
+    _kosu_bitir(con, kosu_id, sonuc,
+                "durduruldu" if sonuc.get("hatalar") else "tamam")
     return sonuc
+
+
+# ---------------------------------------------------------------- nöbetçi
+def nobetci(cfg: dict, con: sqlite3.Connection, *,
+            bugun_tr: str | None = None) -> dict:
+    """DIŞARIDAN bakan gözcü — "bugün koşu oldu mu?" sorusunu sorar.
+
+    ═══════════════════════════════════════════════════════════════════════
+    NEDEN AYRI BİR İŞ OLMAK ZORUNDA
+    ═══════════════════════════════════════════════════════════════════════
+    L-015'in kendi cümlesi: **bir süreç kendi yokluğunu haber veremez.**
+    2026-08-06'da günlük iş GitHub tarafında runner alamadı, HİÇ BAŞLAMADI;
+    dolayısıyla ne rapor, ne Telegram, ne hata. O gün tamamen sessizdi.
+
+    O cümlenin doğru sonucu şuydu: çözüm sürecin DIŞINDA olmalı. İlk
+    denemede çözüm yine sürecin içine kondu (`saglik`'e bir kontrol) ve
+    sistemi kilitledi. Bu fonksiyon o hatanın düzeltilmiş hâli: AYRI bir
+    workflow, AYRI bir zamanlama, AYRI bir runner talebi. Günlük iş runner
+    alamazsa bu iş alabilir ve haber verir.
+
+    ⚠ Bu fonksiyon hiçbir şeyi DÜZELTMEZ, yalnız SÖYLER. Bir gözcünün
+    tamir etmeye kalkması, gözcülüğü de tamiri de bozar.
+
+    Çıkış: {"sessiz": bool, ...}. `sessiz=True` → bugün beklenen koşu yok.
+    """
+    from .calendar_bist import BistCalendar
+
+    bugun_tr = bugun_tr or util.bugun_tr(cfg["takvim"]["timezone"])
+    cal = BistCalendar(cfg, con)
+    out: dict = {"tarih": bugun_tr, "sessiz": False, "satirlar": []}
+
+    if not cal.is_trading_day(bugun_tr):
+        out["not"] = f"{bugun_tr} işlem günü değil — koşu beklenmiyor"
+        return out
+
+    kosu = journal.son_kosu(con, tur="gunluk")
+    bugunku = kosu if kosu and kosu["tarih_tr"] == bugun_tr else None
+    son_bar = db.scalar(con, "SELECT MAX(date) FROM bars_daily")
+    son_analiz = db.scalar(con, "SELECT MAX(asof) FROM predictions")
+    out.update(son_kosu=(kosu or {}).get("tarih_tr"), son_bar=son_bar,
+               son_analiz=son_analiz)
+
+    if bugunku is None:
+        out["sessiz"] = True
+        out["satirlar"].append(
+            f"Bugün ({bugun_tr}) günlük koşu KAYDI YOK. "
+            f"Son koşu: {(kosu or {}).get('tarih_tr', '—')}. "
+            "İş hiç başlamamış olabilir (runner kapasitesi) — "
+            "Actions geçmişini kontrol et.")
+    elif bugunku["durum"] == "kosuyor":
+        out["sessiz"] = True
+        out["satirlar"].append(
+            f"Bugünkü koşu BAŞLADI ama bitmedi ({bugunku['baslangic_utc']}). "
+            "Süreç bitmeden ölmüş olabilir (timeout / iptal).")
+    elif bugunku["durum"] == "durduruldu":
+        out["satirlar"].append(
+            f"Bugünkü koşu DURDURULDU: {bugunku.get('hatalar') or '—'}")
+
+    # İkinci soru, ayrı: koşu oldu ama analiz üretti mi? (L-003: iki olgu,
+    # iki satır — tek satıra sıkıştırılırsa hangisinin bozuk olduğu görünmez.)
+    if son_analiz and son_bar:
+        fark = cal.trading_days_between(son_analiz, son_bar)
+        if fark >= 2:
+            out["satirlar"].append(
+                f"Son analiz {son_analiz}, son bar {son_bar} → "
+                f"{fark} işlem günü analizsiz.")
+    return out

@@ -96,6 +96,50 @@ def purge_phantom_bars(cfg: dict, con: sqlite3.Connection) -> dict:
     return {"silinen": n, "sinir": son, "atlandi": False}
 
 
+def purge_incomplete_bars(cfg: dict, con: sqlite3.Connection, *,
+                          simdi=None) -> dict:
+    """KAPANMAMIŞ seansın barlarını siler — `bars_daily` ve `index_daily`.
+
+    ⚠ GERÇEK OLAY (2026-07-29, 2026-08-11 denetiminde bulundu): paket TR
+    saatiyle 13:29'da, seans SÜRERKEN üretildi. yfinance o an "bugünün barı"
+    diye kısmi bir OHLC döndürdü; sistem onu kapanmış bir bar sandı ve 18
+    tahmin journal'a öyle yazıldı. Gerçek kapanışla karşılaştırma:
+
+        18/18 isimde sapma · ortalama %1.21 · maksimum %2.47
+        AKBNK  paket 64.90  →  gerçek kapanış 63.30
+
+    Journal DEĞİŞMEZ olduğu için o 18 kayıt kalıcı olarak yarım veriye dayanıyor.
+
+    `purge_phantom_bars` bunu YAKALAYAMAZ ve yakalamamalı: hayalet bar düz ve
+    sıfır hacimlidir (tatil), yarım bar ise gerçek hacimli ve gerçek OHLC'lidir
+    — sadece EKSİKTİR. İki farklı olgu, iki ayrı ölçüt (L-003).
+
+    Ölçüt zaten Faz 1'den beri vardı ve kimse çağırmıyordu:
+    `BistCalendar.last_closed_session` — *"Analiz daima kapanmış seans üzerinden
+    yapılır; açık seansın barı henüz değişebilir ve onu kullanmak look-ahead'in
+    en sinsi biçimidir."* Docstring doğruydu, çağrı yeri yoktu.
+
+    SİLER, süzmez: bir önceki koşu yarım barı zaten yazmış olabilir ve
+    `upsert` onu güncellemez (seans bittiğinde tekrar çekilene kadar orada
+    kalır). Silmek, işlemi hem idempotent hem kendini onarır yapar.
+
+    ⚠ SİMETRİ (L-008): `index_daily` de temizlenir. XU100 hem işlem takviminin
+    hem rejim hesabının kaynağıdır; yalnız hisse tarafını korumak, aynı hatanın
+    endeks üzerinden geri gelmesine izin verirdi.
+    """
+    from .calendar_bist import BistCalendar
+
+    sinir = BistCalendar(cfg, con).last_closed_session(simdi).isoformat()
+    n_bar = con.execute("DELETE FROM bars_daily WHERE date > ?", (sinir,)).rowcount or 0
+    n_ix = con.execute("DELETE FROM index_daily WHERE date > ?", (sinir,)).rowcount or 0
+    con.commit()
+    if n_bar or n_ix:
+        log.warning("yarım bar ayıklandı: %d hisse + %d endeks barı (> %s). "
+                    "Koşu kapanmamış bir seansta yapılmış olabilir.",
+                    n_bar, n_ix, sinir)
+    return {"silinen_bar": n_bar, "silinen_endeks": n_ix, "sinir": sinir}
+
+
 def backfill(cfg: dict, con: sqlite3.Connection,
              tickers: list[str] | None = None, start: str | None = None) -> dict:
     """Tam geçmişi çeker. Uzun sürer; günlük boru hattında ÇAĞRILMAZ."""
@@ -110,7 +154,10 @@ def backfill(cfg: dict, con: sqlite3.Connection,
         log.info("backfill %s: %d bar", t, sonuc[t])
     # Ayıklama boru hattının PARÇASI — elle çalıştırılan adım bırakılmaz (L-002).
     temiz = purge_phantom_bars(cfg, con)
-    return {"tickers": len(tickers), "bars": sonuc, "hayalet_silinen": temiz["silinen"]}
+    yarim = purge_incomplete_bars(cfg, con)
+    return {"tickers": len(tickers), "bars": sonuc,
+            "hayalet_silinen": temiz["silinen"],
+            "yarim_bar_silinen": yarim["silinen_bar"] + yarim["silinen_endeks"]}
 
 
 def daily(cfg: dict, con: sqlite3.Connection,
@@ -129,6 +176,9 @@ def daily(cfg: dict, con: sqlite3.Connection,
     for t in tickers:
         sonuc[t] = _store_bars(con, t, yf.fetch_bars(t, cfg, start=start))
     temiz = purge_phantom_bars(cfg, con)
+    # ⚠ SIRA ÖNEMLİ: yarım bar ayıklaması kalite kapısından ÖNCE. Aksi halde
+    # kapı kapanmamış bir seansın barını değerlendirir ve "temiz" der.
+    yarim = purge_incomplete_bars(cfg, con)
     # Kalite kapısı boru hattının PARÇASI — elle çalıştırılan adım bırakılmaz.
     # LESSONS L-002: "bir kere elle çalıştırdım, gerisi otomatik" varsayımı
     # yanlıştır; bağlı olmayan script donar ve hiçbir hata fırlatmaz. Burada
@@ -136,6 +186,7 @@ def daily(cfg: dict, con: sqlite3.Connection,
     kalite = assess_quality(cfg, con, tickers=tickers)
     return {"tickers": len(tickers), "bars": sonuc, "start": start,
             "hayalet_silinen": temiz["silinen"],
+            "yarim_bar_silinen": yarim["silinen_bar"] + yarim["silinen_endeks"],
             "kalite_degerlendirilen": len(kalite),
             "kalite_gecmeyen": sum(1 for r in kalite if not r["ok"])}
 
@@ -154,6 +205,10 @@ def sync_indices(cfg: dict, con: sqlite3.Connection, start: str | None = None) -
         sonuc[ad] = db.upsert_many(
             con, "index_daily", ["symbol", "date", "o", "h", "l", "c", "ingested_utc"], rows)
         log.info("endeks %s (%s): %d bar", ad, sym, sonuc[ad])
+    # Endeks tarafı da yarım bar alabilir ve buradaki zararı daha büyüktür:
+    # XU100 hem işlem takviminin hem rejim genişliğinin kaynağıdır (L-008,
+    # "aynı savunma başka nerede olmalıydı?").
+    purge_incomplete_bars(cfg, con)
     return sonuc
 
 

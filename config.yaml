@@ -61,6 +61,26 @@ sources:
     backfill: [usdtry_sell, tufe, aofm_politika, mevduat_1yil, enf_bek_12ay]
     gunluk_pencere_gun: 45
     mevduat_stopaj_pct: 15.0
+    # --- TAZELİK TOLERANSI (2026-08-11 denetiminden) --------------------------
+    # NE OLDU: `TP.FE.OKTG01` 2025-12-01'de sessizce durdu. `macro.context` en
+    # son gözlemi alıyor, YAŞINA bakmıyordu → **Aralık 2025 enflasyonu, Ağustos
+    # 2026'nın enflasyonu olarak** analiste gitti. `makro_eksik_pct` ise 0.0
+    # diyordu, çünkü o sayı varlığa bakıyordu, tazeliğe değil.
+    #
+    # Tolerans TAKVİM GÜNÜ ve seri BAŞINA: yayın ritmi farklı. Günlük seride
+    # 10 gün "veri gelmiyor" demektir; aylık seride normal bir yayın gecikmesi.
+    # Sayılar ritim + makul gecikme payı; ölçüm DEĞİL, açıkça varsayım.
+    # Toleransı aşan seri değeri pakete GİRMEZ ve `bist saglik` onu basar.
+    #
+    # ⚠ Anahtarlar `series` ile BİREBİR aynı olmak zorunda — eksik anahtar
+    # sessizce "tolerans yok"a düşerdi ve yeni bir seri denetimsiz kalırdı
+    # (test_sozlesme::test_evds_tazelik_anahtarlari_SERIYLE_BIREBIR).
+    tazelik_tolerans_gun:
+      usdtry_sell:   14      # günlük — en uzun bayram + hafta sonu ~11 gün
+      tufe:          75      # aylık   — TÜİK ayın ilk 3 günü yayımlar
+      aofm_politika: 14      # günlük
+      mevduat_1yil:  30      # haftalık
+      enf_bek_12ay:  75      # aylık
 
   kap:
     # ÖLÇÜLDÜ 2026-07-27: POST /tr/api/disclosure/members/byCriteria doğru

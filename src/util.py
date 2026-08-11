@@ -179,6 +179,20 @@ def to_utc_iso(dt: datetime, *, assume_tz: str | None = None) -> str:
     return dt.astimezone(timezone.utc).replace(microsecond=0).isoformat()
 
 
+def bugun_tr(tz: str = "Europe/Istanbul", *, simdi: datetime | None = None) -> str:
+    """Verilen saat diliminde BUGÜNÜN ISO tarihi.
+
+    ⚠ `date.today()` sunucunun saat dilimine bağlıdır. GitHub Actions UTC
+    koşar; TR ile 3 saat fark vardır ve akşam koşan bir iş UTC'de hâlâ "dün"
+    olabilir. Koşu günü bir TAKVİM olgusu olduğu için daima borsa saat
+    diliminden okunur (AGENTS.md §11 madde 6: zaman kaynağı açık olsun).
+
+    `simdi` yalnız test içindir: duvar saatine bağlı bir testin ne zaman
+    kırmızıya döneceğini kimse bilemez.
+    """
+    return (simdi or utc_now()).astimezone(ZoneInfo(tz)).date().isoformat()
+
+
 def local_day_end_utc_iso(day: str | date, tz: str) -> str:
     """Verilen YEREL günün son anını (23:59:59) UTC ISO olarak döner.
 

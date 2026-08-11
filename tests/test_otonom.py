@@ -45,8 +45,8 @@ def _adimlari_sahtele(monkeypatch, *, saglik_kritik=False, dusen: set | None = N
         return f
 
     monkeypatch.setattr(prices, "daily", kaydet(
-        "veri", {"tickers": 70, "hayalet_silinen": 0, "kalite_gecmeyen": 1,
-                 "start": "2026-07-14"}))
+        "veri", {"tickers": 70, "hayalet_silinen": 0, "yarim_bar_silinen": 0,
+                 "kalite_gecmeyen": 1, "start": "2026-07-14"}))
     monkeypatch.setattr(indicators, "compute_and_store", kaydet(
         "gosterge", {"satir": {"THYAO": 2900}, "tickers": 70,
                      "set_version": "v1"}))

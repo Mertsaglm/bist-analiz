@@ -307,8 +307,11 @@ def cmd_kaydet(args) -> int:
         planner.store(cfg, con, opts)
 
     run_id = journal.create_run(cfg, con, asof=asof, tool=out.get("tool", "diger"),
-                                bundle_sha=bundle["bundle_sha"],
-                                output_path=f"llm/out/{asof}/analysis.json")
+                                bundle_sha=bundle["bundle_sha"])
+    # Çıktı mühürlenir ve run'a özel dosyaya kopyalanır — `analysis.json`
+    # ezilebilir bir yoldur ve gerçekten ezildi (2026-07-30). Simetri: girdi
+    # `bundle_sha` ile, çıktı `output_sha` ile mühürlü (L-008).
+    m = journal.muhurle_cikti(cfg, con, run_id=run_id, asof=asof)
     plan_map = {p["plan_id"]: p for ps in planner.load_for_date(cfg, con, asof).values()
                 for p in ps}
     ev = {e["ticker"]: e for e in bundle["evren"]}
@@ -325,6 +328,7 @@ def cmd_kaydet(args) -> int:
                                  "atr14": ev[t]["gostergeler"].get("atr14")})
         n += 1
     print(f"✅ {n} tahmin journal'a yazıldı (run {run_id}).")
+    print(f"   çıktı mührü: {m.get('sha', '—')[:12]} → {m.get('yol', m.get('not'))}")
     if bulgular:
         print(f"\n{len(bulgular)} uyarı:")
         print(audit.format_report(bulgular))
@@ -425,8 +429,10 @@ def cmd_rapor(args) -> int:
     # yazar; sessizce deterministik katmanı "rapor" diye sunmaz.
     analiz = db.fetch_all(
         con, "SELECT * FROM predictions WHERE asof = ? ORDER BY ticker", (asof,))
-    metin = report.daily_report(cfg, bundle, holdings=journal.holdings(con),
-                                analiz=analiz)
+    metin = report.daily_report(
+        cfg, bundle, holdings=journal.holdings(con), analiz=analiz,
+        acik_plan=len([p for p in journal.open_predictions(con)
+                       if p["action"] == "plan_sec"]))
     yol = report.write(cfg, f"gunluk_{asof}.md", metin)
     print(metin)
     print(f"\n\nRapor yazıldı: {yol}")
@@ -653,6 +659,26 @@ def cmd_otonom(args) -> int:
 
     cfg = _cfg()
     con = db.connect(cfg)
+    if args.alt == "nobetci":
+        # Gözcü: hiçbir şey düzeltmez, yalnız söyler. Çıkış 1 = sessizlik var.
+        n = otonom.nobetci(cfg, con)
+        con.close()
+        if n.get("not"):
+            print(n["not"])
+        for s in n["satirlar"]:
+            print(f"  ⚠ {s}")
+        if not n["satirlar"]:
+            print(f"✅ Nöbetçi temiz — son koşu {n.get('son_kosu')} · "
+                  f"son bar {n.get('son_bar')} · son analiz {n.get('son_analiz')}")
+            return 0
+        from . import telegram_bist as tg
+        try:
+            tg.bildir(cfg, "👁 BIST nöbetçi — " + n["tarih"] + "\n"
+                      + "\n".join(f"· {s}" for s in n["satirlar"]))
+        except Exception as e:                              # noqa: BLE001
+            print(f"  (Telegram gönderilemedi: {e})")
+        return 1 if n["sessiz"] else 0
+
     if args.alt == "gunluk":
         sonuc = otonom.gunluk(cfg, con, analist_calistir=not args.analistsiz)
     else:
@@ -804,7 +830,7 @@ def build_parser() -> argparse.ArgumentParser:
     rv.set_defaults(fn=cmd_revizyon)
 
     ot = sub.add_parser("otonom", help="tam otomatik koşu (GitHub Actions)")
-    ot.add_argument("alt", choices=["gunluk", "haftalik"])
+    ot.add_argument("alt", choices=["gunluk", "haftalik", "nobetci"])
     ot.add_argument("--analistsiz", action="store_true",
                     help="LLM zincirini atla, yalnız deterministik katman")
     ot.set_defaults(fn=cmd_otonom)

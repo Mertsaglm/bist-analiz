@@ -69,7 +69,10 @@ BEKLENEN_KOMUTLAR = {
     "seviye": None,
     "teshis": None,
     "revizyon": None,
-    "otonom": ["gunluk", "haftalik"],
+    # `nobetci` 2026-08-11'de eklendi: koşunun DIŞINDAN bakan gözcü. Ayrı bir
+    # alt komut olması şart — aynı işin içinde koşan bir kontrol, o iş hiç
+    # başlamazsa konuşamaz (L-015/L-016).
+    "otonom": ["gunluk", "haftalik", "nobetci"],
     "bildir": None,
     "db": ["dump", "restore", "durum"],
 }

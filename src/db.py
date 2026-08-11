@@ -179,6 +179,14 @@ CREATE TABLE IF NOT EXISTS plan_options (
 CREATE INDEX IF NOT EXISTS idx_plan_asof ON plan_options(asof, ticker);
 
 -- ======================== LLM çalıştırmaları ========================
+-- `output_sha` ÇIKTININ mührüdür ve `bundle_sha`nın simetriğidir (L-008).
+-- Uzun süre yalnız GİRDİ mühürlüydü: çıktı `llm/out/<asof>/analysis.json`
+-- yoluna yazılıyordu ve yol yalnızca TARİHE bağlı olduğu için aynı gün için
+-- ikinci bir analist turu dosyayı journal'a haber vermeden EZİYORDU.
+-- Gerçekten yaşandı (2026-08-11 denetimi): 2026-07-30 kaydı `gemini-3.6-flash`
+-- diyordu, diskteki dosya `gemini-3.5-flash`'a aitti ve TUPRS'ta hem sinyali
+-- hem seçilen planı farklıydı. `output_path` artık run'a özel bir dosyayı
+-- gösterir ve `output_sha` onun ezilmediğini KANITLAR (bkz. saglik).
 CREATE TABLE IF NOT EXISTS llm_runs (
     run_id     TEXT PRIMARY KEY,  -- '<asof>-<tool>-<n>'
     asof       TEXT NOT NULL,
@@ -188,8 +196,47 @@ CREATE TABLE IF NOT EXISTS llm_runs (
     output_path TEXT NOT NULL,
     audit_passed INTEGER NOT NULL,
     hard_fail_codes TEXT,
-    created_utc TEXT NOT NULL
+    created_utc TEXT NOT NULL,
+    -- ⚠ SIRASI ÖNEMLİ: `output_sha` EN SONDA olmak zorunda çünkü migration v11
+    -- onu `ALTER TABLE ADD COLUMN` ile ekler ve SQLite yeni kolonu SONA koyar.
+    -- Taban şemada başka bir yere yazılsaydı, TAZE kurulan bir veritabanı ile
+    -- MIGRATE edilmiş bir veritabanının kolon SIRASI ayrışırdı. Yazma güvende
+    -- kalırdı (kolonlar ada göre yazılıyor) ama `dbdump` PRAGMA sırasını
+    -- kullanır: aynı veri iki farklı metin üretir ve dump'ın varlık sebebi
+    -- olan "aynı içerik → aynı bayt" güvencesi çöker. Actions dump'tan taze
+    -- kurar, yerel makine migrate eder — yani ayrışma tam da orada olurdu.
+    output_sha TEXT               -- NULL = mühürsüz (v11 öncesi), "yok" DEĞİL
 );
+
+-- ======================== Otonom koşu kaydı (HEARTBEAT) ========================
+-- ⚠ BU TABLONUN VARLIK SEBEBİ BİR KİLİTLENMEDİR (2026-08-11 denetimi).
+--
+-- "Planlı koşu atlandı mı?" kontrolü `MAX(predictions.asof)`e bakıyordu.
+-- `predictions` ise sağlık KAPISININ ARKASINDA yazılır. Kapı bir kez kapanınca
+-- (2026-08-06'da GitHub runner işi almadı) `MAX(asof)` bir daha büyüyemedi,
+-- fark her gün 1 arttı ve sistem KENDİ KENDİNİ kilitledi: 4 işlem günü boyunca
+-- veri çekildi, commit atıldı, tek bir analiz üretilmedi.
+--
+-- Kural buradan doğdu: **bir gözlemci, gözlediği sürecin ÜRÜNÜNE bakamaz.**
+-- Bu tablo koşunun EN BAŞINDA yazılır — durdurulmuş, çökmüş, hatta takvim
+-- yüzünden atlanmış bir koşu bile "ben koştum" der. Sayaç böylece kapının
+-- önünde ilerler.
+--
+-- Dump'a GİRER (`dbdump.ATLA` dışında): Actions her koşuda veritabanını
+-- dump'tan kurar; tablo dump'ta olmasaydı heartbeat her koşuda sıfırlanır ve
+-- kontrol hiçbir şey göremezdi.
+CREATE TABLE IF NOT EXISTS otonom_kosu (
+    kosu_id       TEXT PRIMARY KEY,  -- '<tarih_tr>-<tur>-<n>'
+    tur           TEXT NOT NULL,     -- gunluk|haftalik
+    tarih_tr      TEXT NOT NULL,     -- koşunun İSTANBUL takvim günü (duvar saati)
+    baslangic_utc TEXT NOT NULL,
+    bitis_utc     TEXT,              -- NULL = koşu bitmeden süreç öldü
+    durum         TEXT NOT NULL,     -- kosuyor|tamam|durduruldu|atlandi
+    asof          TEXT,              -- koşunun işlediği son bar
+    adimlar       TEXT,              -- JSON: hangi adım ne dedi
+    hatalar       TEXT               -- JSON: düşen adımlar
+);
+CREATE INDEX IF NOT EXISTS idx_kosu_tur_tarih ON otonom_kosu(tur, tarih_tr);
 
 -- ======================== Tahmin günlüğü (DEĞİŞMEZ) ========================
 CREATE TABLE IF NOT EXISTS predictions (

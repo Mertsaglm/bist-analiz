@@ -10,13 +10,37 @@ import_etmez`). CLI artık ince bir kabuk: burayı çağırıp basıyor.
 
 Çıkış kodu sözleşmesi — otomasyonun kapısı bu:
     0 temiz · 1 en az bir UYARI · 2 en az bir KRİTİK
+
+═══════════════════════════════════════════════════════════════════════════
+İKİ SINIF KONTROL — ve neden ayrıldıkları (2026-08-11 denetimi, L-016)
+═══════════════════════════════════════════════════════════════════════════
+
+**KAPI kontrolleri** — "bugünkü VERİYE güvenilir mi?" Yanıt hayırsa analiz
+etmek zararlıdır, çünkü şeklen geçerli ama içi boş bir paket üretilir (L-009).
+Bunlar KRİTİK olabilir ve `otonom.gunluk` onlarda durur. Hepsinin ortak
+özelliği: **koşunun KENDİSİ tarafından düzeltilebilirler.** Bayat bar → veri
+adımı çeker. Eksik gösterge → gösterge adımı hesaplar. Yarım bar → ayıklanır.
+
+**GÖZLEM kontrolleri** — "sistem SÜREÇ olarak sağlıklı mı?" Bunlar sistemin
+kendi geçmişine bakar ve **ASLA kapıyı kapatamazlar** (`ekle_gozlem` şiddeti
+UYARI'da tavanlar). Sebep bir kilitlenme:
+
+    L-015'te eklenen "atlanan koşu" kontrolü `MAX(predictions.asof)`e bakıyor
+    ve fark ≥2 ise KRİTİK diyordu. `predictions` ise kapının ARKASINDA yazılır.
+    2026-08-06'da GitHub runner işi almayınca fark 2 oldu, kapı kapandı ve
+    AÇILAMADI — açılması için gereken tahmin, kapının arkasındaydı. Sistem
+    4 işlem günü boyunca veri çekti, commit attı, SIFIR analiz üretti.
+
+Kural: **bir gözlemci, gözlediği sürecin ürününe bakıp o süreci durduramaz.**
+Yapısal karşılığı `ekle_gozlem`'dir; davranışsal kilidi
+`tests/test_saglik.py::TestKapiKendiCiktisinaBakmaz`.
 """
 
 from __future__ import annotations
 
 import sqlite3
 
-from . import db, migrations, news, universe
+from . import db, journal, migrations, news, universe, util
 
 KRITIK = "KRİTİK"
 UYARI = "UYARI"
@@ -25,18 +49,48 @@ OK = "OK"
 
 ISARET = {OK: "✓", KRITIK: "🛑", UYARI: "⚠", BILGI: "·"}
 
+# Sistemin KENDİ GEÇMİŞİNE bakan kontroller. Kapıyı kapatamazlar; şiddetleri
+# `ekle_gozlem` içinde UYARI'da tavanlanır. Liste belge değil SÖZLEŞMEDİR:
+# `tests/test_saglik.py` her birinin KRİTİK üretemediğini davranışla sınar.
+GOZLEM_KONTROLLERI = frozenset({
+    "atlanan koşu",      # planlı koşu düştü mü (heartbeat)
+    "analizsiz gün",     # koşu var ama analist üretmiyor
+    "açık plan",         # journal'da açık plan var, portföy boş
+    "çıktı mührü",       # analysis.json ezilmiş mi
+})
 
-def kontrol(cfg: dict, con: sqlite3.Connection) -> dict:
+
+def kontrol(cfg: dict, con: sqlite3.Connection, *,
+            bugun_tr: str | None = None) -> dict:
     """Tüm kontrolleri koşar. {asof, bulgular:[(seviye, ad, mesaj)], kritik, uyari}
 
     Bağlantı SALT OKUNUR verilebilir ve verilmelidir — sağlık kontrolü hiçbir
     şeyi değiştirmez.
+
+    `bugun_tr` yalnız TEST için enjekte edilir; verilmezse İstanbul duvar saati
+    kullanılır. Zaman kaynağını gizlemek, AGENTS.md §11 madde 6'nın yasakladığı
+    şeydir — o yüzden parametre var ve varsayılanı açıkça yazılı.
     """
     asof = db.scalar(con, "SELECT MAX(date) FROM bars_daily")
     bulgular: list[tuple[str, str, str]] = []
+    bugun_tr = bugun_tr or util.bugun_tr(cfg["takvim"]["timezone"])
 
     def ekle(seviye, ad, tamam, mesaj):
         bulgular.append((OK if tamam else seviye, ad, mesaj))
+
+    def ekle_gozlem(seviye, ad, tamam, mesaj):
+        """GÖZLEM bulgusu — şiddet UYARI'da TAVANLANIR.
+
+        Bu tavan bir üslup tercihi değil, kilidin YAPISAL çözümü: bir gözlem
+        kontrolü ne döndürürse döndürsün kapıyı kapatamaz. Birisi ileride
+        `return KRITIK, ...` yazsa bile sistem durmaz, sadece uyarır.
+        """
+        if ad not in GOZLEM_KONTROLLERI:
+            raise RuntimeError(
+                f"'{ad}' `ekle_gozlem` ile eklendi ama GOZLEM_KONTROLLERI "
+                "kümesinde yok. Kontrolün sınıfı belirsiz kalmasın.")
+        bulgular.append((OK if tamam else (UYARI if seviye == KRITIK else seviye),
+                         ad, mesaj))
 
     # 0) BAR TAZELİĞİ — takvime göre. Diğer TÜM kontrollerin dayanağı budur.
     #
@@ -130,12 +184,23 @@ def kontrol(cfg: dict, con: sqlite3.Connection) -> dict:
     seviye, ad, tamam, mesaj = _duzeltilmemis_kurumsal(cfg, con)
     ekle(seviye, ad, tamam, mesaj)
 
-    # 12) ATLANAN OTONOM KOŞU — bildirimin ULAŞAMADIĞI arıza sınıfı
-    seviye, ad, tamam, mesaj = _atlanan_kosu(cfg, con, asof)
-    ekle(seviye, ad, tamam, mesaj)
+    # 12) YARIM BAR — KAPI kontrolü. Kapanmamış seansın barıyla analiz yapmak
+    # look-ahead'in en sinsi biçimidir ve journal DEĞİŞMEZ olduğu için
+    # sonradan düzeltilemez (yaşandı: 2026-07-29, 18 tahmin, ort. %1.21 sapma).
+    ekle(*_yarim_bar(cfg, con, asof))
+
+    # 13) EVDS TAZELİĞİ — "değer var" ile "değer güncel" ayrı iki olgu
+    ekle(*_evds_tazelik(cfg, con))
+
+    # --- GÖZLEM kontrolleri: buradan sonrası KAPIYI KAPATAMAZ (modül docstring) ---
+    ekle_gozlem(*_atlanan_kosu(cfg, con, bugun_tr))
+    ekle_gozlem(*_analizsiz_gun(cfg, con, asof))
+    ekle_gozlem(*_acik_plan(cfg, con))
+    ekle_gozlem(*_cikti_muhru(cfg, con))
 
     return {
         "asof": asof,
+        "bugun_tr": bugun_tr,
         "bulgular": bulgular,
         "kritik": [b for b in bulgular if b[0] == KRITIK],
         "uyari": [b for b in bulgular if b[0] == UYARI],
@@ -222,45 +287,214 @@ def _kesit_kontrolleri(cfg: dict, con: sqlite3.Connection
     return out
 
 
-def _atlanan_kosu(cfg: dict, con: sqlite3.Connection, asof: str | None
+def _yarim_bar(cfg: dict, con: sqlite3.Connection, asof: str | None
+               ) -> tuple[str, str, bool, str]:
+    """KAPANMAMIŞ seansın barı veritabanında mı? — KAPI kontrolü.
+
+    ⚠ GERÇEK OLAY (2026-07-29, 2026-08-11 denetiminde bulundu): paket TR
+    saatiyle 13:29'da, seans SÜRERKEN üretildi. O anki yfinance barı "kapanış"
+    diye paketlendi ve 18 tahmin journal'a öyle yazıldı. Gerçek kapanışla
+    karşılaştırma: 18/18 ismde sapma, ortalama %1.21, maksimum %2.47
+    (AKBNK 64.90 → 63.30). Journal DEĞİŞMEZ olduğu için düzeltilemez.
+
+    `purge_phantom_bars` bunu yakalayamaz: yarım bir seans barının hacmi de
+    OHLC'si de gerçektir, sadece EKSİKTİR. Ayrı bir ölçüt gerekiyordu ve
+    zaten vardı — `BistCalendar.last_closed_session`, ta Faz 1'den beri.
+    Kimse çağırmıyordu.
+
+    KAPI olması meşru çünkü koşunun KENDİSİ düzeltir: `prices.daily` içindeki
+    `purge_incomplete_bars` sağlık adımından ÖNCE koşar ve satırı siler.
+    Buraya düşmek "ayıklama çalışmadı" demektir — o zaman durmak doğrudur.
+    """
+    if not asof:
+        return BILGI, "yarım bar", True, "veri yok"
+    try:
+        from .calendar_bist import BistCalendar
+        kapali = BistCalendar(cfg, con).last_closed_session().isoformat()
+    except Exception:                                       # noqa: BLE001
+        return BILGI, "yarım bar", True, "takvim kurulamadı"
+    if asof <= kapali:
+        return OK, "yarım bar", True, f"son bar {asof} ≤ kapanmış seans {kapali}"
+    return (KRITIK, "yarım bar", False,
+            f"son bar {asof} · kapanışı KESİNLEŞMİŞ son seans {kapali} → "
+            "kapanmamış seansın barı veritabanında. Bu barla üretilen her "
+            "gösterge, plan ve tahmin yarım veriye dayanır ve journal "
+            "değişmez olduğu için sonradan düzeltilemez "
+            "(`bist veri gunluk` ayıklar).")
+
+
+def _evds_tazelik(cfg: dict, con: sqlite3.Connection) -> tuple[str, str, bool, str]:
+    """Makro serilerinden hangisi DONMUŞ? — "değer var" ≠ "değer güncel".
+
+    ⚠ GERÇEK OLAY (2026-08-11 denetimi): TÜFE serisi (`TP.FE.OKTG01`)
+    2025-12-01'de durmuştu. `macro.context` en son gözlemi alıyor, tazeliğe
+    BAKMIYORDU; sonuç: **Aralık 2025 enflasyonu, Ağustos 2026'nın enflasyonu
+    olarak** pakete giriyordu. Üstelik `makro_eksik_pct` 0.0 diyordu — çünkü
+    o fonksiyon VARLIĞA bakıyordu, tazeliğe değil. Donmuş bir seri ile taze
+    bir seri ayırt edilemiyordu.
+
+    Bu bir UYARI, KRİTİK değil: bayat makro rejim ETİKETİNİ değiştirmiyor
+    (`regime._label` yalnız XU100/genişlik kullanır) ve koşuyu durdurmak
+    fiyat tarafını da öldürürdü. Ama görünmez kalmamalı.
+    """
+    from . import macro
+
+    bayat = macro.bayat_seriler(cfg, con)
+    if not bayat:
+        return OK, "EVDS tazeliği", True, "tüm seriler tolerans içinde"
+    ozet = " · ".join(f"{b['ad']} {b['son']} ({b['yas_gun']}g > {b['tolerans']}g)"
+                      for b in bayat)
+    return (UYARI, "EVDS tazeliği", False,
+            f"{len(bayat)} seri donmuş: {ozet} → değerleri pakete GİRMİYOR "
+            "(`bist makro gunluk`; seri kodu değişmiş olabilir)")
+
+
+def _atlanan_kosu(cfg: dict, con: sqlite3.Connection, bugun_tr: str
                   ) -> tuple[str, str, bool, str]:
-    """Analiz KOŞMADIĞI günleri yakalar — bildirimin ulaşamadığı arıza sınıfı.
+    """Planlı koşu atlandı mı? — GÖZLEM kontrolü (kapıyı KAPATAMAZ).
 
     ⚠ GERÇEK OLAY (2026-08-06): planlanmış otonom koşu GitHub tarafında
     "The job was not acquired by Runner of type hosted" ile düştü. İş HİÇ
-    BAŞLAMADI; dolayısıyla `otonom.py` koşmadı, Telegram bildirimi de çıkmadı.
-    Kullanıcı açısından o gün **tamamen sessizdi** — ne rapor geldi, ne uyarı.
-    Fark edilmesi yalnızca eksik bir commit'e gözle rastlamaya kalmıştı.
+    BAŞLAMADI; `otonom.py` koşmadı, Telegram bildirimi de çıkmadı. O gün
+    kullanıcı açısından **tamamen sessizdi.** Bir süreç kendi yokluğunu
+    haber veremez.
 
-    Bu, L-010'un kardeşi ve bir adım daha kötüsü: L-010'da kontroller kendi
-    verisine bakıyordu; burada **bildirim mekanizması, gözlediği sürecin
-    İÇİNDE yaşıyor.** Bir süreç kendi yokluğunu haber veremez.
+    ⚠⚠ VE İLK ÇÖZÜM YANLIŞTI (2026-08-11 denetimi, L-016): bu kontrol
+    `MAX(predictions.asof)`e bakıyor ve fark ≥2 ise KRİTİK diyordu. O tablo
+    kapının ARKASINDA yazılır — kapı bir kez kapanınca sayaç donuyor, fark
+    her gün büyüyor ve sistem kendi kendini süresiz kilitliyordu. Yani
+    L-015'in kendi cümlesi ("süreç kendi yokluğunu haber veremez") çözümün
+    içinde ihlal edilmişti: çözüm yine sürecin İÇİNE konmuştu.
 
-    Çözüm, bir sonraki koşan sürecin GERİYE bakması: journal'daki son analiz
-    günü ile beklenen son seans arasındaki işlem günü farkı. Fark ≥1 ise
-    aradaki bir koşu atlanmıştır. Bu kontrol elle `bist saglik` ile de
-    koşulabilir, yani hiç Actions çalışmasa bile görünür.
+    Şimdi sayaç `otonom_kosu` heartbeat'inden okunuyor. O kayıt koşunun EN
+    BAŞINDA yazılır, yani kapı kapansa bile ilerler. Kilit kurulamaz.
+
+    ⚠ `once=bugun_tr`: kontrol koşunun İÇİNDEN çağrıldığında bugünün
+    heartbeat'i zaten yazılmıştır. Soru "bugün koştum mu?" değil,
+    **"bugüne kadar bir gün atladım mı?"** — o yüzden bugün hariç tutulur.
+
+    ⚠ Bu kontrol yalnız BİR SONRAKİ koşu gerçekleştiğinde konuşabilir. Hiç
+    koşu olmayan durumun tek çaresi DIŞARIDAKİ bir nöbetçidir
+    (`.github/workflows/nobetci.yml`) — bu kontrol onun yerini TUTMAZ.
     """
-    if not asof:
-        return BILGI, "atlanan koşu", True, "veri yok"
-    son_analiz = db.scalar(con, "SELECT MAX(asof) FROM predictions")
-    if not son_analiz:
-        return BILGI, "atlanan koşu", True, "journal boş — henüz analiz yok"
+    onceki = journal.son_kosu(con, tur="gunluk", once=bugun_tr)
+    if not onceki:
+        return (BILGI, "atlanan koşu", True,
+                "heartbeat boş — henüz kayıtlı önceki koşu yok")
     try:
         from .calendar_bist import BistCalendar
         cal = BistCalendar(cfg, con)
-        fark = cal.trading_days_between(son_analiz, asof)
+        beklenen = cal.last_closed_session().isoformat()
+        fark = cal.trading_days_between(onceki["tarih_tr"], beklenen)
     except Exception:                                       # noqa: BLE001
         return BILGI, "atlanan koşu", True, "takvim kurulamadı"
-    ozet = f"son analiz {son_analiz} · son bar {asof}"
-    if fark <= 0:
+    ozet = f"önceki koşu {onceki['tarih_tr']} ({onceki['durum']}) · son seans {beklenen}"
+    # Normal ritim: her seans akşamı bir koşu → fark 1. 2 ve üstü, aradaki
+    # en az bir seansın hiç işlenmediği anlamına gelir.
+    if fark <= 1:
         return OK, "atlanan koşu", True, ozet
-    # Şiddet kademeli: bir gün gecikme (yfinance bekleyişi, tek seferlik runner
-    # arızası) olağan; iki gün üst üste analiz yoksa zincir gerçekten duruyor.
-    return ((KRITIK if fark >= 2 else UYARI), "atlanan koşu", False,
-            ozet + f" → **{fark} işlem günü analizsiz**. Planlı koşu düşmüş "
-                   "olabilir; iş hiç başlamazsa Telegram bildirimi de ÇIKMAZ "
-                   "(gözlendi 2026-08-06). Actions geçmişini kontrol et.")
+    return (UYARI, "atlanan koşu", False,
+            ozet + f" → arada **{fark - 1} seans** koşusuz. İş hiç başlamazsa "
+                   "Telegram bildirimi de ÇIKMAZ (gözlendi 2026-08-06); "
+                   "Actions geçmişini kontrol et.")
+
+
+def _analizsiz_gun(cfg: dict, con: sqlite3.Connection, asof: str | None
+                   ) -> tuple[str, str, bool, str]:
+    """Koşu var ama ANALİST üretemiyor mu? — GÖZLEM kontrolü.
+
+    "Koştum" ile "iş ürettim" AYRI iki olgudur ve tek satıra sıkıştırılırsa
+    (L-003) hangisinin bozuk olduğu görünmez. `_atlanan_kosu` birincisini,
+    bu ikincisini sorar.
+
+    ⚠ Şiddet neden KRİTİK değil: `analist` bilerek kritik adım DEĞİL (ADR #013
+    — zincir düşse bile deterministik plan geometrisi tek başına değerli).
+    Bu kontrolün kapıyı kapatması, o kararı sessizce iptal ederdi: analistin
+    iki gün üst üste düşmesi deterministik katmanı da öldürürdü. Tam olarak
+    2026-08-06/11 arasında olan buydu.
+
+    ⚠ Fark 1 NORMALDİR: sağlık adımı zincirde analistten ÖNCE (adım 4 vs 6)
+    koşar, yani bugünün tahmini henüz yazılmamıştır.
+    """
+    if not asof:
+        return BILGI, "analizsiz gün", True, "veri yok"
+    son_analiz = db.scalar(con, "SELECT MAX(asof) FROM predictions")
+    if not son_analiz:
+        return BILGI, "analizsiz gün", True, "journal boş — henüz analiz yok"
+    try:
+        from .calendar_bist import BistCalendar
+        fark = BistCalendar(cfg, con).trading_days_between(son_analiz, asof)
+    except Exception:                                       # noqa: BLE001
+        return BILGI, "analizsiz gün", True, "takvim kurulamadı"
+    ozet = f"son analiz {son_analiz} · son bar {asof}"
+    if fark <= 1:
+        return OK, "analizsiz gün", True, ozet
+    return (UYARI, "analizsiz gün", False,
+            ozet + f" → **{fark} işlem günü analizsiz**. Koşu ayakta ama "
+                   "analist halkası üretmiyor olabilir (`bist otonom gunluk` "
+                   "çıktısında `analist` adımına bak).")
+
+
+def _acik_plan(cfg: dict, con: sqlite3.Connection) -> tuple[str, str, bool, str]:
+    """Journal'da açık plan var ama portföy BOŞ mu? — GÖZLEM kontrolü.
+
+    ⚠ ÖLÇÜLDÜ (2026-08-11 denetimi): 9 açık `plan_sec` tahmini varken
+    `holdings` 0 satırdı. Rapor §0 "Kontenjan: 0/2 pozisyon dolu" basıyordu —
+    çünkü kontenjan `holdings`'ten sayılıyor, açık planlardan değil. Sonuç:
+    KRDMD 5 gün üst üste seçildi ve planlar harfiyen uygulansa tek isimde
+    **%26.9** birikirdi; rejim tavanı ise TOPLAM %20 hisseydi.
+
+    Rapor bu boşluğu zaten yazıyor ("Portföyde kayıtlı pozisyon yok"); eksik
+    olan, boşluğun bir SAYIYLA yan yana görünmesiydi.
+    """
+    acik = db.scalar(
+        con, "SELECT COUNT(*) FROM predictions p "
+             " LEFT JOIN outcomes o ON o.prediction_id = p.prediction_id "
+             " WHERE o.prediction_id IS NULL AND p.action = 'plan_sec'") or 0
+    tutulan = db.scalar(con, "SELECT COUNT(*) FROM holdings") or 0
+    ozet = f"{acik} açık plan · {tutulan} kayıtlı pozisyon"
+    if acik == 0 or tutulan > 0:
+        return OK, "açık plan", True, ozet
+    return (UYARI, "açık plan", False,
+            ozet + " → kontenjan ve 'azalt' bölümü portföye dayanır; portföy "
+                   "boşken ikisi de kör kalır (`bist portfoy ekle ...`).")
+
+
+def _cikti_muhru(cfg: dict, con: sqlite3.Connection) -> tuple[str, str, bool, str]:
+    """Journal'ın gösterdiği analist çıktısı hâlâ AYNI dosya mı? — GÖZLEM.
+
+    ⚠ GERÇEK OLAY (2026-08-11 denetimi): `llm_runs.output_path` "bu tahmini
+    üreten çıktı şu dosyadadır" diyor. 2026-07-30 için doğru DEĞİLDİ —
+    journal `gemini-3.6-flash` diyordu, dosyanın içi `gemini-3.5-flash`'tı ve
+    TUPRS'ta hem sinyal hem seçilen plan farklıydı. Sebep: yol yalnız TARİHE
+    bağlıydı, aynı günün ikinci turu dosyayı sessizce eziyordu.
+
+    Mühürsüz (v11 öncesi) kayıtlar ayrı sayılır ve "doğru" DEĞİL
+    "doğrulanamaz" diye raporlanır — geçmişe dönük sha yazmak, ezilmiş bir
+    dosyayı doğruymuş gibi mühürlemek olurdu.
+    """
+    kayitlar = db.fetch_all(
+        con, "SELECT run_id, output_path, output_sha FROM llm_runs "
+             " WHERE output_path IS NOT NULL AND output_path != ''")
+    if not kayitlar:
+        return BILGI, "çıktı mührü", True, "kayıt yok"
+    muhursuz = [r for r in kayitlar if not r["output_sha"]]
+    bozuk, kayip = [], []
+    for r in kayitlar:
+        if not r["output_sha"]:
+            continue
+        icerik = util.read_json(util.resolve(r["output_path"]))
+        if icerik is None:
+            kayip.append(r["run_id"])
+        elif util.sha256_canonical(icerik) != r["output_sha"]:
+            bozuk.append(r["run_id"])
+    ozet = (f"{len(kayitlar) - len(muhursuz)}/{len(kayitlar)} kayıt mühürlü"
+            + (f" · {len(muhursuz)} mühürsüz (doğrulanamaz)" if muhursuz else ""))
+    if not bozuk and not kayip:
+        return (OK if not muhursuz else BILGI), "çıktı mührü", True, ozet
+    return (UYARI, "çıktı mührü", False,
+            ozet + (f" · **mühür tutmuyor**: {', '.join(bozuk)}" if bozuk else "")
+            + (f" · dosya yok: {', '.join(kayip)}" if kayip else ""))
 
 
 def duzeltilmemis_kurumsal_tara(cfg: dict, con: sqlite3.Connection) -> list[dict]:

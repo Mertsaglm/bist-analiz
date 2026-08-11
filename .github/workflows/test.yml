@@ -9,6 +9,12 @@ on:
   push:
     branches: [main]
   pull_request:
+  # ⚠ ZAMANLANMIS KOSU GEREKLI (2026-08-11 denetimi). Otonom is main'e
+  # GITHUB_TOKEN ile push eder ve GitHub o push'larda workflow TETIKLEMEZ —
+  # yani gunlerce kod degismezse suite hic kosmaz. Son kosu 2026-08-07'ydi.
+  # Bagimlilik/API kirilmasi boylece yalnizca gunluk is dustugunde gorunurdu.
+  schedule:
+    - cron: "10 5 * * *"
   workflow_dispatch: {}
 
 jobs:

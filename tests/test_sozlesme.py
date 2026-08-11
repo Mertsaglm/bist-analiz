@@ -56,6 +56,7 @@ KOLON_SOZLESMESI = [
     ("predictions", journal.PREDICTION_COLS),
     ("outcomes", resolver.OUTCOME_COLS),
     ("disclosures", news.DISC_COLS),
+    ("llm_runs", journal.LLM_RUN_COLS),
 ]
 
 
@@ -528,6 +529,51 @@ class TestMigrationDisiplini:
         assert migrations.apply(con) == []
         assert migrations.apply(con) == []
         assert migrations.current_version(con) == migrations.target_version()
+
+    def test_ALTER_ile_eklenen_kolon_DUMP_TABLOSUNDA_sona_yazilir(self, con):
+        """⚠ TAZE ŞEMA ile MIGRATE EDİLMİŞ ŞEMA aynı SIRADA olmalı.
+
+        SQLite `ALTER TABLE ADD COLUMN` yeni kolonu daima SONA koyar. Taban
+        şemada (`db.SCHEMA`) aynı kolon başka bir yere yazılırsa iki kurulum
+        ayrışır:
+
+            yerel makine  → migrate edilmiş → kolon SONDA
+            GitHub Actions→ dump'tan taze  → kolon ORTADA
+
+        Yazma güvende kalır (kolonlar ada göre yazılır) ama `dbdump` PRAGMA
+        sırasını kullanır: **aynı veri iki farklı metin üretir** ve dump'ın
+        varlık sebebi olan determinizm çöker. Her koşuda sahte, devasa bir
+        diff görünürdü ve "veri değişti mi?" sorusu cevapsız kalırdı.
+
+        ⚠ Yalnız DUMP'A GİREN tablolar denetlenir: `dbdump.ATLA`daki türev
+        tablolar (indicator/levels/data_quality) dump'a girmediği için sıra
+        ayrışması onlarda sonuç doğurmaz — ve `data_quality` bugün gerçekten
+        bu durumda (v7/v8 kolonları ortada). Kuralı oraya da dayatmak, bedeli
+        olmayan bir kozmetik borç yaratırdı.
+        """
+        import ast
+
+        kaynak = ast.parse((SRC / "migrations.py").read_text(encoding="utf-8"))
+        eklenen: dict[str, list[str]] = {}
+        for d in ast.walk(kaynak):
+            if (isinstance(d, ast.Call) and isinstance(d.func, ast.Name)
+                    and d.func.id == "_add_column" and len(d.args) >= 3
+                    and all(isinstance(a, ast.Constant) for a in d.args[1:3])):
+                eklenen.setdefault(d.args[1].value, []).append(d.args[2].value)
+
+        assert eklenen, "hiç `_add_column` bulunamadı — tarama bozulmuş olabilir"
+        denetlenen = 0
+        for tablo, kolonlar in eklenen.items():
+            if tablo in dbdump.ATLA:
+                continue
+            denetlenen += 1
+            gercek = _kolonlar(con, tablo)
+            assert gercek[-len(kolonlar):] == kolonlar, (
+                f"`{tablo}`: ALTER ile eklenen {kolonlar} taban şemada SONDA "
+                f"değil (gerçek son kolonlar: {gercek[-len(kolonlar):]}). "
+                "Taze ve migrate edilmiş veritabanları ayrışır → dump "
+                "determinizmi kırılır.")
+        assert denetlenen, "dump'a giren hiçbir tabloya ALTER yapılmamış — test kör"
 
     def test_taban_sema_idempotent(self, con):
         """`db.SCHEMA` her `connect`te koşar; ikinci koşuş hata vermemeli."""

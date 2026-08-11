@@ -101,8 +101,21 @@ def paired_alpha(cfg: dict, con: sqlite3.Connection, *, tool: str | None = None)
     Eşleştirilmiş tasarım: piyasa faktörü tam sadeleşir. Getirisi olmayan
     sonuçlar (giris_olmadi, iptal_*) HARİÇTİR — onlar tahmin değil,
     gerçekleşmemiş plandır.
+
+    ⚠ PAYDA GÖRÜNÜR OLMALI (AGENTS.md §11 madde 2, 2026-08-11 denetimi).
+    `ort` **girişi tetiklenen** planların ortalamasıdır; ölçüldüğünde 20
+    çözülmüş tahminin 7'si (%35) hiç dolmamış ve paydadan sessizce düşmüştü.
+    Haftalık Telegram satırı ise "replay (N=20) alfa 4.27pp" diye basıyordu —
+    okuyan kişi 20 gözlemli bir 4.27 sanıyor, gerçekte 13 gözlemli.
+
+    O yüzden burası İKİ sayı birden döner:
+        ort              → girişi olan planların alfası (N = `n`)
+        ort_karar_basina → girmeyenler 0 alfa sayılarak (N = `n_karar`)
+    İkisi farklı soruyu cevaplar ("plan tuttuğunda ne oldu?" vs "karar başına
+    ne kazandım?") ve ikisi de raporlanır.
     """
-    rows = [r for r in _cozulmus(con, tool=tool) if r["alpha_vs_ew"] is not None]
+    tum = _cozulmus(con, tool=tool)
+    rows = [r for r in tum if r["alpha_vs_ew"] is not None]
     a = [r["alpha_vs_ew"] for r in rows]
     o = cfg["olcum"]
     s = stats.dist_stats(a, o["zayif_n_esigi"])
@@ -111,6 +124,10 @@ def paired_alpha(cfg: dict, con: sqlite3.Connection, *, tool: str | None = None)
     s["xu100_ort"] = (float(np.mean([r["alpha_vs_xu100"] for r in rows
                                      if r["alpha_vs_xu100"] is not None]))
                       if rows else None)
+    s["n_karar"] = len(tum)
+    s["n_girmeyen"] = len(tum) - len(rows)
+    s["ort_karar_basina"] = (
+        float(np.mean([r["alpha_vs_ew"] or 0.0 for r in tum])) if tum else None)
     return s
 
 

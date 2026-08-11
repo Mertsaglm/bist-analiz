@@ -1,0 +1,63 @@
+name: Nobetci
+
+# ═══════════════════════════════════════════════════════════════════════════
+# NEDEN AYRI BIR IS
+# ═══════════════════════════════════════════════════════════════════════════
+# LESSONS L-015'in kendi cumlesi: **bir surec kendi yoklugunu haber veremez.**
+#
+# 2026-08-06'da `gunluk.yml` GitHub tarafinda runner alamadi ("The job was not
+# acquired by Runner of type hosted"). Is HIC BASLAMADI: ne rapor, ne Telegram,
+# ne hata. O gun kullanici acisindan tamamen SESSIZDI ve fark edilmesi eksik
+# bir commit'e gozle rastlamaya kalmisti.
+#
+# Ilk cozum (L-015, 2026-08-07) o cumleye ragmen kontrolu yine surecin ICINE
+# koydu — `saglik`e bir kontrol olarak. Ve kontrol `predictions`e baktigi,
+# `predictions` de kapinin arkasinda yazildigi icin sistem KENDI KENDINI
+# kilitledi: 4 islem gunu boyunca veri cekildi, sifir analiz uretildi (L-016).
+#
+# Bu workflow o hatanin duzeltilmis hali:
+#   * AYRI is       → gunluk is runner alamazsa bu alabilir
+#   * AYRI zamanlama → 19:40 UTC, gunluk isten ~3 saat sonra
+#   * SALT OKUR     → hicbir seyi duzeltmez, yalnizca SOYLER
+#
+# Gozcunun tamir etmeye kalkmasi, hem gozculugu hem tamiri bozar.
+
+on:
+  schedule:
+    # Gunluk is 16:35 UTC. GitHub cron GECIKIR (gold'da olculdu), o yuzden
+    # ~3 saat pay: bu saatte gunluk is ya bitmis ya da gercekten dusmustur.
+    - cron: "40 19 * * 1-5"
+  workflow_dispatch: {}
+
+# ⚠ Yazma izni YOK. Gozcu commit atmaz, dump yazmaz, veri cekmez.
+permissions:
+  contents: read
+
+jobs:
+  nobetci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Bagimliliklar
+        run: pip install --quiet -e .
+
+      # Veritabani dump'tan kurulur — heartbeat (`otonom_kosu`) dump'ta OLDUGU
+      # icin gunluk isin bugun kosup kosmadigi buradan okunabilir. Tablo
+      # `dbdump.ATLA` disinda tutulmak zorunda; aksi halde bu is her seferinde
+      # bos bir tabloya bakardi.
+      - name: Veritabanini dump'tan kur
+        run: python -m src.cli db restore
+
+      # Cikis 1 = bugun beklenen kosu YOK → is kirmiziya doner ve GitHub'in
+      # kendi bildirim mekanizmasi da devreye girer (iki kanal, tek olay).
+      - name: Nobet
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python -m src.cli otonom nobetci

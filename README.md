@@ -144,14 +144,38 @@ poetry run bist veri kalite          # ticker bazlı kalite kapısı
 poetry run bist otonom gunluk
 ```
 
-Sırayla: takvim kapısı (işlem günü değilse çıkar) → `veri gunluk` →
-**`gosterge`** → `haber cek` → `saglik` (KRİTİK ise DURUR) → paket →
-**analist zinciri** → `coz` → rapor + Telegram özeti.
+Sırayla: **heartbeat** → takvim kapısı (işlem günü değilse çıkar) →
+`veri gunluk` → **`gosterge`** → **`makro gunluk`** → `haber cek` →
+`saglik` (KRİTİK ise DURUR) → paket → **analist zinciri** → `coz` →
+rapor + Telegram özeti.
 Çıkış kodu: `0` başarılı · `1` KRİTİK adım düştü.
 
 > ⚠ `gosterge` bu akışın İÇİNDE. Eskiden yalnız kurulum bölümündeydi ve
 > günlük akışta hiç geçmiyordu; sonuç, her gün **boş ama şeklen geçerli**
 > bir paketti (0 skorlanan isim, 0 plan — sıfır hata koduyla). Bkz. L-009.
+>
+> ⚠ `makro gunluk` de 2026-08-11'e kadar akışta YOKTU: EVDS yalnız elle
+> koşulunca tazeleniyordu ve TÜFE serisi sekiz ay donmuş hâlde pakete
+> giriyordu. Aynı ders, ikinci kez (L-002).
+
+### Kapı KİMİN durduğuna karar verir — iki sınıf kontrol
+
+`saglik`'in bulguları iki sınıfa ayrılır ve **yalnız birincisi koşuyu durdurur**:
+
+| Sınıf | Soru | Şiddet | Örnek |
+|---|---|---|---|
+| **KAPI** | Bugünkü VERİYE güvenilir mi? | KRİTİK olabilir | bar tazeliği · gösterge kapsaması · **yarım bar** |
+| **GÖZLEM** | Sistem SÜREÇ olarak sağlıklı mı? | en fazla UYARI | atlanan koşu · analizsiz gün · açık plan · çıktı mührü |
+
+Ayrımın sebebi bir kilitlenme (**L-016**): "atlanan koşu" kontrolü
+`MAX(predictions.asof)`e bakıp KRİTİK dönüyordu, ama `predictions` kapının
+ARKASINDA yazılır. 2026-08-06'da runner işi almayınca kapı kapandı ve **bir
+daha açılamadı** — açılması için gereken tahmin kapının arkasındaydı. Sistem
+dört işlem günü veri çekti, commit attı, sıfır analiz üretti.
+
+Kural: **kapıyı yalnız KOŞUNUN KENDİSİNİN düzeltebileceği şeyler kapatır.**
+Gözlem kontrollerinin şiddeti `saglik.ekle_gozlem` içinde yapısal olarak
+tavanlanır; davranışsal kilidi `tests/test_saglik.py::TestKapiKendiCiktisinaBakmaz`.
 
 Adımları elle koşmak istersen hepsi ayrı ayrı da var:
 
@@ -181,11 +205,23 @@ beyanına güvenilirse `bist degerlendir --tool` yanlış kayıtları toplar.
 ```bash
 poetry run bist bildir --test        # Telegram hattı ayakta mı?
 poetry run bist otonom haftalik      # araç BAŞINA değerlendirme + haftalık özet
+poetry run bist otonom nobetci       # bugün koşu oldu mu? — çıkış 1 = sessizlik
 ```
 
 Workflow'lar `.github/workflows/` altında: `gunluk.yml` (hafta içi),
-`haftalik.yml` (pazar), `test.yml` (her push). Secret'lar
+`haftalik.yml` (pazar), `nobetci.yml` (hafta içi, günlükten ~3 saat sonra),
+`test.yml` (her push **ve günlük cron**). Secret'lar
 `python scripts/set_secrets.py <pat_dosyasi>` ile yüklenir.
+
+> ⚠ `test.yml`'in cron'u kozmetik değil: otonom iş `main`'e `GITHUB_TOKEN` ile
+> push eder ve GitHub o push'larda workflow TETİKLEMEZ. Kod günlerce
+> değişmezse suite hiç koşmaz (gözlendi: 2026-08-07'den 08-11'e kadar).
+
+**Nöbetçi neden AYRI bir iş:** L-015'in kendi cümlesi — *bir süreç kendi
+yokluğunu haber veremez.* 2026-08-06'da günlük iş runner alamadı ve HİÇ
+BAŞLAMADI; o gün ne rapor ne uyarı çıktı. Çözüm sürecin İÇİNE konulunca
+(L-015) sistem kilitlendi (L-016). Nöbetçi ayrı zamanlamayla, ayrı bir runner
+talebiyle koşar, **salt-okurdur** ve yalnız söyler — hiçbir şeyi düzeltmez.
 
 > ⚠ **Actions repoya commit atar.** Yerel kopyan sessizce geride kalır;
 > çalışmadan önce `git pull` (LESSONS L-001). Ayrıca cron 5-30 dk gecikebilir —

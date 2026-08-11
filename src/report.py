@@ -517,7 +517,7 @@ def _limit_hucre(ld: dict | None) -> str:
 
 
 def daily_report(cfg: dict, bundle: dict, *, holdings: dict | None = None,
-                 analiz: list[dict] | None = None) -> str:
+                 analiz: list[dict] | None = None, acik_plan: int = 0) -> str:
     """Günlük markdown rapor — **AZALT bölümüyle başlar.**
 
     Ölçüldü (2026-07-26): alt kuyruk (−1.03pp) üst kuyruğun ~1.8 katı. Retail
@@ -574,6 +574,17 @@ def daily_report(cfg: dict, bundle: dict, *, holdings: dict | None = None,
         A(f"**Kontenjan:** {sr['tutulan_n']}/{sr['maks_pozisyon']} pozisyon dolu "
           f"→ rejim (`{sr['rejim']}`) **{sr['kontenjan']}** yeni pozisyona izin "
           f"veriyor · hedef nakit %{_s(sr['nakit_pct'], 0)}")
+        # ⚠ Kontenjan `holdings`ten sayılır, journal'daki AÇIK PLANLARDAN değil.
+        # 2026-08-11 denetimi: 9 açık `plan_sec` varken portföy boştu ve bu satır
+        # "0/2 dolu" diyordu. Sonuç: KRDMD beş gün üst üste seçildi; planlar
+        # harfiyen uygulansa tek isimde %26.9 birikirdi — rejim tavanı TOPLAM
+        # %20 hisseyken. Sayı düzeltilmiyor (portföyü sistem bilemez), ama
+        # aradaki fark artık GÖRÜNÜR.
+        if acik_plan and not tutulan:
+            A("")
+            A(f"> ⚠ Journal'da **{acik_plan} açık plan** var ama portföyde "
+              "kayıtlı pozisyon yok. Yukarıdaki kontenjan portföyden sayılır, "
+              "yani şu an KÖR. `bist portfoy ekle <HİSSE> <adet> <maliyet>`")
         A("")
     if not sr["analist_var"]:
         A("> ⚠ Analist çıktısı yok — \"azalt\" satırları YALNIZ deterministik "

@@ -55,7 +55,7 @@ class TestEksikVeriUydurulmaz:
         "veri yok"u ayırt edilemez hale getirir ve biçimlendirme `None`'ı "0.00"
         diye basma riskine girer.
         """
-        _ekle(con, cfg, "aofm_politika", [("2026-07-01", 45.0)])
+        _ekle(con, cfg, "aofm_politika", [("2026-07-25", 45.0)])
         ctx = macro.context(cfg, con, "2026-07-27")
         assert ctx["politika_faizi"] == 45.0
         for yok in ("tufe_yoy", "enf_bek_12ay", "mevduat_1yil_net", "usdtry",
@@ -63,23 +63,25 @@ class TestEksikVeriUydurulmaz:
             assert yok not in ctx, f"{yok} anahtarı eklenmiş (değeri: {ctx.get(yok)!r})"
 
     def test_null_deger_veri_SAYILMAZ(self, cfg, con):
-        _ekle(con, cfg, "aofm_politika", [("2026-07-01", None)])
+        _ekle(con, cfg, "aofm_politika", [("2026-07-25", None)])
         assert "politika_faizi" not in macro.context(cfg, con, "2026-07-27")
 
     def test_null_pct_tamamen_eksikte_100(self, cfg):
         assert macro.null_pct(cfg, {}) == pytest.approx(100.0)
 
     def test_null_pct_tam_veride_0(self, cfg, con):
-        _ekle(con, cfg, "aofm_politika", [("2025-01-01", 45.0)])
+        # ⚠ Günlük seriler asof'a YAKIN: 2026-08-11'den beri bayat gözlem
+        # ctx'e hiç girmiyor ve `null_pct` onu doğal olarak eksik sayıyor.
+        _ekle(con, cfg, "aofm_politika", [("2025-01-30", 45.0)])
         _ekle(con, cfg, "enf_bek_12ay", [("2025-01-01", 25.0)])
         _ekle(con, cfg, "mevduat_1yil", [("2025-01-01", 40.0)])
-        _ekle(con, cfg, "usdtry_sell", [("2025-01-01", 35.0)])
+        _ekle(con, cfg, "usdtry_sell", [("2025-01-30", 35.0)])
         _ekle(con, cfg, "tufe", _aylik(2024, 1, [100.0 + 5 * i for i in range(13)]))
         ctx = macro.context(cfg, con, "2025-01-31")
         assert macro.null_pct(cfg, ctx) == pytest.approx(0.0)
 
     def test_null_pct_kismi_eksikte_ARADA(self, cfg, con):
-        _ekle(con, cfg, "aofm_politika", [("2025-01-01", 45.0)])
+        _ekle(con, cfg, "aofm_politika", [("2025-01-30", 45.0)])
         ctx = macro.context(cfg, con, "2025-01-31")
         oran = macro.null_pct(cfg, ctx)
         assert 0.0 < oran < 100.0
@@ -159,13 +161,18 @@ class TestTufeYoY:
     def test_asof_GELECEGE_bakmaz(self, cfg, con):
         """`asof` sonrası gözlemler bağlama girmez."""
         _ekle(con, cfg, "aofm_politika",
-              [("2025-01-01", 45.0), ("2026-01-01", 30.0)])
+              [("2025-06-25", 45.0), ("2026-06-25", 30.0)])
         assert macro.context(cfg, con, "2025-06-30")["politika_faizi"] == 45.0
         assert macro.context(cfg, con, "2026-06-30")["politika_faizi"] == 30.0
 
     def test_asof_verilmezse_EN_SON_gozlem(self, cfg, con):
-        _ekle(con, cfg, "aofm_politika",
-              [("2025-01-01", 45.0), ("2026-01-01", 30.0)])
+        """`asof` yokken tazelik BUGÜNE göre ölçülür — o yüzden fixture
+        bugüne görelidir. Sabit tarih yazmak testi takvimde bir gün
+        sessizce kırmızıya döndürürdü."""
+        from datetime import date, timedelta
+        eski = (date.today() - timedelta(days=9)).isoformat()
+        yeni = (date.today() - timedelta(days=1)).isoformat()
+        _ekle(con, cfg, "aofm_politika", [(eski, 45.0), (yeni, 30.0)])
         assert macro.context(cfg, con)["politika_faizi"] == 30.0
 
     def test_29_subat_kenar_durumu(self, cfg, con):
@@ -176,6 +183,67 @@ class TestTufeYoY:
         ctx = macro.context(cfg, con, "2024-03-01")
         assert "tufe_yoy" in ctx
         assert ctx["tufe_yoy"] > 0
+
+
+# ============================================================ tazelik
+class TestBayatSeriDegerUretmez:
+    """⚠ REGRESYON KİLİDİ — 2026-08-11 denetiminin en sinsi bulgusu.
+
+    NE OLMUŞTU: `TP.FE.OKTG01` (TÜFE endeksi) 2025-12-01'de sessizce durdu.
+    `macro.context` en son gözlemi alıyor ve YAŞINA bakmıyordu; sonuç:
+    **Aralık 2025 enflasyonu, 2026-08-05 paketinde `tufe_yoy = 30.89` olarak,
+    güncelmiş gibi** analiste gitti. Üstelik `makro_eksik_pct` 0.0 diyordu —
+    çünkü o sayı VARLIĞA bakıyordu, tazeliğe değil. Donmuş bir seri ile taze
+    bir seri hiçbir yerde ayırt edilemiyordu.
+
+    Modülün kendi kuralı zaten cevabı söylüyordu: *"veri yoksa anahtar HİÇ
+    EKLENMEZ — uydurulmuş vekil değer konulmaz."* Sekiz aylık bir TÜFE,
+    bugünün TÜFE'si için uydurulmuş bir vekildir.
+    """
+
+    def test_bayat_gunluk_seri_ctx_e_GIRMEZ(self, cfg, con):
+        _ekle(con, cfg, "aofm_politika", [("2025-01-01", 45.0)])
+        ctx = macro.context(cfg, con, "2025-03-01")      # 59 gün — tolerans 14
+        assert "politika_faizi" not in ctx
+
+    def test_taze_ayni_seri_ctx_e_GIRER(self, cfg, con):
+        """Aynı veri, tolerans içinde bir asof ile: DEĞER GELİR.
+
+        İki testin farkı yalnız `asof` — yani düşüren şey verinin yokluğu
+        değil YAŞI. Bu ayrım olmadan "tazelik kontrolü çalışıyor" denemez.
+        """
+        _ekle(con, cfg, "aofm_politika", [("2025-01-01", 45.0)])
+        assert macro.context(cfg, con, "2025-01-10")["politika_faizi"] == 45.0
+
+    def test_bayat_TUFE_yoy_URETMEZ_ama_YASINI_SOYLER(self, cfg, con):
+        """Sessizce düşmek de bir arıza olurdu: "TÜFE satırı neden yok?"
+        sorusunun cevabı pakette durmalı."""
+        _ekle(con, cfg, "tufe", _aylik(2024, 1, [100.0 + 5 * i for i in range(13)]))
+        ctx = macro.context(cfg, con, "2025-08-01")      # son gözlem 2025-01-01
+        assert "tufe_yoy" not in ctx
+        assert ctx["tufe_bayat_tarih"] == "2025-01-01"
+
+    def test_bayat_seri_null_pct_i_YUKSELTIR(self, cfg, con):
+        """Düzeltme tek yerde (`context`) yapıldı; `null_pct` onu kendiliğinden
+        eksik sayıyor. İki yerde saymak, ikisinin ayrışmasına davetiye olurdu."""
+        _ekle(con, cfg, "aofm_politika", [("2025-01-01", 45.0)])
+        taze = macro.null_pct(cfg, macro.context(cfg, con, "2025-01-10"))
+        bayat = macro.null_pct(cfg, macro.context(cfg, con, "2025-06-01"))
+        assert bayat > taze
+
+    def test_bayat_seriler_RAPORLANIR(self, cfg, con):
+        """`saglik` bunu basar. Sessiz bir düşüş, sessiz bir bayatlıktan iyi
+        değildir — ikisi de görünmez."""
+        _ekle(con, cfg, "aofm_politika", [("2025-01-01", 45.0)])
+        bayat = macro.bayat_seriler(cfg, con, "2025-06-01")
+        assert [b["ad"] for b in bayat] == ["aofm_politika"]
+        assert bayat[0]["yas_gun"] == 151
+        assert bayat[0]["tolerans"] == 14
+
+    def test_hic_veri_YOKSA_bayat_SAYILMAZ(self, cfg, con):
+        """"Hiç veri yok" ile "veri donmuş" ayrı iki olgu (L-003). Birincisini
+        `null_pct` sayar, ikincisini bu liste."""
+        assert macro.bayat_seriler(cfg, con, "2025-06-01") == []
 
 
 # ============================================================ yazma yolu
@@ -197,10 +265,10 @@ class TestSeriEslemesi:
         Liste ayrışırsa eksiklik oranı yanlış hesaplanır ve rejimin defansif
         kayması yanlış tetiklenir (ya da hiç tetiklenmez).
         """
-        _ekle(con, cfg, "aofm_politika", [("2025-01-01", 45.0)])
+        _ekle(con, cfg, "aofm_politika", [("2025-01-30", 45.0)])
         _ekle(con, cfg, "enf_bek_12ay", [("2025-01-01", 25.0)])
         _ekle(con, cfg, "mevduat_1yil", [("2025-01-01", 40.0)])
-        _ekle(con, cfg, "usdtry_sell", [("2025-01-01", 35.0)])
+        _ekle(con, cfg, "usdtry_sell", [("2025-01-30", 35.0)])
         _ekle(con, cfg, "tufe", _aylik(2024, 1, [100.0 + 5 * i for i in range(13)]))
         ctx = macro.context(cfg, con, "2025-01-31")
         beklenen = {"politika_faizi", "tufe_yoy", "enf_bek_12ay",

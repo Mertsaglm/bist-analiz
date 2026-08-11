@@ -51,21 +51,134 @@ ANALIST_ALANLARI = {
 }
 
 
+# ⚠ `output_sha` SONDA — migration v11 onu ALTER ile ekler ve SQLite yeni
+# kolonu sona koyar. Liste şemayla aynı sırada olmalı; aksi halde taze kurulan
+# ve migrate edilen veritabanları farklı dump metni üretir (bkz. db.SCHEMA).
+LLM_RUN_COLS = [
+    "run_id", "asof", "tool", "model_hint", "bundle_sha", "output_path",
+    "audit_passed", "hard_fail_codes", "created_utc", "output_sha",
+]
+
+
 def create_run(cfg: dict, con: sqlite3.Connection, *, asof: str, tool: str,
                bundle_sha: str, output_path: str = "", model_hint: str | None = None,
-               audit_passed: bool = True,
+               audit_passed: bool = True, output_sha: str | None = None,
                hard_fail_codes: list[str] | None = None) -> str:
-    """Bir analiz çalıştırması açar ve `run_id` döner."""
+    """Bir analiz çalıştırması açar ve `run_id` döner.
+
+    `output_sha` çıktının mührüdür. Verilmezse NULL kalır ve bu "dosya doğru"
+    değil "**doğrulanamaz**" demektir (bkz. `saglik._cikti_muhru`).
+    """
     mevcut = db.scalar(con, "SELECT COUNT(*) FROM llm_runs WHERE asof = ?", (asof,)) or 0
     run_id = f"{asof}-{tool}-{mevcut + 1}"
     db.upsert_many(
-        con, "llm_runs",
-        ["run_id", "asof", "tool", "model_hint", "bundle_sha", "output_path",
-         "audit_passed", "hard_fail_codes", "created_utc"],
+        con, "llm_runs", LLM_RUN_COLS,
         [(run_id, asof, tool, model_hint, bundle_sha, output_path,
           1 if audit_passed else 0,
-          util.json_dump(hard_fail_codes or [], pretty=False), util.utc_now_iso())])
+          util.json_dump(hard_fail_codes or [], pretty=False), util.utc_now_iso(),
+          output_sha)])
     return run_id
+
+
+def muhurle_cikti(cfg: dict, con: sqlite3.Connection, *, run_id: str, asof: str,
+                  kaynak: str | None = None) -> dict:
+    """Analist çıktısını run'a ÖZEL bir dosyaya kopyalar ve sha256'sını yazar.
+
+    NEDEN (2026-08-11 denetimi): `analist.calistir` çıktıyı
+    `llm/out/<asof>/analysis.json` yoluna yazar ve bu yol yalnız TARİHE bağlıdır.
+    Aynı gün ikinci bir otonom koşu dosyayı journal'a haber vermeden EZER.
+
+    Yaşandı — 2026-07-30 için üç koşu atıldı (2026-08-01, 14:43/15:24/15:39).
+    Biri `gemini-3.6-flash` ile geçip journal'a yazdı. Sonrakinde
+    `gemini-3.5-flash` denetimden geçti ve DOSYAYI YAZDI, ama journal'a kayıt
+    adımı düştü. Sonuç: `llm_runs` `gemini-3.6-flash` diyor, `output_path`in
+    gösterdiği dosya `gemini-3.5-flash`a ait ve TUPRS'ta hem `signal`
+    (hold vs accumulate) hem seçilen plan (A vs B) farklı. Yani journal'ın
+    kanıt diye gösterdiği dosya BAŞKA bir koşuya ait — üstelik canlı
+    penceredeki en önemli isimde.
+
+    Ders: çıktıyı yazan adım ile onu journal'a bağlayan adım ayrıysa, aradaki
+    boşlukta dosya sahiplenilmemiş kalır. Mühür o boşluğu kapatır.
+
+    `analysis.json` "en son çıktı" olarak yerinde KALIR (elle denetim akışı ona
+    bakıyor); journal ise artık ezilemeyen kopyayı gösterir. İki dosya, iki
+    farklı soru: "bugün en son ne üretildi?" ve "bu tahmin neyden doğdu?".
+    """
+    from pathlib import Path
+
+    dizin = Path(cfg["paths"]["llm_out_dir"]) / asof
+    kaynak_p = util.resolve(kaynak or (dizin / "analysis.json"))
+    icerik = util.read_json(kaynak_p)
+    if icerik is None:
+        return {"ok": False, "not": f"çıktı dosyası okunamadı: {kaynak_p}"}
+
+    # Mühür İÇERİĞİN sha'sı, baytların değil — `bundle_sha` ile AYNI yöntem
+    # (`sha256_canonical`). Yeniden biçimlendirme kurcalama sayılmaz, anlamı
+    # değiştiren tek bir alan sayılır.
+    sha = util.sha256_canonical(icerik)
+    hedef = util.ensure_parent(dizin / f"{run_id}.json")
+    util.write_json(hedef, icerik)
+    yol = f"{cfg['paths']['llm_out_dir']}/{asof}/{run_id}.json"
+    con.execute("UPDATE llm_runs SET output_path = ?, output_sha = ? WHERE run_id = ?",
+                (yol, sha, run_id))
+    con.commit()
+    return {"ok": True, "yol": yol, "sha": sha}
+
+
+# ---------------------------------------------------------------- otonom koşu
+# ⚠ HEARTBEAT — bkz. `db.SCHEMA::otonom_kosu` ve `migrations._m010`.
+# Bu üç fonksiyon "koşu gerçekten oldu mu?" sorusunu, koşunun ÜRÜNÜNE bakmadan
+# cevaplar. Ürüne bakan bir gözlemci, ürünü üreten kapıyı kapatınca kendi
+# gözünü de kapatır — 2026-08-06/11 arasında tam olarak bu yaşandı.
+
+def kosu_basla(cfg: dict, con: sqlite3.Connection, *, tur: str,
+               tarih_tr: str) -> str:
+    """Koşunun BAŞINDA çağrılır. `kosu_id` döner.
+
+    Buradan sonra ne olursa olsun — kapı kapansın, süreç çöksün, takvim
+    atlasın — kayıt DURUR. "Koştum" ile "iş ürettim" ayrı iki olgudur ve
+    ayrı sorulmalıdır (`saglik._atlanan_kosu` vs `saglik._analizsiz_gun`).
+    """
+    n = db.scalar(con, "SELECT COUNT(*) FROM otonom_kosu WHERE tur = ? AND tarih_tr = ?",
+                  (tur, tarih_tr)) or 0
+    kosu_id = f"{tarih_tr}-{tur}-{n + 1}"
+    db.upsert_many(
+        con, "otonom_kosu",
+        ["kosu_id", "tur", "tarih_tr", "baslangic_utc", "bitis_utc",
+         "durum", "asof", "adimlar", "hatalar"],
+        [(kosu_id, tur, tarih_tr, util.utc_now_iso(), None, "kosuyor",
+          None, None, None)])
+    return kosu_id
+
+
+def kosu_bitir(con: sqlite3.Connection, kosu_id: str, *, durum: str,
+               asof: str | None = None, adimlar: dict | None = None,
+               hatalar: dict | None = None) -> None:
+    """Koşunun sonunda çağrılır. Çağrılmazsa `durum='kosuyor'` KALIR —
+    ve bu bir kusur değil BİLGİDİR: süreç bitmeden ölmüş demektir."""
+    con.execute(
+        "UPDATE otonom_kosu SET bitis_utc = ?, durum = ?, asof = ?, "
+        "       adimlar = ?, hatalar = ? WHERE kosu_id = ?",
+        (util.utc_now_iso(), durum, asof,
+         util.json_dump(adimlar or {}, pretty=False),
+         util.json_dump(hatalar or {}, pretty=False), kosu_id))
+    con.commit()
+
+
+def son_kosu(con: sqlite3.Connection, *, tur: str = "gunluk",
+             once: str | None = None) -> dict | None:
+    """Son koşu kaydı. `once` verilirse o TR gününden ÖNCEKİ son koşu.
+
+    `once` parametresi kritik: kontrol koşunun İÇİNDEN çağrıldığında bugünün
+    heartbeat'i zaten yazılmıştır ve onu saymak "hiç boşluk yok" der. Soru
+    "bugün koştum mu?" değil, **"bugüne kadar bir gün atladım mı?"**.
+    """
+    sql = "SELECT * FROM otonom_kosu WHERE tur = ?"
+    params: tuple = (tur,)
+    if once:
+        sql += " AND tarih_tr < ?"
+        params = (tur, once)
+    return db.fetch_one(con, sql + " ORDER BY tarih_tr DESC, kosu_id DESC LIMIT 1", params)
 
 
 def confidence_to_p(cfg: dict, confidence: str) -> float:

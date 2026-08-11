@@ -279,6 +279,64 @@ def _m009(con: sqlite3.Connection) -> None:
     con.executescript(_BEKLENEN_SQL)
 
 
+_KOSU_SQL = """
+CREATE TABLE IF NOT EXISTS otonom_kosu (
+    kosu_id       TEXT PRIMARY KEY,
+    tur           TEXT NOT NULL,
+    tarih_tr      TEXT NOT NULL,
+    baslangic_utc TEXT NOT NULL,
+    bitis_utc     TEXT,
+    durum         TEXT NOT NULL,
+    asof          TEXT,
+    adimlar       TEXT,
+    hatalar       TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_kosu_tur_tarih ON otonom_kosu(tur, tarih_tr);
+"""
+
+
+def _m010(con: sqlite3.Connection) -> None:
+    """`otonom_kosu` — koşunun KENDİ varlığının kaydı (heartbeat).
+
+    ⚠ BU MIGRATION BİR KİLİTLENMENİN ÇÖZÜMÜDÜR (2026-08-11 denetimi).
+
+    L-015'te eklenen "atlanan koşu" kontrolü `MAX(predictions.asof)`e bakıyordu.
+    O tablo sağlık KAPISININ ARKASINDA yazılır (`otonom.gunluk` adım 6); kapı
+    ise aynı sayıya bakıp kapanıyordu. 2026-08-06'da GitHub runner işi almayınca
+    fark 2'ye çıktı, kapı kapandı ve BİR DAHA AÇILAMADI — çünkü açılması için
+    gereken şey (yeni bir tahmin) kapının arkasındaydı. Sistem 4 işlem günü
+    boyunca veri çekip commit attı, sıfır analiz üretti.
+
+    Bu tablo koşunun EN BAŞINDA yazılır. Durdurulan bir koşu bile buraya
+    "koştum" der; sayaç kapının ÖNÜNDE ilerler ve kilit kurulamaz.
+
+    Geri doldurma YOK: geçmişte koşu olup olmadığını bu tablo bilemez ve
+    uydurmak, tam da bu kontrolün engellemeye çalıştığı şeydir. Tablo boşken
+    kontrol "henüz kayıt yok" der (bkz. `saglik._atlanan_kosu`).
+    """
+    con.executescript(_KOSU_SQL)
+
+
+def _m011(con: sqlite3.Connection) -> None:
+    """`llm_runs.output_sha` — ÇIKTININ mührü, `bundle_sha`nın simetriği.
+
+    NE EKSİKTİ (2026-08-11 denetimi, L-008'in "simetriğini ara" kuralı): GİRDİ
+    mühürlüydü (`bundle_sha`, HF-02 bunu zorluyor), ÇIKTI değildi. Üstelik çıktı
+    yolu yalnız TARİHE bağlıydı (`llm/out/<asof>/analysis.json`), yani aynı gün
+    için ikinci bir analist turu dosyayı journal'a haber vermeden eziyordu.
+
+    KANIT: 2026-07-30 kaydı `llm_runs.tool = gemini-3.6-flash` diyor; diskteki
+    dosya `"tool": "gemini-3.5-flash"` taşıyor ve TUPRS'ta hem `signal`
+    (hold vs accumulate) hem seçilen plan (A vs B) farklı. Yani journal'ın
+    kanıt diye gösterdiği dosya BAŞKA bir koşuya ait.
+
+    Eski satırlarda NULL kalır ve NULL "mühür yok" demektir — "dosya doğru"
+    demek DEĞİL. `saglik` mühürsüz kayıtları ayrı sayar; geçmişe dönük sha
+    hesaplayıp yazmak, ezilmiş bir dosyayı doğruymuş gibi mühürlemek olurdu.
+    """
+    _add_column(con, "llm_runs", "output_sha", "TEXT")
+
+
 MIGRATIONS: list[Migration] = [
     (2, "indicator_daily: sma50_tr / sma200_tr (trend kapısı toplam getiri uzayında)", _m002),
     (3, "predictions.score/rank/pct nullable — 'skorlanmadı' gerçek bir durumdur", _m003),
@@ -288,6 +346,8 @@ MIGRATIONS: list[Migration] = [
     (7, "data_quality.ohlc_ihlal — barın kendi içinde tutarlılığı", _m007),
     (8, "data_quality.duzeltilmemis_kurumsal — düzeltilmemiş bedelsiz sayacı", _m008),
     (9, "expected_disclosures — KAP ileriye dönük bildirim takvimi", _m009),
+    (10, "otonom_kosu — koşunun kendi varlığının kaydı; kapı kilitlenmesinin çözümü", _m010),
+    (11, "llm_runs.output_sha — çıktının mührü (bundle_sha'nın simetriği)", _m011),
 ]
 
 BASELINE_VERSION = 1

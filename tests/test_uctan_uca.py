@@ -402,8 +402,8 @@ class TestOtonomKosu:
         monkeypatch.setattr(BistCalendar, "is_trading_day", lambda self, d: True)
         # Dış kaynaklar: veri zaten var, tekrar çekilmesin.
         monkeypatch.setattr(prices, "daily", lambda *a, **k: {
-            "tickers": 6, "hayalet_silinen": 0, "kalite_gecmeyen": 0,
-            "kalite_degerlendirilen": 6, "start": asof})
+            "tickers": 6, "hayalet_silinen": 0, "yarim_bar_silinen": 0,
+            "kalite_gecmeyen": 0, "kalite_degerlendirilen": 6, "start": asof})
         monkeypatch.setattr(indicators, "compute_and_store", lambda *a, **k: {
             "satir": {"AAA": 320}, "tickers": 6, "set_version": "v1"})
         monkeypatch.setattr(news, "sync", lambda *a, **k: {
@@ -481,3 +481,102 @@ class TestOtonomKosu:
         assert otonom.basarisiz_mi(s) == []
         assert Path(s["rapor"]).exists()
         assert "Analist çıktısı yok" in dis_dunya_kapali["telegram"][0]
+
+    # ══════════════════════════════════════════════════════════════════════
+    # KİLİTLENME — L-016'nın uçtan uca kilidi
+    # ══════════════════════════════════════════════════════════════════════
+    def test_ATLANMIS_gunden_sonra_zincir_UCTAN_UCA_TAMAMLANIR(
+            self, cfg, con, dis_dunya_kapali, monkeypatch):
+        """⚠⚠ DÖRT İŞLEM GÜNÜ SÜREN ÜRETİM ARIZASININ KİLİDİ (2026-08-06→11).
+
+        NE OLMUŞTU — sırayla:
+          1. 2026-08-06'da GitHub runner günlük işi almadı. Koşu HİÇ başlamadı;
+             ne rapor, ne Telegram, ne hata. O gün tamamen sessizdi.
+          2. Ertesi gün L-015'in "atlanan koşu" kontrolü `MAX(predictions.asof)`
+             ile son barı karşılaştırdı, farkı 2 buldu ve **KRİTİK** döndü.
+          3. `otonom.gunluk` KRİTİK'te durur — ve `predictions` tam olarak o
+             durduğu noktanın ARKASINDA yazılır. Kapının açılması için gereken
+             şey kapının arkasındaydı.
+          4. Fark her işlem günü 1 arttı: 2 → 3 → 4 → ... Sistem veri çekmeye ve
+             commit atmaya devam etti, **sıfır analiz üretti**, her gün aynı 🛑
+             mesajını gönderdi. Kendi kendini süresiz kilitlemişti.
+
+        Birim testlerin HİÇBİRİ bunu göremezdi: `saglik` doğru çalışıyordu,
+        `otonom` doğru çalışıyordu, kırılan şey aralarındaki varsayımdı
+        (AGENTS.md §12, üçüncü katman).
+
+        Bu test o senaryoyu kurar: journal bilerek GERİDE bırakılır ve zincirin
+        UÇTAN UCA tamamlanması istenir. Kilit geri gelirse burası kırmızı yanar.
+        """
+        from src import analist, otonom
+
+        asof = dis_dunya_kapali["asof"]
+
+        # 1) Journal'ı GERİDE bırak: 10 işlem günü önce bir tahmin, sonrası yok.
+        #    (Gerçek olayda fark 2'den başlayıp büyüyordu; 10 fazlasıyla temsil eder.)
+        eski = db.fetch_all(
+            con, "SELECT DISTINCT date FROM bars_daily ORDER BY date DESC LIMIT 11"
+        )[-1]["date"]
+        db.upsert_many(con, "llm_runs",
+                       ["run_id", "asof", "tool", "bundle_sha", "output_path",
+                        "audit_passed", "created_utc"],
+                       [("eski-run", eski, "test", "s", "", 1, "now")])
+        db.upsert_many(
+            con, "predictions",
+            ["prediction_id", "run_id", "asof", "ticker", "signal", "action",
+             "confidence", "confidence_p", "factor_set_version", "weights_hash",
+             "indicator_set_version", "regime", "thesis", "counter_scenario",
+             "key_risk", "falsifier", "close_at_asof", "created_utc"],
+            [("eski-p", "eski-run", eski, "AAA", "hold", "izle", "orta", 0.5,
+              "v1", "h", "v1", "neutral", "t", "c", "k", "f", 100.0, "now")])
+
+        def sahte_model(c, model_id, prompt):
+            b = util.read_json(f"{cfg['paths']['llm_in_dir']}/{asof}/bundle.json")
+            planli = [e["ticker"] for e in b["evren"] if e["plan_menusu"]]
+            return json.dumps(_analist_cikti(
+                b, plan_secilen=planli[0] if planli else None))
+
+        monkeypatch.setattr(analist, "_cagir", sahte_model)
+        monkeypatch.setattr(analist, "zincir", lambda c: ["gemini-3.5-flash"])
+
+        s = otonom.gunluk(cfg, con, bugun=date.fromisoformat(asof))
+
+        # ⚠ ASIL İDDİA: zincir DURMADI ve yeni tahmin ÜRETTİ.
+        assert otonom.basarisiz_mi(s) == [], (
+            f"geride kalmış journal koşuyu durdurdu — KİLİT GERİ GELDİ: "
+            f"{s.get('hatalar')}")
+        assert s.get("kaydedilen", 0) > 0, "yeni tahmin yazılmadı"
+        assert db.scalar(con, "SELECT MAX(asof) FROM predictions") == asof, (
+            "journal ilerlemedi — bir sonraki koşu yine aynı boşluğu görecekti")
+        assert Path(s["rapor"]).exists()
+
+        # Boşluk GÖRÜNMEZ olmadı: uyarı olarak raporlanıyor, kapı olarak değil.
+        adlar = {b[1] for b in s["saglik"]["uyari"]}
+        assert "analizsiz gün" in adlar, (
+            "boşluk sessizce yutuldu — uyarmadan geçmek de bir arızadır")
+
+    def test_HEARTBEAT_kapi_kapansa_bile_yazilir(self, cfg, con, dis_dunya_kapali,
+                                                 monkeypatch):
+        """Kilidin ikinci yarısı: sayaç KAPININ ÖNÜNDE ilerlemeli.
+
+        Heartbeat kapıdan sonra yazılsaydı, durdurulan bir koşu "hiç koşmadım"
+        derdi ve `atlanan koşu` her gün alarm verirdi — yani gözlemci yine
+        gözlediği şeyin ürününe bağlı kalırdı.
+        """
+        from src import otonom, saglik
+
+        # Sağlık kapısını ZORLA kapat (veri bütünlüğü arızası taklidi).
+        gercek = saglik.kontrol
+        monkeypatch.setattr(saglik, "kontrol", lambda c, o, **k: {
+            **gercek(c, o, **k),
+            "kritik": [("KRİTİK", "bar tazeliği", "taklit arıza")]})
+
+        gun = date.fromisoformat(dis_dunya_kapali["asof"])
+        s = otonom.gunluk(cfg, con, bugun=gun, analist_calistir=False)
+
+        assert "saglik" in s["hatalar"], "kapı kapanmadı — test kendini kandırıyor"
+        kayit = db.fetch_one(con, "SELECT * FROM otonom_kosu WHERE kosu_id = ?",
+                             (s["kosu_id"],))
+        assert kayit is not None, "kapı kapanınca heartbeat HİÇ yazılmamış"
+        assert kayit["durum"] == "durduruldu"
+        assert kayit["tarih_tr"] == gun.isoformat()

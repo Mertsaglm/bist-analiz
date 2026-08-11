@@ -12,7 +12,7 @@ from datetime import date
 import pytest
 
 from src import saglik as sag
-from tests.conftest import add_universe
+from tests.conftest import add_index, add_universe, is_gunleri
 
 
 def _veri_kur(con, cfg, tarihler: list[str], ticker="THYAO"):
@@ -272,82 +272,379 @@ class TestKesitselDevreKesici:
         assert seviye == sag.UYARI
 
 
-class TestAtlananKosu:
-    """⚠ REGRESYON KİLİDİ — GERÇEK OLAY 2026-08-06.
 
-    Planlanmış otonom koşu GitHub tarafında düştü:
-    *"The job was not acquired by Runner of type hosted even after multiple
-    attempts"*. İş HİÇ BAŞLAMADI → `otonom.py` koşmadı → Telegram bildirimi de
-    ÇIKMADI. Kullanıcı açısından o gün tamamen SESSİZDİ; fark edilmesi eksik
-    bir commit'e gözle rastlamaya kalmıştı.
+# ═══════════════════════════════════════════════════════════════════════════
+# KİLİTLENME — 2026-08-11 denetiminin en pahalı bulgusu (L-016)
+# ═══════════════════════════════════════════════════════════════════════════
+def _kosu_ekle(con, cfg, tarih_tr: str, durum: str = "tamam") -> str:
+    from src import journal
+    kid = journal.kosu_basla(cfg, con, tur="gunluk", tarih_tr=tarih_tr)
+    journal.kosu_bitir(con, kid, durum=durum)
+    return kid
 
-    Bu L-010'un bir adım kötüsü: orada kontroller kendi verisine bakıyordu,
-    burada **bildirim mekanizması gözlediği sürecin İÇİNDE yaşıyor.** Bir
-    süreç kendi yokluğunu haber veremez. Çözüm, bir sonraki koşanın GERİYE
-    bakması — ve bu kontrol elle de koşulabildiği için Actions hiç çalışmasa
-    bile görünür.
+
+def _tahmin_ekle(con, asof: str, *, action: str = "izle") -> None:
+    from src import db
+    db.upsert_many(con, "llm_runs",
+                   ["run_id", "asof", "tool", "bundle_sha", "output_path",
+                    "audit_passed", "created_utc"],
+                   [(f"r-{asof}", asof, "test", "s", "", 1, "now")])
+    db.upsert_many(
+        con, "predictions",
+        ["prediction_id", "run_id", "asof", "ticker", "signal", "action",
+         "confidence", "confidence_p", "factor_set_version", "weights_hash",
+         "indicator_set_version", "regime", "thesis", "counter_scenario",
+         "key_risk", "falsifier", "close_at_asof", "created_utc"],
+        [(f"p-{asof}", f"r-{asof}", asof, "THYAO", "hold", action, "orta", 0.5,
+          "v1", "h", "v1", "neutral", "t", "c", "k", "f", 10.0, "now")])
+
+
+def _takvim_sabitle(monkeypatch, son_seans: str):
+    """`last_closed_session` duvar saatine bakar; testte sabitlenir."""
+    from src.calendar_bist import BistCalendar
+    monkeypatch.setattr(BistCalendar, "last_closed_session",
+                        lambda self, ts=None: date.fromisoformat(son_seans))
+
+
+class TestKapiKendiCiktisinaBakmaz:
+    """⚠⚠ EN ÖNEMLİ REGRESYON KİLİDİ — bir KİLİTLENMENİN davranışsal kilidi.
+
+    NE OLMUŞTU (2026-08-06 → 2026-08-11, dört işlem günü):
+      1. GitHub runner günlük işi almadı; koşu HİÇ başlamadı, Telegram sessiz.
+      2. Ertesi gün L-015'in "atlanan koşu" kontrolü devreye girdi. O kontrol
+         `MAX(predictions.asof)`e bakıyor ve fark ≥2 ise **KRİTİK** diyordu.
+      3. `otonom.gunluk` KRİTİK'te durur ve `predictions` o durduğu noktanın
+         ARKASINDA yazılır. Yani kapının açılması için gereken şey, kapının
+         arkasındaydı.
+      4. Fark her gün 1 arttı. Sistem veri çekmeye ve commit atmaya devam etti,
+         **sıfır analiz üretti** ve her gün aynı 🛑 mesajını gönderdi.
+
+    Bu sınıf tek bir kuralı davranışla sabitler: **JOURNAL'IN DURUMU KAPIYI
+    KAPATAMAZ.** Kaynak metni değil davranışı sınar (AGENTS.md §12) — biri
+    yarın yeni bir kontrol yazıp `predictions`e bakarak KRİTİK dönerse burası
+    kırmızı yanar.
     """
 
     @staticmethod
-    def _kur(con, cfg, bar_gunleri, analiz_gunu):
+    def _kritikler(cfg, con, bugun):
+        return {b[1] for b in sag.kontrol(cfg, con, bugun_tr=bugun)["kritik"]}
+
+    @pytest.mark.parametrize("gerilik", [0, 1, 2, 3, 5, 10, 30])
+    def test_JOURNALIN_YASI_kapiyi_DEGISTIRMEZ(self, cfg, con, monkeypatch, gerilik):
+        """⚠ Kilidin kalbi — DİFERANSİYEL test.
+
+        Mutlak bir "hiç KRİTİK olmasın" iddiası fixture'ın eksikliklerini de
+        yakalar ve asıl soruyu bulanıklaştırır. Sorulan tek şey şu: **journal'ın
+        yaşı kapı kümesini değiştiriyor mu?** Eski davranışta `gerilik>=2`
+        kümeye `atlanan koşu` ekliyordu ve fark her gün büyüdüğü için kilit
+        KALICIYDI.
+        """
+        g = is_gunleri(40, "2026-06-01")
+        _veri_kur(con, cfg, g)
+        add_index(con, "XU100", g)
+        _takvim_sabitle(monkeypatch, g[-1])
+
+        taze = self._kritikler(cfg, con, g[-1])          # journal BOŞ
+        _tahmin_ekle(con, g[-1 - gerilik])               # journal `gerilik` gün eski
+        eski = self._kritikler(cfg, con, g[-1])
+
+        assert eski == taze, (
+            f"{gerilik} gün eski journal kapı kümesini değiştirdi: "
+            f"{sorted(eski - taze)} eklendi")
+
+    def test_BOS_journal_gozlem_disinda_KRITIK_URETMEZ(self, cfg, con, monkeypatch):
+        """Hiç tahmin yokken hiçbir GÖZLEM kontrolü kapıyı kapatmamalı —
+        yoksa sistem ilk gününde hiç başlayamaz."""
+        g = is_gunleri(5, "2026-08-03")
+        _veri_kur(con, cfg, g)
+        add_index(con, "XU100", g)
+        _takvim_sabitle(monkeypatch, g[-1])
+        s = sag.kontrol(cfg, con, bugun_tr=g[-1])
+        assert not (self._kritikler(cfg, con, g[-1]) & sag.GOZLEM_KONTROLLERI), s["kritik"]
+
+    def test_GOZLEM_kontrolleri_KRITIK_seviyesine_CIKAMAZ(self, cfg, con, monkeypatch):
+        """Yapısal kilit: `ekle_gozlem` şiddeti UYARI'da tavanlar. Bir gözlem
+        kontrolü ileride `return KRITIK, ...` yazsa bile sistem durmaz."""
+        g = is_gunleri(40, "2026-06-01")
+        _veri_kur(con, cfg, g)
+        add_index(con, "XU100", g)
+        _tahmin_ekle(con, g[0])                      # kadim bir analiz
+        _kosu_ekle(con, cfg, g[0])                   # kadim bir koşu
+        _takvim_sabitle(monkeypatch, g[-1])
+        s = sag.kontrol(cfg, con, bugun_tr=g[-1])
+        gozlem = [b for b in s["bulgular"] if b[1] in sag.GOZLEM_KONTROLLERI]
+        assert gozlem, "gözlem kontrolleri hiç çalışmadı — test kendini kandırıyor"
+        assert all(b[0] != sag.KRITIK for b in gozlem), gozlem
+
+    def test_gozlem_kontrolu_KUMEYE_yazilmadan_eklenemez(self, cfg, con):
+        """Sınıflandırılmamış bir kontrol sessizce gözlem sayılmasın."""
+        assert "atlanan koşu" in sag.GOZLEM_KONTROLLERI
+        assert "bar tazeliği" not in sag.GOZLEM_KONTROLLERI, (
+            "veri bütünlüğü kontrolü gözleme kaydırılırsa kapı işlevsizleşir")
+
+
+class TestAtlananKosu:
+    """⚠ REGRESYON KİLİDİ — GERÇEK OLAY 2026-08-06 (L-015) + düzeltmesi (L-016).
+
+    Sayaç artık `otonom_kosu` heartbeat'inden okunur. O kayıt koşunun EN
+    BAŞINDA, kapıdan ÖNCE yazılır — durdurulmuş bir koşu bile "koştum" der.
+    Böylece sayaç kapının önünde ilerler ve kilit KURULAMAZ.
+    """
+
+    def _bul(self, cfg, con, bugun):
+        return next(b for b in sag.kontrol(cfg, con, bugun_tr=bugun)["bulgular"]
+                    if b[1] == "atlanan koşu")
+
+    def test_her_seans_kosulmussa_TEMIZ(self, cfg, con, monkeypatch):
+        g = is_gunleri(5, "2026-08-03")
+        _veri_kur(con, cfg, g)
+        add_index(con, "XU100", g)
+        _kosu_ekle(con, cfg, g[-2])                  # dünkü koşu var
+        _takvim_sabitle(monkeypatch, g[-1])
+        assert self._bul(cfg, con, g[-1])[0] == sag.OK
+
+    def test_bir_seans_atlanmissa_UYARI(self, cfg, con, monkeypatch):
+        g = is_gunleri(5, "2026-08-03")
+        _veri_kur(con, cfg, g)
+        add_index(con, "XU100", g)
+        _kosu_ekle(con, cfg, g[-3])                  # aradaki seans koşusuz
+        _takvim_sabitle(monkeypatch, g[-1])
+        seviye, _, mesaj = self._bul(cfg, con, g[-1])
+        assert seviye == sag.UYARI
+        assert "1 seans" in mesaj
+
+    def test_KAC_seans_atlanirsa_atlansin_UYARI_KALIR(self, cfg, con, monkeypatch):
+        """Kilit tam olarak buradaydı: eski kodda fark ≥2 KRİTİK'ti ve fark
+        her gün büyüdüğü için sistem bir daha asla açılamıyordu."""
+        g = is_gunleri(20, "2026-07-01")
+        _veri_kur(con, cfg, g)
+        add_index(con, "XU100", g)
+        _kosu_ekle(con, cfg, g[0])
+        _takvim_sabitle(monkeypatch, g[-1])
+        seviye, _, _ = self._bul(cfg, con, g[-1])
+        assert seviye == sag.UYARI
+
+    def test_BUGUNKU_kosu_sayilmaz(self, cfg, con, monkeypatch):
+        """Kontrol koşunun İÇİNDEN çağrılır ve bugünün heartbeat'i zaten
+        yazılmıştır. Onu saymak "hiç boşluk yok" derdi — soru "bugün koştum
+        mu?" değil, "bugüne kadar bir gün atladım mı?"."""
+        g = is_gunleri(5, "2026-08-03")
+        _veri_kur(con, cfg, g)
+        add_index(con, "XU100", g)
+        _kosu_ekle(con, cfg, g[-3])                  # boşluk VAR
+        _kosu_ekle(con, cfg, g[-1])                  # bugünün koşusu (sayılmamalı)
+        _takvim_sabitle(monkeypatch, g[-1])
+        assert self._bul(cfg, con, g[-1])[0] == sag.UYARI
+
+    def test_heartbeat_bossa_ALARM_VERMEZ(self, cfg, con, monkeypatch):
+        """Yeni kurulumda kayıt yokluğu arıza değildir; geçmişi UYDURMAK ise
+        tam da bu kontrolün engellemeye çalıştığı şey olurdu."""
+        g = is_gunleri(4, "2026-08-03")
+        _veri_kur(con, cfg, g)
+        add_index(con, "XU100", g)
+        _takvim_sabitle(monkeypatch, g[-1])
+        seviye, _, mesaj = self._bul(cfg, con, g[-1])
+        # `tamam=True` bulguyu OK'a çevirir — "kayıt yok" bir arıza değil.
+        assert seviye == sag.OK and "heartbeat boş" in mesaj
+
+    def test_DURDURULAN_kosu_da_KOSMUS_sayilir(self, cfg, con, monkeypatch):
+        """"Koştum" ile "iş ürettim" ayrı iki olgu (L-003). Durdurulan koşu
+        birincisini kanıtlar; ikincisini `analizsiz gün` sorar."""
+        g = is_gunleri(5, "2026-08-03")
+        _veri_kur(con, cfg, g)
+        add_index(con, "XU100", g)
+        _kosu_ekle(con, cfg, g[-2], durum="durduruldu")
+        _takvim_sabitle(monkeypatch, g[-1])
+        seviye, _, mesaj = self._bul(cfg, con, g[-1])
+        assert seviye == sag.OK and "durduruldu" in mesaj
+
+    def test_mesaj_NEREYE_BAKILACAGINI_yazar(self, cfg, con, monkeypatch):
+        """L-011: uyarıyı gören kişi nereye bakacağını mesajdan öğrenmeli."""
+        g = is_gunleri(5, "2026-08-03")
+        _veri_kur(con, cfg, g)
+        add_index(con, "XU100", g)
+        _kosu_ekle(con, cfg, g[-3])
+        _takvim_sabitle(monkeypatch, g[-1])
+        _, _, mesaj = self._bul(cfg, con, g[-1])
+        assert "Telegram bildirimi de ÇIKMAZ" in mesaj
+        assert "Actions geçmişini" in mesaj
+
+
+class TestAnalizsizGun:
+    """Koşu ayakta ama analist üretmiyor — `atlanan koşu`dan AYRI soru.
+
+    İkisini tek satıra sıkıştırmak (L-003) hangisinin bozuk olduğunu görünmez
+    kılardı: runner mı düştü, LLM zinciri mi tükendi?
+    """
+
+    def _bul(self, cfg, con, bugun):
+        return next(b for b in sag.kontrol(cfg, con, bugun_tr=bugun)["bulgular"]
+                    if b[1] == "analizsiz gün")
+
+    def test_bir_gun_gerilik_NORMALDIR(self, cfg, con, monkeypatch):
+        """Sağlık adımı zincirde analistten ÖNCE koşar (adım 6 vs 8); bugünün
+        tahmini henüz yazılmamıştır ve bu bir arıza değildir."""
+        g = is_gunleri(5, "2026-08-03")
+        _veri_kur(con, cfg, g)
+        add_index(con, "XU100", g)
+        _tahmin_ekle(con, g[-2])
+        _takvim_sabitle(monkeypatch, g[-1])
+        assert self._bul(cfg, con, g[-1])[0] == sag.OK
+
+    def test_iki_gun_analizsizse_UYARI(self, cfg, con, monkeypatch):
+        g = is_gunleri(6, "2026-08-03")
+        _veri_kur(con, cfg, g)
+        add_index(con, "XU100", g)
+        _tahmin_ekle(con, g[-3])
+        _takvim_sabitle(monkeypatch, g[-1])
+        seviye, _, mesaj = self._bul(cfg, con, g[-1])
+        assert seviye == sag.UYARI and "analist" in mesaj
+
+
+class TestYarimBar:
+    """⚠ REGRESYON KİLİDİ — GERÇEK OLAY 2026-07-29.
+
+    Paket TR saatiyle 13:29'da, SEANS SÜRERKEN üretildi. yfinance'in o anki
+    kısmi barı "kapanış" sanıldı ve 18 tahmin journal'a öyle yazıldı:
+    18/18 isimde sapma, ortalama %1.21, maksimum %2.47 (AKBNK 64.90 → 63.30).
+    Journal DEĞİŞMEZ olduğu için o kayıtlar kalıcı olarak yarım veriye dayanıyor.
+
+    Ölçüt Faz 1'den beri vardı (`last_closed_session`) ve kimse çağırmıyordu.
+    """
+
+    def _bul(self, cfg, con, bugun):
+        return next(b for b in sag.kontrol(cfg, con, bugun_tr=bugun)["bulgular"]
+                    if b[1] == "yarım bar")
+
+    def test_kapanmis_seans_TEMIZ(self, cfg, con, monkeypatch):
+        g = is_gunleri(4, "2026-08-03")
+        _veri_kur(con, cfg, g)
+        add_index(con, "XU100", g)
+        _takvim_sabitle(monkeypatch, g[-1])
+        assert self._bul(cfg, con, g[-1])[0] == sag.OK
+
+    def test_KAPANMAMIS_seansin_bari_KRITIKTIR(self, cfg, con, monkeypatch):
+        """Bu KAPI kontrolüdür ve olması gereken de budur: yarım barla üretilen
+        her gösterge/plan/tahmin yanlıştır ve journal onu geri alamaz."""
+        g = is_gunleri(4, "2026-08-03")
+        _veri_kur(con, cfg, g)
+        add_index(con, "XU100", g)
+        _takvim_sabitle(monkeypatch, g[-2])          # son bar seans kapanmadan
+        seviye, _, mesaj = self._bul(cfg, con, g[-1])
+        assert seviye == sag.KRITIK
+        assert "kapanmamış seansın barı" in mesaj
+
+    def test_kapi_KENDINI_ONARIR(self, cfg, con, monkeypatch):
+        """KRİTİK olması meşru çünkü koşunun KENDİSİ düzeltir: `prices.daily`
+        içindeki `purge_incomplete_bars` sağlık adımından ÖNCE koşar. Yani bu
+        kapı, `atlanan koşu`nun aksine kilitlenemez."""
+        from src import prices
+        g = is_gunleri(4, "2026-08-03")
+        _veri_kur(con, cfg, g)
+        add_index(con, "XU100", g)
+        _takvim_sabitle(monkeypatch, g[-2])
+        assert self._bul(cfg, con, g[-1])[0] == sag.KRITIK
+        prices.purge_incomplete_bars(cfg, con)       # koşunun 2. adımı
+        assert self._bul(cfg, con, g[-1])[0] == sag.OK
+
+
+class TestAcikPlan:
+    """Journal'da açık plan varken portföy boşsa kontenjan KÖRDÜR.
+
+    ÖLÇÜLDÜ (2026-08-11): 9 açık `plan_sec` varken `holdings` 0 satırdı ve
+    rapor "Kontenjan: 0/2 pozisyon dolu" basıyordu. KRDMD 5 gün üst üste
+    seçildi; planlar harfiyen uygulansa tek isimde %26.9 birikirdi (rejim
+    tavanı TOPLAM %20 hisseydi).
+    """
+
+    def _bul(self, cfg, con, bugun):
+        return next(b for b in sag.kontrol(cfg, con, bugun_tr=bugun)["bulgular"]
+                    if b[1] == "açık plan")
+
+    def test_acik_plan_yokken_TEMIZ(self, cfg, con, monkeypatch):
+        g = is_gunleri(4, "2026-08-03")
+        _veri_kur(con, cfg, g)
+        add_index(con, "XU100", g)
+        _takvim_sabitle(monkeypatch, g[-1])
+        assert self._bul(cfg, con, g[-1])[0] == sag.OK
+
+    def test_acik_plan_VARKEN_portfoy_BOSSA_UYARI(self, cfg, con, monkeypatch):
+        g = is_gunleri(4, "2026-08-03")
+        _veri_kur(con, cfg, g)
+        add_index(con, "XU100", g)
+        _tahmin_ekle(con, g[-2], action="plan_sec")
+        _takvim_sabitle(monkeypatch, g[-1])
+        seviye, _, mesaj = self._bul(cfg, con, g[-1])
+        assert seviye == sag.UYARI and "1 açık plan" in mesaj
+
+    def test_portfoy_DOLUYSA_TEMIZ(self, cfg, con, monkeypatch):
+        from src import journal
+        g = is_gunleri(4, "2026-08-03")
+        _veri_kur(con, cfg, g)
+        add_index(con, "XU100", g)
+        _tahmin_ekle(con, g[-2], action="plan_sec")
+        journal.set_holding(con, "THYAO", 100, 10.0)
+        _takvim_sabitle(monkeypatch, g[-1])
+        assert self._bul(cfg, con, g[-1])[0] == sag.OK
+
+
+class TestCiktiMuhru:
+    """⚠ REGRESYON KİLİDİ — GERÇEK OLAY 2026-07-30.
+
+    `llm_runs.output_path` "bu tahmini üreten çıktı şu dosyadadır" diyordu.
+    Doğru DEĞİLDİ: kayıt `gemini-3.6-flash`, dosya `gemini-3.5-flash`'a aitti
+    ve TUPRS'ta hem sinyal (hold vs accumulate) hem seçilen plan (A vs B)
+    farklıydı. Sebep: yol yalnız TARİHE bağlıydı, aynı günün ikinci turu
+    dosyayı journal'a haber vermeden eziyordu.
+    """
+
+    def _bul(self, cfg, con, bugun):
+        return next(b for b in sag.kontrol(cfg, con, bugun_tr=bugun)["bulgular"]
+                    if b[1] == "çıktı mührü")
+
+    def _kur(self, cfg, con, monkeypatch):
+        g = is_gunleri(4, "2026-08-03")
+        _veri_kur(con, cfg, g)
+        add_index(con, "XU100", g)
+        _takvim_sabitle(monkeypatch, g[-1])
+        return g
+
+    def test_muhurlenen_cikti_DOGRULANIR(self, cfg, con, monkeypatch):
+        from src import journal, util
+        g = self._kur(cfg, con, monkeypatch)
+        asof = g[-1]
+        util.write_json(f"{cfg['paths']['llm_out_dir']}/{asof}/analysis.json",
+                        {"tool": "test", "stocks": []})
+        rid = journal.create_run(cfg, con, asof=asof, tool="test", bundle_sha="s")
+        assert journal.muhurle_cikti(cfg, con, run_id=rid, asof=asof)["ok"]
+        assert self._bul(cfg, con, g[-1])[0] == sag.OK
+
+    def test_EZILEN_cikti_YAKALANIR(self, cfg, con, monkeypatch):
+        """Mühürden sonra dosya değişirse mühür tutmaz — 2026-07-30'un tam
+        olarak yakalanamamış hâli."""
+        from src import journal, util
+        g = self._kur(cfg, con, monkeypatch)
+        asof = g[-1]
+        util.write_json(f"{cfg['paths']['llm_out_dir']}/{asof}/analysis.json",
+                        {"tool": "test", "stocks": []})
+        rid = journal.create_run(cfg, con, asof=asof, tool="test", bundle_sha="s")
+        journal.muhurle_cikti(cfg, con, run_id=rid, asof=asof)
+        # Başka bir koşu dosyayı ezdi
+        util.write_json(f"{cfg['paths']['llm_out_dir']}/{asof}/{rid}.json",
+                        {"tool": "BASKA-MODEL", "stocks": []})
+        seviye, _, mesaj = self._bul(cfg, con, g[-1])
+        assert seviye == sag.UYARI and "mühür tutmuyor" in mesaj
+
+    def test_MUHURSUZ_kayit_DOGRU_degil_DOGRULANAMAZ_der(self, cfg, con, monkeypatch):
+        """v11 öncesi kayıtlara geçmişe dönük sha yazmak, ezilmiş bir dosyayı
+        doğruymuş gibi mühürlemek olurdu."""
         from src import db
-        from tests.conftest import add_index
-        _veri_kur(con, cfg, bar_gunleri)
-        add_index(con, "XU100", bar_gunleri)
+        g = self._kur(cfg, con, monkeypatch)
         db.upsert_many(con, "llm_runs",
                        ["run_id", "asof", "tool", "bundle_sha", "output_path",
                         "audit_passed", "created_utc"],
-                       [("r1", analiz_gunu, "test", "s", "/dev/null", 1, "now")])
-        db.upsert_many(
-            con, "predictions",
-            ["prediction_id", "run_id", "asof", "ticker", "signal", "action",
-             "confidence", "confidence_p", "factor_set_version", "weights_hash",
-             "indicator_set_version", "regime", "thesis", "counter_scenario",
-             "key_risk", "falsifier", "close_at_asof", "created_utc"],
-            [("p1", "r1", analiz_gunu, "THYAO", "hold", "izle", "orta", 0.5,
-              "v1", "h", "v1", "neutral", "t", "c", "k", "f", 10.0, "now")])
-
-    def _bul(self, cfg, con):
-        return next(b for b in sag.kontrol(cfg, con)["bulgular"]
-                    if b[1] == "atlanan koşu")
-
-    def test_analiz_guncelse_TEMIZ(self, cfg, con):
-        from tests.conftest import is_gunleri
-        g = is_gunleri(5, "2026-08-03")
-        self._kur(con, cfg, g, g[-1])
-        assert self._bul(cfg, con)[0] == sag.OK
-
-    def test_BIR_gun_analizsizse_UYARI(self, cfg, con):
-        from tests.conftest import is_gunleri
-        g = is_gunleri(5, "2026-08-03")
-        self._kur(con, cfg, g, g[-2])          # son bar var, analiz bir gün geride
-        seviye, _, mesaj = self._bul(cfg, con)
-        assert seviye == sag.UYARI
-        assert "1 işlem günü analizsiz" in mesaj
-
-    def test_IKI_gun_analizsizse_KRITIK(self, cfg, con):
-        """Bir gün gecikme olağan; iki gün üst üste zincir gerçekten durmuştur."""
-        from tests.conftest import is_gunleri
-        g = is_gunleri(6, "2026-08-03")
-        self._kur(con, cfg, g, g[-3])
-        assert self._bul(cfg, con)[0] == sag.KRITIK
-
-    def test_journal_bossa_ALARM_VERMEZ(self, cfg, con):
-        """Henüz hiç analiz koşmamış bir kurulumda bu bir arıza değildir."""
-        from tests.conftest import is_gunleri
-        from src import db
-        g = is_gunleri(4, "2026-08-03")
-        _veri_kur(con, cfg, g)
-        from tests.conftest import add_index
-        add_index(con, "XU100", g)
-        seviye, _, mesaj = self._bul(cfg, con)
-        assert seviye == sag.OK and "journal boş" in mesaj
-
-    def test_mesaj_SEBEBI_ve_NEREYE_BAKILACAGINI_yazar(self, cfg, con):
-        """L-011: uyarıyı gören kişi nereye bakacağını mesajdan öğrenmeli."""
-        from tests.conftest import is_gunleri
-        g = is_gunleri(5, "2026-08-03")
-        self._kur(con, cfg, g, g[-2])
-        _, _, mesaj = self._bul(cfg, con)
-        assert "Telegram bildirimi de ÇIKMAZ" in mesaj
-        assert "Actions geçmişini" in mesaj
+                       [("eski", g[-1], "test", "s", "llm/out/x/analysis.json",
+                         1, "now")])
+        seviye, _, mesaj = self._bul(cfg, con, g[-1])
+        assert seviye != sag.KRITIK
+        assert "doğrulanamaz" in mesaj
