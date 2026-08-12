@@ -323,12 +323,37 @@ class TestSaglikCikisKodu:
 
 
 class TestDegerlendirCikisKodu:
-    def test_karisik_kaynakta_2(self, cli_cfg, con, monkeypatch, capsys):
+    def test_tool_verilirse_KaynakKarisik_hala_2(self, cli_cfg, con, monkeypatch,
+                                                 capsys):
+        """`--tool` yolunda karıştırma koruması AYNEN duruyor."""
         from src import evaluate
         monkeypatch.setattr(evaluate, "run", lambda *a, **k: (_ for _ in ()).throw(
             evaluate.KaynakKarisik("iki araç var — `--tool` ver")))
-        assert _kos("degerlendir") == 2
+        assert _kos("degerlendir", "--tool", "replay") == 2
         assert "--tool" in capsys.readouterr().out
+
+    def test_toolsuz_TUM_kaynaklari_ayri_ayri_basar(self, cli_cfg, con,
+                                                    monkeypatch, capsys):
+        """⚠ NE OLMUŞTU: `--tool` verilmeyince komut `KaynakKarisik` ile çıkış
+        kodu 2 döndürüyordu ve kullanıcı HİÇBİR ŞEY göremiyordu. Sonuç: canlı
+        analistlerin çözülmüş kararları hiçbir raporda görünmedi; beş bağımsız
+        dış inceleme "raporlar donmuş" alarmı verdi — oysa raporlar donuk
+        değildi, yalnız tek bir kaynağı (replay) gösteriyordu.
+
+        Karıştırma yasağı GEVŞEMEDİ: kaynaklar yan yana, ayrı bölümlerde ve
+        her biri kendi N'iyle basılır. Yasağın kendisi `evaluate.run` üzerinde
+        hâlâ kilitli (bkz. `test_uctan_uca`).
+        """
+        from src import evaluate, report
+        sahte = {"sayim": {"replay": 20, "claude-code": 1},
+                 "kaynaklar": [{"tool": "replay"}, {"tool": "claude-code"}]}
+        monkeypatch.setattr(evaluate, "run_all", lambda *a, **k: sahte)
+        monkeypatch.setattr(report, "evaluate_report_all",
+                            lambda cfg, h: "\n".join(
+                                f"Kaynak: {k['tool']}" for k in h["kaynaklar"]))
+        assert _kos("degerlendir") == 0
+        cikti = capsys.readouterr().out
+        assert "replay" in cikti and "claude-code" in cikti
 
     def test_bos_journalda_0(self, cli_cfg, con):
         assert _kos("degerlendir") == 0

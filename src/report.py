@@ -399,18 +399,64 @@ def evaluate_report(cfg: dict, e: dict) -> str:
     doğru davranıştır. Erken kenar iddia ederse kod yalan söylüyordur
     (`tests/test_evaluate.py::test_sahte_alfa_erken_kenar_iddia_etmez`).
     """
+    return "\n".join(
+        [f"# Değerlendirme Raporu — {bugun()}", "",
+         f"> {cfg['rapor']['uyari']}", ""] + _evaluate_govde(cfg, e))
+
+
+def evaluate_report_all(cfg: dict, hepsi: dict) -> str:
+    """TÜM kaynaklar tek belgede — ama HİÇBİR metrik toplanmadan.
+
+    ⚠ Neden gerekliydi: `evaluate.run` birden çok kaynak varken
+    `KaynakKarisik` fırlatıyor ve elle koşulan `bist degerlendir` çıkmaz sokağa
+    düşüyordu. Sonuç: canlı analistlerin çözülmüş kararları HİÇBİR raporda
+    görünmüyordu — beş bağımsız dış inceleme "raporlar donmuş" alarmı verdi;
+    oysa raporlar donuk değildi, yalnız tek bir kaynağı (replay) gösteriyordu.
+
+    Kural KORUNUYOR: kaynaklar karıştırılmaz. Burada yan yana basılırlar,
+    hiçbir sayı toplanmaz ve her bölüm kendi N'ini taşır — `replay` VEKİL bir
+    analisttir ve alfası gerçek LLM kayıtlarıyla aynı potaya girmez.
+    """
+    kaynaklar = hepsi["kaynaklar"]
+    L = [f"# Değerlendirme Raporu — {bugun()}", "",
+         f"> {cfg['rapor']['uyari']}", ""]
+    A = L.append
+
+    A(f"**{len(kaynaklar)} kaynak ayrı ayrı ölçüldü — hiçbiri toplanmadı.**")
+    A("")
+    A("| Kaynak | çözülmüş karar | alfa N | alfa | **HÜKÜM** |")
+    A("|---|---|---|---|---|")
+    for e in kaynaklar:
+        a = e["alfa"]
+        A(f"| `{e['tool']}` | {hepsi['sayim'].get(e['tool'], '—')} | {a['n']} | "
+          f"{_s(a['ort'], 2, 'pp')} | **{a['hukum']}** |")
+    A("")
+    A("> `replay` VEKİL bir analisttir (kasten aptal, deterministik bir kural). "
+      "Satırları KIYASLANABİLİR DEĞİLDİR: farklı araçlar farklı dönemlerde ve "
+      "farklı N ile ölçülür. Tablo bir sıralama değil, bir DÖKÜMDÜR.")
+    A("")
+    for e in kaynaklar:
+        A("---")
+        A("")
+        L += _evaluate_govde(cfg, e, baslik_seviyesi=3)
+    return "\n".join(L)
+
+
+def _evaluate_govde(cfg: dict, e: dict, *, baslik_seviyesi: int = 2) -> list[str]:
+    """Tek kaynağın gövdesi. Hem tekil hem toplu rapor bunu kullanır —
+    ikisi ayrışırsa biri diğerinin göstermediği bir şeyi gösterir."""
+    h = "#" * baslik_seviyesi
     L: list[str] = []
     A = L.append
     a, ic, llm, tax = e["alfa"], e["ic"], e["llm_katkisi"], e["taksonomi"]
 
-    A(f"# Değerlendirme Raporu — {bugun()}")
-    A("")
-    A(f"> {cfg['rapor']['uyari']}")
-    A("")
+    if baslik_seviyesi > 2:
+        A(f"{'#' * (baslik_seviyesi - 1)} Kaynak: `{e['tool']}`")
+        A("")
     A(f"Kaynak: `{e['tool']}` · yılda ~{e['donem_yil']:.0f} bağımsız dönem üretiliyor")
     A("")
 
-    A("## Ana metrikler")
+    A(f"{h} Ana metrikler")
     A("")
     A("| Metrik | N | değer | t | gerekli N | **HÜKÜM** |")
     A("|---|---|---|---|---|---|")
@@ -429,7 +475,7 @@ def evaluate_report(cfg: dict, e: dict) -> str:
           f"kullanılmaz**, sermaye-ağırlık eğilimi içerir (ADR #002).")
         A("")
 
-    A("## Uygulanabilirlik (en hızlı ölçülen)")
+    A(f"{h} Uygulanabilirlik (en hızlı ölçülen)")
     A("")
     sl = e["slippage"]
     A(f"- **Slippage** (planlanan giriş vs gerçekleşen dolum): "
@@ -438,7 +484,7 @@ def evaluate_report(cfg: dict, e: dict) -> str:
       f"({tax['sonuc'].get('giris_olmadi', 0)}/{tax['toplam']} plan hiç dolmadı)")
     A("")
 
-    A("## Sonuç ve hata dağılımı")
+    A(f"{h} Sonuç ve hata dağılımı")
     A("")
     A("| Sonuç | n |   | Hata etiketi | n |")
     A("|---|---|---|---|---|")
@@ -450,7 +496,7 @@ def evaluate_report(cfg: dict, e: dict) -> str:
         A(f"| {s1} |  | {s2} |")
     A("")
 
-    A("## Güven kalibrasyonu (Brier)")
+    A(f"{h} Güven kalibrasyonu (Brier)")
     A("")
     b = e["brier"]
     A(f"Brier skoru: {_s(b['brier'], 4)} · N={b['n']} · **{b['hukum']}**")
@@ -465,7 +511,7 @@ def evaluate_report(cfg: dict, e: dict) -> str:
     A(f"> {b['not']}")
     A("")
 
-    A("## Rejim boyutlandırması işe yarıyor mu?")
+    A(f"{h} Rejim boyutlandırması işe yarıyor mu?")
     A("")
     bz = e["boyutlandirma"]
     A(f"Portföy katkısı farkı: {_s(bz['ort'], 3, 'pp')} · N={bz['n']} · "
@@ -478,7 +524,7 @@ def evaluate_report(cfg: dict, e: dict) -> str:
       "ölçülmüyordu — 2026-07-27 denetiminde düzeltildi (ADR #009)._")
     A("")
 
-    A("## Veto")
+    A(f"{h} Veto")
     A("")
     v = e["veto"]
     A(f"- Veto sayısı: {v['veto_sayisi']}"
@@ -489,14 +535,14 @@ def evaluate_report(cfg: dict, e: dict) -> str:
 
     A("---")
     A("")
-    A("### Bu raporun okunma kuralları")
+    A(f"{h}# Bu raporun okunma kuralları")
     A("")
     A("- **`ölçüm yetersiz` bir sonuçtur, bir eksiklik değil.** Yanındaki büyük "
       "yüzde bir bulgu DEĞİLDİR.")
     A("- **Hüküm daima eşit-ağırlık evrene göre.** XU100 satırı bilgi içindir.")
     A("- **En güçlü ifade `zayıf kanıt`tır.** Bu sistemde \"doğrulandı\" YOKTUR.")
     A("- Ağırlıklar bu rapordan DEĞİŞMEZ — o yavaş döngünün işi (ADR #004).")
-    return "\n".join(L)
+    return L
 
 
 AZALT_SINYALLERI = ("reduce", "sell", "avoid")

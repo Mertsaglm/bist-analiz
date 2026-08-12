@@ -22,6 +22,10 @@ bandı geçiyordu** — öldüren tek şey R:R'dı.
 `min_hedef_uzakligi_atr: 1.5` (`stop_atr_bandi` alt sınırından türetildi, sonuca
 bakılmadan sabitlendi) + görünürlük paketi. **Canlı: plan üretilen isim 3 → 8,
 kaybedilen plan 0.** Alfa 4.27→4.00pp → +4.27pp geometriden gelmiyormuş.
+Ayrıca: rejim **tetikleyicisi** rapora yazılıyor (politika değişmedi) ve
+`bist degerlendir` artık `--tool`suz koşunca **tüm kaynakları ayrı ayrı**
+basıyor — canlı analistler (gemini-3.6-flash N=3, claude-code N=1) ilk kez
+görünür oldu; eskiden komut çıkış kodu 2 ile duruyordu.
 Ayrıntı: `ai/archive/STATE-2026-08.md` · `reports/olcum_hedef_mesafe_2026-08-12.md`.
 
 **Faz 10 — kilitlenme ve denetim izi** (2026-08-11) — ADR **#017** · L-016/17/18.
@@ -52,16 +56,10 @@ sistem "izleme + risk disiplini + haber/veto". Kurallar teste devredildi (#011).
    yeşil bitiyor, Telegram'a rapor düşüyor, ve `bist saglik` "atlanan koşu"
    satırı ✓ basıyor (bugün "heartbeat boş" diyor — ikinci koşudan sonra
    gerçek karşılaştırma başlar). Elle iş yok, cron yapacak.
-2. **Canlı karneyi GÖRÜNÜR kıl** (planın İŞ 3'ü — bu turda yapılmadı).
-   `outcomes` tablosunda **24 canlı sonuç** var (6 hedef ort +%13.13 · 6 stop
-   −%6.52 · 5 süre +%6.69 · 7 giriş olmadı) ve **hiçbir değerlendirme raporunda
-   görünmüyorlar**: `evaluate.kaynak_sec` kaynak karıştırmayı doğru şekilde
-   yasaklıyor ama replay 20 kayıtla baskın geliyor ve canlı taraf hiç
-   basılmıyor. Beş dış incelemenin "raporlar donmuş" alarmının gerçek çekirdeği
-   bu (raporlar donuk DEĞİL — replay sabit tarihsel bir küme, aynı sayıyı
-   üretmesi doğru davranış). DoD: `degerlendirme_*.md` içinde ayrı bir "Canlı"
-   bölümü var, N canlı `outcomes` sayısıyla eşleşiyor, iki kaynak hiçbir
-   metrikte toplanmıyor; haftalık Telegram'da iki satır.
+2. **Zincirin KENDİ BAŞINA koştuğunu gör.** ADR #018 canlı hattı değiştirdi
+   ama kanıtı elle koşulmuş turlar. DoD: 2026-08-13 akşamı `gunluk.yml` yeşil
+   bitiyor, Telegram'a rapor düşüyor, plan menüsü 3'ten fazla isim taşıyor ve
+   `bist saglik` "atlanan koşu" satırı ✓ basıyor. Elle iş yok, cron yapacak.
 3. **Replay'in +4.27pp'sinin KALAN açıklaması: limitli giriş.** ADR #018
    ölçümü "geometri filtresinden gelmiyor"u eledi (örneklem %60 büyüdü,
    ortalama ~4pp'de kaldı). Geriye limitli giriş avantajı kaldı. DoD:

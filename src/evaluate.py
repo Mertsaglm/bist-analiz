@@ -333,6 +333,29 @@ def run(cfg: dict, con: sqlite3.Connection, *, tool: str | None = None) -> dict:
     # birleştirmek, vekil analistin sayılarını gerçek analizinkiyle aynı
     # potaya koymaktı — ve rapor bunu hiçbir yerde yazmıyordu.
     tool = kaynak_sec(con, tool)
+    return _tek(cfg, con, tool)
+
+
+def run_all(cfg: dict, con: sqlite3.Connection) -> dict:
+    """HER kaynağı AYRI ayrı ölçer. Hiçbir metrik toplanmaz.
+
+    ⚠ `run()` birden çok kaynak varken `KaynakKarisik` fırlatır ve bu bilinçli
+    bir sürtünmedir — ama elle koşulan `bist degerlendir` için çıkmaz sokaktı:
+    kullanıcı `--tool` yazmadıkça HİÇBİR şey göremiyordu. Sonuç, canlı
+    analistlerin çözülmüş kararlarının hiçbir raporda görünmemesiydi.
+
+    Buradaki çözüm kuralı GEVŞETMİYOR: karıştırma yasağı "iki kaynağın sayısını
+    tek bir sayıda topla" demekti; yan yana ve ayrı ayrı basmak o yasağın ihlali
+    değil, tam da amacı. `run()` değişmedi — programatik çağıranlar hâlâ tek
+    kaynak seçmek zorunda.
+    """
+    mevcut = araclar(con)
+    sirali = sorted(mevcut.items(), key=lambda kv: (-kv[1], kv[0]))
+    return {"sayim": mevcut,
+            "kaynaklar": [_tek(cfg, con, t) for t, _ in sirali]}
+
+
+def _tek(cfg: dict, con: sqlite3.Connection, tool: str | None) -> dict:
     return {
         "tool": tool or "(kayıt yok)",
         "alfa": paired_alpha(cfg, con, tool=tool),

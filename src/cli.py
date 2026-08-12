@@ -400,13 +400,27 @@ def cmd_degerlendir(args) -> int:
     con = db.connect(cfg)
     from . import evaluate, report
 
-    try:
-        e = evaluate.run(cfg, con, tool=args.tool)
-    except evaluate.KaynakKarisik as hata:
-        print(f"🛑 {hata}")
-        con.close()
-        return 2
-    metin = report.evaluate_report(cfg, e)
+    # `--tool` verilmişse TEK kaynak; verilmemişse HEPSİ ayrı ayrı.
+    # ⚠ Eskiden `--tool` yoksa `KaynakKarisik` ile çıkılıyordu (çıkış kodu 2) ve
+    # kullanıcı hiçbir şey göremiyordu. Karıştırma yasağı korunuyor: kaynaklar
+    # yan yana basılır, hiçbir metrik toplanmaz.
+    if args.tool:
+        # ⚠ try/except KALIR: `run` başka sebeplerle de karışık kaynak
+        # bildirebilir ve otomasyonun bunu çıkış koduyla görmesi gerekir.
+        try:
+            e = evaluate.run(cfg, con, tool=args.tool)
+        except evaluate.KaynakKarisik as hata:
+            print(f"🛑 {hata}")
+            con.close()
+            return 2
+        metin = report.evaluate_report(cfg, e)
+    else:
+        hepsi = evaluate.run_all(cfg, con)
+        if not hepsi["kaynaklar"]:
+            print("Henüz çözülmüş tahmin yok — ölçüm başlamadı.")
+            con.close()
+            return 0
+        metin = report.evaluate_report_all(cfg, hepsi)
     yol = report.write(cfg, f"degerlendirme_{report.bugun()}.md", metin)
     print(metin)
     print(f"\n\nRapor yazıldı: {yol}")
