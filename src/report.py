@@ -548,6 +548,13 @@ def daily_report(cfg: dict, bundle: dict, *, holdings: dict | None = None,
       + (f" · genişlik {_s(r.get('genislik_sma50_ustu_pct'), 1, '%')} "
          f"({r.get('genislik_n')}/{r.get('genislik_istenen_n')} isim)"
          if r.get("genislik_n") else ""))
+    # Etiket TEK BAŞINA yanıltıcı: kural asimetrik (risk-on iki koşulu birden
+    # ister, risk-off birine yeter) ve ölçüldü — 16 risk-off etiketinin 14'ü
+    # yalnız genişlikten geldi, üstelik XU100 SMA200'ün ÜSTÜNDEYKEN. Rejimi
+    # okuyan "endeks düşüyor" sanıyordu. Politika DEĞİŞMEDİ, yalnız ifşa edildi.
+    if r.get("tetikleyici"):
+        A("")
+        A(f"_Tetikleyen: {r['tetikleyici']}_")
     if not analiz:
         A("")
         A("> ⚠ **Analist çıktısı yok** — bu rapor yalnız deterministik katmanı "

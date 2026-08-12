@@ -329,6 +329,25 @@ class TestGunlukRapor:
         assert "öneri değil" in metin
         assert "yatırım tavsiyesi değildir" in metin.lower()
 
+    def test_rejim_satiri_TETIKLEYICIYI_yazar(self, cfg, con, hat):
+        """⚠ NE OLMUŞTU: rapor yalnız "Rejim: risk-off · nakit %80" diyordu.
+
+        Kural asimetrik (risk-on İKİ koşulu birden ister, risk-off BİRİNE
+        yeter) ve ölçüldü: 16 risk-off etiketinin **14'ü** yalnız genişlikten
+        geldi, üstelik XU100 SMA200'ün ÜSTÜNDEYKEN. Etiketi okuyan "endeks
+        düşüyor" sanıyordu.
+
+        `regime.tetikleyici`'nin kendi testleri var ama onlar RAPORUN o cümleyi
+        BASTIĞINI kanıtlamaz — fonksiyon doğru çalışıp çıktı hiç görünmeyebilir.
+        (Bu test yazılmadan önce rapor satırı silindi ve suite yeşil kaldı.)
+        """
+        metin = report.daily_report(cfg, hat["bundle"], holdings={}, analiz=None)
+        assert "Tetikleyen:" in metin, \
+            "rejim etiketi gerekçesiz basılıyor — tek başına yanıltıcı"
+        tet = hat["bundle"]["rejim"].get("tetikleyici")
+        assert tet, "paket tetikleyiciyi taşımıyor"
+        assert tet in metin
+
     def test_above_zone_orani_GOSTERILEN_plana_ait(self, cfg, con, hat):
         """⚠ NE OLMUŞTU: banner paydası TÜM aday planları sayıyordu
         (`sum(len(plan_menusu))`) ama gövde her hisseden yalnız `plan_menusu[0]`

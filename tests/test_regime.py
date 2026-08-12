@@ -177,6 +177,72 @@ class TestEtiketleme:
 
 
 # ============================================================ sınıflandırma
+class TestTetikleyiciIfsasi:
+    """Etiket TEK BAŞINA yanıltıcıydı — `tetikleyici` o boşluğu kapatır.
+
+    ⚠ NE OLMUŞTU: kural asimetrik (risk-on İKİ koşulu birden ister, risk-off
+    BİRİNE yeter) ve ölçüldü — `regime_daily`'deki 16 risk-off etiketinin
+    **14'ü** yalnız genişlikten geldi, üstelik XU100 SMA200'ün ÜSTÜNDEYKEN
+    (2026-03-31'de +%11.13). Raporda yalnız "risk-off · nakit %80" yazıyordu;
+    okuyan "endeks düşüyor" sanıyordu. Politika DEĞİŞMEDİ, yalnız ifşa edildi.
+    """
+
+    @pytest.fixture
+    def r(self, cfg):
+        return cfg["rejim"]
+
+    def test_genislik_TEK_BASINA_tetiklediyse_XU100_nerede_yaziyor(self, r):
+        """Bu testin koruduğu tek cümle budur."""
+        off = r["esikler"]["risk_off"]
+        g = {"xu100_vs_sma200_pct": 6.32,      # SMA200'ün %6.32 ÜSTÜNDE
+             "breadth_above_sma50_pct": 28.4}  # ama genişlik eşiğin altında
+        assert regime._label(g, r) == "risk-off"
+        t = regime.tetikleyici(g, r, "risk-off")
+        assert "XU100" in t and "ÜSTÜNDE" in t, (
+            f"genişlik tek başına tetikledi ama XU100'ün nerede olduğu "
+            f"yazmıyor: {t!r}")
+        assert str(off["genislik_sma50_ustu_pct_maks"]) in t
+
+    def test_her_etiket_icin_bos_olmayan_gerekce(self, r):
+        """Izgara taraması: hiçbir (fark, genişlik) çifti sessiz kalmamalı."""
+        for fark in (-12.0, -3.0, -0.5, 0.0, 3.0, 6.0, 12.0, 27.0):
+            for gen in (10.0, 23.0, 35.0, 46.0, 50.0, 60.0, 91.0):
+                g = {"xu100_vs_sma200_pct": fark, "breadth_above_sma50_pct": gen}
+                et = regime._label(g, r)
+                assert regime.tetikleyici(g, r, et).strip(), (fark, gen, et)
+
+    def test_tetikleyici_ile_LABEL_AYRISMAZ(self, r):
+        """§12.2 yapı eşliği: açıklama, kararı üreten kuralla aynı eşiklere
+        bakmalı. Ayrışırsa rapor, kararı veren şeyden BAŞKA bir şey anlatır."""
+        off = r["esikler"]["risk_off"]
+        for fark in (-12.0, -3.0, -0.5, 6.0, 27.0):
+            for gen in (10.0, 35.0, 46.0, 91.0):
+                g = {"xu100_vs_sma200_pct": fark, "breadth_above_sma50_pct": gen}
+                if regime._label(g, r) != "risk-off":
+                    continue
+                t = regime.tetikleyici(g, r, "risk-off")
+                # Metin "XU100 ... (≤ eşik)" diyorsa koşul GERÇEKTEN sağlanmalı
+                if f"(≤ %{off['xu100_sma200_farki_pct_maks']})" in t:
+                    assert fark <= off["xu100_sma200_farki_pct_maks"], (fark, t)
+                if f"≤ %{off['genislik_sma50_ustu_pct_maks']}" in t:
+                    assert gen <= off["genislik_sma50_ustu_pct_maks"], (gen, t)
+
+    def test_eksik_veride_de_konusur(self, r):
+        t = regime.tetikleyici({"xu100_vs_sma200_pct": None,
+                                "breadth_above_sma50_pct": 30.0}, r, "transition")
+        assert "hesaplanamadı" in t and "defansif" in t
+
+    def test_classify_tetikleyiciyi_TASIR(self, cfg, con):
+        """Paket ve rapor bu alandan okur; `classify` üretmezse ifşa kaybolur."""
+        tarihler = _xu100(con, n=220, son=110.0)
+        asof = tarihler[-1]
+        _evren_kur(con, cfg, asof, n=10, gostergeli=10, ustunde=8)
+        rej = regime.classify(cfg, con, asof)
+        assert rej.get("tetikleyici"), "classify tetikleyiciyi taşımıyor"
+        assert rej["tetikleyici"] == regime.tetikleyici(
+            rej["inputs"], cfg["rejim"], rej["label"])
+
+
 class TestSiniflandirma:
     def test_guclu_endeks_ve_genis_katilim_risk_on(self, cfg, con):
         tarihler = _xu100(con, n=220, son=110.0)

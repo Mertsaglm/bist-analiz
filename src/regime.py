@@ -124,6 +124,9 @@ def classify(cfg: dict, con: sqlite3.Connection, asof: str) -> dict:
 
     return {
         "date": asof, "label": etiket, **girdiler,
+        # Etiketi hangi koşulun ürettiği. `store` yalnız adı geçen kolonları
+        # yazar, bu alan şemayı bozmaz; paket ve rapor buradan okur.
+        "tetikleyici": tetikleyici(girdiler, r, etiket),
         "cash_pct": pol["nakit_pct"], "max_positions": pol["maks_pozisyon"],
         "size_multiplier": pol["boyut_carpani"],
         "sektor_basi_maks": r["sektor_basi_maks_pozisyon"],
@@ -132,7 +135,17 @@ def classify(cfg: dict, con: sqlite3.Connection, asof: str) -> dict:
 
 
 def _label(g: dict, r: dict) -> str:
-    """Etiketleme — eksik veri varsa DAİMA daha defansif tarafa düşer."""
+    """Etiketleme — eksik veri varsa DAİMA daha defansif tarafa düşer.
+
+    ⚠ KURAL ASİMETRİKTİR ve bu bilinçlidir: `risk-on` İKİ koşulu birden ister
+    (AND), `risk-off` ise BİRİNE yeter (OR). Gerekçe "dar ralliye güvenme" —
+    endeks yükselirken genişlik düşükse ralli birkaç isme dayanıyordur.
+
+    Ama sonucu görünür olmalı: ölçüldü (37 kayıt), 16 risk-off etiketinin
+    **14'ü** genişlik tek başına tetiklemiş ve bunların çoğunda XU100 SMA200'ün
+    ÜSTÜNDEYDİ (2026-03-31'de +%11.13). Etiketi okuyan biri "endeks düşüyor"
+    sanıyordu. `tetikleyici()` bu yanılgıyı kapatır.
+    """
     fark, gen = g.get("xu100_vs_sma200_pct"), g.get("breadth_above_sma50_pct")
     if fark is None or gen is None:
         return "transition"          # bilmiyorsak orta-defansif
@@ -144,6 +157,41 @@ def _label(g: dict, r: dict) -> str:
     if fark < 0 or gen < 50:
         return "transition"
     return "neutral"
+
+
+def tetikleyici(g: dict, r: dict, etiket: str) -> str:
+    """Etiketi HANGİ koşul üretti? Rapora ve pakete giren tek satır.
+
+    `_label` ile AYNI eşiklere bakar ve onun hemen yanında durur — ikisi
+    ayrışırsa rapor, kararı üreten kuraldan başka bir şey anlatır (§12.2).
+    Bu bir ölçüm değil, bir İFŞADIR: rejim politikası burada değişmez.
+    """
+    fark, gen = g.get("xu100_vs_sma200_pct"), g.get("breadth_above_sma50_pct")
+    if fark is None or gen is None:
+        eksik = "XU100/SMA200" if fark is None else "genişlik"
+        return f"{eksik} hesaplanamadı → bilmiyorsak defansif tarafa düşülür"
+    on, off = r["esikler"]["risk_on"], r["esikler"]["risk_off"]
+    xu = f"XU100 SMA200'ün %{abs(fark):.2f} {'ÜSTÜNDE' if fark >= 0 else 'ALTINDA'}"
+    gn = f"genişlik %{gen:.1f}"
+    if etiket == "risk-off":
+        # OR kuralı: hangisinin tetiklediğini AYRI AYRI söyle.
+        xu_tetikledi = fark <= off["xu100_sma200_farki_pct_maks"]
+        gen_tetikledi = gen <= off["genislik_sma50_ustu_pct_maks"]
+        nedenler = []
+        if xu_tetikledi:
+            nedenler.append(f"{xu} (≤ %{off['xu100_sma200_farki_pct_maks']})")
+        if gen_tetikledi:
+            nedenler.append(f"{gn} ≤ %{off['genislik_sma50_ustu_pct_maks']}")
+        # ⚠ TETİKLEMEYEN koşulu da yaz — "endeks düşüyor" yanılgısını kapatan
+        # şey tam olarak budur. Yalnız genişlik tetiklediğinde XU100'ün NEREDE
+        # olduğunu görmek gerekir; çoğu zaman SMA200'ün üstündedir.
+        if len(nedenler) == 1:
+            nedenler.append(f"{gn if xu_tetikledi else xu} ise eşiğin dışında")
+        return " · ".join(nedenler)
+    if etiket == "risk-on":
+        return (f"{xu} (≥ %{on['xu100_sma200_farki_pct_min']}) ve "
+                f"{gn} ≥ %{on['genislik_sma50_ustu_pct_min']}")
+    return f"{xu} · {gn} — hiçbir uç eşik tetiklenmedi"
 
 
 def store(cfg: dict, con: sqlite3.Connection, rej: dict) -> int:

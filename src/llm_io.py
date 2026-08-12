@@ -350,6 +350,11 @@ def build_bundle(cfg: dict, con: sqlite3.Connection, asof: str) -> dict:
         "haber_taramasi": haber_durumu,
         "rejim": {
             "etiket": rej["label"],
+            # Etiketi HANGİ koşulun ürettiği. Kural asimetrik (risk-on AND,
+            # risk-off OR) ve risk-off çoğunlukla YALNIZ genişlikten geliyor —
+            # ölçüldü: 16 risk-off etiketinin 14'ü, üstelik XU100 SMA200'ün
+            # ÜSTÜNDEYKEN. Etiketi tek başına okuyan "endeks düşüyor" sanıyor.
+            "tetikleyici": rej.get("tetikleyici"),
             "xu100_sma200_farki_pct": rej.get("xu100_vs_sma200_pct"),
             "genislik_sma50_ustu_pct": rej.get("breadth_above_sma50_pct"),
             "genislik_n": rej.get("breadth_n"),
