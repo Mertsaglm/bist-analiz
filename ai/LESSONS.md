@@ -6,6 +6,77 @@
 
 ---
 
+## L-020 — 2026-08-12 — Bir gerekçe cümlesi "ve"yle birleşirse, hangi koşulun düştüğünü GİZLER
+
+**Olay.** Plan üretilemeyen isimler tek bir cümle alıyordu: *"N giriş bandı
+denendi; hiçbiri stop∈[1.5,4.0]×ATR **+** R:R≥1.5 kurallarını **birlikte**
+sağlayamadı."* Cümle teknik olarak doğruydu. Ama 2026-08-12 huni teşhisi
+gösterdi ki elenen 15 ismin **15'inde de stop bandı geçiyordu** — öldüren tek
+şey R:R'dı. "Birlikte" kelimesi okuyanı ATR ayarına baktırıyordu ve haftalarca
+kimse asıl sebebi görmedi.
+
+**Kök sebep.** Birleşik bir koşulun ihlali, hangi bileşenin düştüğünü
+söylemeden raporlanmıştı. Üstelik bunu söyleyebilecek veri VARDI: `elenen`
+listesi her bant/stop kombinasyonunun neden düştüğünü tutuyordu — ama yalnız
+BAŞARILI planlara iliştiriliyordu (`PlanOption.elenen_adaylar`), başarısızlıkta
+çöpe gidiyordu. Yani teşhis detayı, tam ihtiyaç duyulan anda siliniyordu.
+
+**Anti-pattern.** Bir kapı birden çok koşulu "ve" ile birleştiriyorsa, ihlal
+mesajını da birleşik yazmak. Ve tanı verisini yalnız BAŞARI yolunda saklamak.
+
+**Kural.**
+1. Birleşik kapının ihlalini raporlarken **hangi bileşenin** düştüğünü yaz.
+   Metinden türetme — sınıf kodu koy (`hedef_yakin` / `stop_bandi` /
+   `rr_yetersiz`) ve testi metne değil KODA baktır (L-012).
+2. Tanı verisi başarısızlık yolunda da dönmeli. Sor: *"bu bilgi en çok ne
+   zaman lazım — işler yürürken mi, durduğunda mı?"*
+3. Bir sınıf kümesi eklediğinde etiket sözlüğüyle eşliğini teste devret
+   (§12.2); aksi halde yeni bir sınıf sessizce görünmez kalır.
+
+---
+
+## L-019 — 2026-08-12 — Girdisine mesafe koruması olmayan bir eşik, sessizce bir SEÇİM FİLTRESİNE dönüşür
+
+**Olay.** `min_rr_t1: 1.5` bir kalite kapısı olarak yazılmıştı. Ama T1 "en yakın
+direnç" seçiliyordu ve hedef tarafında mesafe koruması yoktu. Stop ≈ 2×ATR ve
+giriş ≈ fiyat iken `R:R ≈ T1_uzaklık / 2` olduğundan, kapı fiilen şu kurala
+dönüştü: **"yalnız üstünde ~3 ATR boşluk olan isimlere plan üret."** Kimse böyle
+bir karar vermedi, hiçbir yerde yazmıyordu, ölçülmemişti.
+
+Ölçüldü: üretilen 49 planın **hepsinde** T1 ≥ 2.44 ATR ve **31'inde** kaynak
+"52 hafta zirvesi" — yani plan üretilen isimlerin çoğunda üstte hiç pivot
+yoktu. Elenen 15 ismin en yakın direnç medyanı ise **0.36 ATR**: fiyatın
+neredeyse üstünde duran, hedef değil gürültü olan seviyeler.
+
+**Kök sebep.** Giriş tarafında mesafe koruması vardı
+(`maks_giris_uzakligi_atr`, EUPWR artefaktından doğmuş); hedef tarafına
+yazılmamıştı. L-008'in ("tek çağrı yerini düzeltmek kuralı uygulamak DEĞİLDİR")
+bir yıl sonraki tekrarı — bu sefer aynı dosyanın içinde, 15 satır arayla.
+
+**Neden pahalı.** İki katmanı birden bozuyordu:
+- **Üretim:** evrenin %83'ü sessizce eleniyor, her gün aynı 4-5 isim dönüyordu.
+- **ÖLÇÜM:** gürültü bandındaki bir T1, üçlü bariyer resolver'ında **rastgele
+  bir `hedef` çözümü** üretir. Yani filtre yalnız neyin planlandığını değil,
+  **karnenin ne dediğini** de eğiyordu.
+
+**Anti-pattern.** Bir eşiği, kendisi sınırsız olan bir büyüklüğün oranına
+uygulamak. `R:R = hedef_mesafesi / stop_mesafesi` — payda `stop_atr_bandi` ile
+sınırlıyken pay serbestse, eşik payı ölçmeyi bırakır ve **payın kaynağını
+seçmeye** başlar.
+
+**Kural.**
+1. Bir oran kapısı yazdığında sor: **payın ve paydanın kendi sınırları var mı?**
+   Biri serbestse kapı bir kalite ölçüsü değil, bir seçim filtresidir.
+2. Bir tarafa mesafe/aralık koruması yazdığında **simetriğini hemen ara** —
+   "aynı büyüklüğün öbür ucu neresi?" (L-008'in oran hâli).
+3. Bir kapı, gözlemi de üreten bir mekanizmayı besliyorsa (burada: plan →
+   resolver → `outcomes`), o kapının yanlılığı **ölçüme de bulaşır**. Kapı
+   değişikliğini yalnız üretim sayısıyla değil, **sonuç dağılımıyla** da ölç.
+4. Filtreyi aday havuzunun **tabanına** uygula, kırpmadan SONRA değil:
+   `en_yakın_3` alıp sonra elemek, dördüncü geçerli adayı hiç görmeden yok eder.
+
+---
+
 ## L-018 — 2026-08-11 — Tarihe bağlı bir dosya yolu, kanıt değil GÖRÜŞTÜR
 
 **Olay.** `llm_runs.output_path` "bu tahmini üreten analist çıktısı şu

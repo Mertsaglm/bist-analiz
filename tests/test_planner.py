@@ -175,17 +175,61 @@ class TestPlanUretilmeyenDurumlar:
         imkânsız kılar.
         """
         cfg, bars, ind, _, rej = kurulum
-        fiyat = float(bars["c"].iloc[-1])
-        sev = [lv.Level(fiyat * 0.95, "destek", 3, "2024-01-01", "2024-05-01", 10),
-               lv.Level(fiyat * 1.004, "direnc", 3, "2024-01-01", "2024-05-01", 10)]
+        cfg = _esikli(cfg, 1.5)
+        fiyat, atr = float(bars["c"].iloc[-1]), ind["atr14"]
+        # Hedef mesafe eşiğini GEÇİYOR (2.0 ATR) ama en dar geçerli stop
+        # 2.0×ATR olduğu için R:R = 1.0 < 1.5. Yani bu isim `hedef_yakin`
+        # değil, gerçekten R:R'dan eleniyor — iki sınıf ayrışmalı.
+        # sma20/sma50 ve destek YOK: tek giriş bandı `dogrudan` kalsın,
+        # aksi halde giriş aşağı itilerek R:R sağlanır ve senaryo bozulur.
+        sade = {"atr14": atr, "sma20": None, "sma50": None,
+                "high_52w": fiyat * 0.9}
         _, neden = planner.build_options(
-            cfg, ticker="TEST", asof="2024-06-01", bars=bars,
-            ind={**ind, "high_52w": fiyat * 1.004}, seviyeler=sev, regime=rej)
+            cfg, ticker="TEST", asof="2024-06-01", bars=bars, ind=sade,
+            seviyeler=[lv.Level(fiyat + 2.0 * atr, "direnc", 3,
+                                "2024-01-01", "2024-05-01", 10)], regime=rej)
         assert neden.detay == "rr_yetersiz", (
             f"stop bandı geçtiği hâlde sınıf {neden.detay!r} — gerekçe yine "
             "okuyanı yanlış kurala baktırıyor")
         assert not any("∉[" in e for e in neden.elenen), \
             "bu senaryoda hiçbir stop adayı ATR bandından elenmemeliydi"
+        assert all("R:R" in e for e in neden.elenen), \
+            f"elenme sebebi R:R değil: {neden.elenen}"
+
+    def test_DOGRULAMA_da_hedef_mesafesini_denetler(self, cfg):
+        """⚠ L-008 / §11 tuzak 5 — kuralın İKİNCİ uygulama yeri.
+
+        `build_options` böyle bir planı zaten üretmez; bu test doğrulama
+        katmanının da kuralı bildiğini kanıtlar. Neden gerekli: `stop_atr_bandi`
+        ve `min_rr_t1` de tam olarak iki yerde zorlanıyor — biri üretimi
+        kısıtlar, diğeri üretilenin sözleşmeye uyduğunu garanti eder. Tek yere
+        yazmak "kuralı uygulamak" değildir.
+
+        Bu test yazılmadan önce `validate_option`'daki kontrol SİLİNDİ ve suite
+        yeşil kaldı — yani o kontrol bir kilit değil, süstü (§12a).
+        """
+        cfg15 = _esikli(cfg, 1.5)
+
+        def plan(atr_uzaklik: float) -> planner.PlanOption:
+            return planner.PlanOption(
+                plan_id="T-1", ticker="TEST", asof="2024-06-01", kind="dogrudan",
+                entry_low=100.0, entry_high=100.1, entry_trigger="direct",
+                stop_price=95.0, stop_method="atr_2x", stop_atr_multiple=2.0,
+                targets=[{"price": 110.0, "rr": 1.94, "rr_net": 1.85,
+                          "atr_distance": atr_uzaklik, "basis": "pivot@x (2)"}],
+                rr_at_t1=1.94, rr_at_t1_net=1.85, maliyet_pct=0.3,
+                time_barrier_days=20, time_barrier_date="2024-07-01",
+                position_size_pct=5.0, max_loss_pct_of_portfolio=0.4,
+                entry_zone_status="in_zone", daily_limit_note="—",
+                ex_date_in_window=None)
+
+        yakin = [i for i in planner.validate_option(plan(0.4), cfg15)
+                 if "uzaklıkta" in i]
+        assert yakin, ("doğrulama, gürültü bandındaki bir T1'i geçirdi — kural "
+                       "yalnız `build_options`'ta yaşıyor demektir")
+        uzak = [i for i in planner.validate_option(plan(2.0), cfg15)
+                if "uzaklıkta" in i]
+        assert not uzak, "eşiği geçen hedef yanlışlıkla reddedildi"
 
     def test_her_detay_kodunun_ETIKETI_var(self):
         """§12.2 yapı eşliği: kod kümesi ile etiket sözlüğü ayrışamaz.

@@ -3,37 +3,32 @@
 > Usta her oturumun başında bu dosyayı okur, sonunda günceller.
 > KISA TUT: ~100 satırı aşınca eskiyi `ai/archive/STATE-YYYY-MM.md`'ye taşı.
 
-**Son güncelleme:** 2026-08-11
-**Aktif milestone:** **Faz 10 KAPANDI** (ADR **#017** · L-016/17/18).
-Bağımsız denetim, sistemin **dört işlem günüdür ölü** olduğunu buldu; kilit
-açıldı, kalıcı çözüm uygulandı ve canlı doğrulandı. Suite **1193 → 1226**.
-Şema **v9 → v11**.
+**Son güncelleme:** 2026-08-12
+**Aktif milestone:** **Faz 11 KAPANDI** (ADR **#018** · L-019/020).
+Beş bağımsız dış inceleme + kod/DB kazısı: `min_rr_t1` kapısı, hedef tarafında
+mesafe koruması olmadığı için sessizce bir **seçim filtresine** dönüşmüştü.
+Görünürlük paketi + kural düzeltmesi. Canlı evrende plan üretilen isim
+**3 → 8**. Suite **1231 → 1244**.
 
 ## ✅ Tamamlananlar
 
-**Faz 10 — kilitlenme ve denetim izi** (2026-08-11) — ADR **#017**
+**Faz 11 — gizli hedef filtresi** (2026-08-12) — ADR **#018** · L-019/020
 
-Bulgu: sistem 2026-08-06'dan beri sıfır analiz üretiyordu. Kod doğruydu,
-1193 test yeşildi, veri her gün çekiliyordu. **Kırılan şey modüller arası
-varsayımdı:** L-015'in "atlanan koşu" kontrolü `MAX(predictions.asof)`e bakıp
-KRİTİK dönüyordu, `predictions` ise kapının ARKASINDA yazılıyordu → kilit
-kalıcı (L-016).
+`min_rr_t1` bir kalite kapısı sanılıyordu; T1 "en yakın direnç" seçildiği ve
+hedef tarafında mesafe koruması olmadığı için fiilen **"üstünde ~3 ATR boşluk
+olan isim" seçim filtresine** dönüşmüştü. Elenen 15 ismin **15'inde de stop
+bandı geçiyordu** — öldüren tek şey R:R'dı.
 
-| # | Ne | Kanıt |
-|---|---|---|
-| 1 | **KAPI ↔ GÖZLEM ayrımı** — gözlem kontrolü kapıyı kapatamaz | `ekle_gozlem` şiddeti kodda tavanlar; eski hata geri konunca **7 test kırmızı** |
-| 2 | **`otonom_kosu` heartbeat** (şema v10) — koşunun EN BAŞINDA yazılır | kapı kapansa bile kayıt duruyor (`test_HEARTBEAT_kapi_kapansa_bile_yazilir`) |
-| 3 | **Nöbetçi** — L-015'in niyeti DIŞARIDA uygulandı | `nobetci.yml` canlı koştu: "✅ son koşu 2026-08-11" |
-| 4 | **Yarım bar koruması** | kurtarma koşusunda **70 yarım bar** gerçekten elendi — hata aktifmiş |
-| 5 | **Çıktı mührü** `output_sha` (şema v11) + run'a özel dosya | 2026-07-30'da journal ile dosya ayrışmıştı (farklı model, farklı plan) |
-| 6 | **Makro zinciri + EVDS tazeliği** | TÜFE **253 gündür** donmuş çıktı; değer artık pakete girmiyor |
-| 7 | **Payda görünürlüğü** | "alfa 4.27pp (girişi olan **13/20**) · karar başına 2.78pp" |
-| 8 | **`test.yml` günlük cron** | otonom push workflow tetiklemiyor; suite 08-07'den beri hiç koşmamıştı |
+`min_hedef_uzakligi_atr: 1.5` (`stop_atr_bandi` alt sınırından türetildi, sonuca
+bakılmadan sabitlendi) + görünürlük paketi. **Canlı: plan üretilen isim 3 → 8,
+kaybedilen plan 0.** Alfa 4.27→4.00pp → +4.27pp geometriden gelmiyormuş.
+Ayrıntı: `ai/archive/STATE-2026-08.md` · `reports/olcum_hedef_mesafe_2026-08-12.md`.
 
-**Kurtarma koşusu (2026-08-11) uçtan uca tamamlandı** ve canlı karne başladı:
-`bist coz` altı gündür bekleyen 4 sonucu yazdı — TUPRS ×2 **HEDEF**
-(+12.56% / +10.61%), KRDMD ×2 **STOP** (−5.69% / −7.06%). Hiçbir sonuç
-kaybolmamıştı; resolver bar verisinden geriye dönük çözdü.
+**Faz 10 — kilitlenme ve denetim izi** (2026-08-11) — ADR **#017** · L-016/17/18.
+Sistem dört işlem günü sessizce ölüydü: bir GÖZLEM kontrolü, gözlediği sürecin
+ÜRÜNÜNE bakıp o süreci durduruyordu → kilit kalıcı. KAPI↔GÖZLEM ayrımı,
+heartbeat (şema v10), dışarıdan nöbetçi, çıktı mührü (v11).
+Ayrıntı: `ai/archive/STATE-2026-08.md`.
 
 **Faz 9 — karar anı katmanı** (2026-08-07) — ADR #015, #016 · L-012/13/14/15.
 Dış repo incelemesinin 10 maddesi uygulandı. Rapor:
@@ -57,20 +52,42 @@ sistem "izleme + risk disiplini + haber/veto". Kurallar teste devredildi (#011).
    yeşil bitiyor, Telegram'a rapor düşüyor, ve `bist saglik` "atlanan koşu"
    satırı ✓ basıyor (bugün "heartbeat boş" diyor — ikinci koşudan sonra
    gerçek karşılaştırma başlar). Elle iş yok, cron yapacak.
-2. **Replay'in +4.27pp'si GEOMETRİDEN mi geliyor?** Panel ölçümü aynı seçim
-   için −0.92pp derken replay +4.27pp diyor; fark limitli girişten olabilir
-   (planların %35'i hiç dolmuyor). DoD: `backtest`'e "t+1 açılışta piyasa
-   emri" varyantı eklenip aynı dönemlerde koşuluyor; fark bir satır olarak
-   `reports/olcum_*.md`'ye giriyor. **Ön kayıt gerekmez** — mevcut bir sayının
-   kaynağını ayrıştırıyor, yeni bir kenar iddiası aramıyor.
-3. **Veto değeri ölçümünü ÖNE AL.** Backlog'da "3 ay sonra" yazıyordu; canlı
-   pencerede veto edilenler seçilenleri **+5.76pp** geçti (n=6, anekdot —
-   TUPRS 08-05'te `tez_zayif` ile vetolandı ve dört günde +%17 yaptı).
-   DoD: vetolanan isimlerin PLANSIZ ileri getirisi `outcomes`'a benzer bir
-   yapıda izlenmeye başlıyor; `bist degerlendir` "Veto" bölümünde
-   "ölçülemez" yerine bir sayı basıyor.
+2. **Canlı karneyi GÖRÜNÜR kıl** (planın İŞ 3'ü — bu turda yapılmadı).
+   `outcomes` tablosunda **24 canlı sonuç** var (6 hedef ort +%13.13 · 6 stop
+   −%6.52 · 5 süre +%6.69 · 7 giriş olmadı) ve **hiçbir değerlendirme raporunda
+   görünmüyorlar**: `evaluate.kaynak_sec` kaynak karıştırmayı doğru şekilde
+   yasaklıyor ama replay 20 kayıtla baskın geliyor ve canlı taraf hiç
+   basılmıyor. Beş dış incelemenin "raporlar donmuş" alarmının gerçek çekirdeği
+   bu (raporlar donuk DEĞİL — replay sabit tarihsel bir küme, aynı sayıyı
+   üretmesi doğru davranış). DoD: `degerlendirme_*.md` içinde ayrı bir "Canlı"
+   bölümü var, N canlı `outcomes` sayısıyla eşleşiyor, iki kaynak hiçbir
+   metrikte toplanmıyor; haftalık Telegram'da iki satır.
+3. **Replay'in +4.27pp'sinin KALAN açıklaması: limitli giriş.** ADR #018
+   ölçümü "geometri filtresinden gelmiyor"u eledi (örneklem %60 büyüdü,
+   ortalama ~4pp'de kaldı). Geriye limitli giriş avantajı kaldı. DoD:
+   `backtest`'e "t+1 açılışta piyasa emri" varyantı eklenip aynı dönemlerde
+   koşuluyor; fark bir satır olarak `reports/olcum_*.md`'ye giriyor.
+   **Ön kayıt gerekmez** — mevcut bir sayının kaynağını ayrıştırıyor.
 
 ## 📦 Backlog (şimdi değil, unutma da)
+- **Veto değeri ölçümü** — vetolananların PLANSIZ ileri getirisi izlenmeli
+  (canlı: veto edilenler seçilenleri +5.76pp geçti, n=6 anekdot). İŞ 3'ten
+  sonra: canlı karne görünmeden veto karnesi de görünmez.
+- **Rejim OR/AND asimetrisi** — risk-on iki koşul ister (AND), risk-off birine
+  yeter (OR): 16 risk-off etiketinin **14'ü** genişlikten, XU100 SMA200'ün
+  ÜSTÜNDEYKEN. ADR #018'in etkisini ayırmak için dokunulmadı. Önce rapor
+  tetikleyiciyi yazsın (`risk-off (tetikleyen: genişlik %28.4 ≤ 35 · XU100
+  +%6.32)`), sonra tartışılsın.
+- **`levels_daily` birikmiyor** — `dbdump.py` tabloyu dump'tan hariç tutuyor,
+  `gunluk.yml` her koşuda DB'yi dump'tan kuruyor → yalnız son koşu kalıyor.
+  `planner.py`'ın "seviyeler dondurulur" iddiası kodda karşılıksız (§8).
+  Hafifletici: hedef dayanağı `plan_options.payload` içinde.
+- **`high52_prox` ↔ hedef filtresi gerilimi** — zirveye yakın isim faktörde iyi
+  skorlarken plan üretemiyor. ADR #018 bunu yaratmadı, `zirveye_yakin`
+  sınıfıyla görünür kıldı.
+- **Ölçüm şablonundan düşen "ters yönde kanıt" uyarısı** —
+  `olcum_2026-07-26.md` basıyor, `olcum_2026-08-07.md` basmıyor; aynı
+  negatif/anlamlı `mom_12_1` bulgusu dururken. Şablon regresyonu.
 - **TÜFE serisi ÖLDÜ** — `TP.FE.OKTG01` son gözlem 2025-12-01 (253 gün).
   Tazelik kontrolü artık bunu her gün basıyor ve değer pakete girmiyor.
   Yapılacak: EVDS'de serinin yeni kodunu bul (TÜİK 2026 baz revizyonu

@@ -355,6 +355,27 @@ planlayici:
   # "destek retest" diye plan üretti (R:R 6.39) — tetiklenemez bir artefakt.
   # Mutlak yüzde değil ATR ölçekli: volatil ve sakin hisse aynı kefeye konmasın.
   maks_giris_uzakligi_atr: 3.0
+  # Hedef fiyata en az bu kadar ATR uzakta olmalı — GİRİŞ tarafındaki mesafe
+  # korumasının simetriği (ADR #018, L-008: "tek çağrı yerini düzeltmek kuralı
+  # uygulamak DEĞİLDİR").
+  #
+  # NEDEN VAR: T1 en yakın dirençti ve R:R kapısı ona uygulanıyordu. Fiyatın
+  # %0.02 üstündeki bir pivot hedef sayılınca R:R ≈ 0.05 çıkıyor ve isim
+  # eleniyordu. Kapı böylece kimsenin karar vermediği bir "üstünde ~3 ATR
+  # boşluk olan isim" FİLTRESİNE dönüşmüştü (2026-08-12 huni teşhisi: elenen
+  # 15 ismin 15'inde de stop bandı geçiyordu, öldüren tek şey R:R'dı; üretilen
+  # 49 planın hepsinde T1 ≥ 2.44 ATR, 31'inde kaynak 52 hafta zirvesi).
+  #
+  # NEDEN 1.5: `stop_atr_bandi`'nın ALT sınırından türetildi. Stop tabanı
+  # 1.5×ATR çünkü günlük salınımın içinde kalan bir bariyer gürültüyle
+  # tetiklenir; aynı argüman hedef için de geçerlidir — üstelik daha ağır
+  # sonuçla, çünkü gürültü bandındaki bir T1 üçlü bariyer resolver'ında
+  # RASTGELE bir `hedef` çözümü üretir ve karneyi kirletir.
+  # Değer replay çıktısına BAKILMADAN sabitlendi; ölçüm sonrası değiştirilmedi.
+  #
+  # NEDEN 3.0 DEĞİL: 3.0, 2×ATR stop ile R:R'ı otomatik ≥1.5 yapar ve kapıyı
+  # dekoratif hale getirirdi — kazara oluşmuş filtreyi bilerek kodlamak olurdu.
+  min_hedef_uzakligi_atr: 1.5
   # Hedefler UYDURULMAZ — yalnız gerçek pivot/direnç seviyelerinden.
   # Geçerli seviye yoksa hedef üretilmez, plan üretilmez.
   hedef_kaynaklari: [pivot, yuksek_52h]

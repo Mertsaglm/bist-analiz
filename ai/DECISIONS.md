@@ -6,6 +6,74 @@
 
 ---
 
+## #018 — 2026-08-12 — Hedefin fiyata en az `1.5×ATR` uzaklıkta olması şartı
+
+**Bağlam.** `bist otonom gunluk` her gün 18 canlı isimden yalnız 2-3'üne plan
+üretiyor, hep aynı isimler dönüyordu. Huni teşhisi sebebi buldu: `planner.py`
+T1'i **en yakın direnç** olarak seçiyor ve `min_rr_t1` kapısı ona uygulanıyordu.
+Giriş tarafında mesafe koruması vardı (`maks_giris_uzakligi_atr`, #EUPWR
+vakası), hedef tarafında yoktu.
+
+Aritmetik: stop ≈ 2×ATR, giriş ≈ fiyat → `R:R ≈ T1_uzaklık / 2`. Yani kapıyı
+geçmek fiilen "en yakın direnç ≥3 ATR yukarıda olsun" demekti. Ölçüldü
+(2026-08-10): elenen 15 ismin **15'inde de stop bandı geçiyordu**, öldüren tek
+şey R:R'dı; elenenlerin en yakın direnç medyanı **0.36 ATR**; üretilen 49
+planın hepsinde T1 ≥ 2.44 ATR ve 31'inde kaynak "52 hafta zirvesi" (yani üstte
+hiç pivot yok). Kapı, kimsenin karar vermediği bir **seçim filtresine**
+dönüşmüştü.
+
+**Seçenekler:**
+- A) Dokunma, yalnız teşhisi rapora bas → sıfır risk ama darlık kalıcı; üstelik
+  ölçülmemiş bir yanlılık bilerek sürdürülmüş olur.
+- B) Çoklu N tara (1.0/1.5/2.0/2.5), sonuca bakıp seç + ön kayıt yaz → sonucu
+  görüp parametre seçmek, ön kaydın koruduğu şeyin tam tersi. Üstelik önerilen
+  karar kuralları `alfa`ya bağlanıyordu; oysa alfa `backtest.py`'ın ölçtüğü
+  faktör alfası DEĞİL, replay'in "ölçüm yetersiz" ilan ettiği sayı.
+- C) Eşiği sonuca bakmadan, mevcut bir karardan türeterek sabitle; alfayı yalnız
+  raporla → tanım sorusu tanım gibi çözülür.
+
+**Karar:** C. `planlayici.min_hedef_uzakligi_atr: 1.5`. Kural **iki yerde**
+zorlanır: üretimde (`build_options` — aday havuzunun tabanı **ve** bant içi
+filtre) ve doğrulamada (`validate_option`). Tek yere yazmak L-008'in aynısıdır.
+
+**Neden 1.5:** `stop_atr_bandi`'nın ALT sınırından türetildi. Stop tabanı
+1.5×ATR çünkü günlük salınımın içindeki bir bariyer gürültüyle tetiklenir. Aynı
+argüman hedef için de geçerlidir ve sonucu daha ağırdır: gürültü bandındaki bir
+T1, üçlü bariyer resolver'ında **rastgele bir `hedef` çözümü** üretir — yani
+yalnız plan üretimini değil **karneyi** kirletir. 3.0 seçilmedi: 2×ATR stop ile
+R:R'ı otomatik ≥1.5 yapar ve `min_rr_t1`'i dekoratif kılardı.
+
+**Neden ön kayıt yazılmadı:** ön kayıt bir KENAR iddiasını korur; burada kenar
+iddiası yok (ADR #008) ve `backtest.py` planner'a hiç dokunmadığı için "kenar
+yok" hükmü bu değişiklikten etkilenemez. Bu bir tanım sorusudur —
+`min_dokunus`, `pivot_k`, `maks_giris_uzakligi_atr` nasıl muhakemeyle
+konduysa öyle konur. Değer koşudan ÖNCE sabitlendi ve çıktıya bakılarak
+değiştirilmedi.
+
+**Ölçüm** (`reports/olcum_hedef_mesafe_2026-08-12.md`, 30 dönem, iki replay):
+plan 25→29, tahmin 20→25, **kaybedilen plan 0** (küme farkıyla doğrulandı),
+tetiklenmeme %35→%16, `sure` 5→10 (bedeli, kaydedildi). Alfa 4.27pp→4.00pp,
+t 2.19→2.13 — yani **+4.27pp geometri filtresinin ürünü değilmiş.**
+
+**Canlı kesit (2026-08-10, 18 isim): plan üretilen isim 3 → 8.** Mevcut üçün
+planı byte'ı byte'ına aynı kaldı; gelen beş isim beş ayrı sektörden. "Her gün
+aynı 4-5 isim" örüntüsünün ana sebebi buymuş. (Replay tablosundaki "farklı
+ticker 8→8" satırı çeşitliliği ölçmez — replay dönem başına yalnız top-3 ismi
+analiz eder, yani zaten seçimle tavanlıdır.)
+
+⚠ Replay hükmü "ölçüm yetersiz"ten "zayıf kanıt"a döndü; bu bir bulgu DEĞİL,
+N'in `olcum.zayif_n_esigi = 15` idari eşiğini geçmesidir. Kanıtın kendisi
+hafifçe zayıfladı (t, sd, gerekli_n hepsi kötüleşti).
+
+**Tekrar gözden geçir:** (a) `sure` payı büyümeye devam eder ve `hedef` payını
+belirgin şekilde yerse — o zaman eşik bir **performans** sorusuna dönüşür ve
+yeni bir ön kayıt turu (`docs/on-kayit-seviye-02.md` deseninde, sonucu görmeden
+yazılıp mühürlenen karar kuralı) koşulmadan dokunulmaz; (b) bir koşu sıfır plan
+üretirse — bu mekanik başarısızlıktır, ön kayıt gerektirmeden onarılır;
+(c) `stop_atr_bandi`'nın alt sınırı değişirse eşiğin türetildiği zemin kayar.
+
+---
+
 ## #017 — 2026-08-11 — Sağlık kontrolleri İKİYE ayrılır: KAPI ve GÖZLEM
 
 **Bağlam.** Sistem 2026-08-06'dan 08-11'e kadar dört işlem günü boyunca sıfır

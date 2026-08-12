@@ -323,6 +323,21 @@ class TestEsiklerGevsetilemez:
         assert float(p["maks_giris_uzakligi_atr"]) <= 4.0, (
             "EUPWR vakası: uzak seviye tetiklenemez bir R:R artefaktı üretti.")
 
+        # --- hedef mesafe zemini (ADR #018) ---------------------------------
+        # Zemin eşiği DEĞİŞTİRMEYİ YASAKLAMAZ, GÖRÜNÜR kılar: değiştiren kişi
+        # bu testi de değiştirmek zorunda kalır, yani karar sessiz bir config
+        # düzenlemesi olarak geçemez (AGENTS §12.1).
+        mh = float(p["min_hedef_uzakligi_atr"])
+        assert mh >= float(alt) / 1.5, (
+            "hedef zemini stop tabanının mantığının altına düştü — eşik oradan "
+            "türetildi: günlük salınımın içindeki bir bariyer gürültüyle "
+            "tetiklenir ve bu hedef için de geçerlidir (ADR #018).")
+        # Üst sınır: en DAR stop (alt×ATR) ile bile R:R'ı otomatik geçirmemeli,
+        # yoksa `min_rr_t1` dekoratif bir kapıya döner.
+        assert mh < float(alt) * float(p["min_rr_t1"]), (
+            f"min_hedef_uzakligi_atr {mh} ≥ {alt}×{p['min_rr_t1']} — bu eşikte "
+            "R:R kapısı kendiliğinden sağlanır ve hiçbir şey elemez.")
+
     def test_kalite_kapilari_gevsetilemez(self, real_cfg):
         ev = real_cfg["evren"]
         assert float(ev["maks_sifir_hacim_orani"]) <= 0.05, (

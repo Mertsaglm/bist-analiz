@@ -471,6 +471,17 @@ def validate_option(opt: PlanOption, cfg: dict) -> list[str]:
             ihlal.append(f"hedef geçerli tick ızgarasında değil: {t['price']}")
         if not t.get("basis"):
             ihlal.append("hedefin dayanağı yok — uydurulmuş seviye")
+    # ⚠ MESAFE EŞİĞİNİN İKİNCİ UYGULAMA YERİ (L-008 / §11 tuzak 5). `build_options`
+    # da aynı eşiği uyguluyor; kuralı TEK yere yazmak "kuralı uygulamak" değildir.
+    # `stop_atr_bandi` ve `min_rr_t1` de tam olarak bu şekilde iki yerde
+    # zorlanıyor: biri üretimi kısıtlar, diğeri üretilenin sözleşmeye uyduğunu
+    # kanıtlar. Referans `atr_distance` — o da girişe göre ölçülür, yani üç yer
+    # (havuz tabanı, bant içi filtre, buradaki doğrulama) aynı büyüklüğe bakar.
+    min_hedef = float(p.get("min_hedef_uzakligi_atr", 0.0))
+    if min_hedef > 0 and opt.targets:
+        d = opt.targets[0].get("atr_distance")
+        if d is None or d < min_hedef:
+            ihlal.append(f"T1 girişe {d}×ATR uzaklıkta < {min_hedef}")
     if (opt.rr_at_t1 or 0) < float(p["min_rr_t1"]):
         ihlal.append(f"R:R {opt.rr_at_t1} < {p['min_rr_t1']}")
     if opt.position_size_pct <= 0 or opt.position_size_pct > cfg["risk"]["maks_pozisyon_pct"]:
