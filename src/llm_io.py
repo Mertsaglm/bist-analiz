@@ -318,6 +318,11 @@ def build_bundle(cfg: dict, con: sqlite3.Connection, asof: str) -> dict:
             # bakar — "veriye güvenmiyoruz" ile "geometri kurulamadı" farklı
             # şeylerdir ve ilkinde boğa sinyali savunulamaz (HF-32).
             "plan_yok_sinifi": menu.get("atlanan_sinif", {}).get(t),
+            # İnce sınıf ve elenen adaylar — SÖZLEŞMENİN PARÇASI DEĞİL, teşhis
+            # içindir. HF-32 ve istemdeki tavan kuralı yalnız `plan_yok_sinifi`
+            # kaba değerlerine bakar; bu alanlar rapor/denetim tarafını besler.
+            "plan_yok_detay": menu.get("atlanan_detay", {}).get(t),
+            "plan_yok_elenen": menu.get("atlanan_elenen", {}).get(t) or [],
             "acik_tahminler": [
                 {"prediction_id": p["prediction_id"], "asof": p["asof"],
                  "signal": p["signal"], "bariyer": p["time_barrier_date"]}

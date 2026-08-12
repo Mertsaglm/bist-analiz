@@ -329,6 +329,60 @@ class TestGunlukRapor:
         assert "öneri değil" in metin
         assert "yatırım tavsiyesi değildir" in metin.lower()
 
+    def test_above_zone_orani_GOSTERILEN_plana_ait(self, cfg, con, hat):
+        """⚠ NE OLMUŞTU: banner paydası TÜM aday planları sayıyordu
+        (`sum(len(plan_menusu))`) ama gövde her hisseden yalnız `plan_menusu[0]`
+        basıyor. 2026-07-30 raporu "3/7 plan above_zone" diyordu; ekranda 3 plan
+        vardı ve ÜÇÜ DE `in_zone`'du. Okuyan, hiç göremediği bir oranı
+        doğrulamaya çalışıyordu — üç bağımsız dış inceleme buna takıldı.
+        """
+        import re
+        metin = report.daily_report(cfg, hat["bundle"], holdings={}, analiz=None)
+        m = re.search(r"\*\*(\d+)/(\d+) plan `above_zone`\*\*", metin)
+        assert m, "above_zone banner'ı raporda bulunamadı"
+        planli = [e for e in hat["bundle"]["evren"] if e["plan_menusu"]]
+        gosterilen = [e["plan_menusu"][0] for e in planli]
+        assert int(m.group(2)) == len(gosterilen), (
+            f"payda {m.group(2)} ama gövdede {len(gosterilen)} plan gösteriliyor")
+        assert int(m.group(1)) == sum(
+            1 for p in gosterilen if p.get("entry_zone_status") == "above_zone")
+
+    def test_veto_tablosu_YURURLUKTEKI_tekrari_der(self, cfg, con, hat):
+        """⚠ NE OLMUŞTU: sütun "tekrar → 3× üst üste" diyordu.
+
+        `journal.aktif_vetolar` süresi DOLANI eliyor, yani saydığı şey ardışık
+        bir seri değil, bugün hâlâ yürürlükte olan tekrar sayısı. Bu yüzden
+        veto yeniden konmadan sayı 3'ten 2'ye düşebiliyordu ve bir dış inceleme
+        bunu "sayaç geriye gidiyor" diye bug raporladı. Sayaç doğruydu; etiket
+        iki farklı olguyu aynı kelimeyle adlandırıyordu (L-003).
+        """
+        bundle = json.loads(json.dumps(hat["bundle"]))     # kopyala, bozma
+        bundle["evren"][0]["aktif_vetolar"] = [{
+            "veto_code": "tez_zayif", "konuldu": "2026-08-05",
+            "bitis": "2026-08-12", "kalan_islem_gunu": 2,
+            "arac": "test", "gerekce": "x", "tekrar": 3}]
+        metin = report.daily_report(cfg, bundle, holdings={}, analiz=None)
+        assert "yürürlükteki tekrar" in metin
+        assert "3× yürürlükte" in metin
+        assert "üst üste" not in metin, \
+            "etiket hâlâ ardışık seri iddia ediyor — sayılan şey o değil"
+
+    def test_plan_yok_SINIFA_gore_gruplanir(self, cfg, con, hat):
+        """⚠ NE OLMUŞTU: plan üretilmeyen her isim tek ve aynı cümleyi alıyordu
+        ("stop∈[...]×ATR + R:R≥1.5 kurallarını BİRLİKTE sağlayamadı"). 2026-08-12
+        huni teşhisinde elenen 15 ismin 15'inde de stop bandı geçmişti; öldüren
+        tek şey R:R'dı. Gerekçe okuyanı yanlış kurala baktırıyordu.
+        """
+        metin = report.daily_report(cfg, hat["bundle"], holdings={}, analiz=None)
+        planyok = [e for e in hat["bundle"]["evren"] if not e["plan_menusu"]]
+        if not planyok:
+            pytest.skip("bu kurulumda plan üretilmeyen isim yok")
+        assert all(e.get("plan_yok_detay") for e in planyok), \
+            "pakette ince sınıf taşınmıyor — rapor gruplayamaz"
+        etiketler = {planner.PLAN_YOK_ETIKET[e["plan_yok_detay"]] for e in planyok}
+        assert any(f"**{et}**" in metin for et in etiketler), \
+            f"bölüm 3 sınıf başlığı basmıyor; beklenen: {etiketler}"
+
     def test_rapor_dosyaya_YAZILIR(self, cfg, con, hat):
         metin = report.daily_report(cfg, hat["bundle"], holdings={}, analiz=None)
         yol = report.write(cfg, f"gunluk_{hat['asof']}.md", metin)

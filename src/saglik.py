@@ -566,11 +566,27 @@ def bicimle(sonuc: dict) -> str:
     return "\n".join(L)
 
 
+TEK_SATIR_AD_LIMITI = 3
+
+
 def tek_satir(sonuc: dict) -> str:
-    """Telegram özetine giren tek satırlık hâl."""
+    """Telegram özetine giren tek satırlık hâl.
+
+    ⚠ Uyarı dalı eskiden yalnız SAYI basıyordu ("⚠ Sağlık: 5 uyarı"). Kritik
+    dalı adı da mesajı da veriyordu; uyarı dalı vermiyordu. Bu asimetri
+    telefonda eylem üretmeyen bir bilgi bırakıyordu: beş uyarının hangileri
+    olduğunu görmek için repoya gitmek gerekiyordu. Adlar artık ŞİDDET
+    sırasına göre, eşitlikte ad sırasına göre basılır — sıra deterministik
+    olmalı, yoksa aynı sağlık durumu her koşuda farklı bir metin üretir.
+    """
     if sonuc["kritik"]:
         return "🛑 Sağlık: " + "; ".join(f"{ad} ({mesaj})"
                                         for _, ad, mesaj in sonuc["kritik"])
-    if sonuc["uyari"]:
-        return f"⚠ Sağlık: {len(sonuc['uyari'])} uyarı"
+    uyarilar = sonuc["uyari"]
+    if uyarilar:
+        adlar = sorted(ad for _, ad, _ in uyarilar)
+        gosterilen = adlar[:TEK_SATIR_AD_LIMITI]
+        kalan = len(adlar) - len(gosterilen)
+        return (f"⚠ Sağlık: {len(adlar)} uyarı — " + ", ".join(gosterilen)
+                + (f" …+{kalan}" if kalan else ""))
     return "✓ Sağlık temiz"

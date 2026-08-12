@@ -28,6 +28,17 @@ def _bars(n: int = 300, taban: float = 100.0) -> pd.DataFrame:
     })
 
 
+def _esikli(cfg: dict, n: float) -> dict:
+    """`min_hedef_uzakligi_atr`'ı test-yerel olarak ayarlar.
+
+    Canlı `config.yaml` değerini testten bağımsız tutar: eşiğin CANLI değeri
+    ADR #018'in konusu ve `test_sozlesme` zemininin işi; buradaki testler
+    MEKANİZMAYI sınar, değeri değil.
+    """
+    return {**cfg, "planlayici": {**cfg["planlayici"],
+                                  "min_hedef_uzakligi_atr": n}}
+
+
 @pytest.fixture
 def kurulum(cfg):
     bars = _bars()
@@ -95,6 +106,15 @@ class TestSozlesme:
 
 
 class TestPlanUretilmeyenDurumlar:
+    """⚠ Bu sınıftaki assert'ler MESAJA değil SINIF KODUNA bakar.
+
+    Eskiden `assert "ATR" in neden` gibi metin aramalarıydı. Metin araması iki
+    şeyi birden kaybediyordu: (a) gerekçe cümlesi yeniden yazıldığında test
+    sessizce anlamsızlaşıyordu, (b) "hedef çok yakın" ile "stop bandı tutmadı"
+    gibi FARKLI olguları ayırt edemiyordu — 2026-08-12 huni teşhisinde 15 ismin
+    hepsi tek ve yanıltıcı bir cümle alıyordu (L-003, L-012).
+    """
+
     def test_ustte_seviye_yoksa_plan_yok(self, kurulum):
         """Zirvede olan hisseye hedef uydurulmaz → plan üretilmez."""
         cfg, bars, ind, _, rej = kurulum
@@ -104,7 +124,8 @@ class TestPlanUretilmeyenDurumlar:
             seviyeler=[lv.Level(float(bars["c"].iloc[-1]) * 0.9, "destek", 3,
                                 "a", "b", 1)], regime=rej)
         assert opts == []
-        assert "seviye" in neden or "zirve" in neden
+        assert neden.sinif == "geometri"
+        assert neden.detay in ("hedef_yok", "zirve_ustu_bos")
 
     def test_ex_tarihi_varsa_plan_yok(self, kurulum):
         """Plan penceresine düşen ex-tarih stop'u YAPAY tetikler."""
@@ -113,7 +134,8 @@ class TestPlanUretilmeyenDurumlar:
             cfg, ticker="TEST", asof="2024-06-01", bars=bars, ind=ind,
             seviyeler=sev, regime=rej, ex_date="2024-06-15")
         assert opts == []
-        assert "ex-tarih" in neden
+        assert (neden.sinif, neden.detay) == ("kurumsal", "ex_tarih")
+        assert "2024-06-15" in neden.mesaj
 
     def test_atr_yoksa_plan_yok(self, kurulum):
         cfg, bars, ind, sev, rej = kurulum
@@ -121,7 +143,115 @@ class TestPlanUretilmeyenDurumlar:
             cfg, ticker="TEST", asof="2024-06-01", bars=bars,
             ind={**ind, "atr14": None}, seviyeler=sev, regime=rej)
         assert opts == []
-        assert "ATR" in neden
+        # ⚠ NE OLMUŞTU: sınıf `build_menu` içinde
+        # `neden == "ATR hesaplanamadı"` dize karşılaştırmasıyla türetiliyordu.
+        # Mesajın tek karakteri değişse sınıf sessizce `geometri`ye düşer ve
+        # HF-32'nin dayandığı "veriye güvenmiyoruz" sözleşmesi bozulurdu.
+        assert (neden.sinif, neden.detay) == ("veri", "atr_yok")
+
+    def test_elenen_adaylar_BASARISIZLIKTA_da_doner(self, kurulum):
+        """⚠ NE OLMUŞTU: `elenen` listesi yalnız BAŞARILI planlara iliştiriliyordu
+        (`PlanOption.elenen_adaylar`); plan üretilemediğinde — yani teşhis
+        detayına EN ÇOK ihtiyaç duyulan anda — çöpe gidiyordu. 2026-08-12 huni
+        teşhisinde 15 ismin neden elendiği ancak kod elle yeniden koşturularak
+        öğrenilebildi.
+        """
+        cfg, bars, ind, _, rej = kurulum
+        fiyat = float(bars["c"].iloc[-1])
+        # Hedef fiyata çok yakın → R:R hiçbir kombinasyonda yetmez.
+        sev = [lv.Level(fiyat * 0.95, "destek", 3, "2024-01-01", "2024-05-01", 10),
+               lv.Level(fiyat * 1.004, "direnc", 3, "2024-01-01", "2024-05-01", 10)]
+        opts, neden = planner.build_options(
+            cfg, ticker="TEST", asof="2024-06-01", bars=bars,
+            ind={**ind, "high_52w": fiyat * 1.004}, seviyeler=sev, regime=rej)
+        assert opts == []
+        assert neden.elenen, "başarısızlıkta elenen adaylar kayboldu"
+
+    def test_stop_bandi_ile_rr_yetersiz_AYRILIR(self, kurulum):
+        """⚠ NE OLMUŞTU: tek bir cümle vardı — "stop∈[1.5,4.0]×ATR + R:R≥1.5
+        kurallarını BİRLİKTE sağlayamadı". 2026-08-12'de elenen 15 ismin
+        15'inde de stop bandı GEÇMİŞTİ; öldüren tek şey R:R'dı. "Birlikte"
+        kelimesi okuyanı ATR ayarına baktırıyordu — bu test o karışmayı
+        imkânsız kılar.
+        """
+        cfg, bars, ind, _, rej = kurulum
+        fiyat = float(bars["c"].iloc[-1])
+        sev = [lv.Level(fiyat * 0.95, "destek", 3, "2024-01-01", "2024-05-01", 10),
+               lv.Level(fiyat * 1.004, "direnc", 3, "2024-01-01", "2024-05-01", 10)]
+        _, neden = planner.build_options(
+            cfg, ticker="TEST", asof="2024-06-01", bars=bars,
+            ind={**ind, "high_52w": fiyat * 1.004}, seviyeler=sev, regime=rej)
+        assert neden.detay == "rr_yetersiz", (
+            f"stop bandı geçtiği hâlde sınıf {neden.detay!r} — gerekçe yine "
+            "okuyanı yanlış kurala baktırıyor")
+        assert not any("∉[" in e for e in neden.elenen), \
+            "bu senaryoda hiçbir stop adayı ATR bandından elenmemeliydi"
+
+    def test_her_detay_kodunun_ETIKETI_var(self):
+        """§12.2 yapı eşliği: kod kümesi ile etiket sözlüğü ayrışamaz.
+
+        Ayrışırsa rapor sessizce ham kodu (ya da `None`) basar — yani yeni bir
+        elenme sınıfı eklenir ama kullanıcı onu hiç göremez.
+        """
+        assert set(planner.PLAN_YOK_DETAY) == set(planner.PLAN_YOK_ETIKET)
+
+    def test_hedef_YAKIN_ile_hedef_YOK_ayri_siniflanir(self, kurulum):
+        """"Üstte hiç seviye yok" ile "seviyeler var ama hepsi çok yakın"
+        tamamen farklı iki olgudur ve aynı cümleyle raporlanamaz (L-003)."""
+        cfg, bars, ind, _, rej = kurulum
+        cfg = _esikli(cfg, 1.5)
+        fiyat = float(bars["c"].iloc[-1])
+        yakin = [lv.Level(fiyat * 0.95, "destek", 3, "2024-01-01", "2024-05-01", 10),
+                 lv.Level(fiyat + 1.0, "direnc", 3, "2024-01-01", "2024-05-01", 10)]
+        _, neden = planner.build_options(
+            cfg, ticker="TEST", asof="2024-06-01", bars=bars,
+            ind={**ind, "high_52w": fiyat + 1.0}, seviyeler=yakin, regime=rej)
+        assert neden.detay == "hedef_yakin"
+
+        # Üstte gerçekten HİÇBİR seviye yok → başka bir sınıf.
+        _, neden2 = planner.build_options(
+            cfg, ticker="TEST", asof="2024-06-01", bars=bars,
+            ind={**ind, "high_52w": fiyat * 0.9},
+            seviyeler=[lv.Level(fiyat * 0.95, "destek", 3, "a", "b", 10)],
+            regime=rej)
+        assert neden2.detay in ("hedef_yok", "zirve_ustu_bos")
+
+    def test_zirveye_yakin_AYRI_siniflanir(self, kurulum):
+        """Üstte pivot yok, tek aday 52h zirvesi ve o da eşiğin içinde.
+
+        `high52_prox` faktörüyle iyi skorlayan bir isim burada plan üretemez;
+        bu gerçek bir gerilim ve GÖRÜNÜR olmalı (STATE Backlog).
+        """
+        cfg, bars, ind, _, rej = kurulum
+        cfg = _esikli(cfg, 1.5)
+        fiyat = float(bars["c"].iloc[-1])
+        _, neden = planner.build_options(
+            cfg, ticker="TEST", asof="2024-06-01", bars=bars,
+            ind={**ind, "high_52w": fiyat + 1.0},
+            seviyeler=[lv.Level(fiyat * 0.95, "destek", 3, "a", "b", 10)],
+            regime=rej)
+        assert neden.detay == "zirveye_yakin"
+
+    def test_esik_ADAY_HAVUZUNUN_TABANINA_uygulanir(self, kurulum):
+        """⚠ EN İNCE TUZAK. `resistances_above(sev, fiyat, 3)` fiyata EN YAKIN
+        üçünü döndürür. Mesafe eşiği bu kırpmadan SONRA uygulansaydı, yakın üç
+        seviye elenir ve dördüncü — gayet geçerli, uzaktaki — seviye hiç
+        görülmeden kaybolurdu. Yani düzeltme, düzeltmek istediği sorunu bir
+        başka biçimde yeniden üretirdi (§11 kapatma tuzağı #1).
+        """
+        cfg, bars, ind, _, rej = kurulum
+        cfg = _esikli(cfg, 1.5)          # ATR 2.5 → eşik 3.75 birim
+        fiyat = float(bars["c"].iloc[-1])
+        sev = [lv.Level(fiyat * 0.95, "destek", 3, "2024-01-01", "2024-05-01", 10)]
+        sev += [lv.Level(fiyat + d, "direnc", 3, "2024-01-01", "2024-05-01", 10)
+                for d in (1.0, 2.0, 3.0, 12.0)]   # ilk üçü eşiğin İÇİNDE
+        opts, neden = planner.build_options(
+            cfg, ticker="TEST", asof="2024-06-01", bars=bars,
+            ind={**ind, "high_52w": fiyat + 1.0}, seviyeler=sev, regime=rej)
+        assert opts, f"dördüncü seviye görülmedi — plan üretilemedi: {neden}"
+        t1 = opts[0].targets[0]["price"]
+        assert t1 >= fiyat + 12.0 - 0.5, \
+            f"T1 {t1} — eşiğin içindeki yakın seviye hedef seçilmiş"
 
     def test_uzak_seviye_giris_bandi_uretmez(self, kurulum):
         """VAKA: EUPWR fiyat ~90 iken 3 yıl önceki 32 TL seviyesi 'destek

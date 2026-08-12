@@ -686,13 +686,18 @@ def daily_report(cfg: dict, bundle: dict, *, holdings: dict | None = None,
         A("_Veto artık tek koşuya bağlı değil: süresi dolana kadar yürürlükte "
           "kalır. Bugün analiz koşmasan bile bunlar geçerlidir._")
         A("")
-        A("| Hisse | veto | son konuldu | bitiş | kalan | tekrar |")
+        # ⚠ Sütun eskiden "tekrar → 3× üst üste" diyordu. `journal.aktif_vetolar`
+        # SÜRESİ DOLANI eliyor, yani saydığı şey ardışık bir seri değil,
+        # BUGÜN HÂLÂ YÜRÜRLÜKTE olan tekrar sayısı. Bu yüzden veto yeniden
+        # konmadan sayı 3'ten 2'ye DÜŞEBİLİYORDU ve okuyan bunu sayaç hatası
+        # sanıyordu. Sayaç doğruydu; etiket yanlıştı (L-003).
+        A("| Hisse | veto | son konuldu | bitiş | kalan | yürürlükteki tekrar |")
         A("|---|---|---|---|---|---|")
         for t, vs in aktif:
             for v in vs:
                 A(f"| {t} | `{v['veto_code']}` | {v['konuldu']} | {v['bitis']} "
                   f"| {v['kalan_islem_gunu']} işlem günü"
-                  + (f" | {v['tekrar']}× üst üste |" if v.get("tekrar", 1) > 1
+                  + (f" | {v['tekrar']}× yürürlükte |" if v.get("tekrar", 1) > 1
                      else " | — |"))
         A("")
 
@@ -705,8 +710,13 @@ def daily_report(cfg: dict, bundle: dict, *, holdings: dict | None = None,
           "edilenler seçilenlerden iyi giderse veto negatif değerlidir ve "
           "kapatılır (`bist degerlendir`)._")
         A("")
+        # Basılan alan `key_risk` — vetonun GEREKÇESİ değil, analistin gördüğü
+        # ana risk. İkisi farklı şeyler ve etiketsiz basıldığında okuyan bunu
+        # tez sanıyordu (bir dış inceleme "yanlış değişken bağlanmış" diye
+        # raporladı — değişken doğruydu, etiket yoktu).
         for a in vetolar:
-            A(f"- **{a['ticker']}** · `{a['veto_code']}` — {a['key_risk']}")
+            A(f"- **{a['ticker']}** · `{a['veto_code']}` — "
+              f"_ana risk:_ {a['key_risk']}")
         A("")
 
     # --------------------------------------------------- 2) plan menüsü
@@ -716,12 +726,19 @@ def daily_report(cfg: dict, bundle: dict, *, holdings: dict | None = None,
     A("_Bunlar **öneri değil**, ölçülmüş kurallarla üretilmiş plan iskeletleridir. "
       "Kenar iddiası taşımazlar._")
     A("")
-    tetiklenmeyen = sum(1 for e in planli
-                        for p in e["plan_menusu"]
+    # ⚠ PAY ve PAYDA GÖSTERİLEN PLANA AİT. Eskiden payda TÜM aday planları
+    # sayıyordu (`sum(len(plan_menusu))`) ama gövde her hisseden yalnız
+    # `plan_menusu[0]`'ı basıyor. Sonuç: 2026-07-30 raporu "3/7 plan
+    # above_zone" diyordu, ekranda 3 plan vardı ve ÜÇÜ DE `in_zone`'du —
+    # okuyan hiç göremediği bir oranı doğrulamaya çalışıyordu. Aday sayısı
+    # bilgi olarak duruyor ama paydaya girmiyor.
+    gosterilen = [e["plan_menusu"][0] for e in planli]
+    tetiklenmeyen = sum(1 for p in gosterilen
                         if p.get("entry_zone_status") == "above_zone")
-    toplam_plan = sum(len(e["plan_menusu"]) for e in planli)
-    if toplam_plan:
-        A(f"⚠ **{tetiklenmeyen}/{toplam_plan} plan `above_zone`** — yani fiyat "
+    aday_plan = sum(len(e["plan_menusu"]) for e in planli)
+    if gosterilen:
+        A(f"⚠ **{tetiklenmeyen}/{len(gosterilen)} plan `above_zone`** "
+          f"({aday_plan} aday içinden gösterilen) — yani fiyat "
           "giriş bandının üstünde ve plan bir GERİ ÇEKİLMEYE bağlı. Ölçüldü "
           "(replay): planların **%46'sı hiç tetiklenmedi**. R:R değerleri "
           "planlar arasında KIYASLANABİLİR DEĞİLDİR (`rr_secim` alanına bak): "
@@ -766,9 +783,30 @@ def daily_report(cfg: dict, bundle: dict, *, holdings: dict | None = None,
     if planyok:
         A(f"## 3. Plan üretilmeyenler ({len(planyok)})")
         A("")
-        for e in planyok:
-            A(f"- **{e['ticker']}** — {e['plan_yok_nedeni']}")
+        # ⚠ Eskiden burada tek bir cümle vardı ve 15 ismin hepsi aynı metni
+        # alıyordu: "stop∈[1.5,4.0]×ATR + R:R≥1.5 kurallarını BİRLİKTE
+        # sağlayamadı". Teknik olarak doğruydu ama 2026-08-12 huni teşhisinde
+        # 15/15'inde stop bandı GEÇMİŞTİ; öldüren tek şey hedefin fiyata çok
+        # yakın olmasıydı. "Birlikte" kelimesi okuyanı yanlış yere baktırıyordu.
+        A("_Gerekçe sınıfla basılır: `hedef çok yakın` ile `stop bandı tutmadı` "
+          "aynı olgu değildir ve aynı cümleyle raporlanamaz (L-003)._")
         A("")
+        from . import planner as _pl
+        gruplar: dict[str, list[dict]] = {}
+        for e in planyok:
+            gruplar.setdefault(e.get("plan_yok_detay") or "?", []).append(e)
+        # Sıra: en kalabalık sınıf üstte — okuyanın ilk gördüğü şey baskın
+        # sebep olsun. Eşitlikte kod sırası (determinizm).
+        for detay, grup in sorted(gruplar.items(),
+                                  key=lambda kv: (-len(kv[1]), kv[0])):
+            etiket = _pl.PLAN_YOK_ETIKET.get(detay, detay)
+            A(f"**{etiket}** ({len(grup)})")
+            A("")
+            for e in grup:
+                A(f"- **{e['ticker']}** — {e['plan_yok_nedeni']}")
+                for x in (e.get("plan_yok_elenen") or [])[:3]:
+                    A(f"  - _elenen:_ {x}")
+            A("")
     return "\n".join(L)
 
 

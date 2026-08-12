@@ -85,6 +85,70 @@ class PlanOption:
     uyari: str = UYARI
 
 
+# Plan üretilememe gerekçesinin İNCE sınıfı. Kaba sınıf (`veri|limit|kurumsal|
+# geometri`) LLM sözleşmesinin parçasıdır (HF-32, `llm_io` istemi) ve
+# DEĞİŞTİRİLEMEZ; bu küme onun altında yaşar ve yalnız teşhis/rapor içindir.
+#
+# Neden ayrı bir küme: "plan yok" tek bir olgu değil. 2026-08-12 huni teşhisi
+# 15 ismin 15'inde de stop bandının GEÇTİĞİNİ, öldüren tek şeyin R:R olduğunu
+# gösterdi — ama tek satırlık gerekçe "stop∈[...]×ATR + R:R≥1.5 birlikte
+# sağlanamadı" diyordu ve okuyanı ATR ayarına baktırıyordu. Sınıf kodu bu
+# yanılgıyı imkânsız kılar; test de METNE değil bu koda bakar (L-012).
+PLAN_YOK_DETAY = (
+    "gosterge_yok",   # o gün için gösterge satırı yok
+    "kalite",         # `data_quality` kapısı kapattı
+    "bar_yetersiz",   # 260 bardan az geçmiş
+    "limit_kilitli",  # tavan/taban kilidi — kapanış bastırılmış
+    "atr_yok",        # ATR hesaplanamadı → veriye güvenilmiyor
+    "ex_tarih",       # plan penceresinde kurumsal işlem
+    "hedef_yok",      # üstte hiç seviye yok
+    "zirve_ustu_bos", # tüm zamanların zirvesi — üstte hiç işlem geçmemiş
+    "hedef_yakin",    # seviye VAR ama hepsi mesafe eşiğinin içinde
+    "zirveye_yakin",  # tek aday 52h zirvesiydi ve o da eşiğin içinde
+    "stop_bandi",     # hiçbir stop adayı [alt, ust]×ATR bandına girmedi
+    "rr_yetersiz",    # geometri kuruldu, brüt R:R eşiği geçmedi
+    "dogrulama",      # aday üretildi ama `validate_option` reddetti
+)
+
+# Kod → insana okunur başlık. Rapor bunu kullanır. Eşliği test zorlar
+# (§12.2): kümede olup etiketi olmayan bir kod eklenirse suite kırmızıya döner,
+# yani rapor sessizce "None" basmaz.
+PLAN_YOK_ETIKET = {
+    "gosterge_yok":   "gösterge yok",
+    "kalite":         "veri kalitesi",
+    "bar_yetersiz":   "yetersiz geçmiş",
+    "limit_kilitli":  "tavan/taban kilidi",
+    "atr_yok":        "ATR hesaplanamadı",
+    "ex_tarih":       "kurumsal işlem penceresi",
+    "hedef_yok":      "üstte seviye yok",
+    "zirve_ustu_bos": "tüm zamanların zirvesi — üstte işlem geçmemiş",
+    "hedef_yakin":    "hedef çok yakın",
+    "zirveye_yakin":  "52h zirvesine yakın — üstte alan yok",
+    "stop_bandi":     "stop bandı tutmadı",
+    "rr_yetersiz":    "R:R yetersiz (stop bandı geçti)",
+    "dogrulama":      "doğrulamadan geçemedi",
+}
+
+
+@dataclass(frozen=True, slots=True)
+class PlanYok:
+    """Plan neden üretilmedi — SINIFIYLA birlikte.
+
+    Eskiden yalnız bir metin dönüyordu ve `build_options` içindeki `elenen`
+    listesi (hangi bant/stop kombinasyonu neden düştü) **başarısızlıkta çöpe
+    gidiyordu** — yani teşhis detayı tam ihtiyaç duyulan yerde kayboluyordu.
+    Başarılı planlarda `PlanOption.elenen_adaylar` olarak saklanıyordu; asimetri
+    buydu.
+    """
+    sinif: str            # kaba: veri | limit | kurumsal | geometri (sözleşme)
+    detay: str            # ince: PLAN_YOK_DETAY
+    mesaj: str            # insana okunur gerekçe
+    elenen: tuple[str, ...] = ()
+
+    def __str__(self) -> str:
+        return self.mesaj
+
+
 # ---------------------------------------------------------------- yardımcılar
 def entry_zone_status(price: float, low: float, high: float, atr: float) -> str:
     """Fiyat giriş bandına göre nerede? Tolerans 0.25×ATR."""
@@ -115,12 +179,13 @@ def build_options(cfg: dict, *, ticker: str, asof: str, bars: pd.DataFrame,
                   ex_date: str | None = None, tier: str | None = None,
                   time_barrier_date: str | None = None,
                   limit: dict | None = None
-                  ) -> tuple[list[PlanOption], str | None]:
+                  ) -> tuple[list[PlanOption], PlanYok | None]:
     """Geçerli plan menüsü ve — üretilemediyse — SEBEBİ.
 
     Sebebi döndürmek şart: "plan yok" tek bir olgu değil. "Zirvede olduğu için
     hedef yok" ile "R:R yetmedi" tamamen farklı iki durumdur ve aynı cümleyle
-    raporlamak okuyanı yanıltır (L-003).
+    raporlamak okuyanı yanıltır (L-003). Sebep bir `PlanYok`tur: metnin yanında
+    SINIFINI da taşır, böylece çağıran taraf dize eşleştirmek zorunda kalmaz.
 
     `ex_date`: `build_menu` bunu ZATEN önceden eleyip buraya hiç gelmiyor;
     parametre doğrudan çağıran yollar (replay, testler) için korunur ve
@@ -130,12 +195,13 @@ def build_options(cfg: dict, *, ticker: str, asof: str, bars: pd.DataFrame,
     fiyat = float(bars["c"].iloc[-1])
     atr = ind.get("atr14")
     if not atr or not np.isfinite(atr) or atr <= 0:
-        return [], "ATR hesaplanamadı"
+        return [], PlanYok("veri", "atr_yok", "ATR hesaplanamadı")
 
     # Kurumsal işlem plan penceresine düşüyorsa plan ÜRETİLMEZ: ex-tarihte
     # fiyat mekanik olarak düşer ve stop'u yapay tetikler.
     if ex_date:
-        return [], f"plan penceresinde ex-tarih: {ex_date}"
+        return [], PlanYok("kurumsal", "ex_tarih",
+                           f"plan penceresinde ex-tarih: {ex_date}")
 
     sma20, sma50 = ind.get("sma20"), ind.get("sma50")
     destekler = lv.supports_below(seviyeler, fiyat, 3)
@@ -143,16 +209,60 @@ def build_options(cfg: dict, *, ticker: str, asof: str, bars: pd.DataFrame,
     swing_low = destekler[0].price if destekler else None
 
     # ---- HEDEFLER: yalnız gerçek seviyeler. Yoksa plan yok. ----
+    #
+    # ⚠ MESAFE EŞİĞİ — 2026-08-12'de eklendi, ADR #018. Giriş tarafında
+    # `maks_giris_uzakligi_atr` vardı, hedef tarafında SİMETRİĞİ YOKTU (L-008)
+    # ve sonucu şuydu: T1 en yakın direnç olduğu için fiyatın %0.02 üstündeki
+    # bir pivot hedef sayılıyor, R:R ≈ 0.05 çıkıyor ve isim eleniyordu. Kapı
+    # böylece kimsenin karar vermediği bir "üstünde ~3 ATR boşluk olan isim"
+    # filtresine dönüşmüştü (ölçüldü: 49 planın hepsinde T1 ≥ 2.44 ATR,
+    # 31'inde kaynak 52 hafta zirvesi — yani üstte hiç pivot yok).
+    #
+    # Eşik `stop_atr_bandi`'nın ALT sınırından türetildi: stop tabanı 1.5×ATR
+    # çünkü günlük salınımın içinde kalan bir bariyer gürültüyle tetiklenir.
+    # Aynı argüman hedef için de geçerli — üstelik daha ağır sonuçla: gürültü
+    # bandındaki bir T1, üçlü bariyer resolver'ında RASTGELE bir `hedef`
+    # çözümü üretir, yani karnenin kendisini kirletir.
+    min_hedef_mesafe = float(p.get("min_hedef_uzakligi_atr", 0.0)) * atr
+
+    # ⚠ FİLTRE ÖNCE, KIRPMA SONRA. `resistances_above(..., 3)` fiyata EN YAKIN
+    # üçü döndürür; eşiği ondan sonra uygulasaydık üçü de elenip dördüncü —
+    # gayet geçerli — seviye hiç görülmeden kaybolurdu. Eşiği aday havuzunun
+    # tabanına taşıyoruz, kırpma filtrelenmiş kümenin üstünde çalışıyor.
+    hedef_direncler = lv.resistances_above(seviyeler, fiyat + min_hedef_mesafe, 3)
     hedef_kaynaklari: list[tuple[float, str]] = [
-        (d.price, f"pivot@{d.last_date} ({d.touches} dokunuş)") for d in direncler]
+        (d.price, f"pivot@{d.last_date} ({d.touches} dokunuş)")
+        for d in hedef_direncler]
     y52 = ind.get("high_52w")
-    if y52 and y52 > fiyat and all(abs(y52 - h) > 0.5 * atr for h, _ in hedef_kaynaklari):
+    y52_aday = bool(y52 and y52 > fiyat)
+    if (y52_aday and y52 - fiyat >= min_hedef_mesafe
+            and all(abs(y52 - h) > 0.5 * atr for h, _ in hedef_kaynaklari)):
         hedef_kaynaklari.append((float(y52), "52 hafta zirvesi"))
     if not hedef_kaynaklari:
         if lv.at_all_time_high(bars):
-            return [], ("tüm zamanların zirvesinde — ÜSTTE DİRENÇ YOK, o bölgede "
-                        "hiç işlem geçmemiş; hedef uydurulmadı")
-        return [], "üstte geçerli seviye yok — hedef üretilemedi"
+            return [], PlanYok(
+                "geometri", "zirve_ustu_bos",
+                "tüm zamanların zirvesinde — ÜSTTE DİRENÇ YOK, o bölgede "
+                "hiç işlem geçmemiş; hedef uydurulmadı")
+        # Seviye VAR ama hepsi eşiğin içinde kaldı → "hiç seviye yok"tan
+        # TAMAMEN farklı bir olgu ve aynı cümleyle raporlanamaz (L-003).
+        # `sorted(set(...))` — 52h zirvesi bir pivotla AYNI fiyata denk
+        # gelebilir ve aynı seviye iki kez listelenirdi.
+        yakin = [f"{h:.2f} (+{(h - fiyat) / atr:.2f} ATR)"
+                 for h in sorted({d.price for d in direncler}
+                                 | ({float(y52)} if y52_aday else set()))
+                 if h - fiyat < min_hedef_mesafe]
+        if yakin:
+            detay = ("zirveye_yakin" if not direncler and y52_aday
+                     else "hedef_yakin")
+            return [], PlanYok(
+                "geometri", detay,
+                f"üstteki seviyelerin hepsi hedef eşiğinin içinde "
+                f"(gereken ≥{p.get('min_hedef_uzakligi_atr', 0)} ATR): "
+                + " · ".join(yakin),
+                tuple(yakin))
+        return [], PlanYok("geometri", "hedef_yok",
+                           "üstte geçerli seviye yok — hedef üretilemedi")
 
     hedef_kaynaklari.sort(key=lambda x: x[0])
 
@@ -201,13 +311,20 @@ def build_options(cfg: dict, *, ticker: str, asof: str, bars: pd.DataFrame,
                 hp = risk.round_to_tick(h, cfg, "up")
                 if hp <= e_high:
                     continue
+                # Mesafe eşiğinin GİRİŞE göre ikinci uygulaması. Havuz tabanı
+                # `fiyat`a göre süzüldü; burada referans `e_high` çünkü R:R de
+                # ondan hesaplanıyor ve `validate_option` de onu denetliyor —
+                # üç yer aynı büyüklüğe bakmalı, yoksa bant seçimi eşiği
+                # sessizce delebilir.
+                if (hp - e_high) < min_hedef_mesafe:
+                    continue
                 hedefler.append({
                     "price": hp, "rr": risk.rr(e_high, stop, hp),
                     "rr_net": risk.rr_net(e_high, stop, hp, cfg),
                     "atr_distance": round((hp - e_high) / atr, 2),
                     "basis": dayanak})
             if not hedefler:
-                elenen.append(f"{kind}/{yontem}: girişin üstünde hedef yok")
+                elenen.append(f"{kind}/{yontem}: girişin üstünde uygun hedef yok")
                 continue
             # ⚠ KAPI BRÜT R:R'a UYGULANIR — bilerek. Nete geçmek `min_rr_t1`'i
             # fiilen 1.5 → ~1.60 yükseltir; `docs/on-kayit-seviye-02.md` §4 bu
@@ -273,9 +390,26 @@ def build_options(cfg: dict, *, ticker: str, asof: str, bars: pd.DataFrame,
 
     if secenekler:
         return secenekler, None
-    return [], (f"{len(bantlar)} giriş bandı denendi; hiçbiri "
-                f"stop∈{p['stop_atr_bandi']}×ATR + R:R≥{p['min_rr_t1']} "
-                f"kurallarını birlikte sağlayamadı")
+
+    # ⚠ Eski gerekçe tek satırdı: "stop∈[...]×ATR + R:R≥1.5 kurallarını
+    # BİRLİKTE sağlayamadı". Teknik olarak doğruydu ama 2026-08-12 huni
+    # teşhisinde 15 ismin 15'inde de stop bandı GEÇMİŞTİ — öldüren tek şey
+    # R:R'dı. "Birlikte" kelimesi okuyanı ATR ayarına baktırıyordu. Artık
+    # hangi kuralın öldürdüğü ELENEN ADAYLARDAN türetiliyor, metinden değil.
+    if not elenen:
+        detay, ozet = "rr_yetersiz", "hiçbir giriş bandı kurulamadı"
+    elif all("∉[" in e for e in elenen):
+        detay, ozet = "stop_bandi", (
+            f"hiçbir stop adayı {p['stop_atr_bandi']}×ATR bandına girmedi")
+    elif any("uygun hedef yok" in e for e in elenen):
+        detay, ozet = "hedef_yakin", "girişin üstünde eşiği geçen hedef kalmadı"
+    else:
+        detay, ozet = "rr_yetersiz", (
+            f"brüt R:R hiçbir kombinasyonda ≥{p['min_rr_t1']} olmadı "
+            f"(stop bandı geçti)")
+    return [], PlanYok(
+        "geometri", detay,
+        f"{len(bantlar)} giriş bandı denendi; {ozet}", tuple(elenen))
 
 
 def _limit_notu(cfg: dict, stop_uzaklik: float, bosluk_riski: bool,
@@ -402,6 +536,20 @@ def build_menu(cfg: dict, con: sqlite3.Connection, asof: str,
     #   kurumsal → mekanik fiyat düzeltmesi penceresi
     #   geometri → fiyat sağlam, plan iskeleti kurulamadı
     atlanan_sinif: dict[str, str] = {}
+    # İNCE sınıf ve elenen adaylar — teşhis için. Kaba sınıf sözleşmedir ve
+    # değişmez; ayrıntı buraya yazılır ki "neden plan yok" sorusu rapordan
+    # cevaplanabilsin (2026-08-12: eskiden 15 ismin hepsi tek ve YANILTICI
+    # bir cümleyle raporlanıyordu).
+    atlanan_detay: dict[str, str] = {}
+    atlanan_elenen: dict[str, list[str]] = {}
+
+    def ele(t: str, py: PlanYok) -> None:
+        atlanan[t] = py.mesaj
+        atlanan_sinif[t] = py.sinif
+        atlanan_detay[t] = py.detay
+        if py.elenen:
+            atlanan_elenen[t] = list(py.elenen)
+
     # Limit durumu TÜM isimler için hesaplanır — kalite kapısından eleneni de
     # kapsar, çünkü "bu isim neden yok" sorusunun cevabı bağımsız bir olgudur.
     limitler = prices.limit_map(cfg, con, asof, tickers)
@@ -419,28 +567,26 @@ def build_menu(cfg: dict, con: sqlite3.Connection, asof: str,
     for t in tickers:
         ind = snap.get(t)
         if not ind:
-            atlanan[t] = "gösterge yok"
-            atlanan_sinif[t] = "veri"
+            ele(t, PlanYok("veri", "gosterge_yok", "gösterge yok"))
             continue
         # Eksik kalite kaydı "sorun yok" DEĞİLDİR — `quality_for` onu
         # `ok=False, kalite değerlendirilmedi` olarak döndürür. Aksi halde
         # `bist veri kalite` koşulmayan her gün kapı sessizce kapanırdı.
         k = prices.quality_for(kalite, t)
         if not k["ok"]:
-            atlanan[t] = "veri kalitesi: " + "; ".join(k["uyarilar"])
-            atlanan_sinif[t] = "veri"
+            ele(t, PlanYok("veri", "kalite",
+                           "veri kalitesi: " + "; ".join(k["uyarilar"])))
             continue
 
         bars = prices.bars(con, t, end=asof)
         if len(bars) < 260:
-            atlanan[t] = f"yetersiz bar ({len(bars)})"
-            atlanan_sinif[t] = "veri"
+            ele(t, PlanYok("veri", "bar_yetersiz", f"yetersiz bar ({len(bars)})"))
             continue
 
         ex = _ex_date_in_window(con, t, asof, bariyer)
         if ex:
-            atlanan[t] = f"plan penceresinde kurumsal işlem ex-tarihi: {ex}"
-            atlanan_sinif[t] = "kurumsal"
+            ele(t, PlanYok("kurumsal", "ex_tarih",
+                           f"plan penceresinde kurumsal işlem ex-tarihi: {ex}"))
             continue
 
         # --- LİMİT KAPISI (2026-08-07, Merdiven'den alınan fikir) -----------
@@ -455,8 +601,8 @@ def build_menu(cfg: dict, con: sqlite3.Connection, asof: str,
         # kalite kapısıyla aynı desen. Frekans ölçüldü: canlı evrende %0.97.
         lim = limitler.get(t) or risk.limit_durumu(prev_close=None, c=None, cfg=cfg)
         if lim["durum"] == "kilitli":
-            atlanan[t] = f"günlük fiyat marjı: {lim['aciklama']}"
-            atlanan_sinif[t] = "limit"
+            ele(t, PlanYok("limit", "limit_kilitli",
+                           f"günlük fiyat marjı: {lim['aciklama']}"))
             continue
 
         sev = lv.build_levels(bars, cfg, atr=ind.get("atr14"))
@@ -470,16 +616,22 @@ def build_menu(cfg: dict, con: sqlite3.Connection, asof: str,
         if gecerli:
             menu[t] = gecerli
         elif opts:
-            atlanan[t] = (f"{len(opts)} aday üretildi, hepsi doğrulamadan geçemedi: "
-                          + "; ".join(validate_option(opts[0], cfg)[:2]))
-            atlanan_sinif[t] = "geometri"
+            ihlaller = validate_option(opts[0], cfg)
+            ele(t, PlanYok(
+                "geometri", "dogrulama",
+                f"{len(opts)} aday üretildi, hepsi doğrulamadan geçemedi: "
+                + "; ".join(ihlaller[:2]), tuple(ihlaller)))
         else:
-            atlanan[t] = neden or "bilinmeyen"
-            atlanan_sinif[t] = "veri" if neden == "ATR hesaplanamadı" else "geometri"
+            # Sınıf artık METİNDEN türetilmiyor. Eskiden burada
+            # `neden == "ATR hesaplanamadı"` diye bir dize karşılaştırması
+            # vardı; mesajın tek karakteri değişse sınıf sessizce `geometri`
+            # olur ve HF-32'nin dayandığı sözleşme bozulurdu.
+            ele(t, neden or PlanYok("geometri", "rr_yetersiz", "bilinmeyen"))
 
     return {"asof": asof, "rejim": rej, "menu": menu, "atlanan": atlanan,
             "zaman_bariyeri": bariyer, "uyari": UYARI, "limitler": limitler,
-            "atlanan_sinif": atlanan_sinif,
+            "atlanan_sinif": atlanan_sinif, "atlanan_detay": atlanan_detay,
+            "atlanan_elenen": atlanan_elenen,
             "bilancolar": bilancolar, "bilanco_saglik": bb_saglik}
 
 

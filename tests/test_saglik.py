@@ -111,6 +111,36 @@ class TestTekSatir:
         t = sag.tek_satir({"kritik": [], "uyari": [("U", "a", "b"), ("U", "c", "d")]})
         assert "2 uyarı" in t
 
+    def test_uyarida_ADLAR_da_gorunur(self):
+        """⚠ NE OLMUŞTU: uyarı dalı yalnız SAYI basıyordu ("5 uyarı").
+
+        Kritik dalı adı da mesajı da veriyordu; uyarı dalı vermiyordu. Bu
+        asimetri telefonda eylem üretmeyen bir bildirim bırakıyordu — hangi
+        beş uyarı olduğunu görmek için repoya gitmek gerekiyordu.
+        """
+        t = sag.tek_satir({"kritik": [],
+                           "uyari": [("U", "portföy boş", "x"),
+                                     ("U", "makro tazeliği", "y")]})
+        assert "portföy boş" in t and "makro tazeliği" in t
+
+    def test_uyari_adlari_DETERMINISTIK_sirada(self):
+        """Aynı sağlık durumu her koşuda aynı metni üretmeli.
+
+        Kontrollerin çalışma sırası değişirse bildirim metni de değişirdi ve
+        "bugün ne değişti?" sorusu cevaplanamaz hale gelirdi.
+        """
+        uyarilar = [("U", "zebra", "x"), ("U", "alfa", "y"), ("U", "beta", "z")]
+        duz = sag.tek_satir({"kritik": [], "uyari": uyarilar})
+        ters = sag.tek_satir({"kritik": [], "uyari": list(reversed(uyarilar))})
+        assert duz == ters
+        assert duz.index("alfa") < duz.index("beta") < duz.index("zebra")
+
+    def test_cok_uyaride_kalan_sayisi_yazilir(self):
+        """Satır uzayıp bildirimi boğmasın ama kaç tanesinin gizlendiği bilinsin."""
+        t = sag.tek_satir({"kritik": [],
+                           "uyari": [("U", f"k{i}", "m") for i in range(6)]})
+        assert "…+3" in t and "6 uyarı" in t
+
     def test_temizde_kisa(self):
         assert sag.tek_satir({"kritik": [], "uyari": []}) == "✓ Sağlık temiz"
 

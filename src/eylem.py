@@ -81,10 +81,16 @@ def _riskler(e: dict, vetolar: list[dict]) -> list[str]:
         out.append(f"plan ufkunda bilanço ({n} bekleyen bildirim)")
     elif bp.get("durum") == "bilinmiyor":
         out.append("bilanço penceresi BİLİNMİYOR (risk yok demek değil)")
+    # `tekrar` ARDIŞIK BİR SERİ DEĞİL: `journal.aktif_vetolar` süresi dolanı
+    # eliyor, yani sayılan şey bugün hâlâ yürürlükte olan tekrar sayısıdır ve
+    # veto yeniden konmadan AZALABİLİR. "üst üste" demek iki farklı olguyu aynı
+    # kelimeyle adlandırmaktı (L-003) — aynı hata rapor tablosunda da vardı ve
+    # ikisi ayrı yerlerde yaşadığı için biri düzeltilirken diğeri atlanmıştı
+    # (§11 kapatma tuzağı #5: simetriğini ara).
     for v in vetolar:
         out.append(f"yürürlükte veto `{v['veto_code']}` "
                    f"({v['kalan_islem_gunu']} işlem günü kaldı"
-                   + (f", {v['tekrar']}× üst üste konuldu)" if v.get("tekrar", 1) > 1
+                   + (f", {v['tekrar']}× yürürlükte)" if v.get("tekrar", 1) > 1
                       else ")"))
     ld = e.get("limit_durumu") or {}
     if ld.get("durum") == "limite_yakin":
