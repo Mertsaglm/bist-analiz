@@ -357,3 +357,44 @@ Yanına üç soru daha:
 KUR. Temiz bir başlangıçtan koşan otuz uçtan uca test, bu hatayı göremedi.
 Ve testin gerçekten kilit olduğunu **eski hatayı geri koyarak** doğrula —
 kırmızıya dönmüyorsa o test bir kilit değil, bir süstür.
+
+### 12b. Bir kapı yazıyorsan: girdisinin sınırı var mı?
+
+2026-08-12 denetimi (beş bağımsız dış inceleme + kod/veri kazısı) yeni bir hata
+sınıfı gösterdi. Doğru yazılmış, test edilmiş, gerekçesi belgelenmiş bir kalite
+kapısı — `R:R ≥ 1.5` — sessizce bir **seçim filtresine** dönüşmüştü ve evrenin
+%83'ünü her gün eliyordu. Kimse böyle bir karar vermedi.
+
+**Kural: bir ORAN kapısı yazdığında payın ve paydanın KENDİ sınırlarını sor.**
+
+`R:R = hedef_mesafesi / stop_mesafesi`. Payda bir bantla sınırlıydı
+(`stop_atr_bandi`), pay serbestti — ve hedef "en yakın seviye" seçiliyordu.
+Fiyatın %0.02 üstündeki bir pivot hedef sayılınca oran çöküyor ve isim
+eleniyordu. Kapı fiilen *"yalnız üstünde ~3 ATR boşluk olan isimlere izin ver"*
+kuralına dönüşmüştü. Biri serbest bırakılan her oran kapısı, bir kalite ölçüsü
+değil bir **seçici** olur.
+
+Üç soru:
+
+1. **Payın ve paydanın kendi sınırları var mı?** Birine bant koyup diğerini
+   serbest bırakmak, kapıyı sessizce bir filtreye çevirir. Bir tarafa
+   mesafe/aralık koruması yazdıysan **simetriğini hemen ara** (§11 tuzak 5'in
+   oran hâli — bu vakada iki koruma aynı dosyada 15 satır arayla duruyordu).
+2. **Bu kapı, GÖZLEMİ üreten mekanizmayı da besliyor mu?** Besliyorsa
+   yanlılığı ölçüme de bulaşır. Burada gürültü bandındaki bir hedef, üçlü
+   bariyer çözücüsünde **rastgele bir "başarı" kaydı** üretiyordu: filtre
+   yalnız neyin seçildiğini değil, **karnenin ne dediğini** de eğiyordu.
+   Kapı değişikliğini üretim sayısıyla değil, **sonuç dağılımıyla** da ölç.
+3. **Eşiği aday havuzunun TABANINA mı uyguluyorsun, kırpmadan sonra mı?**
+   "En yakın 3'ü al, sonra ele" demek, dördüncü geçerli adayı hiç görmeden yok
+   eder — yani düzeltme, düzelttiği sorunu başka biçimde yeniden üretir.
+
+**İkinci kural: "ve"yle birleşmiş bir gerekçe hangi koşulun düştüğünü GİZLER.**
+
+Aynı kapı şunu basıyordu: *"stop∈[1.5,4.0]×ATR + R:R≥1.5 kurallarını BİRLİKTE
+sağlayamadı."* Teknik olarak doğruydu; ölçünce elenen 15 ismin **15'inde de
+stop bandı geçiyordu.** "Birlikte" kelimesi haftalarca herkesi ATR ayarına
+baktırdı. Birleşik bir koşulun ihlalini raporlarken **hangi bileşenin**
+düştüğünü yaz — metinden türetme, bir **sınıf kodu** koy, testi metne değil
+koda baktır (L-012). Ve tanı verisini yalnız başarı yolunda saklama: sor,
+*"bu bilgi en çok ne zaman lazım — işler yürürken mi, durduğunda mı?"*

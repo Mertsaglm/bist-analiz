@@ -67,6 +67,7 @@ Aşağıdakiler tahmin değil, ölçüm. Ayrıntı: `ai/DECISIONS.md`.
 | Alt kuyruk (−1.03pp) üst kuyruğun **1.8 katı** | Rapor **"hangisini azalt"** ile başlar, "ne al" ile değil |
 | yfinance temettü/bölünme düzeltmesi **çalışıyor**; gerçek kusur SASA **%23.2 sıfır hacim** | İkinci veri kaynağı yok; **kayıt bazlı kalite kapısı** + fixture testi (L-005) |
 | Maliyet kenarın ~1/3'ünü yiyor | Her ölçüm maliyet duyarlılığıyla raporlanır |
+| T1 "en yakın direnç" olduğu için R:R kapısı fiilen **"üstünde ~3 ATR boşluk olan isim" filtresine** dönüşmüştü: elenen 15 ismin **15'inde de stop bandı geçiyordu**, öldüren tek şey R:R'dı | Hedefe mesafe zemini **`min_hedef_uzakligi_atr: 1.5`** (#018). Canlı: plan üretilen isim **3 → 8**, kaybedilen plan **0** |
 
 ## Mimari
 
@@ -81,6 +82,7 @@ Fiyat + Makro + KAP (bildirim + BEKLENEN bildirim)
                               ↓
       Plan Menüsü (DETERMİNİSTİK — entry/stop/hedef/boyut/net R:R)
       ├─ kilitli hisse → plan YOK        ├─ ex-tarih → plan YOK
+      └─ hedef fiyata <1.5×ATR → o seviye HEDEF SAYILMAZ (#018)
                               ↓
                     LLM (enum seç + prose yaz + VETO)
                               ↓
@@ -104,6 +106,24 @@ asıl hata modu yapısal değil, metinsel ("hedef 324 TL civarı makul").
    (veto, `izle`, `islem_yok`) ama yukarı çıkamaz: sistem bir ismin verisine
    güvenmediği ya da hisse o gün tavana/tabana kilitli olduğu için plan bile
    üretmediyse, orada en fazla `hold` denebilir.
+
+**"Plan yok" tek bir olgu değildir.** Rapor §3 elenen isimleri **sınıfa göre
+gruplar** — `hedef çok yakın` ile `stop bandı tutmadı` aynı şey değildir ve
+aynı cümleyle raporlanamaz (L-003, L-020). Her isim ayrıca elenen aday
+kombinasyonlarını taşır (`dogrudan/atr_2x: R:R 0.08 < 1.5`), yani "neden bu
+isim yok" sorusu rapordan cevaplanır. Eskiden 15 ismin hepsi tek ve yanıltıcı
+bir cümle alıyordu: *"stop∈[1.5,4.0]×ATR + R:R≥1.5 kurallarını **birlikte**
+sağlayamadı"* — oysa 15'inde de stop bandı geçiyordu.
+
+**Rejim etiketi tek başına yanıltıcıdır.** Kural asimetriktir: `risk-on` iki
+koşulu birden ister (AND), `risk-off` birine yeter (OR). Ölçüldü: 16 risk-off
+etiketinin **14'ü yalnız genişlikten** geldi ve çoğunda XU100 SMA200'ün
+**ÜSTÜNDEYDİ**. Rapor bu yüzden tetikleyiciyi de yazar:
+
+```
+**Rejim: risk-off** · nakit %80 · maks 2 pozisyon · genişlik 28.4% (67/67 isim)
+_Tetikleyen: genişlik %28.4 ≤ %35.0 · XU100 SMA200'ün %6.32 ÜSTÜNDE ise eşiğin dışında_
+```
 
 **Rapor §0 — sıralı eylem listesi.** Rapor tek bir sıralı liste ile başlar:
 bugün ne yapılabilir, hangi sırayla, neyi riske ederek. ⚠ Sıra bir **getiri**
@@ -190,7 +210,19 @@ poetry run bist gunluk               # llm/in/<tarih>/ paketini yazar
 poetry run bist denetle              # HF-01..HF-32 — geçmeyen journal'a giremez
 poetry run bist kaydet               # journal'a yaz
 poetry run bist rapor                # §0 sıralı eylem listesi + AZALT + tez + VETO
+poetry run bist coz                  # üçlü bariyer: hedef / stop / süre
+poetry run bist degerlendir          # TÜM kaynaklar AYRI AYRI (aşağıya bak)
+poetry run bist degerlendir --tool replay   # yalnız tek kaynak
 ```
+
+> **`bist degerlendir` neden `--tool` istemiyor artık?** İstiyordu ve bu bir
+> çıkmaz sokaktı: birden çok araç kaydı olunca komut `KaynakKarisik` ile çıkış
+> kodu 2 döndürüyor, kullanıcı **hiçbir şey göremiyordu**. Sonuç, canlı
+> analistlerin çözülmüş kararlarının hiçbir raporda görünmemesiydi.
+> Karıştırma yasağı **gevşemedi** — yasak "iki kaynağın sayısını tek bir sayıda
+> topla" demekti; artık kaynaklar yan yana, ayrı bölümlerde, her biri kendi
+> N'iyle basılıyor ve hiçbir metrik toplanmıyor. Yasak `evaluate.run` üzerinde
+> aynen kilitli: programatik çağıranlar hâlâ tek kaynak seçmek zorunda.
 
 ## Otonom koşu — Actions + model zinciri + Telegram
 
@@ -267,6 +299,80 @@ poetry run pytest                    # tüm suite (sayı basılır — README'ye
 > açan bir test hata verir, üretilen paket/rapor dosyaları geçici dizine gider.
 > Bu bir konvansiyon değil, `tests/conftest.py`'de zorlanan bir kural.
 
+## 🔍 Günlük kullanım — sen neye bakacaksın
+
+Sistem kendi başına koşar; senin işin **onu izlemek, ona çalışmak değil.**
+Aşağıdaki liste "her gün 2 dakika, her hafta 10 dakika" ölçeğinde tutuldu.
+
+### Her akşam — Telegram bildirimi geldiğinde (2 dk)
+
+Bildirim gelmediyse **ilk kontrol edilecek şey odur** (aşağıya bak). Geldiyse
+dört satıra bak:
+
+| Satır | Ne demek | Ne zaman elini uzat |
+|---|---|---|
+| `🛑 BIST otonom — Koşu DURDURULDU` | Bir KAPI kontrolü kapandı; o gün analiz YOK | **Hemen.** Mesajdaki gerekçeyi oku, Actions geçmişine bak |
+| `⚠ Sağlık: N uyarı — <adlar>` | Süreç uyarıları; koşu tamamlandı | Aynı ad **üç gün üst üste** çıkıyorsa |
+| `_Tetikleyen: …_` (rapordaki rejim satırı) | Rejimi hangi koşul kapattı | `genişlik` tek başına tetiklerken XU100 SMA200'ün epey üstündeyse — bu bir tasarım tercihi, ama farkında ol |
+| `📌 Plan seçildi: …` | Analistin menüden seçtikleri | Aynı isim **beş gün üst üste** seçiliyorsa `bist portfoy` boş demektir |
+
+> ⚠ **Bildirim GELMEMESİ, "sorun yok" değildir.** İş hiç başlamazsa Telegram
+> mesajı da çıkmaz (L-015/L-016 — sistem tam bu yüzden dört gün sessizce
+> ölmüştü). Bunu senin hatırlaman gerekmiyor: `nobetci.yml` ayrı bir iş olarak
+> DIŞARIDAN bakar ve "son koşu ne zaman" diye bildirir. Nöbetçiden de ses
+> çıkmıyorsa Actions'ın kendisi duruyordur.
+
+### Haftada bir — pazar akşamı (10 dk)
+
+```bash
+git pull                       # bulutun ürettiği raporlar/dump buraya iner
+poetry run bist saglik         # 0 temiz · 1 uyarı · 2 KRİTİK
+poetry run bist degerlendir    # TÜM kaynaklar ayrı ayrı
+```
+
+Değerlendirme raporunda **hüküm sütununa** bak, yüzdeye değil:
+
+- `ölçüm yetersiz (N=…)` → **normal ve doğru.** Yanındaki büyük yüzde bir bulgu
+  DEĞİLDİR. İlk ~18 ay bunu göreceksin.
+- `kenar yok` → ölçüldü ve bulunamadı. Bu da bir sonuçtur.
+- `zayıf kanıt: +X.Xp` → bu sistemdeki **en güçlü** ifade. "Doğrulandı" dalı
+  yoktur. ⚠ Bu etiketin belirmesi tek başına sevinilecek bir şey değil: N bir
+  eşiği geçtiği için de belirebilir. Yanındaki `t` ve `gerekli N` sütunlarına
+  bak — 2026-08-12'de tam bu oldu ve kanıt aslında hafifçe *zayıflamıştı*.
+
+### Ayda bir — ya da bir şey tuhaf geldiğinde
+
+```bash
+poetry run bist teshis         # sinyal mi kayboluyor, uygulama mı yiyor
+```
+
+Ve Usta'ya (AI asistanına) `/denetle` yaz. Kod okumak yetmez: bu projede
+bulunan **en pahalı hataların hepsinde kod doğruydu**, bozulan şey kodun
+varsaydığı veri durumuydu ve hiçbiri hata fırlatmıyordu.
+
+### Elini uzatman gereken üç kalıcı iş
+
+Bunlar sistemin **sana bağımlı** olduğu yerler; kod bunları kendi başına
+çözemez ve her gün rapora yazar:
+
+1. **`bist portfoy ekle <HİSSE> <adet> <maliyet>`** — portföy boş olduğu sürece
+   raporun en savunulabilir bölümü ("Elindekiler — azaltma adayları") ve
+   kontenjan hesabı **kördür**. Rapor bunu her gün yazıyor; yazması sorunu
+   çözmüyor.
+2. **Analist çıktısını gözden geçir.** Sistem tez ve veto üretir ama bunların
+   değerini henüz ölçemedi (canlı N tek haneli). Tezleri okuyup "bu bana mantıklı
+   geldi mi" diye not tutmak, ileride ölçülecek şeyin ham maddesidir.
+3. **Kararlarını sisteme söyle.** İşlem yapıyorsan `portfoy`'a yaz; yapmıyorsan
+   da sorun yok — ama sistem neyi tuttuğunu bilmeden "azalt" diyemez.
+
+### Neye BAKMA
+
+- **Tek bir günün planına.** H=20 iş günü ufkunda tek gün gürültüdür.
+- **Alfa yüzdesine, yanında hüküm yoksa.** `4.27pp` tek başına bir sayıdır;
+  `ölçüm yetersiz (N=13)` onun ne olduğunu söyler.
+- **Araçlar arası karşılaştırmaya.** `degerlendir` tablosu bir sıralama değil,
+  bir dökümdür: `replay` VEKİL bir analisttir ve satırlar farklı N ile ölçülür.
+
 ## Regresyona karşı zırh — kuralları insan değil test hatırlar
 
 Bu projedeki kuralların çoğu bir hatadan doğdu ve doğal ömrü kısa: kuralı yazan
@@ -281,6 +387,8 @@ kurallar **koşulabilir hale getirildi.** Test katmanları üç ayrı soru sorar
 
 Somut olarak artık **config'ten sessizce gevşetilemeyen** şeyler var:
 `olcum.zayif_n_esigi`, `olcum.min_anlamli_fark_puan`, `planlayici.min_rr_t1`,
+**`planlayici.min_hedef_uzakligi_atr`** (hem alttan hem üstten: stop tabanının
+mantığının altına düşemez, R:R kapısını dekoratif yapacak kadar da yükselemez),
 `risk.islem_maliyeti_gidis_donus_pct`, `denetim.sayisal_beyaz_liste_tamsayi_maks`
 ve rejim politikasının defansiflik yönü. Bunları değiştirmek isteyen bir testi
 de değiştirmek zorunda — yani karar **görünür** olur, config düzenlemesi olarak
@@ -307,10 +415,15 @@ Bunlar gizlenmiyor çünkü gizlenen sınır, olmayan bir garantiye dönüşür:
   çalışıyor, prose'un doğal kaydında (*"%20 potansiyel"*) çalışmıyor.
 - **R:R planlar arasında kıyaslanabilir değildir.** Hedef sabittir; eşitsizlik
   girişi aşağı iterek ya da stop'u daraltarak sağlanır. `rr_secim` ve
-  `elenen_adaylar` alanları bunu görünür kılar; replay'de planların **%46'sı
-  hiç tetiklenmedi**.
-- **`bist degerlendir` şu an yalnız replay verisi görüyor** — gerçek LLM
-  kayıtları henüz yok.
+  `elenen_adaylar` alanları bunu görünür kılar. ADR #018 bu eğilimi
+  **zayıflattı** ama kaldırmadı: hedef mesafe zemini gelince eşitsizlik daha
+  sık hedef tarafından çözülüyor ve replay'de tetiklenmeme %35 → %16 düştü.
+  Yine de iki planın R:R'ı hâlâ aynı şeyi ölçmez.
+- **Canlı ölçüm N'i çok küçük.** `bist degerlendir` artık tüm kaynakları ayrı
+  ayrı basıyor, ama canlı analistlerin çözülmüş kararı hâlâ bir elin
+  parmakları kadar (2026-08-12: `gemini-3.6-flash` 3, `claude-code` 1). Her
+  satır **"ölçüm yetersiz"** diyor ve bu doğru hüküm — tablo bir sıralama
+  değil, bir dökümdür.
 - **KAP geniş pencereyi sessizce kırpıyor.** Ölçüldü (2026-07-27): 90 gün
   istendiğinde 14 gün dönüyor, hata vermeden. Bu yüzden çekim dilimleniyor ve
   doyan dilim kendini ikiye bölüyor; tek gün bile doyarsa `bist haber cek`

@@ -10,6 +10,9 @@ VS Code eklentileri, Copilot...**) aynı şekilde çalışan kişisel bir
 > maddeler (`/denetle`, doküman çürümesi kuralları, ön kayıt disiplini,
 > **kuralı teste devretme**) 2026-07-27'de yapılan bağımsız bir denetimin ve
 > onu izleyen "kurallar bizden sonra da yaşasın" turunun sonucudur.
+> 7. ve 8. kural ile "kilit mi, süs mü?" adımı 2026-08-12'de eklendi: dışarıdan
+> beş bağımsız AI incelemesi + kod/veri kazısı, **doğru yazılmış bir kapının
+> sessizce bir seçim filtresine dönüştüğünü** buldu.
 
 ## Yapı
 
@@ -83,7 +86,7 @@ Bozulan şey kodun varsaydığı VERİ DURUMUYDU ve hiçbiri hata fırlatmıyord
 Bunların hiçbiri kod okuyarak görülemez. `/denetle` bu yüzden **veritabanının
 gerçek içeriğine bakmakla başlar.** Ayrıntılı protokol: AGENTS.md bölüm 11.
 
-## Şablonun taşıdığı altı sert kural
+## Şablonun taşıdığı sekiz sert kural
 
 Bunlar AGENTS.md'de yazılı ve her projeye taşınır:
 
@@ -119,6 +122,33 @@ getirebilir miyim?* "Bu eşik düşürülmemeli" bir dilek; `assert esik >= 15` 
 sözleşme — eşiği değiştirmeyi yasaklamaz, **görünür** kılar. Ayrıntı:
 AGENTS.md bölüm 12.
 
+**7. Bir ORAN kapısı, payı sınırsızsa kalite ölçmez — SEÇİM yapar.**
+Gerçek vaka: `R:R = hedef_mesafesi / stop_mesafesi` ve kapı `R:R ≥ 1.5`.
+Payda (`stop`) bir bantla sınırlıydı, pay (`hedef`) serbestti — ve hedef "en
+yakın seviye" seçiliyordu. Sonuç: kapı sessizce *"yalnız üstünde ~3 birim
+boşluk olan adaylara izin ver"* kuralına dönüştü. Kimse böyle bir karar
+vermedi, hiçbir yerde yazmıyordu ve **evrenin %83'ü her gün eleniyordu.**
+
+Daha pahalısı: o kapı, gözlemi de üreten mekanizmayı besliyordu. Gürültü
+bandındaki bir hedef, sonuç çözücüsünde **rastgele bir "başarı" kaydı** üretir
+— yani yanlılık yalnız neyin seçildiğine değil, **karnenin ne dediğine** de
+bulaşır.
+
+> Kural: bir oran/eşik yazdığında sor — **payın ve paydanın kendi sınırları var
+> mı?** Biri serbestse bir kalite ölçüsü değil, bir filtre yazmışsındır.
+> Ve bir tarafa mesafe/aralık koruması koyduysan **simetriğini hemen ara**
+> (5. kuralın oran hâli). Ayrıntı: AGENTS.md bölüm 12b.
+
+**8. "Ve"yle birleştirilmiş bir gerekçe, hangi koşulun düştüğünü GİZLER.**
+Bir kapı *"A + B kurallarını **birlikte** sağlayamadı"* diyordu. Teknik olarak
+doğruydu; ölçünce elenen 15 vakanın **15'inde de A geçiyordu** — öldüren tek
+şey B'ydi. "Birlikte" kelimesi haftalarca herkesi yanlış yere baktırdı.
+
+> Kural: birleşik bir koşulun ihlalini raporlarken **hangi bileşenin** düştüğünü
+> yaz — metinden türetme, bir **sınıf kodu** koy ve testi metne değil koda
+> baktır. Ve tanı verisini yalnız başarı yolunda saklama: sor, *"bu bilgi en
+> çok ne zaman lazım — işler yürürken mi, durduğunda mı?"*
+
 ## Kuralı nasıl teste devredersin? (dile bağlı değil)
 
 Şablon Python'a bağlı değil; aşağıdaki dört sınıf her projede karşılığı olan
@@ -144,6 +174,27 @@ Ve testleri **üç ayrı soruya** böl — birini diğerinin yerine koyma:
 ⚠ Hedef kapsam yüzdesi değil. Kapsam "kod çalıştı" der, "kural tutuyor" demez.
 Her satırı değil, **her KURALI** test et.
 
+### Yazdığın test bir KİLİT mi, yoksa SÜS mü?
+
+Bir testin yeşil olması, koruduğunu sandığın şeyi koruduğunu **göstermez.**
+Tek geçerli doğrulama şudur:
+
+> **Eski hatayı geri koy. Test kırmızıya dönüyor mu?**
+> Dönmüyorsa o test bir kilit değil, bir süstür — sil ya da düzelt.
+
+Bu adım pahalı değil (30 saniye) ve atlanınca sessizce boşa çalışırsın.
+Tek bir oturumda **iki kez** yaşandı:
+
+- Bir kural iki yere yazıldı (üretim + doğrulama). Doğrulama tarafındaki
+  kopya silindi → **suite yeşil kaldı.** Yani ikinci uygulama hiç
+  korunmuyordu; "L-008'i uyguladım" demek yanlış olurdu.
+- Bir hesaplama fonksiyonu test edilmişti ama **raporun onu bastığı** test
+  edilmemişti. Rapor satırı silindi → **suite yeşil kaldı.** Fonksiyon doğru
+  çalışıp çıktı hiç görünmeyebilirdi.
+
+Genel kalıp: **üreten kodu test etmek, gösteren kodu test etmez.** İkisi ayrı
+sözleşmedir ve ikisi de kırılabilir.
+
 ## Denetim düzeltirken düşülen beş tuzak
 
 Denetim raporu yazmak kolay; düzeltmeleri kapatmak asıl iş. Bunların hepsi
@@ -165,6 +216,53 @@ gerçekte yaşandı ve AGENTS.md bölüm 11'de yazılı:
    yazıldı, simetriği olan alan için yazılmadı. Düzeltme iki iştir:
    (a) bu çağrı yerini kapat, (b) **aynı hatanın bir daha yapılamayacağı yeri**
    kapat.
+
+## 🔍 Sen neyi kontrol edeceksin? (şablonu kullanan insan olarak)
+
+Usta işi yapar; senin işin **onun doğru işi yaptığını doğrulamak.** Aşağıdakiler
+araçtan ve projeden bağımsızdır.
+
+### Her oturumun sonunda — 1 dakika
+
+- [ ] **`ai/STATE.md` gerçekten güncellendi mi?** "Sıradaki 3 İş" hâlâ geçerli
+      mi, yoksa biri çoktan bitmiş de listede mi duruyor? Tamamlanmış bir işi
+      listede bırakmak, bir sonraki oturumu yanlış işe başlatır.
+- [ ] **Elde tutulur BİR şey var mı?** Çalışan bir parça, doğrulanmış bir
+      varsayım, dolmuş bir dosya. Sadece konuşulmuş bir oturum, kaybedilmiş
+      bir oturumdur.
+- [ ] **Bir karar alındıysa `DECISIONS.md`'ye girdi mi?** Bir hata yaşandıysa
+      `LESSONS.md`'ye?
+
+### Usta bir iş "bitti" dediğinde — 2 dakika
+
+- [ ] **Testler yeşil mi, yoksa iş bitti mi?** İkisi aynı şey değil.
+      "Etkilenen hattı uçtan uca koştum" dedi mi? (Yeşil suite, hattın
+      durduğunu görmez — en pahalı hatalar tam orada.)
+- [ ] **Yeni test bir KİLİT mi?** "Eski hatayı geri koydum, kırmızıya döndü"
+      cümlesini duydun mu? Duymadıysan sor.
+- [ ] **Sayı verdiyse nereden geldiğini söyledi mi?** "%40 daha iyi" bir iddia;
+      "30 dönemde 25→29, kaybedilen 0, küme farkıyla doğrulandı" bir ölçüm.
+- [ ] **Kendi hatasını düzeltti mi, örttü mü?** İyi bir tur, sonunda "şunu
+      yanlış yazmışım, düzelttim" cümlesi içerir.
+
+### Ayda bir — 10 dakika
+
+- [ ] Usta'ya **`/denetle`** yaz. Kendi yazdığı koda dışarıdan baktırmak, en
+      ucuz kalite kontrolüdür.
+- [ ] **Dokümanların hâlâ doğru olduğunu sor.** Kod her gün değişir, README
+      değişmez; "doğru görünen ama karşılığı olmayan cümle" bu projede bulunan
+      en pahalı hata sınıfıydı.
+- [ ] **Backlog'a bak.** Orada üç aydır duran bir madde ya artık gereksizdir ya
+      da aslında acildir — ikisi de bir karardır, "unutuldu" bir karar değildir.
+
+### Usta'ya güvenme, doğrulat
+
+Bunlar kibarlık değil, yöntem: bir AI asistanı **emin olmadığında da akıcı
+konuşur.** Şu üç soru neredeyse bedavadır ve çok şey yakalar:
+
+1. *"Bunu ölçtün mü, yoksa okuyup mu çıkardın?"*
+2. *"Bu testi eski hatayı geri koyarak denedin mi?"*
+3. *"Bunun aynısı başka nerede olmalıydı?"* (5. kural — simetriğini ara)
 
 ## Yeni projeye başlarken
 
