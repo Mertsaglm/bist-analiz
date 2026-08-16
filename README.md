@@ -165,9 +165,9 @@ poetry run bist otonom gunluk
 ```
 
 Sırayla: **heartbeat** → takvim kapısı (işlem günü değilse çıkar) →
-`veri gunluk` → **`gosterge`** → **`makro gunluk`** → `haber cek` →
-`saglik` (KRİTİK ise DURUR) → paket → **analist zinciri** → `coz` →
-rapor + Telegram özeti.
+`veri gunluk` (hisse barları) → **endeks + kur** → **`gosterge`** →
+**`makro gunluk`** → `haber cek` → `saglik` (KRİTİK ise DURUR) → paket →
+**analist zinciri** → `coz` → rapor + Telegram özeti.
 Çıkış kodu: `0` başarılı · `1` KRİTİK adım düştü.
 
 > ⚠ `gosterge` bu akışın İÇİNDE. Eskiden yalnız kurulum bölümündeydi ve
@@ -177,6 +177,14 @@ rapor + Telegram özeti.
 > ⚠ `makro gunluk` de 2026-08-11'e kadar akışta YOKTU: EVDS yalnız elle
 > koşulunca tazeleniyordu ve TÜFE serisi sekiz ay donmuş hâlde pakete
 > giriyordu. Aynı ders, ikinci kez (L-002).
+>
+> ⚠ **Endeks adımı 2026-08-16'ya kadar YOKTU — aynı ders, üçüncü kez.**
+> `veri gunluk` CLI komutu endeksi çekiyordu ama otonom zincir onun
+> ALTINDAKİ `prices.daily`'yi çağırıyordu ve o yalnız hisse barlarına bakar.
+> Sonuç: `index_daily` 2026-08-06'da dondu, hisse barları 08-14'e geldi ve
+> `regime_daily`'nin dört girdisinden üçü beş gün boyunca bit bit aynı
+> yazıldı. Artık hem çekiliyor hem tazeliği `saglik`te bir **KAPI** olarak
+> ölçülüyor (2 seans toleranslı).
 
 ### Kapı KİMİN durduğuna karar verir — iki sınıf kontrol
 

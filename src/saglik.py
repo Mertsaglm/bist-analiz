@@ -192,6 +192,11 @@ def kontrol(cfg: dict, con: sqlite3.Connection, *,
     # 13) EVDS TAZELİĞİ — "değer var" ile "değer güncel" ayrı iki olgu
     ekle(*_evds_tazelik(cfg, con))
 
+    # 14) ENDEKS TAZELİĞİ — 13'ün ARANMAYAN SİMETRİĞİ (L-008).
+    # EVDS için tazelik kontrolü yazılmıştı, endeks için yazılmamıştı; ikisini
+    # besleyen adım da aynı sebeple (zincire bağlı olmama) donmuştu.
+    ekle(*_index_tazelik(cfg, con, asof))
+
     # --- GÖZLEM kontrolleri: buradan sonrası KAPIYI KAPATAMAZ (modül docstring) ---
     ekle_gozlem(*_atlanan_kosu(cfg, con, bugun_tr))
     ekle_gozlem(*_analizsiz_gun(cfg, con, asof))
@@ -347,6 +352,53 @@ def _evds_tazelik(cfg: dict, con: sqlite3.Connection) -> tuple[str, str, bool, s
     return (UYARI, "EVDS tazeliği", False,
             f"{len(bayat)} seri donmuş: {ozet} → değerleri pakete GİRMİYOR "
             "(`bist makro gunluk`; seri kodu değişmiş olabilir)")
+
+
+def _index_tazelik(cfg: dict, con: sqlite3.Connection, asof: str | None
+                   ) -> tuple[str, str, bool, str]:
+    """Endeks barları hisse barlarıyla aynı günde mi? — KAPI kontrolü.
+
+    ⚠ GERÇEK OLAY (2026-08-15 denetimi): `index_daily` 2026-08-06'da donmuştu,
+    `bars_daily` 08-14'teydi. Sebep `prices.sync_indices`'in otonom zincire
+    HİÇ bağlı olmamasıydı (L-002'nin üçüncü tekrarı; bkz. `otonom.gunluk`
+    adım 2b). Beş işlem günü boyunca `regime_daily`'nin dört girdisinden ÜÇÜ
+    bit bit aynı yazıldı ve `alpha_vs_xu100` NULL'a düştü — hiçbir hata,
+    hiçbir uyarı. "Veri yok" ile "sorun yok" aynı çıktıya düşüyordu (#009).
+
+    Neden `_evds_tazelik` gibi UYARI değil, KAPI: bayat makro rejim ETİKETİNİ
+    değiştirmez (`regime._label` yalnız XU100 + genişlik kullanır) — ama bayat
+    ENDEKS tam da o etiketi besler. Yani burada bozulan şey pozisyon boyutu,
+    nakit oranı ve maks pozisyon sayısıdır.
+
+    Şiddet kademeli, `bar tazeliği` ile aynı desende: yfinance'in endeks
+    tarafında bir seans gecikmesi olağandır, iki seans değildir. Bu tolerans
+    adım 2b'yi fiilen "2 seans toleranslı kritik" sınıfına taşır ve L-017
+    gereği o devralma orada da yazılıdır — gizli değil.
+
+    Ölçüt `bars_daily`'ye GÖRE, duvar saatine göre değil: hisse barı da
+    gelmediyse sorun endekste değildir ve onu `bar tazeliği` raporlar
+    (aynı olguyu iki kez KRİTİK basmak L-003'tür).
+    """
+    sym = cfg["takvim"]["turet_kaynak_endeks"]
+    son_ix = db.scalar(con, "SELECT MAX(date) FROM index_daily WHERE symbol = ?",
+                       (sym,))
+    # ⚠ `tamam=False` + `BILGI`: "endeks yok" ne başarı ne arızadır, bir
+    # DURUMDUR (taze kurulum → `bist veri backfill`). `tamam=True` dönmek
+    # `ekle`'yi OK'e düşürür ve boş tabloyu "sağlıklı" diye basardı — bu
+    # projenin tam olarak yasakladığı şey (#009: "veri yok" ≠ "sorun yok").
+    # BİLGİ ne `kritik` ne `uyari` listesine girer; kapı açık kalır.
+    if not asof or not son_ix:
+        return BILGI, "endeks tazeliği", False, f"{sym} {son_ix or '—'} · bar {asof or '—'}"
+    try:
+        from .calendar_bist import BistCalendar
+        gecikme = BistCalendar(cfg, con).trading_days_between(son_ix, asof)
+    except Exception:                                       # noqa: BLE001
+        return BILGI, "endeks tazeliği", False, f"{sym} {son_ix} · takvim kurulamadı"
+    return (KRITIK if gecikme >= 2 else UYARI, "endeks tazeliği", gecikme <= 0,
+            f"{sym} {son_ix} · bar {asof}"
+            + ("" if gecikme <= 0 else
+               f" → {gecikme} seans geride; rejim girdileri (XU100/SMA200, "
+               "volatilite, kur) BAYAT (`bist veri gunluk`)"))
 
 
 def _atlanan_kosu(cfg: dict, con: sqlite3.Connection, bugun_tr: str

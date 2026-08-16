@@ -47,6 +47,10 @@ def _adimlari_sahtele(monkeypatch, *, saglik_kritik=False, dusen: set | None = N
     monkeypatch.setattr(prices, "daily", kaydet(
         "veri", {"tickers": 70, "hayalet_silinen": 0, "yarim_bar_silinen": 0,
                  "kalite_gecmeyen": 1, "start": "2026-07-14"}))
+    # ⚠ Sahtelenmezse GERÇEK `sync_indices` koşar ve test ağa çıkar; adım
+    # kritik olmadığı için hata sessizce yutulur ve suite yavaşlar.
+    monkeypatch.setattr(prices, "sync_indices", kaydet(
+        "endeks", {"XU100": 250, "USDTRY": 365}))
     monkeypatch.setattr(indicators, "compute_and_store", kaydet(
         "gosterge", {"satir": {"THYAO": 2900}, "tickers": 70,
                      "set_version": "v1"}))
@@ -103,6 +107,48 @@ class TestTakvimKapisi:
 
         otonom.gunluk(cfg, con, bugun=date(2026, 7, 29), analist_calistir=False)
         assert "veri" in cagrilan and "gosterge" in cagrilan
+
+    def test_ENDEKS_zincirde_kosar(self, cfg, con, monkeypatch, sessiz_telegram):
+        """L-002'NİN ÜÇÜNCÜ TEKRARININ KİLİDİ.
+
+        ⚠ NE OLMUŞTU: `prices.daily` yalnız HİSSE barlarını çeker. Endeksi
+        çeken `sync_indices`'in tek çağrı yeri `cli.cmd_veri` idi — yani
+        `index_daily` ancak Mert elle `bist veri gunluk` koştuğunda
+        tazeleniyordu. Ölçüldü (2026-08-15): endeks 08-06'da donmuş,
+        hisse barları 08-14'teydi; `regime_daily`'nin üç girdisi beş gün
+        boyunca bit bit aynı yazıldı ve hiçbir hata fırlamadı.
+
+        Aynı ders daha önce `history_daily` (L-002) ve `macro.daily` için
+        öğrenilmişti; üçüncüsü aynı dosyada, 30 satır arayla duruyordu.
+        """
+        cagrilan = _adimlari_sahtele(monkeypatch)
+        from src.calendar_bist import BistCalendar
+        monkeypatch.setattr(BistCalendar, "is_trading_day", lambda self, d: True)
+
+        sonuc = otonom.gunluk(cfg, con, bugun=date(2026, 7, 29),
+                              analist_calistir=False)
+        assert "endeks" in cagrilan, (
+            "otonom zincir `sync_indices` çağırmıyor — `index_daily` DONAR "
+            "ve rejim bayat XU100 ile karar verir (L-002)")
+        assert "endeks" in sonuc["adimlar"], "endeks adımı rapora yazılmıyor"
+
+    def test_ENDEKS_dususu_KRITIK_DEGIL(self, cfg, con, monkeypatch,
+                                        sessiz_telegram):
+        """Tek koşuluk bir yfinance arızası fiyat tarafını da öldürmemeli.
+
+        Boşluk BİRİKİRSE `saglik._index_tazelik` (KAPI, 2 seans toleranslı)
+        koşuyu zaten durdurur — L-017 gereği bu devralma `otonom.gunluk`
+        adım 2b'nin yorumunda açıkça yazılıdır.
+        """
+        cagrilan = _adimlari_sahtele(monkeypatch, dusen={"endeks"})
+        from src.calendar_bist import BistCalendar
+        monkeypatch.setattr(BistCalendar, "is_trading_day", lambda self, d: True)
+
+        sonuc = otonom.gunluk(cfg, con, bugun=date(2026, 7, 29),
+                              analist_calistir=False)
+        assert "endeks" in sonuc["hatalar"]
+        assert otonom.basarisiz_mi(sonuc) == [], "endeks düşüşü koşuyu kırmızıya çevirdi"
+        assert "gosterge" in cagrilan and "paket" in cagrilan, "zincir durdu"
 
 
 # ============================================================ sağlık kapısı

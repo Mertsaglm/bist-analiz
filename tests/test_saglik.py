@@ -678,3 +678,67 @@ class TestCiktiMuhru:
         seviye, _, mesaj = self._bul(cfg, con, g[-1])
         assert seviye != sag.KRITIK
         assert "doğrulanamaz" in mesaj
+
+
+# ============================================================ endeks tazeliği
+class TestEndeksTazeligi:
+    """⚠ NE OLMUŞTU (2026-08-15 denetimi): `index_daily` 2026-08-06'da donmuş,
+    `bars_daily` 08-14'e gelmişti. Sebep `prices.sync_indices`'in otonom
+    zincire hiç bağlı olmamasıydı — L-002'nin ÜÇÜNCÜ tekrarı.
+
+    Beş işlem günü boyunca `regime_daily`'nin dört girdisinden ÜÇÜ bit bit
+    aynı yazıldı (xu100_vs_sma200 = 6.3198532722, beş gün üst üste) ve
+    `alpha_vs_xu100` NULL'a düştü. Hiçbir hata, hiçbir uyarı: "veri yok" ile
+    "sorun yok" aynı çıktıya düşüyordu.
+
+    `_evds_tazelik` bu kontrolün ARANMAYAN SİMETRİĞİYDİ (L-008): makro için
+    tazelik kontrolü yazılmış, endeks için yazılmamıştı.
+    """
+
+    def _bul(self, cfg, con):
+        s = sag.kontrol(cfg, con)
+        satir = [b for b in s["bulgular"] if b[1] == "endeks tazeliği"]
+        assert satir, "endeks tazeliği kontrolü `sag.kontrol`'e BAĞLI DEĞİL"
+        return satir[0]
+
+    def _kur(self, cfg, con, monkeypatch, *, gecikme: int):
+        from src.calendar_bist import BistCalendar
+        _veri_kur(con, cfg, ["2026-07-29", "2026-07-30"])
+        add_index(con, "XU100", ["2026-07-29", "2026-07-30"])
+        # Yalnız bu kontrolün gecikmesini sürüyoruz; `bar tazeliği` kendi
+        # `last_closed_session`'ına bakar ve bu testin konusu değildir.
+        monkeypatch.setattr(BistCalendar, "trading_days_between",
+                            lambda self, a, b: gecikme)
+
+    def test_guncelse_OK(self, cfg, con, monkeypatch):
+        self._kur(cfg, con, monkeypatch, gecikme=0)
+        assert self._bul(cfg, con)[0] == sag.OK
+
+    def test_bir_seans_geride_UYARI(self, cfg, con, monkeypatch):
+        """yfinance endeks tarafında bir seans gecikebilir — koşuyu durdurmaz."""
+        self._kur(cfg, con, monkeypatch, gecikme=1)
+        seviye, _, mesaj = self._bul(cfg, con)
+        assert seviye == sag.UYARI
+        assert "1 seans geride" in mesaj
+
+    def test_iki_seans_geride_KRITIK(self, cfg, con, monkeypatch):
+        """İki seans artık gecikme değil, DONMADIR: rejim girdisi bayatlar."""
+        self._kur(cfg, con, monkeypatch, gecikme=2)
+        seviye, _, mesaj = self._bul(cfg, con)
+        assert seviye == sag.KRITIK
+        assert "BAYAT" in mesaj
+
+    def test_endeks_YOKSA_kapiyi_kapatmaz(self, cfg, con):
+        """Taze kurulumda `index_daily` boştur; bu bir arıza değil bir durumdur
+        ve `bist veri backfill`in işidir. KRİTİK basmak taze klonu kilitlerdi."""
+        _veri_kur(con, cfg, ["2026-07-29", "2026-07-30"])
+        assert self._bul(cfg, con)[0] == sag.BILGI
+
+    def test_KAPI_sinifinda_GOZLEM_degil(self, cfg, con):
+        """Sınıf yapıda yaşar, yorumda değil (AGENTS §12a/2).
+
+        Bu bir KAPI: bulguyu koşunun KENDİSİ düzeltebilir — adım 2b endeksi
+        çeker, sağlık sonra bakar. GÖZLEM kümesine girseydi şiddeti UYARI'da
+        tavanlanır ve donma yine sessiz kalırdı.
+        """
+        assert "endeks tazeliği" not in sag.GOZLEM_KONTROLLERI

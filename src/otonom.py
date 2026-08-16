@@ -42,7 +42,7 @@ from __future__ import annotations
 
 import logging
 import sqlite3
-from datetime import date
+from datetime import date, timedelta
 
 from . import db, journal, report, saglik as sag, telegram_bist as tg, util
 
@@ -119,6 +119,38 @@ def gunluk(cfg: dict, con: sqlite3.Connection, *, bugun: date | None = None,
             f"· kalite {r['kalite_gecmeyen']} isim geçemedi")
     except Exception as e:                                  # noqa: BLE001
         _hata(sonuc, "veri", e)
+
+    # 2b) ENDEKS ve KUR — kritik DEĞİL, ama sağlık onu 2 seans TOLERANSLA izler.
+    #
+    # ⚠ BU ADIM 2026-08-16'ya KADAR ZİNCİRDE YOKTU ve bu L-002'nin ÜÇÜNCÜ
+    # tekrarıydı: `history_daily` (07-24), `macro.daily` (08-11), şimdi
+    # `index_daily`. `prices.daily` yalnız HİSSE barlarını çeker; endeksi
+    # çeken `sync_indices`'in tek çağrı yeri `cli.cmd_veri` idi — yani
+    # endeks ancak Mert elle `bist veri gunluk` koştuğunda tazeleniyordu.
+    #
+    # ÖLÇÜLDÜ (2026-08-15 denetimi): `index_daily` 2026-08-06'da donmuştu,
+    # `bars_daily` 08-14'teydi. Beş işlem günü boyunca `regime_daily`'nin
+    # dört girdisinden ÜÇÜ (xu100_vs_sma200, xu100_vol_21, usdtry_vol_21)
+    # bit bit aynı yazıldı ve `alpha_vs_xu100` hesaplanamaz oldu
+    # (`2026-08-05-KRDMD-1` outcome'unda NULL). Hiçbir hata fırlamadı.
+    #
+    # Neden KRİTİK_ADIMLAR'da değil: tek koşuluk bir yfinance arızası fiyat
+    # tarafını da öldürmemeli. Ama boşluk BİRİKİRSE rejim girdisi bayatlar —
+    # o yüzden `saglik._index_tazelik` bir KAPI kontrolüdür ve 2 seanstan
+    # sonra koşuyu durdurur. Yani bu adım fiilen "2 seans toleranslı kritik"
+    # sınıfındadır; L-017 gereği bu devralma GİZLENMEZ, burada yazılıdır.
+    try:
+        from . import prices
+        # Pencere ~400 gün: SMA200 için gereken geçmiş zaten DB'de; buradaki iş
+        # yalnız yeni barları eklemek ve geriye dönük düzeltmeleri yakalamak.
+        # Referans `gun` — koşunun İstanbul TAKVİM günü, `date.today()` değil
+        # (AGENTS §11/6: zaman kaynağı açık ve enjekte edilebilir olmalı).
+        # `replace(year=...)` bilerek kullanılmadı: 29 Şubat'ta ValueError atar.
+        r = prices.sync_indices(cfg, con,
+                                start=(gun - timedelta(days=400)).isoformat())
+        sonuc["adimlar"]["endeks"] = " · ".join(f"{ad} {n}" for ad, n in sorted(r.items()))
+    except Exception as e:                                  # noqa: BLE001
+        _hata(sonuc, "endeks", e)
 
     # 3) Göstergeler — L-009'UN KALICI ÇÖZÜMÜ.
     # Bu adım akışın İÇİNDE olduğu için artık unutulamaz. Elle koşulan sırada
