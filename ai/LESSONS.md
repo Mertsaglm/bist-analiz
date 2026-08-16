@@ -6,6 +6,48 @@
 
 ---
 
+## L-023 — 2026-08-16 — Bir ölçüm, KAYNAK SORGUSUNDA kendi konusunu eleyebilir
+
+**Olay.** Üç ölçüm birden "henüz veri yok" gibi görünüyordu; gerçekte üçü de
+**hiç dolmayacaktı.**
+
+| Ölçüm | Ne diyordu | Neden hiç dolmayacaktı |
+|---|---|---|
+| `veto_value` | `veto_sayisi: 0` | Kaynak `outcomes` ile INNER JOIN. Veto edilenin `plan_id`'si NULL → plan açılmaz → outcome yazılmaz → satır JOIN'de düşer. `predictions`'ta **17 veto** vardı. |
+| `llm_contribution` | `n=0, "ölçüm yok"` | Kesit çözülmüş tahminlerden kuruluyor, dönem başına **≥3 isim** isteniyordu. Sistem dönem başına en fazla **2** plan seçer (`maks_pozisyon` risk-off'ta 2). Eşik yapısal olarak geçilemezdi. |
+| `fwd_ret_20d` | 24/24 NULL | `_outcome` kolonu `None` kuruyordu, **hiçbir kod yolu yazmıyordu.** Şema yorumu "IC için" diyordu ve yanlış yeri gösteriyordu. |
+
+Üçü de aylarca raporda durdu. `veto_value` için en acı ayrıntı: günlük rapor
+her gün *"veto analistin en ölçülebilir katkısı"* başlığını basıyordu.
+
+**Kök sebep.** Bir ölçümün PAYDASI, ölçtüğü olguyla aynı tabloya bağlanmıştı.
+Veto edilen bir karar, tanımı gereği sonuç ÜRETMEZ — o yüzden sonuç tablosuna
+bakan bir sorgu onu asla göremez. "Payda görünür olmalı" (L-007, AGENTS §11/2)
+kuralının bir adım öncesi: **paydanın ölçülen olguyu KAPSADIĞINI doğrula.**
+
+**Anti-pattern.** Sıfır dönen bir metriği "veri birikince dolar" diye kabul
+etmek. Sıfırın iki sebebi vardır ve ayırt edilmeden geçilmemeli:
+*henüz olmadı* mı, yoksa *hiç olmayacak* mı?
+
+**Kural.**
+1. Bir ölçüm sıfır/boş dönüyorsa **elle bir örnek üret** ve dolup dolmadığını
+   gör. Dolmuyorsa sorun veride değil, sorgudadır.
+2. Eşikleri sistemin ÜRETİM KAPASİTESİNE karşı sına: "dönem başına ≥3 isim"
+   isteyen bir metrik, dönem başına 2 üreten bir sistemde bir ölçüm değil
+   **süs**tür. Eşiği yazarken sor: *bu sayı bu sistemde ulaşılabilir mi?*
+3. Bir metrik "bunu ayrıca izlemeli" diye not düşüyorsa (bu vakada `veto_value`
+   tam olarak öyle yazıyordu), o not bir TODO değil bir **arıza raporudur**.
+4. Bir kolonu şemaya eklerken **yazan kod yolunu da göster.** Yazarı olmayan
+   kolon, yorumu ne kadar doğru olursa olsun NULL kalır (§11/4).
+
+**Yan bulgu — bayrak yerine ölçüm.** Yarım barla üretilmiş koşuyu işaretlemek
+için bir kolon eklenebilirdi; eklenmedi. `close_at_asof` ile `bars_daily.c`
+zaten karşılaştırılabiliyordu. **Bayrak unutulabilir ya da yanlış yazılabilir;
+yeniden hesaplanan bir ölçüm her zaman gerçeği söyler.** Bir durumu kaydetmeden
+önce sor: bu, mevcut veriden TÜRETİLEBİLİR mi?
+
+---
+
 ## L-022 — 2026-08-15 — Alınıp OKUNMAYAN bir parametre, hiç almamaktan daha tehlikelidir
 
 **Olay.** Günlük raporun en üstündeki eylem listesi, 2026-08-14'te
