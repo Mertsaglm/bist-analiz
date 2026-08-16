@@ -3,42 +3,36 @@
 > Usta her oturumun başında bu dosyayı okur, sonunda günceller.
 > KISA TUT: ~100 satırı aşınca eskiyi `ai/archive/STATE-YYYY-MM.md`'ye taşı.
 
-**Son güncelleme:** 2026-08-15
-**Aktif milestone:** **Faz 11 KAPANDI** (ADR **#018** · L-019/020).
-Beş bağımsız dış inceleme + kod/DB kazısı: `min_rr_t1` kapısı, hedef tarafında
-mesafe koruması olmadığı için sessizce bir **seçim filtresine** dönüşmüştü.
-Görünürlük paketi + kural düzeltmesi. Canlı evrende plan üretilen isim
-**3 → 8**. Suite **1231 → 1251**.
-
-## 🚨 ŞU AN — dallar AYRIŞTI, düzeltme CANLIDA DEĞİL
-
-**Zincir dört gün kendi başına koştu** (08-11 … 08-14) — Faz 10'un DoD'si
-karşılandı, kilit gerçekten açık. Ama **Faz 11'in dört commit'i yerelde**
-(`ahead 4, behind 4`): bulut o günlerde eski kodla koştu (08-14 banner'ı hâlâ
-`6/9`, `min_hedef_uzakligi_atr` yok). ADR #018'in "3 → 8 isim" etkisi hiçbir
-canlı raporda **görünmedi.** → Sıradaki İş #1.
+**Son güncelleme:** 2026-08-16
+**Aktif milestone:** **Faz 12 — denetim düzeltmeleri** (bağımsız denetim
+2026-08-15). Üç kritik + beş yüksek bulgu; ilk üçü kapandı, ölçüm hattı sırada.
+Suite **1251 → 1263**.
 
 ## ✅ Tamamlananlar
 
-**Faz 11 — gizli hedef filtresi** (2026-08-12) — ADR **#018** · L-019/020
+**Faz 12 · ilk üç iş** (2026-08-16) — L-021/022
 
-`min_rr_t1` kalite kapısı sanılıyordu; T1 "en yakın direnç" seçildiği ve hedef
-tarafında mesafe koruması olmadığı için fiilen **"üstünde ~3 ATR boşluk olan
-isim" seçim filtresine** dönüşmüştü (elenen 15 ismin 15'inde de stop bandı
-geçiyordu). `min_hedef_uzakligi_atr: 1.5` + görünürlük paketi + rejim
-tetikleyicisi + `bist degerlendir` çok-kaynak. Canlı: **3 → 8 isim, kayıp 0.**
-Ayrıntı: `ai/archive/STATE-2026-08.md` · `reports/olcum_hedef_mesafe_2026-08-12.md`.
+1. **Faz 11 canlıya alındı.** Rebase temiz (yerel commit'ler `data/`'ya
+   dokunmuyordu), suite yeşil, push edildi. Doğrulandı: 08-14 kesitinde
+   `min_hedef_uzakligi_atr` 0→1.5 plan üretilen ismi **5 → 9**, sektörü
+   **3 → 7** yapıyor, kayıp 0.
+2. **Endeks zincire bağlandı** (L-021). `index_daily` 08-06'da donmuştu,
+   `bars_daily` 08-14'teydi: `sync_indices` otonom zincirde HİÇ yoktu —
+   L-002'nin **üçüncü** tekrarı. Rejimin dört girdisinden üçü beş gün bit bit
+   aynı yazılmıştı. Artık adım 2b'de çekiliyor + `saglik._index_tazelik`
+   **KAPI** kontrolü (2 seans toleranslı, `_evds_tazelik`'in simetriği).
+3. **Eylem listesi bugünkü vetoyu okuyor** (L-022). 08-14 raporu
+   "🟢 KCHOL — GİR — engel yok" derken analist aynı isme veto koymuştu;
+   `siralama` `analiz`'i alıp elde-olmayan dalda hiç okumuyordu. Gerçek 08-14
+   paketiyle uçtan uca doğrulandı: "YENİ GİRİŞ" bölümü kayboldu, beş isim de
+   gerekçeli BEKLE'ye düştü.
 
+Üç düzeltmenin de kilidi **eski hata geri konarak** sınandı (6 test kırmızıya
+döndü, geri alınca yeşil).
+
+**Faz 11 — gizli hedef filtresi** (2026-08-12) — ADR **#018** · L-019/020.
 **Faz 10 — kilitlenme ve denetim izi** (2026-08-11) — ADR **#017** · L-016/17/18.
-Sistem dört işlem günü sessizce ölüydü: bir GÖZLEM kontrolü, gözlediği sürecin
-ÜRÜNÜNE bakıp o süreci durduruyordu → kilit kalıcı. KAPI↔GÖZLEM ayrımı,
-heartbeat (şema v10), dışarıdan nöbetçi, çıktı mührü (v11).
-Ayrıntı: `ai/archive/STATE-2026-08.md`.
-
 **Faz 9 — karar anı katmanı** (2026-08-07) — ADR #015, #016 · L-012/13/14/15.
-Dış repo incelemesinin 10 maddesi uygulandı. Rapor:
-`reports/repo-inceleme-2026-08-07.md`.
-
 **Faz 8 — otonom koşu** (2026-08-01) — ADR #013, L-010/011.
 **Faz 0-7 + denetim** (2026-07-26 … 07-29) — `ai/archive/STATE-2026-07.md`.
 Özet: **ölçüm kapısı KAPALI** (#007), ön kayıtlı revizyon GEÇMEDİ (#008) →
@@ -52,62 +46,73 @@ sistem "izleme + risk disiplini + haber/veto". Kurallar teste devredildi (#011).
 
 ## 🎯 Sıradaki 3 İş
 
-1. **Faz 11'i canlıya al ve doğrula.** Yukarıdaki 🚨 bölümü. Dört commit
-   yerelde, bulut eski kodla koşuyor. DoD: `git pull --rebase` → suite yeşil →
-   `git push`; sonraki otonom koşunun raporunda **plan üretilen isim > 3** ve
-   `above_zone` banner'ı `X/Y (Z aday içinden gösterilen)` biçiminde.
-   ⚠ Rebase sonrası suite'i koşmadan push etme: dört otonom commit `data/`
-   dump'ını değiştirdi, çakışma sessiz olabilir.
-2. **Portföy kaydını başlat** — sistemin SANA bağımlı olduğu tek yer.
-   `holdings` boş olduğu sürece raporun en savunulabilir bölümü ("Elindekiler
-   — azaltma adayları") ve kontenjan hesabı KÖR. Rapor bunu her gün yazıyor;
-   yazması çözmüyor. DoD: `bist portfoy ekle <HİSSE> <adet> <maliyet>` ile en
-   az bir pozisyon girildi ve günlük raporun §1'i "Portföyde kayıtlı pozisyon
-   yok" demeyi bıraktı. (Pozisyon yoksa bile bu bir karardır — o zaman
-   Backlog'a "portföy bilerek boş" diye yaz ve raporun uyarısını sustur.)
-3. **Replay'in +4.27pp'sinin KALAN açıklaması: limitli giriş.** ADR #018
-   ölçümü "geometri filtresinden gelmiyor"u eledi (örneklem %60 büyüdü,
-   ortalama ~4pp'de kaldı). Geriye limitli giriş avantajı kaldı. DoD:
-   `backtest`'e "t+1 açılışta piyasa emri" varyantı eklenip aynı dönemlerde
-   koşuluyor; fark bir satır olarak `reports/olcum_*.md`'ye giriyor.
-   **Ön kayıt gerekmez** — mevcut bir sayının kaynağını ayrıştırıyor.
+1. **Ölçüm hattını onar — tek iş, üç bulgu.** Üçü de aynı kolona dayanıyor:
+   (a) `resolver` `fwd_ret_20d` / `fwd_alpha_20d_ew`'yi HİÇ doldurmuyor
+   (24/24 NULL) ama şema yorumu "IC için" diyor; (b) `evaluate.llm_contribution`
+   dönem başına ≥3 **çözülmüş** isim istiyor, sistem 2 üretiyor → yapısal
+   olarak asla dolmayacak (üç kaynakta da `n=0`); (c) `evaluate.veto_value`
+   vetolananları `outcomes` INNER JOIN'inde eliyor → 17 veto var, karne `0` diyor.
+   DoD: `bist degerlendir` çıktısında `llm_katkisi.n > 0` **ve**
+   `veto_sayisi = 17`; kesit `outcomes`'a değil `predictions`'a dayanıyor.
+
+2. **Kâğıt portföy — sistem kendi kararlarını KENDİ takip etsin.**
+   Mert'in kararı (2026-08-16): *"portföy şu an tamamen boş; proje kendisini
+   bana kanıtlamalı. Başlangıç olarak proje gerçek zamanlı alım satım yapıyormuş
+   gibi bu portföyü kullanmalı, kayıtlarını almalı."* Yani `holdings` artık
+   Mert'in gerçek pozisyonu değil, **sistemin simüle portföyü**.
+   Bu K-3/O-10'u da çözer: kontenjan kör olmaktan çıkar, KRDMD'nin altı üst üste
+   girişi (harfiyen uygulansa tek isimde ~%29, rejim tavanı %20) mekanik olarak
+   engellenir.
+   ⚠ Tasarım soruları önce cevaplanmalı: başlangıç sermayesi? `plan_sec` →
+   otomatik pozisyon mu, yoksa yalnız TETİKLENDİĞİNDE mi? çıkış `outcomes`'tan
+   mı sürülecek? PROJECT.md'nin "sistem asla işlem yapmaz" maddesiyle çelişmez
+   (emir yok, kayıt var) ama **kapsam eklemesidir** — ADR gerektirir.
+   DoD: bir ADR + `bist portfoy` simüle modu + günlük raporun §1'i gerçek
+   pozisyon basıyor.
+
+3. **Örtüşme-ayıklanmış alfa + IC dönem seti.** Canlı karne aynı işlemi iki kez
+   sayıyor: `2026-07-30-TUPRS-1` ve `2026-08-03-TUPRS-1` aynı giriş (08-04),
+   aynı çıkış (08-06). Ham ortalama **+2.25pp (n=4)**, örtüşme ayıklanınca
+   **−0.90pp (n=3)**. Ayrıca `information_coefficient` dönemleri **çözülmüş**
+   tahminlerden alıyor → IC dönem seti sonuç-koşullu (10 karar gününün 4'ü).
+   DoD: `paired_alpha` üçüncü sayıyı (`n_bagimsiz`, tekilleştirme
+   `(ticker, entry_date, exit_date)`) basıyor; IC dönemleri `predictions.asof`.
 
 ## 📦 Backlog (şimdi değil, unutma da)
-- **Veto değeri ölçümü** — vetolananların PLANSIZ ileri getirisi izlenmeli
-  (canlı: vetolananlar seçilenleri +5.76pp geçti, n=6 anekdot).
-- **Rejim OR/AND asimetrisi** — risk-off tek koşula (genişlik) yeter ve 16
-  etiketin 14'ü öyle geldi, XU100 SMA200'ün ÜSTÜNDEYKEN. Tetikleyici artık
-  raporda yazılı (Faz 11); politikanın kendisi tartışılmayı bekliyor.
-- **`levels_daily` birikmiyor** — dump'tan hariç + her koşuda DB yeniden
-  kuruluyor → yalnız son koşu kalıyor. `planner.py`'ın "seviyeler dondurulur"
-  iddiası kodda karşılıksız (§8). Hedef dayanağı `plan_options.payload`'ta.
-- **`high52_prox` ↔ hedef filtresi gerilimi** — zirveye yakın isim faktörde iyi
-  skorlarken plan üretemiyor. ADR #018 bunu yaratmadı, `zirveye_yakin`
-  sınıfıyla görünür kıldı.
-- **Ölçüm şablonundan düşen "ters yönde kanıt" uyarısı** —
-  `olcum_2026-07-26.md` basıyor, `olcum_2026-08-07.md` basmıyor; aynı
-  negatif/anlamlı `mom_12_1` bulgusu dururken. Şablon regresyonu.
-- **TÜFE serisi ÖLDÜ** — `TP.FE.OKTG01` son gözlem 2025-12-01 (253 gün).
-  Tazelik kontrolü artık bunu her gün basıyor ve değer pakete girmiyor.
-  Yapılacak: EVDS'de serinin yeni kodunu bul (TÜİK 2026 baz revizyonu
-  olabilir) ve `config.sources.evds.series.tufe`'yi güncelle.
-- **`falsifier` toplanıyor ama HİÇ sınanmıyor** — `journal.py` dışında hiçbir
-  yerde okunmuyor, bazıları mantıken ters. Otomatik yön kontrolü BİLEREK
-  yazılmadı (naif metin araması kendi yorumunu yakalar, L-012). Ya anlamlı bir
-  HF kuralı ya da alanın kaldırılması.
-- **Analist katkısı ~sıfır ölçüldü** (canlı 90 tahmin): sinyal, deterministik
-  yüzdeliğin monoton fonksiyonu. ADR #013'ün "hangi model daha iyi" ölçümü
-  araç başına veri topluyor (replay 20 · gemini-3.6-flash 3 · claude-code 1) —
-  hepsi hâlâ "ölçüm yetersiz".
-- **Net R:R kapıya alınsın mı?** 58 planın 19'u (%33) elenirdi. `min_rr_t1`
-  `docs/on-kayit-seviye-02.md` §4'ün parametresi → **ön kayıt ister**.
-- **`high52_prox` hipotezi** — OOS'ta +1.61pp (t=1.81), IC 0.113 (t=2.42):
-  34 karşılaştırmada çıtayı geçen TEK satır. Sonucu görüp seçmek p-hacking →
-  AYRI ve ön kayıtlı tur hak ediyor.
-- **R:R'ın seçimle sağlanması** (#009): `docs/on-kayit-seviye-02.md` HAZIR
-  ama koşulmadı.
-- **Ekonomik takvim (TCMB/TÜFE)** ve **ikinci fiyat kaynağı kıyası** —
-  repo incelemesinin #11 ve #12'si, ölçüm bekliyor.
+- **Telegram haftalık IC satırı hiç basılmıyor** — `otonom.py:389` `ic.get("n")`
+  okuyor, `stats.ic_summary` `n_donem` döndürüyor. `.get` sessiz; `report.py:465`
+  doğru anahtarı kullanıyor. Beş dakikalık düzeltme + yapı eşliği testi (§12.2).
+- **Tetiklenmeyen planların bedeli ölçülmüyor** — 20 replay sonucunun 7'si (%35)
+  paydadan tamamen düşüyor. Ölçüldü (2026-08-15): tetiklenmeyenlerin plansız
+  H=20 alfası **+6.93pp**, tetiklenenlerin **+5.08pp** → fark **+1.85pp**.
+  Yani limitli giriş bir avantaj değil **kaçırma yanlılığı** olabilir; eski
+  "Sıradaki İş #3"ün (t+1 açılış varyantı) cevabına ucuz ipucu. Ön kayıt gerekmez.
+- **2026-07-29'un 18 tahmini YARIM BARLA üretildi** — `close_at_asof` 18/18
+  sapıyor (ort %1.21, hepsi aynı yönde); `llm_runs.created_utc` 10:38 UTC, seans
+  açıktı. Yarım bar kapısı 08-11'de eklendi ama kayıt journal'da duruyor ve
+  `claude-code`'un TEK canlı karne satırı o koşudan. Silme yok — bayrak + ayrı
+  raporlama.
+- **Analist katkısı üç bağımsız yoldan da ~sıfır** (2026-08-15 ölçümü): sinyal
+  `pct`'nin monoton fonksiyonu; 162 ardışık gün çiftinin %93'ünde karar
+  değişmiyor; 68 `avoid`'in 63'ü zaten `sma200_alti` kapısından düşmüş isimlere.
+  Maliyet düşük (~$3/ay) → acil değil, ama "ölçülmüyor" ile "katkı yok" ayrı
+  cümleler ve şu an karışıyorlar (bkz. Sıradaki İş #1).
+- **Rejim OR/AND asimetrisi** — risk-off tek koşula (genişlik) yeter; 2026-07-24'ten
+  beri 11 koşunun 11'i risk-off ve XU100 SMA200'ün DAİMA üstünde (+5.7…+9.7%).
+  Aynı 15 işlem gününde ölçüm evreni −1.48% → duruş pahalıya patlamadı, ama
+  politika tartışılmayı bekliyor.
+- **`levels_daily` birikmiyor** — dump'tan hariç + her koşuda DB yeniden kuruluyor.
+- **`high52_prox` ↔ hedef filtresi gerilimi** — `zirveye_yakin` sınıfıyla görünür.
+- **Ölçüm şablonundan düşen "ters yönde kanıt" uyarısı** — şablon regresyonu.
+- **TÜFE serisi ÖLDÜ** — `TP.FE.OKTG01` son gözlem 2025-12-01 (258 gün).
+  EVDS'de yeni seri kodunu bul (TÜİK 2026 baz revizyonu olabilir).
+- **`falsifier` toplanıyor ama HİÇ sınanmıyor** — ya anlamlı bir HF kuralı ya da
+  alanın kaldırılması.
+- **Net R:R kapıya alınsın mı?** 58 planın 19'u (%33) elenirdi → **ön kayıt ister**.
+- **`high52_prox` hipotezi** — OOS +1.61pp (t=1.81), IC 0.113 (t=2.42); sonucu
+  görüp seçmek p-hacking → AYRI ve ön kayıtlı tur.
+- **R:R'ın seçimle sağlanması** (#009): `docs/on-kayit-seviye-02.md` HAZIR, koşulmadı.
+- **Ekonomik takvim (TCMB/TÜFE)** ve **ikinci fiyat kaynağı kıyası** — ölçüm bekliyor.
 - **Dump churn** — ölü koşular bile günde ~2.100 satır oynatıyor; acil değil.
-- **KAP dilim bölme derinliği** — beklenen-bildirim ucunun tavanı 2000;
-  45 günlük pencere 1863 kayıt veriyor, kırpılırsa SAKLANMIYOR.
+- **KAP dilim bölme derinliği** — beklenen-bildirim ucu tavan 2000; 45 günlük
+  pencere 1863 kayıt veriyor, kırpılırsa SAKLANMIYOR.

@@ -6,6 +6,96 @@
 
 ---
 
+## L-022 — 2026-08-15 — Alınıp OKUNMAYAN bir parametre, hiç almamaktan daha tehlikelidir
+
+**Olay.** Günlük raporun en üstündeki eylem listesi, 2026-08-14'te
+"🟢 **KCHOL** — GİR — plan bugün tetiklenebilir, **engel yok**" yazdı. Aynı
+raporun §2'si ve aynı günün Telegram özeti aynı isim için "plan_reddet ·
+VETO `rejim_uyumsuz`" diyordu. Rapor hem kendi içinde hem kanallar arasında
+çelişti — üstelik en çok okunan bölümde.
+
+**Kök sebep — iki katman.** `eylem.siralama` `analiz` parametresini alıyordu,
+`an = {a["ticker"]: a ...}` sözlüğünü kuruyordu, hatta döngünün içinde
+`a = an.get(t)` satırı bile vardı. Ama `a` yalnız **`holdings` dalında**
+okunuyordu ve portföy boştu. Elde olmayan isimler için okunan tek veto kaynağı
+`e["aktif_vetolar"]` idi — o da paket üretilirken (zincir adım 7) hesaplanır,
+analist adım 8'de koşar. Yani bugünkü veto o listede **yapısal olarak**
+bulunamazdı; ancak ertesi gün "yürürlükte" diye görünüyordu.
+
+**Neden fark edilmedi.** Kod okuyan herkes — insan ya da model — `analiz`
+parametresini ve `a = an.get(t)` satırını görüp "analist dikkate alınıyor"
+sonucuna varıyordu. İmza doğruydu, bağlantı yoktu. `test_eylem.py`'de
+"aktif veto girişi geri iter" testi VARDI; kapsadığı şey **önceki günün**
+vetosuydu, bugünkününki değil.
+
+**Anti-pattern.** Bir fonksiyona veri geçirip o dalda kullanmamak. Boş bir
+sözlükte gezinen bir `.get()`, okuyucuya bağlantı KURULMUŞ izlenimi verir;
+`None` sessizdir ve hiçbir yerde patlamaz.
+
+**Kural.**
+1. Bir parametreyi aldığın her dalda ya kullan ya da o dalda **kullanılmadığını
+   yaz.** "Alıp bir dalda kullanmak" bir uygulama değil, yarım uygulamadır
+   (L-008'in imza düzeyindeki hâli).
+2. **İki kanal aynı olguyu basıyorsa ikisini tek testte karşılaştır.** Burada
+   Telegram doğru, markdown yanlıştı ve haftalarca kimse yan yana koymadı.
+3. Bir düzeltmenin kilidini "çıktı değişti mi" diye kur, "beklenen çıktı geldi
+   mi" diye değil: `siralama(analiz=veto) != siralama(analiz=None)`. Eski kodda
+   bu iki çağrı **birebir aynı** sonucu veriyordu — asıl kanıt budur.
+4. Zamanlama sor: bu veri, onu okuyan koddan **önce mi** üretiliyor? Paket
+   adım 7'de, analist adım 8'de. Sıra yanlışsa bağlantı imkânsızdır ve hiçbir
+   dize düzeltmesi onu kurtarmaz.
+
+---
+
+## L-021 — 2026-08-15 — Bir dersi ÜÇÜNCÜ kez öğrenmek: tek tabloyu bağlamak, bağlanmamışları ARAMAK değildir
+
+**Olay.** `index_daily` 2026-08-06'da dondu; `bars_daily` 08-14'e geldi. Beş
+işlem günü boyunca `regime_daily`'nin dört girdisinden **üçü** (XU100/SMA200
+farkı, XU100 volatilitesi, USDTRY volatilitesi) bit bit aynı yazıldı —
+`xu100_vs_sma200_pct = 6.3198532722`, beş gün üst üste. `alpha_vs_xu100`
+NULL'a düştü. Hiçbir hata, hiçbir uyarı, hiçbir kırmızı koşu.
+
+**Kök sebep.** `prices.daily` yalnız HİSSE barlarını çeker. Endeksi çeken
+`prices.sync_indices`'in tek çağrı yeri `cli.cmd_veri` idi — yani `index_daily`
+ancak Mert elle `bist veri gunluk` koştuğunda tazeleniyordu. **Bu L-002'nin
+birebir tekrarıdır ve üçüncü tekrarıdır:**
+
+| # | tarih | donan tablo | nasıl bulundu |
+|---|---|---|---|
+| 1 | 2026-07-24 | `history_daily` | elle export incelemesi |
+| 2 | 2026-08-11 | `evds_daily` (TÜFE) | denetim |
+| 3 | 2026-08-15 | `index_daily` | denetim |
+
+**Asıl ders bu değil.** L-002 zaten yazılıydı ve doğruydu. İkinci tekrarda
+`macro.daily` zincire eklendi, `_evds_tazelik` sağlık kontrolü yazıldı, README'ye
+"aynı ders, ikinci kez" notu düşüldü. **Ve `sync_indices` 30 satır ötede,
+aynı dosyada, bağlanmadan bırakıldı.** Yani ders uygulandı ama yalnız onu
+tetikleyen tabloya.
+
+**Anti-pattern.** Bir sınıf hatayı, onu fark ettiren örnek üzerinde düzeltip
+kapatmak. L-008 "simetriğini ara" der; burada aranması gereken şey bir
+simetrik değil, **bir SAYIMDI.**
+
+**Kural.**
+1. L-002 tetiklendiğinde tek tablo düzeltilmez: **yazılabilir tüm tabloları
+   listele** ve her biri için "bunu kim, hangi adımda besliyor?" sorusunu
+   cevapla. Cevabı "elle" olan her satır ya bağlanır ya STATE'e yazılır.
+2. Bu soru **koşulabilir**: tablo → besleyen adım eşlemesini bir teste devret;
+   eşlemede yeri olmayan yeni bir tablo eklemek suite'i kırsın (AGENTS §12.2).
+3. Tazelik kontrolü, besleme adımıyla **birlikte** yazılır. Burada besleme yoktu
+   ve kontrol de yoktu; ikisi aynı boşluğun iki yüzüydü.
+4. Bir donmayı yakalayan en ucuz sinyal **bit bit aynı sayıdır.** Ardışık
+   günlerde `6.3198532722` görürsen bu bir değer değil, bir arıza kaydıdır.
+
+**Sınıflandırma notu (L-017 ile ilişki).** Endeks çekme adımı `KRITIK_ADIMLAR`'a
+konmadı — tek koşuluk bir yfinance arızası fiyat tarafını öldürmemeli. Ama
+`saglik._index_tazelik` bir **KAPI**'dır ve 2 seanstan sonra koşuyu durdurur;
+yani adım fiilen "2 seans toleranslı kritik" sınıfındadır. L-017 gereği bu
+devralma gizlenmedi, hem `otonom.gunluk` adım 2b'nin hem kontrolün yorumunda
+yazılı.
+
+---
+
 ## L-020 — 2026-08-12 — Bir gerekçe cümlesi "ve"yle birleşirse, hangi koşulun düştüğünü GİZLER
 
 **Olay.** Plan üretilemeyen isimler tek bir cümle alıyordu: *"N giriş bandı
