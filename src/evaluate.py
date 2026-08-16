@@ -143,7 +143,8 @@ def _cozulmus(con: sqlite3.Connection, *, tool: str | None = None) -> list[dict]
     # dayanır ve şema değişikliği gerektirmez.
     sql = ("SELECT p.*, o.resolution, o.ret_pct, o.ret_pct_equal_size, "
            "       o.alpha_vs_ew, o.alpha_vs_xu100, o.hit, o.error_tag, "
-           "       o.slippage_pct, o.holding_days, r.tool "
+           "       o.slippage_pct, o.holding_days, "
+           "       o.entry_date, o.exit_date, r.tool "
            "  FROM predictions p "
            "  JOIN outcomes o ON o.prediction_id = p.prediction_id "
            "  JOIN llm_runs r ON r.run_id = p.run_id")
@@ -188,6 +189,37 @@ def paired_alpha(cfg: dict, con: sqlite3.Connection, *, tool: str | None = None)
     s["n_girmeyen"] = len(tum) - len(rows)
     s["ort_karar_basina"] = (
         float(np.mean([r["alpha_vs_ew"] or 0.0 for r in tum])) if tum else None)
+
+    # ÜÇÜNCÜ SAYI — ÖRTÜŞME AYIKLANMIŞ (2026-08-15 denetimi).
+    #
+    # ⚠ Journal her işlem günü yeni bir tahmin yazar; aynı isim art arda
+    # seçilirse AYNI İŞLEM birden çok satır olur ve `dist_stats` onları
+    # bağımsız gözlem sayar. ÖLÇÜLDÜ: `2026-07-30-TUPRS-1` ve
+    # `2026-08-03-TUPRS-1` aynı gün girdi (08-04), aynı gün çıktı (08-06) —
+    # tek işlem, iki "hedef" kaydı. Canlı karne bu yüzden **+2.25pp (n=4)**
+    # diyordu; örtüşme ayıklanınca **−0.90pp (n=3)**.
+    #
+    # Bedeli yalnız ortalama değil: örtüşen gözlemle `sd` küçülür ve `t`
+    # ŞİŞER — yani sistem kendine olması gerekenden fazla güvenir. PROJECT.md
+    # "örtüşmeyen pencere" disiplinini `backtest.py` için yazmıştı; canlı
+    # journal'a hiç uygulanmamıştı.
+    #
+    # Üç sayı da raporlanır çünkü ÜÇ FARKLI SORU: "plan tuttuğunda ne oldu?"
+    # (ort) · "karar başına ne kazandım?" (ort_karar_basina) · "kaç BAĞIMSIZ
+    # olay yaşadım?" (ort_bagimsiz).
+    tekil: dict[tuple, list[float]] = {}
+    for r in rows:
+        tekil.setdefault(
+            (r["ticker"], r["entry_date"], r["exit_date"]), []).append(
+                r["alpha_vs_ew"])
+    bagimsiz = [float(np.mean(v)) for v in tekil.values()]
+    b = stats.dist_stats(bagimsiz, o["zayif_n_esigi"])
+    s["n_bagimsiz"] = len(bagimsiz)
+    s["ort_bagimsiz"] = b["ort"]
+    s["t_bagimsiz"] = b["t"]
+    s["hukum_bagimsiz"] = stats.edge_verdict(
+        b["ort"], b["n"], o["zayif_n_esigi"], o["min_anlamli_fark_puan"])
+    s["ortusen_kayit"] = len(rows) - len(bagimsiz)
     return s
 
 
@@ -201,7 +233,13 @@ def information_coefficient(cfg: dict, con: sqlite3.Connection, *,
     """
     from . import universe
 
-    tarihler = sorted({r["asof"] for r in _cozulmus(con, tool=tool)})
+    # ⚠ DÖNEM SETİ `outcomes`'A BAĞLI OLAMAZ (2026-08-15 denetimi). Eski sürüm
+    # `_cozulmus`tan alıyordu, yani IC yalnız "o gün bir plan açıldı VE çözüldü"
+    # günlerinden hesaplanıyordu. Canlıda 10 karar günü vardı, IC 4'ünü görüyordu;
+    # plan üretilmeyen bir gün (08-14) hiç girmiyordu. Bu gizli bir KOŞULLAMADIR:
+    # sıralama kalitesi ölçümü, plan SONUÇLARINA koşullanmış bir alt kümeden
+    # hesaplanıyordu. IC zaten panelden hesaplanır; `outcomes`'a ihtiyacı yok.
+    tarihler = sorted({r["asof"] for r in _tum_tahminler(con, tool=tool)})
     if not tarihler:
         return stats.ic_summary([])
 
@@ -426,6 +464,98 @@ def slippage(con: sqlite3.Connection, *, tool: str | None = None) -> dict:
     return stats.dist_stats(v)
 
 
+def yarim_bar_kosulari(con: sqlite3.Connection, *, tool: str | None = None,
+                       tolerans_pct: float = 0.10,
+                       oran_esigi: float = 0.5) -> list[dict]:
+    """Kapanmamış seansın barıyla üretilmiş koşuları BULUR — kayıttan değil ÖLÇÜMDEN.
+
+    ⚠ YAŞANDI (2026-07-29): o günün 18 tahmininin **18'inde de**
+    `close_at_asof`, barın gerçek kapanışından yüksekti — ortalama %1.21, hepsi
+    aynı yönde. `llm_runs.created_utc` 10:38 UTC (13:38 TR): seans AÇIKTI.
+    Yarım bar kapısı 2026-08-11'de eklendi ama o kayıt journal'da duruyor ve
+    `claude-code` aracının **tek canlı karne satırı** o koşudan geliyor.
+
+    Journal DEĞİŞMEZDİR — silme yok. Yapılacak şey ayırmak: karne bu koşuyu
+    ayrıca işaretler, okuyan kişi hangi sayının hangi zemine dayandığını bilir.
+
+    NEDEN BİR BAYRAK KOLONU DEĞİL: bayrak yazılırken unutulabilir ya da yanlış
+    yazılabilir; bu hesap `predictions.close_at_asof` ile `bars_daily.c`'yi
+    karşılaştırır ve HER ZAMAN gerçeği söyler. Kayıt değil, ölçüm.
+
+    `tolerans_pct` float32→float64 gürültüsünün üstünde (gözlendi: 42.6 vs
+    42.5999984741 = %0.0000004); `oran_esigi` ise tek bir ismin geriye dönük
+    düzeltmesiyle TÜM koşuyu suçlamamak için — yarım bar KESİTSELDİR, o gün
+    işlem gören her ismi birden etkiler.
+    """
+    sql = ("SELECT r.run_id, r.tool, r.asof, r.created_utc, "
+           "       COUNT(*) n, "
+           "       SUM(CASE WHEN b.c IS NOT NULL AND p.close_at_asof > 0 "
+           "                 AND ABS(b.c / p.close_at_asof - 1.0) * 100 > ? "
+           "            THEN 1 ELSE 0 END) sapan, "
+           "       AVG(CASE WHEN b.c IS NOT NULL AND p.close_at_asof > 0 "
+           "            THEN (b.c / p.close_at_asof - 1.0) * 100 END) ort_sapma "
+           "  FROM predictions p "
+           "  JOIN llm_runs r ON r.run_id = p.run_id "
+           "  LEFT JOIN bars_daily b ON b.ticker = p.ticker AND b.date = p.asof ")
+    params: list = [tolerans_pct]
+    if tool:
+        sql += " WHERE r.tool = ? "
+        params.append(tool)
+    sql += " GROUP BY r.run_id HAVING sapan >= n * ? AND n >= 3"
+    params.append(oran_esigi)
+    return [dict(r, sapan_oran=round(r["sapan"] / r["n"] * 100, 1))
+            for r in db.fetch_all(con, sql, tuple(params))]
+
+
+def tetiklenmeme_bedeli(cfg: dict, con: sqlite3.Connection, *,
+                        tool: str | None = None) -> dict:
+    """Tetiklenmeyen planlar ölçümden düşüyor — DÜŞERKEN ne kaybediyoruz?
+
+    `giris_olmadi` sonucu getiri hesaplanmadan kapanır ve `paired_alpha`'nın
+    paydasından TAMAMEN çıkar. Bu, limitli girişin bedelini görünmez kılar:
+    geri çekilme yapmayan (yani YÜKSELEN) isimler sistematik olarak elenir.
+
+    ÖLÇÜLDÜ (2026-08-15): 20 replay sonucunun 7'si (%35) hiç tetiklenmedi;
+    plansız H=20 alfaları **+6.93pp**, tetiklenenlerinki **+5.08pp** → fark
+    **+1.85pp**. Yön, "limitli giriş bir avantajdır" hipotezinin TERSİ.
+
+    Burada karşılaştırılan iki büyüklük de PLANSIZ alfadır (`fwd_alpha_20d_ew`)
+    — tetiklenmeyenin planlı getirisi zaten yok; planlıyla plansızı kıyaslamak
+    farklı ölçekleri kıyaslamak olurdu.
+    """
+    rows = _cozulmus(con, tool=tool)
+    ids = {r["prediction_id"] for r in rows}
+    if not ids:
+        return {"n_tetiklenmeyen": 0, "n_tetiklenen": 0, "fark": None,
+                "hukum": stats.HUKUM_OLCUM_YOK, "not": ""}
+    ph = ",".join("?" * len(ids))
+    fwd = {r["prediction_id"]: r["fwd_alpha_20d_ew"] for r in db.fetch_all(
+        con, f"SELECT prediction_id, fwd_alpha_20d_ew FROM outcomes "
+             f" WHERE prediction_id IN ({ph}) AND fwd_alpha_20d_ew IS NOT NULL",
+        tuple(ids))}
+    yok = [fwd[r["prediction_id"]] for r in rows
+           if r["resolution"] == "giris_olmadi" and r["prediction_id"] in fwd]
+    var = [fwd[r["prediction_id"]] for r in rows
+           if r["resolution"] not in ("giris_olmadi", "iptal_kurumsal",
+                                      "iptal_veri")
+           and r["prediction_id"] in fwd]
+    fark = (float(np.mean(yok)) - float(np.mean(var))) if yok and var else None
+    o = cfg["olcum"]
+    return {
+        "n_tetiklenmeyen": len(yok), "n_tetiklenen": len(var),
+        "tetiklenmeyen_ort": float(np.mean(yok)) if yok else None,
+        "tetiklenen_ort": float(np.mean(var)) if var else None,
+        "fark": fark,
+        "hukum": (stats.edge_verdict(fark, min(len(yok), len(var)),
+                                     o["zayif_n_esigi"], o["min_anlamli_fark_puan"])
+                  if fark is not None else stats.HUKUM_OLCUM_YOK),
+        "not": ("Birim: yüzde puan, PLANSIZ ileri getiri. **Fark POZİTİFSE "
+                "kaçırdıklarımız girdiklerimizden iyi gitmiş** — yani limitli "
+                "giriş bir avantaj değil, bir SEÇİM YANLILIĞI olabilir ve karne "
+                "bunu göremez (`giris_olmadi` paydadan düşer)."),
+    }
+
+
 def error_taxonomy(con: sqlite3.Connection, *, tool: str | None = None) -> dict:
     rows = _cozulmus(con, tool=tool)
     return {
@@ -477,5 +607,7 @@ def _tek(cfg: dict, con: sqlite3.Connection, tool: str | None) -> dict:
         "brier": brier(cfg, con, tool=tool),
         "slippage": slippage(con, tool=tool),
         "taksonomi": error_taxonomy(con, tool=tool),
+        "tetiklenmeme": tetiklenmeme_bedeli(cfg, con, tool=tool),
+        "yarim_bar": yarim_bar_kosulari(con, tool=tool),
         "donem_yil": 252.0 / int(cfg["olcum"]["ana_ufuk_gun"]),
     }

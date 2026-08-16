@@ -398,3 +398,175 @@ class TestOlcumKendiKonusunuElemez:
             referans={"close": 100.0})
         m = evaluate._plansiz_alfa(cfg, con, evaluate._tum_tahminler(con, tool="test"))
         assert pid not in m, "ufku dolmamış tahmine değer atanmış"
+
+
+# ============================================================ örtüşme
+class TestOrtusmeAyiklama:
+    """⚠ Journal her işlem günü yeni tahmin yazar; aynı isim art arda
+    seçilirse AYNI İŞLEM birden çok satır olur ve `dist_stats` onları bağımsız
+    gözlem sayar.
+
+    ÖLÇÜLDÜ (2026-08-15): `2026-07-30-TUPRS-1` ve `2026-08-03-TUPRS-1` aynı gün
+    girdi (08-04), aynı gün çıktı (08-06) — tek işlem, iki "hedef" kaydı. Canlı
+    karne **+2.25pp (n=4)** diyordu; örtüşme ayıklanınca **−0.90pp (n=3)**.
+
+    Bedeli yalnız ortalama değil: örtüşen gözlemle `sd` küçülür ve `t` ŞİŞER,
+    yani sistem kendine olması gerekenden fazla güvenir. PROJECT.md'nin
+    "örtüşmeyen pencere" disiplini `backtest.py` için yazılmış, canlı journal'a
+    hiç uygulanmamıştı.
+    """
+
+    def _ayni_islem(self, cfg, con):
+        """İki farklı tahmin, AYNI giriş ve AYNI çıkış — tek gerçek işlem."""
+        rid = None
+        for asof, alfa in (("2024-01-15", 12.0), ("2024-01-16", 8.0)):
+            rid = _kayit(cfg, con, asof=asof, ticker="AAA", alfa=alfa, run_id=rid)
+        con.execute("UPDATE outcomes SET entry_date='2024-01-20', "
+                    "exit_date='2024-01-25'")
+        con.commit()
+
+    def test_ayni_islem_TEK_gozlem_sayilir(self, cfg, con):
+        self._ayni_islem(cfg, con)
+        a = evaluate.paired_alpha(cfg, con)
+        assert a["n"] == 2, "ham sayı da raporlanmalı (üç soru, üç sayı)"
+        assert a["n_bagimsiz"] == 1, (
+            "aynı (ticker, giriş, çıkış) üçlüsü hâlâ iki bağımsız gözlem "
+            "sayılıyor — örtüşme ayıklanmıyor")
+        assert a["ortusen_kayit"] == 1
+        assert a["ort_bagimsiz"] == pytest.approx(10.0)   # (12+8)/2
+
+    def test_FARKLI_islemler_ayiklanmaz(self, cfg, con):
+        """Simetri: gerçekten ayrı iki işlem birleştirilmemeli."""
+        rid = _kayit(cfg, con, asof="2024-01-15", ticker="AAA", alfa=12.0)
+        _kayit(cfg, con, asof="2024-02-15", ticker="BBB", alfa=8.0, run_id=rid)
+        con.execute("UPDATE outcomes SET entry_date='2024-01-20', "
+                    "exit_date='2024-01-25' WHERE prediction_id LIKE '%AAA%'")
+        con.execute("UPDATE outcomes SET entry_date='2024-02-20', "
+                    "exit_date='2024-02-25' WHERE prediction_id LIKE '%BBB%'")
+        con.commit()
+        a = evaluate.paired_alpha(cfg, con)
+        assert a["n_bagimsiz"] == 2 and a["ortusen_kayit"] == 0
+
+    def test_hukum_BAGIMSIZ_sayidan_da_uretilir(self, cfg, con):
+        """Rapor hükmü örtüşme ayıklanmış satıra göre okur; o satırın kendi
+        hükmü olmalı, ham hükmün kopyası değil."""
+        self._ayni_islem(cfg, con)
+        a = evaluate.paired_alpha(cfg, con)
+        assert "hukum_bagimsiz" in a
+        assert "N=1" in a["hukum_bagimsiz"]
+
+
+class TestICDonemSeti:
+    def test_IC_donemleri_OUTCOMES_a_bagli_DEGIL(self, cfg, con, monkeypatch):
+        """⚠ Eski sürüm dönemleri `_cozulmus`tan alıyordu: IC yalnız "o gün bir
+        plan açıldı VE çözüldü" günlerinden hesaplanıyordu. Canlıda 10 karar
+        günü vardı, IC 4'ünü görüyordu. Bu gizli bir KOŞULLAMADIR — sıralama
+        kalitesi ölçümü plan SONUÇLARINA koşullanmış bir alt kümeden geliyordu.
+        """
+        gorulen: list[str] = []
+        monkeypatch.setattr(evaluate.stats, "ic_summary",
+                            lambda ics, *a, **k: {"n_donem": len(ics)})
+        # Çözülmüş tahmin YOK; yalnız kayıtlı bir karar var.
+        add_universe(con, "AAA")
+        run = journal.create_run(cfg, con, asof="2024-01-15", tool="test",
+                                 bundle_sha="s")
+        journal.record(cfg, con, run_id=run, asof="2024-01-15", ticker="AAA",
+                       analist=ANALIST, plan=None,
+                       faktor={"score": 1.0, "rank": 1, "pct": 90.0,
+                               "weights_hash": "h"},
+                       referans={"close": 100.0})
+        assert evaluate._cozulmus(con, tool="test") == [], "ön koşul bozuldu"
+        assert len(evaluate._tum_tahminler(con, tool="test")) == 1, (
+            "IC dönem seti hâlâ `outcomes`'a bağlı — çözülmemiş bir karar günü "
+            "sıralama ölçümünden düşüyor")
+
+
+# ============================================================ yarım bar / kaçanlar
+class TestYarimBarKosusu:
+    """⚠ YAŞANDI (2026-07-29): o günün 18 tahmininin 18'inde de
+    `close_at_asof`, barın gerçek kapanışından yüksekti (ort %1.21, hepsi aynı
+    yönde). `created_utc` 10:38 UTC = 13:38 TR — seans AÇIKTI.
+
+    Yarım bar KAPISI 2026-08-11'de eklendi ama kayıt journal'da duruyor ve
+    `claude-code` aracının TEK canlı karne satırı o koşudan geliyor. Journal
+    değişmezdir: silinmez, AYRILIR.
+    """
+
+    def _kosu(self, cfg, con, *, asof, kapanis, kayitli, n=4):
+        from tests.conftest import add_bars, bar_serisi
+        run = journal.create_run(cfg, con, asof=asof, tool="test", bundle_sha="s")
+        for i in range(n):
+            t = f"T{i}"
+            add_universe(con, t)
+            con.execute(
+                "INSERT OR REPLACE INTO bars_daily "
+                "(ticker,date,o,h,l,c,v,c_tr,turnover_try,source,ingested_utc) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                (t, asof, kapanis, kapanis, kapanis, kapanis, 1e6, kapanis,
+                 1e9, "test", "now"))
+            journal.record(cfg, con, run_id=run, asof=asof, ticker=t,
+                           analist=ANALIST, plan=None,
+                           faktor={"score": 1.0, "rank": 1, "pct": 90.0,
+                                   "weights_hash": "h"},
+                           referans={"close": kayitli})
+        con.commit()
+        return run
+
+    def test_YARIM_BAR_kosusu_yakalanir(self, cfg, con):
+        """Kayıtlı fiyat gerçek kapanıştan %1.2 yüksek → kesitin tamamı sapar."""
+        self._kosu(cfg, con, asof="2024-01-15", kapanis=98.8, kayitli=100.0)
+        r = evaluate.yarim_bar_kosulari(con)
+        assert len(r) == 1 and r[0]["sapan"] == r[0]["n"] == 4
+        assert r[0]["ort_sapma"] == pytest.approx(-1.2, abs=0.01)
+
+    def test_TEMIZ_kosu_yakalanmaz(self, cfg, con):
+        """Simetri: kapanışla kayıt uyuşuyorsa bayrak KALKMAZ."""
+        self._kosu(cfg, con, asof="2024-01-15", kapanis=100.0, kayitli=100.0)
+        assert evaluate.yarim_bar_kosulari(con) == []
+
+    def test_float_gurultusu_YANLIS_ALARM_vermez(self, cfg, con):
+        """⚠ Gözlendi: 42.6 kaydı ile 42.5999984741 barı (float32→64). Tolerans
+        bu gürültünün ÜSTÜNDE olmalı, yoksa her koşu 'yarım bar' sanılır."""
+        self._kosu(cfg, con, asof="2024-01-15", kapanis=42.5999984741,
+                   kayitli=42.6)
+        assert evaluate.yarim_bar_kosulari(con) == []
+
+    def test_TEK_ismin_duzeltmesi_TUM_kosuyu_suclamaz(self, cfg, con):
+        """Yarım bar KESİTSELDİR. Bir ismin geriye dönük düzeltmesi koşuyu
+        şaibeli yapmaz — eşik oransaldır."""
+        run = self._kosu(cfg, con, asof="2024-01-15", kapanis=100.0,
+                         kayitli=100.0, n=4)
+        con.execute("UPDATE predictions SET close_at_asof = 90.0 "
+                    " WHERE ticker = 'T0'")
+        con.commit()
+        assert evaluate.yarim_bar_kosulari(con) == []
+
+
+class TestTetiklenmemeBedeli:
+    """`giris_olmadi` getirisi hesaplanmadan kapanır ve paydadan TAMAMEN düşer.
+    Bu, limitli girişin bedelini görünmez kılar: geri çekilme yapmayan (yani
+    YÜKSELEN) isimler sistematik olarak elenir.
+
+    ÖLÇÜLDÜ (2026-08-15, replay): tetiklenmeyenlerin plansız H=20 alfası
+    +6.93pp, tetiklenenlerinki +5.08pp → fark +1.85pp. Yön, "limitli giriş bir
+    avantajdır" hipotezinin TERSİ.
+    """
+
+    def test_kacan_planlarin_bedeli_olculur(self, cfg, con):
+        rid = _kayit(cfg, con, asof="2024-01-15", ticker="AAA", alfa=2.0)
+        _kayit(cfg, con, asof="2024-02-15", ticker="BBB", alfa=1.0, run_id=rid)
+        con.execute("UPDATE outcomes SET resolution='giris_olmadi', "
+                    "fwd_alpha_20d_ew=9.0 WHERE prediction_id LIKE '%AAA%'")
+        con.execute("UPDATE outcomes SET fwd_alpha_20d_ew=3.0 "
+                    " WHERE prediction_id LIKE '%BBB%'")
+        con.commit()
+        t = evaluate.tetiklenmeme_bedeli(cfg, con)
+        assert t["n_tetiklenmeyen"] == 1 and t["n_tetiklenen"] == 1
+        assert t["fark"] == pytest.approx(6.0)
+        assert "SEÇİM YANLILIĞI" in t["not"]
+
+    def test_fwd_yoksa_SIFIR_DEGIL_HARIC(self, cfg, con):
+        """Ufku dolmamış tahmin ortalamayı sulandırmamalı (#009)."""
+        _kayit(cfg, con, asof="2024-01-15", ticker="AAA", alfa=2.0)
+        t = evaluate.tetiklenmeme_bedeli(cfg, con)
+        assert t["fark"] is None and t["hukum"] == stats.HUKUM_OLCUM_YOK

@@ -431,6 +431,14 @@ def haftalik(cfg: dict, con: sqlite3.Connection) -> dict:
             if a.get("n_girmeyen"):
                 L.append(f"   karar başına {_say(a.get('ort_karar_basina'), 2, 'pp')}"
                          f" — {a['n_girmeyen']} plan hiç tetiklenmedi")
+            # ⚠ ÖRTÜŞME. Aynı isim art arda seçilince AYNI İŞLEM birden çok
+            # satır olur ve bağımsız gözlem sayılır; `t` de şişer. Hüküm bu
+            # satıra göre okunur (2026-08-15 denetimi).
+            if a.get("ortusen_kayit"):
+                L.append(f"   örtüşme ayıklanmış "
+                         f"{_say(a.get('ort_bagimsiz'), 2, 'pp')} "
+                         f"(bağımsız {a.get('n_bagimsiz')}/{a.get('n')}) · "
+                         f"{a.get('hukum_bagimsiz', '—')}")
             # ⚠ ANAHTAR ADI. Burası `ic.get("n")` / `ic.get("ort")` okuyordu;
             # `stats.ic_summary` ise `n_donem` / `ic_ort` döndürür. `.get`
             # sessizdir: KeyError yok, satır hiç basılmıyordu. Sonuç —

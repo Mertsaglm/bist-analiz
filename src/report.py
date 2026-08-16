@@ -462,6 +462,11 @@ def _evaluate_govde(cfg: dict, e: dict, *, baslik_seviyesi: int = 2) -> list[str
     A("|---|---|---|---|---|---|")
     A(f"| Eşleştirilmiş alfa (vs EW) | {a['n']} | {_s(a['ort'], 2, 'pp')} | "
       f"{_s(a['t'])} | {_n(a['gerekli_n'])} | **{a['hukum']}** |")
+    A(f"| ↳ **örtüşme ayıklanmış** | {a.get('n_bagimsiz', '—')} | "
+      f"{_s(a.get('ort_bagimsiz'), 2, 'pp')} | {_s(a.get('t_bagimsiz'))} | — | "
+      f"**{a.get('hukum_bagimsiz', '—')}** |")
+    A(f"| ↳ karar başına (girmeyenler 0) | {a['n_karar']} | "
+      f"{_s(a.get('ort_karar_basina'), 2, 'pp')} | — | — | — |")
     A(f"| Dönem-içi IC (tüm kesit) | {ic['n_donem']} | {_s(ic['ic_ort'], 3)} | "
       f"{_s(ic['t'])} | {_n(ic['gerekli_n'])} | **{ic['hukum']}** |")
     A(f"| LLM katkısı (IC farkı) | {llm['n']} | {_s(llm['ort'], 3)} | "
@@ -470,6 +475,16 @@ def _evaluate_govde(cfg: dict, e: dict, *, baslik_seviyesi: int = 2) -> list[str
     A(f"`gerekli N` = t=2'ye ulaşmak için gereken **bağımsız dönem** sayısı. "
       f"Yıla çevirmek için {e['donem_yil']:.0f}'e böl.")
     A("")
+    # ⚠ ÜÇ ALFA, ÜÇ FARKLI SORU. Tek satır basmak okuyanı en iyimserine
+    # baktırırdı ve aradaki fark bilgidir, gürültü değil.
+    if a.get("ortusen_kayit"):
+        A(f"> ⚠ **{a['ortusen_kayit']} kayıt örtüşüyor**: aynı isim art arda "
+          f"seçilince AYNI İŞLEM birden çok satır olur ve bağımsız gözlem gibi "
+          f"sayılır. Ölçüldü (2026-08-15): `TUPRS` iki ayrı tahminden aynı gün "
+          f"girip aynı gün çıkmıştı. Örtüşen gözlem yalnız ortalamayı değil "
+          f"`t`'yi de ŞİŞİRİR — hüküm daima **örtüşme ayıklanmış** satıra göre "
+          f"okunmalı.")
+        A("")
     if a["xu100_ort"] is not None:
         A(f"XU100'e göre alfa {_s(a['xu100_ort'], 2, 'pp')} — **karar için "
           f"kullanılmaz**, sermaye-ağırlık eğilimi içerir (ADR #002).")
@@ -483,6 +498,40 @@ def _evaluate_govde(cfg: dict, e: dict, *, baslik_seviyesi: int = 2) -> list[str
     A(f"- **Tetiklenmeme oranı:** %{_s(tax['tetiklenmeme_orani'], 1)} "
       f"({tax['sonuc'].get('giris_olmadi', 0)}/{tax['toplam']} plan hiç dolmadı)")
     A("")
+
+    # TETİKLENMEYENİN BEDELİ — payda görünürlüğünün ikinci yüzü.
+    tb = e.get("tetiklenmeme") or {}
+    if tb.get("fark") is not None:
+        A("**Kaçırdıklarımız ne yaptı?** (plansız ileri getiri, EW tabana göre)")
+        A("")
+        A("| | N | ortalama |")
+        A("|---|---|---|")
+        A(f"| Tetiklenmeyen planlar | {tb['n_tetiklenmeyen']} | "
+          f"{_s(tb['tetiklenmeyen_ort'], 2, 'pp')} |")
+        A(f"| Tetiklenen planlar | {tb['n_tetiklenen']} | "
+          f"{_s(tb['tetiklenen_ort'], 2, 'pp')} |")
+        A(f"| **Fark** | | **{_s(tb['fark'], 2, 'pp')}** — {tb['hukum']} |")
+        A("")
+        A(f"> {tb['not']}")
+        A("")
+
+    # YARIM BAR — journal değişmez, ama zemin AYRILIR.
+    yb = e.get("yarim_bar") or []
+    if yb:
+        A("⚠ **Kapanmamış seansla üretilmiş koşu(lar)** — bu satırlar "
+          "karneye giriyor ama zeminleri farklı:")
+        A("")
+        A("| Koşu | asof | üretim (UTC) | sapan tahmin | ort. sapma |")
+        A("|---|---|---|---|---|")
+        for r in yb:
+            A(f"| `{r['run_id']}` | {r['asof']} | {r['created_utc'][:16]} | "
+              f"{r['sapan']}/{r['n']} (%{r['sapan_oran']}) | "
+              f"{_s(r['ort_sapma'], 2, '%')} |")
+        A("")
+        A("> `close_at_asof` ile barın GERÇEK kapanışı arasındaki fark ölçülerek "
+          "bulundu — bir bayrak kolonu değil, her koşuda yeniden hesaplanan bir "
+          "ölçüm. Journal DEĞİŞMEZ olduğu için kayıt silinmez; ayrılır.")
+        A("")
 
     A(f"{h} Sonuç ve hata dağılımı")
     A("")
