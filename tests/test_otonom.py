@@ -376,3 +376,91 @@ class TestNobetci:
         monkeypatch.setattr(BistCalendar, "is_trading_day", lambda s, d: False)
         n = otonom.nobetci(cfg, con, bugun_tr="2026-08-08")
         assert not n["sessiz"] and "işlem günü değil" in n["not"]
+
+
+# ============================================================ haftalık IC
+class TestHaftalikIC:
+    """YAPI EŞLİĞİ (AGENTS §12.2): üreticinin anahtarları ile tüketicininki.
+
+    ⚠ NE OLMUŞTU (2026-08-15 denetimi): `otonom.haftalik` `ic.get("n")` ve
+    `ic.get("ort")` okuyordu; `stats.ic_summary` ise `n_donem` ve `ic_ort`
+    döndürür. `.get` SESSİZDİR — KeyError yok, `if ic.get("n"):` daima False,
+    satır hiç basılmıyordu. Telegram geçmişindeki iki haftalık mesajın
+    (2026-08-02, 08-09) ikisinde de IC yok; sebebi veri değil anahtar adıydı.
+
+    Pahalı olan yanı: dönem-içi IC, PROJECT.md'nin İKİNCİ başarı kriteridir
+    ve düzenli okunan tek kanal Telegram'dır. `report.py` aynı sözlükten
+    DOĞRU anahtarları okuyordu — yani iki tüketiciden biri yanlıştı ve
+    ayrışma kimseye görünmedi (L-022'nin kardeşi).
+
+    Bu test `ic` sözlüğünü ELDE KURMAZ; gerçek `stats.ic_summary`'den üretir.
+    Anahtar adı üretici tarafında değişirse test kırılır — kilidin şartı bu.
+    """
+
+    @pytest.fixture
+    def _sahte_olcum(self, monkeypatch):
+        from src import evaluate, stats
+
+        ic = stats.ic_summary([0.10, 0.22, -0.05, 0.14])   # GERÇEK üretici
+        alfa = stats.dist_stats([1.0, -2.0, 3.5])
+        alfa.update(hukum="ölçüm yetersiz (N=3)", n_karar=5, n_girmeyen=2,
+                    ort_karar_basina=0.9, xu100_ort=1.2)
+        # `evaluate._tek`'in gerçekte doldurduğu alanlar — fixture ondan
+        # ayrışırsa test kendi kurgusunu doğrular, kodu değil (L-012).
+        bos_hukumlu = dict(stats.dist_stats([]), hukum="ölçüm yok")
+        sonuc = {"tool": "gemini-3.5-flash", "alfa": alfa, "ic": ic,
+                 "llm_katkisi": dict(bos_hukumlu),
+                 "veto": {"veto_sayisi": 0, "veto_kodlari": {},
+                          "secilen_ort_alfa": None, "not": ""},
+                 "boyutlandirma": dict(bos_hukumlu, **{"not": ""}),
+                 "brier": {"n": 0, "brier": None, "hukum": "ölçüm yok",
+                           "kovalar": [], "not": ""},
+                 "slippage": stats.dist_stats([]),
+                 "taksonomi": {"sonuc": {}, "hata_etiketi": {},
+                               "tetiklenmeme_orani": None, "toplam": 0},
+                 "donem_yil": 12.6}
+        monkeypatch.setattr(evaluate, "araclar", lambda con: {"gemini-3.5-flash": 5})
+        monkeypatch.setattr(evaluate, "run", lambda cfg, con, tool=None: sonuc)
+        return ic
+
+    def test_IC_satiri_TELEGRAMA_basilir(self, cfg, con, monkeypatch,
+                                         sessiz_telegram, _sahte_olcum):
+        otonom.haftalik(cfg, con)
+        assert sessiz_telegram, "haftalık özet gönderilmedi"
+        ozet = sessiz_telegram[0]
+        assert "IC " in ozet, (
+            "haftalık özette IC satırı YOK — `ic_summary`'nin anahtarları ile "
+            "`otonom.haftalik`'ın okudukları ayrışmış olabilir")
+        assert f"N={_sahte_olcum['n_donem']} dönem" in ozet
+
+    def test_IC_DEGERI_dogru_anahtardan_geliyor(self, cfg, con, monkeypatch,
+                                                sessiz_telegram, _sahte_olcum):
+        """Satırın basılması yetmez: basılan SAYI `ic_ort` olmalı.
+
+        `ic.get("ort")` None döndürüp `_say` onu `—` bassaydı satır yine
+        görünürdü — "IC —" bir ölçüm değil, bir arıza kaydıdır.
+        """
+        otonom.haftalik(cfg, con)
+        beklenen = f"{_sahte_olcum['ic_ort']:.3f}"
+        assert f"IC {beklenen}" in sessiz_telegram[0]
+        assert "IC —" not in sessiz_telegram[0]
+
+    def test_IC_OLCULEMEDIYSE_satir_BASILMAZ(self, cfg, con, monkeypatch,
+                                             sessiz_telegram):
+        """Boş ölçüm `IC —` diye basılmaz; hiç basılmaz (`—` yanıltır)."""
+        from src import evaluate, stats
+
+        bos = {"tool": "x", "alfa": stats.dist_stats([]),
+               "ic": stats.ic_summary([]), "llm_katkisi": stats.dist_stats([]),
+               "veto": {}, "boyutlandirma": stats.dist_stats([]),
+               "brier": {"n": 0, "brier": None, "hukum": "ölçüm yok",
+                         "kovalar": [], "not": ""},
+               "slippage": stats.dist_stats([]),
+               "taksonomi": {"sonuc": {}, "hata_etiketi": {},
+                             "tetiklenmeme_orani": None, "toplam": 0},
+               "donem_yil": 12.6}
+        monkeypatch.setattr(evaluate, "araclar", lambda con: {"x": 1})
+        monkeypatch.setattr(evaluate, "run", lambda cfg, con, tool=None: bos)
+
+        otonom.haftalik(cfg, con)
+        assert "IC " not in sessiz_telegram[0]

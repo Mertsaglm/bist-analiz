@@ -418,8 +418,18 @@ def haftalik(cfg: dict, con: sqlite3.Connection) -> dict:
             if a.get("n_girmeyen"):
                 L.append(f"   karar başına {_say(a.get('ort_karar_basina'), 2, 'pp')}"
                          f" — {a['n_girmeyen']} plan hiç tetiklenmedi")
-            if ic.get("n"):
-                L.append(f"   IC {_say(ic.get('ort'), 3)} (N={ic['n']})")
+            # ⚠ ANAHTAR ADI. Burası `ic.get("n")` / `ic.get("ort")` okuyordu;
+            # `stats.ic_summary` ise `n_donem` / `ic_ort` döndürür. `.get`
+            # sessizdir: KeyError yok, satır hiç basılmıyordu. Sonuç —
+            # PROJECT.md'nin İKİNCİ başarı kriteri (dönem-içi IC) düzenli
+            # okunan tek kanalda görünmüyordu (2026-08-02 ve 08-09 haftalık
+            # mesajlarında IC satırı yok). `report.py` aynı sözlükten DOĞRU
+            # anahtarları okuyordu; iki tüketiciden biri yanlıştı ve ayrışma
+            # sessiz kaldı. Eşliği artık test zorluyor (§12.2):
+            # tests/test_otonom.py::TestHaftalikIC
+            if ic.get("n_donem"):
+                L.append(f"   IC {_say(ic.get('ic_ort'), 3)} "
+                         f"(N={ic['n_donem']} dönem) · {ic.get('hukum', '—')}")
             L.append("")
         sonuc["adimlar"]["degerlendir"] = f"{len(araclar)} araç"
     except Exception as e:                                  # noqa: BLE001
