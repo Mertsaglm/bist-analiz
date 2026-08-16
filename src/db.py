@@ -294,7 +294,14 @@ CREATE TABLE IF NOT EXISTS outcomes (
     ew_universe_ret_pct REAL,
     alpha_vs_xu100 REAL,          -- İKİNCİL — sermaye-ağırlık eğilimi içerir
     alpha_vs_ew REAL,             -- BİRİNCİL METRİK
-    fwd_ret_20d REAL,             -- plandan bağımsız saf faktör ölçümü (IC için)
+    -- PLANDAN BAĞIMSIZ ileri getiri: asof+1 girişten asof+1+H çıkışa, giriş
+    -- bandı/stop/hedef HESABA GİRMEDEN. Ölçtüğü şey planın değil SIRALAMANIN
+    -- kalitesi; `veto_value` ve `llm_contribution` bunun üzerine kurulur.
+    -- ⚠ Eski yorum "IC için" diyordu ve YANLIŞ YERİ gösteriyordu: dönem-içi IC
+    -- `backtest` panelinden hesaplanır, bu kolondan değil. Üstelik kolon
+    -- 2026-08-16'ya kadar HİÇ doldurulmuyordu (24/24 NULL) — doğru görünen
+    -- ama karşılığı olmayan bir cümle (AGENTS §11/4). Yazan: `resolver.fwd_doldur`.
+    fwd_ret_20d REAL,
     fwd_alpha_20d_ew REAL,
     slippage_pct REAL,            -- planlanan giriş vs gerçekleşebilir giriş
     hit INTEGER,                  -- Brier için

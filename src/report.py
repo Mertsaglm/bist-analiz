@@ -524,13 +524,26 @@ def _evaluate_govde(cfg: dict, e: dict, *, baslik_seviyesi: int = 2) -> list[str
       "ölçülmüyordu — 2026-07-27 denetiminde düzeltildi (ADR #009)._")
     A("")
 
-    A(f"{h} Veto")
+    A(f"{h} Veto — analistin en ölçülebilir katkısı")
     A("")
     v = e["veto"]
-    A(f"- Veto sayısı: {v['veto_sayisi']}"
-      + (f" — {v['veto_kodlari']}" if v["veto_kodlari"] else ""))
-    A(f"- Seçilenlerin ortalama alfası: {_s(v['secilen_ort_alfa'], 2, 'pp')}")
+    A(f"- Veto sayısı: **{v['veto_sayisi']}**"
+      + (f" — {v['veto_kodlari']}" if v["veto_kodlari"] else "")
+      + (f" · ufku dolan ve ÖLÇÜLEN: {v.get('n_olculen', 0)}"
+         if v.get("veto_sayisi") else ""))
+    A("")
+    A("| | ortalama plansız alfa |")
+    A("|---|---|")
+    A(f"| Vetolananlar | {_s(v.get('vetolanan_ort_alfa'), 2, 'pp')} |")
+    A(f"| Seçilenler | {_s(v.get('secilen_ort_alfa'), 2, 'pp')} |")
+    A(f"| **Fark** | **{_s(v.get('fark'), 2, 'pp')}** — {v.get('hukum', '—')} |")
+    A("")
     A(f"> {v['not']}")
+    A("")
+    A("_Bu satır 2026-08-16'ya kadar TANIM GEREĞİ boştu: kaynak sorgusu "
+      "`outcomes` ile INNER JOIN yapıyordu ve veto edilen tahminin planı "
+      "açılmadığı için outcome'u da yoktu — yani ölçüm kendi konusunu eliyordu. "
+      "17 veto varken karne `0` diyordu (2026-08-15 denetimi)._")
     A("")
 
     A("---")

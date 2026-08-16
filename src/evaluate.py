@@ -78,6 +78,66 @@ def kaynak_sec(con: sqlite3.Connection, tool: str | None) -> str | None:
         f"{next(iter(mevcut))}")
 
 
+def _tum_tahminler(con: sqlite3.Connection, *, tool: str | None = None) -> list[dict]:
+    """TÜM tahminler — çözülmüş olma şartı YOK.
+
+    ⚠ `_cozulmus` `outcomes` ile INNER JOIN yapar ve bu, iki ölçümü sessizce
+    öldürüyordu (2026-08-15 denetimi):
+      * `veto_value` — veto edilen tahminin `plan_id`'si NULL → plan açılmaz →
+        outcome yazılmaz → satır JOIN'de düşer. 17 veto varken karne `0` diyordu.
+      * `llm_contribution` — kesit yalnız SEÇİLEN 2 isimden kuruluyordu ve
+        fonksiyon dönem başına ≥3 isim istiyordu; yani eşik yapısal olarak
+        HİÇ geçilemezdi (üç kaynakta da `n=0`).
+    Bu fonksiyon o iki ölçümün doğru paydasıdır.
+    """
+    sql = ("SELECT p.*, r.tool FROM predictions p "
+           "  JOIN llm_runs r ON r.run_id = p.run_id")
+    params: tuple = ()
+    if tool:
+        sql += " WHERE r.tool = ?"
+        params = (tool,)
+    return db.fetch_all(con, sql + " ORDER BY p.asof, p.ticker", params)
+
+
+def _plansiz_alfa(cfg: dict, con: sqlite3.Connection,
+                  satirlar: list[dict]) -> dict[str, float]:
+    """{prediction_id: H günlük PLANSIZ alfa} — giriş/stop/hedef HESABA GİRMEZ.
+
+    "Bu ismi o gün alıp H gün tutsaydık, eşit-ağırlık evrene göre ne olurdu?"
+    Plan tetiklenmemiş, hatta hiç açılmamış olabilir — ölçtüğü şey planın değil
+    KARARIN kalitesi. `veto_value` ve `llm_contribution` bunun üzerine kurulur.
+
+    `resolver`ın ızgarası ve EW tabanı KULLANILIR, kopyalanmaz: ileri getiri
+    tanımı sistemde tek olmalı (`fwd_ret_20d` de aynı yerden gelir).
+    """
+    from . import resolver
+
+    H = int(cfg["olcum"]["ana_ufuk_gun"])
+    gunler = resolver._izgara(con)
+    idx = {d: i for i, d in enumerate(gunler)}
+    ew_onbellek: dict[tuple[str, str], float | None] = {}
+    out: dict[str, float] = {}
+
+    for r in satirlar:
+        t = idx.get(r["asof"])
+        if t is None or t + 1 + H >= len(gunler):
+            continue                      # ufuk dolmadı — ölçüm YOK, sıfır DEĞİL
+        d0, d1 = gunler[t + 1], gunler[t + 1 + H]
+        a = db.scalar(con, "SELECT c_tr FROM bars_daily WHERE ticker=? AND date=?",
+                      (r["ticker"], d0))
+        b = db.scalar(con, "SELECT c_tr FROM bars_daily WHERE ticker=? AND date=?",
+                      (r["ticker"], d1))
+        if not a or not b:
+            continue
+        if (d0, d1) not in ew_onbellek:
+            ew_onbellek[(d0, d1)] = resolver._ew_return(con, cfg, d0, d1)
+        ew = ew_onbellek[(d0, d1)]
+        if ew is None:
+            continue
+        out[r["prediction_id"]] = (float(b) / float(a) - 1.0) * 100.0 - ew
+    return out
+
+
 def _cozulmus(con: sqlite3.Connection, *, tool: str | None = None) -> list[dict]:
     # `p.*` `position_size_pct`'i de getirir — boyutlandırma karşı-olgusu ona
     # dayanır ve şema değişikliği gerektirmez.
@@ -187,24 +247,40 @@ def llm_contribution(cfg: dict, con: sqlite3.Connection, *,
     """LLM'in sıralaması saf skordan İYİ Mİ?
 
     Dönem başına iki IC hesaplanır (LLM sinyal sırası vs deterministik skor
-    sırası, aynı isimler üzerinde) ve farkları eşleştirilmiş olarak özetlenir.
+    sırası, AYNI isimler üzerinde) ve farkları eşleştirilmiş olarak özetlenir.
     Fark ≤ 0 ise LLM sıralamaya değer KATMIYOR demektir ve veto+haber görevine
     indirilir. Bu, LLM katmanının kendini savunmak zorunda olduğu yerdir.
+
+    ⚠ KESİT `outcomes`'TAN DEĞİL, O GÜNÜN TÜM TAHMİNLERİNDEN kurulur.
+    Eski sürüm çözülmüş tahminleri kullanıyordu ve dönem başına ≥3 isim
+    istiyordu; sistem ise dönem başına en fazla 2 plan seçiyor
+    (`maks_pozisyon` risk-off'ta 2). Yani eşik YAPISAL OLARAK hiç geçilemezdi
+    ve metrik üç kaynakta da `n=0` / "ölçüm yok" diyordu — bir "henüz veri yok"
+    değil, hiç dolmayacak bir ölçüm (2026-08-15 denetimi).
+
+    Doğru kesit 18 isimdir: LLM o günün TAMAMINA sinyal verir, sıralama
+    kalitesi de tamamı üzerinden ölçülür. Hedef değişken PLANSIZ alfadır —
+    plan tetiklenmiş olsun olmasın, kararın kendisi ölçülür.
     """
-    rows = [r for r in _cozulmus(con, tool=tool) if r["alpha_vs_ew"] is not None]
+    rows = _tum_tahminler(con, tool=tool)
+    alfa_map = _plansiz_alfa(cfg, con, rows)
     donemler: dict[str, list[dict]] = {}
     for r in rows:
-        donemler.setdefault(r["asof"], []).append(r)
+        if r["prediction_id"] in alfa_map:
+            donemler.setdefault(r["asof"], []).append(r)
 
     farklar: list[float] = []
     for _, grup in sorted(donemler.items()):
+        # Skoru olmayan isimler (SMA200 kapısından düşenler) sıralamaya
+        # GİREMEZ: `pct` NULL'ken "en kötü" saymak, bilinmeyeni sayıya
+        # çevirmek olurdu. LLM tarafı için de aynı kesit kullanılır ki
+        # iki IC AYNI isimler üzerinde hesaplansın (eşleştirme şartı).
+        grup = [g for g in grup if g["score"] is not None]
         if len(grup) < 3:
             continue                     # 3 isimden az kesitte sıra korelasyonu anlamsız
-        alfa = [g["alpha_vs_ew"] for g in grup]
+        alfa = [alfa_map[g["prediction_id"]] for g in grup]
         llm = [SIGNAL_ORDINAL.get(g["signal"], 3) for g in grup]
         skor = [g["score"] for g in grup]
-        if any(s is None for s in skor):
-            continue
         ic_llm = stats.spearman(llm, alfa)
         ic_skor = stats.spearman(skor, alfa)
         if ic_llm is not None and ic_skor is not None:
@@ -230,19 +306,54 @@ def veto_value(cfg: dict, con: sqlite3.Connection, *, tool: str | None = None) -
     Veto POZİTİF değerliyse vetolananların alfası seçilenlerinkinden DÜŞÜK
     olmalı. Tersi çıkarsa veto zarar veriyordur ve kapatılır — LLM katmanının
     en savunulabilir işlevi bile ölçüme tabidir.
+
+    ⚠ BU ÖLÇÜM 2026-08-16'ya KADAR KENDİ KONUSUNU ELİYORDU. Kaynak `_cozulmus`
+    idi ve o `outcomes` ile INNER JOIN yapıyor; veto edilen bir tahminin
+    `plan_id`'si NULL → plan açılmaz → outcome yazılmaz → satır JOIN'de düşer.
+    Sonuç: `predictions`'ta 17 `plan_reddet` varken karne her kaynakta
+    `veto_sayisi: 0` diyordu. Günlük rapor ise "veto analistin en ölçülebilir
+    katkısı" başlığını her gün basıyordu (2026-08-15 denetimi).
+
+    Fonksiyonun eski `not` alanı zaten doğru şeyi söylüyordu: *"vetolananların
+    PLANSIZ ileri getirisi ayrıca izlenmeli"*. Artık izleniyor — `fwd_ret_20d`
+    ile aynı tanım, aynı ızgara, aynı EW taban.
+
+    İki grup AYNI ölçekte karşılaştırılır (ikisi de plansız alfa): "seçtiğimiz
+    plan ne kadar kazandırdı" ile "elediğimiz isim ne yaptı" farklı sorular ve
+    farklı ölçeklerdir; birini `outcomes.alpha_vs_ew`, diğerini plansız alfayla
+    ölçmek elmayla armut kıyaslamak olurdu.
     """
-    rows = _cozulmus(con, tool=tool)
+    rows = _tum_tahminler(con, tool=tool)
+    alfa_map = _plansiz_alfa(cfg, con, rows)
     veto = [r for r in rows if r["action"] == "plan_reddet"]
-    secilen = [r["alpha_vs_ew"] for r in rows
-               if r["action"] == "plan_sec" and r["alpha_vs_ew"] is not None]
+    v_alfa = [alfa_map[r["prediction_id"]] for r in veto
+              if r["prediction_id"] in alfa_map]
+    s_alfa = [alfa_map[r["prediction_id"]] for r in rows
+              if r["action"] == "plan_sec" and r["prediction_id"] in alfa_map]
     kodlar = Counter(r["veto_code"] for r in veto if r["veto_code"])
+
+    o = cfg["olcum"]
+    fark = (float(np.mean(v_alfa)) - float(np.mean(s_alfa))
+            if v_alfa and s_alfa else None)
+    # Fark POZİTİFSE veto ZARAR veriyor (elediklerimiz daha iyi gitti).
+    # `edge_verdict` mutlak büyüklüğe bakar; işaret yorumu `not`ta yazılı.
+    s = stats.dist_stats(v_alfa, o["zayif_n_esigi"])
     return {
         "veto_sayisi": len(veto),
         "veto_kodlari": dict(kodlar),
-        "secilen_ort_alfa": float(np.mean(secilen)) if secilen else None,
-        "not": ("Veto edilen isimlerin sonraki getirisi ölçülemez — veto "
-                "edildikleri için plan açılmadı. Ölçüm için vetolananların "
-                "PLANSIZ ileri getirisi ayrıca izlenmeli (Faz 7 backlog)."),
+        "n_olculen": len(v_alfa),
+        "vetolanan_ort_alfa": float(np.mean(v_alfa)) if v_alfa else None,
+        "secilen_ort_alfa": float(np.mean(s_alfa)) if s_alfa else None,
+        "fark": fark,
+        "hukum": stats.edge_verdict(fark, min(len(v_alfa), len(s_alfa)),
+                                    o["zayif_n_esigi"], o["min_anlamli_fark_puan"])
+        if fark is not None else stats.HUKUM_OLCUM_YOK,
+        "sd": s.get("sd"),
+        "not": ("Birim: yüzde puan, PLANSIZ ileri getiri (H=ana_ufuk_gun), EW "
+                "tabana göre. **Fark POZİTİFSE veto ZARAR veriyor** — elenen "
+                "isimler seçilenleri geçmiş demektir. Vetolananların planı "
+                "açılmadığı için ikisi de plansız ölçülür; aksi hâlde farklı "
+                "ölçekler kıyaslanırdı."),
     }
 
 

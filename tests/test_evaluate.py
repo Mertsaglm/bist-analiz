@@ -141,13 +141,28 @@ class TestBrier:
 
 
 class TestLLMKatkisi:
-    def test_uc_isimden_az_kesit_atlanir(self, cfg, con):
+    """⚠ HEDEF DEĞİŞKEN 2026-08-16'da DEĞİŞTİ: `outcomes.alpha_vs_ew` yerine
+    PLANSIZ alfa. Sebep, eski kesitin yapısal olarak hiç dolmamasıydı
+    (bkz. `TestOlcumKendiKonusunuElemez`). Buradaki testler bu yüzden alfayı
+    enjekte eder — konuları sıralama mantığı, alfa hesabı değil (onun kendi
+    testi var: `test_plansiz_alfa_UFUK_dolmadiysa_SIFIR_DEGIL_YOK`)."""
+
+    @staticmethod
+    def _alfa_enjekte(monkeypatch, harita: dict):
+        monkeypatch.setattr(
+            evaluate, "_plansiz_alfa",
+            lambda cfg_, con_, satirlar: {
+                r["prediction_id"]: harita[r["ticker"]]
+                for r in satirlar if r["ticker"] in harita})
+
+    def test_uc_isimden_az_kesit_atlanir(self, cfg, con, monkeypatch):
         """3 isimden az kesitte sıra korelasyonu anlamsızdır."""
         rid = _kayit(cfg, con, asof="2024-01-15", ticker="AAA", alfa=5.0)
         _kayit(cfg, con, asof="2024-01-15", ticker="BBB", alfa=1.0, run_id=rid)
+        self._alfa_enjekte(monkeypatch, {"AAA": 5.0, "BBB": 1.0})
         assert evaluate.llm_contribution(cfg, con)["n"] == 0
 
-    def test_llm_siralamasi_skordan_iyiyse_pozitif(self, cfg, con):
+    def test_llm_siralamasi_skordan_iyiyse_pozitif(self, cfg, con, monkeypatch):
         """LLM sinyali gerçek alfayı, skordan daha iyi sıralıyorsa fark > 0."""
         rid = None
         for tk, alfa, sig, sk in (("AAA", 9.0, "strong_buy", 0.1),
@@ -155,6 +170,7 @@ class TestLLMKatkisi:
                                   ("CCC", 1.0, "hold", 0.3)):
             rid = _kayit(cfg, con, asof="2024-01-15", ticker=tk, alfa=alfa,
                          signal=sig, score=sk, run_id=rid)
+        self._alfa_enjekte(monkeypatch, {"AAA": 9.0, "BBB": 5.0, "CCC": 1.0})
         r = evaluate.llm_contribution(cfg, con)
         assert r["n"] == 1 and r["ort"] > 0
 
@@ -282,3 +298,103 @@ class TestKaynakAyrimi:
     def test_bos_journal_patlamaz(self, cfg, con):
         e = evaluate.run(cfg, con)
         assert e["tool"] == "(kayıt yok)" and e["alfa"]["n"] == 0
+
+
+# ============================================================ ölçüm kendi konusunu elemez
+class TestOlcumKendiKonusunuElemez:
+    """⚠ 2026-08-15 denetiminin en sinsi bulgu sınıfı: bir ölçüm, ölçmesi
+    gereken şeyi kaynak sorgusunda eliyordu.
+
+    * `veto_value` → `outcomes` ile INNER JOIN. Veto edilen tahminin
+      `plan_id`'si NULL, plan açılmaz, outcome yazılmaz, satır JOIN'de düşer.
+      `predictions`'ta 17 `plan_reddet` varken karne `veto_sayisi: 0` diyordu —
+      üstelik günlük rapor "veto analistin en ölçülebilir katkısı" başlığını
+      her gün basıyordu.
+    * `llm_contribution` → kesit yalnız SEÇİLEN isimlerden kuruluyor ve
+      dönem başına ≥3 isim isteniyordu; sistem dönem başına en fazla 2 plan
+      seçer. Eşik YAPISAL OLARAK hiç geçilemezdi.
+
+    İkisi de "henüz veri yok" gibi görünüyordu; gerçekte hiç dolmayacaklardı.
+    """
+
+    def _gun(self, cfg, con, asof, isimler, *, run_id=None):
+        """Bir günün TAM kesiti: bazıları seçilmiş, bazıları vetolanmış."""
+        from tests.conftest import add_bars, bar_serisi
+        for t, (signal, action, score) in isimler.items():
+            add_universe(con, t)
+            add_bars(con, t, bar_serisi(80, gunluk_egim=0.001, dalga=1.0))
+        return isimler
+
+    def test_VETO_edilenler_karneye_GIRER(self, cfg, con):
+        """Veto sayısı `predictions`'tan gelir, `outcomes`'tan değil."""
+        run = journal.create_run(cfg, con, asof="2026-03-02", tool="test",
+                                 bundle_sha="s")
+        _kayit(cfg, con, asof="2026-03-02", ticker="AAA", alfa=2.0,
+               action="plan_sec", run_id=run)
+        add_universe(con, "BBB")
+        journal.record(
+            cfg, con, run_id=run, asof="2026-03-02", ticker="BBB",
+            analist={**ANALIST, "action": "plan_reddet", "signal": "avoid",
+                     "veto_code": "rejim_uyumsuz"},
+            plan=None, faktor={"score": 0.1, "rank": 9, "pct": 10.0,
+                               "weights_hash": "h"},
+            referans={"close": 100.0})
+
+        v = evaluate.veto_value(cfg, con, tool="test")
+        assert v["veto_sayisi"] == 1, (
+            "veto edilen tahmin karneye girmiyor — kaynak sorgusu `outcomes` "
+            "ile INNER JOIN yapıyor olabilir")
+        assert v["veto_kodlari"] == {"rejim_uyumsuz": 1}
+
+    def test_veto_farkinin_ISARETI_yorumlu(self, cfg, con):
+        """`not` alanı işaretin ne demek olduğunu YAZMALI: pozitif fark
+        veto'nun ZARAR verdiği anlamına gelir ve bu sezgiye terstir."""
+        v = evaluate.veto_value(cfg, con, tool="test")
+        assert "POZİTİFSE veto ZARAR" in v["not"]
+        assert "plansız" in v["not"].lower()
+
+    def test_LLM_katkisi_kesiti_TUM_tahminlerden(self, cfg, con, monkeypatch):
+        """Kesit seçilen 2 isimden değil, o günün tamamından kurulur.
+
+        Burada 5 isimlik bir gün kuruluyor ve YALNIZ BİRİ `plan_sec`. Eski
+        mantıkta kesit 1 isimdi → `< 3` → dönem atlanırdı. Yenisinde 5 isim.
+        """
+        run = journal.create_run(cfg, con, asof="2026-03-02", tool="test",
+                                 bundle_sha="s")
+        for i, t in enumerate(("AAA", "BBB", "CCC", "DDD", "EEE")):
+            add_universe(con, t)
+            journal.record(
+                cfg, con, run_id=run, asof="2026-03-02", ticker=t,
+                analist={**ANALIST, "action": "plan_sec" if i == 0 else "izle",
+                         "signal": ["buy", "hold", "hold", "avoid", "hold"][i]},
+                plan=None,
+                faktor={"score": 5.0 - i, "rank": i + 1, "pct": 90.0 - i * 10,
+                        "weights_hash": "h"},
+                referans={"close": 100.0})
+
+        rows = evaluate._tum_tahminler(con, tool="test")
+        assert len(rows) == 5, "kesit tüm tahminlerden kurulmuyor"
+        # Plansız alfa sahtelenir: bar zinciri bu testin konusu değil.
+        monkeypatch.setattr(
+            evaluate, "_plansiz_alfa",
+            lambda cfg_, con_, satirlar: {r["prediction_id"]: float(i)
+                                          for i, r in enumerate(satirlar)})
+        l = evaluate.llm_contribution(cfg, con, tool="test")
+        assert l["n"] == 1, (
+            "dönem hâlâ atlanıyor — kesit `outcomes`'a bağlı olabilir")
+
+    def test_plansiz_alfa_UFUK_dolmadiysa_SIFIR_DEGIL_YOK(self, cfg, con):
+        """⚠ Ufku dolmamış tahmin için 0.0 döndürmek, bilinmeyeni sayıya
+        çevirmek olurdu (#009). Anahtar hiç bulunmamalı."""
+        from tests.conftest import add_bars, bar_serisi
+        add_universe(con, "AAA")
+        add_bars(con, "AAA", bar_serisi(30, gunluk_egim=0.001, dalga=1.0))
+        son = con.execute("SELECT MAX(date) FROM bars_daily").fetchone()[0]
+        run = journal.create_run(cfg, con, asof=son, tool="test", bundle_sha="s")
+        pid = journal.record(
+            cfg, con, run_id=run, asof=son, ticker="AAA", analist=ANALIST,
+            plan=None, faktor={"score": 1.0, "rank": 1, "pct": 90.0,
+                               "weights_hash": "h"},
+            referans={"close": 100.0})
+        m = evaluate._plansiz_alfa(cfg, con, evaluate._tum_tahminler(con, tool="test"))
+        assert pid not in m, "ufku dolmamış tahmine değer atanmış"

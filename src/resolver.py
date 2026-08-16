@@ -332,6 +332,72 @@ def _error_tag(out: dict, resolution: str) -> str | None:
     return None
 
 
+# ---------------------------------------------------------------- ileri getiri
+def _izgara(con: sqlite3.Connection) -> list[str]:
+    """Ortak işlem günü ızgarası. Tek ticker'ın barları DEĞİL — kesitsel
+    ölçümler aynı takvime oturmalı, yoksa bir ismin veri boşluğu onun ufkunu
+    sessizce uzatır."""
+    return [r["date"] for r in db.fetch_all(
+        con, "SELECT DISTINCT date FROM bars_daily ORDER BY date")]
+
+
+def fwd_doldur(cfg: dict, con: sqlite3.Connection) -> dict:
+    """`fwd_ret_20d` / `fwd_alpha_20d_ew` — PLANDAN BAĞIMSIZ ileri getiri.
+
+    ⚠ BU İKİ KOLON 2026-08-16'ya KADAR HİÇ DOLDURULMUYORDU. `_outcome` onları
+    `None` olarak kuruyordu ve hiçbir kod yolu yazmıyordu; ölçüldü (2026-08-15
+    denetimi): 24 outcome'un **24'ünde de** NULL. `db.SCHEMA` yorumu ise
+    "plandan bağımsız saf faktör ölçümü (IC için)" diyordu — AGENTS §11/4'ün
+    tarif ettiği hata: doğru görünen ama karşılığı olmayan bir cümle.
+    (IC aslında `backtest` panelinden hesaplanıyor; yorum yanlış yeri
+    gösteriyordu. Şema yorumu da bu commit'te düzeltildi.)
+
+    NEDEN AYRI BİR ADIM DEĞİL: bir tahmin 1 günde stop olabilir ama H=20'lik
+    ileri getirisi ancak 20 gün sonra hesaplanabilir. "Sonra doldururuz" diyen
+    ayrı bir script tam olarak L-002'nin donan script'i olurdu. Onun yerine
+    `resolve_open`'ın İÇİNDE çalışır: zincirde zaten var olan `coz` adımının
+    ikinci yarısı, yeni bir bağlantı noktası yok.
+
+    Pencere plandan bağımsızdır: `asof`+1 girişten `asof`+1+H çıkışa. Yani
+    "bu ismi o gün alıp H gün tutsaydık" — giriş bandı, stop ve hedef
+    HESABA GİRMEZ. Ölçtüğü şey planın değil, SIRALAMANIN kalitesidir.
+    """
+    H = int(cfg["olcum"]["ana_ufuk_gun"])
+    gunler = _izgara(con)
+    idx = {d: i for i, d in enumerate(gunler)}
+
+    eksik = db.fetch_all(
+        con,
+        "SELECT o.prediction_id, p.asof, p.ticker FROM outcomes o "
+        "  JOIN predictions p ON p.prediction_id = o.prediction_id "
+        " WHERE o.fwd_ret_20d IS NULL ORDER BY p.asof, p.ticker")
+
+    yazilan, bekleyen = 0, 0
+    for r in eksik:
+        t = idx.get(r["asof"])
+        if t is None or t + 1 + H >= len(gunler):
+            bekleyen += 1                 # ufuk henüz dolmadı — DEĞİL bir hata
+            continue
+        d0, d1 = gunler[t + 1], gunler[t + 1 + H]
+        a = db.scalar(con, "SELECT c_tr FROM bars_daily WHERE ticker=? AND date=?",
+                      (r["ticker"], d0))
+        b = db.scalar(con, "SELECT c_tr FROM bars_daily WHERE ticker=? AND date=?",
+                      (r["ticker"], d1))
+        if not a or not b:
+            bekleyen += 1
+            continue
+        fwd = (float(b) / float(a) - 1.0) * 100.0
+        ew = _ew_return(con, cfg, d0, d1)
+        con.execute(
+            "UPDATE outcomes SET fwd_ret_20d = ?, fwd_alpha_20d_ew = ? "
+            " WHERE prediction_id = ?",
+            (round(fwd, 4), None if ew is None else round(fwd - ew, 4),
+             r["prediction_id"]))
+        yazilan += 1
+    con.commit()
+    return {"yazilan": yazilan, "bekleyen": bekleyen, "aday": len(eksik)}
+
+
 # ---------------------------------------------------------------- toplu
 def resolve_open(cfg: dict, con: sqlite3.Connection, asof: str | None = None) -> dict:
     """Açık tüm tahminleri çözmeye çalışır. Çözülemeyenler AÇIK KALIR."""
@@ -353,5 +419,8 @@ def resolve_open(cfg: dict, con: sqlite3.Connection, asof: str | None = None) ->
         cozulen += 1
         dagilim[out["resolution"]] = dagilim.get(out["resolution"], 0) + 1
 
+    # İleri getiri, çözümle AYNI adımda. Ayrı bir script'e bırakmak L-002'dir.
+    fwd = fwd_doldur(cfg, con)
+
     return {"acik_baslangic": len(acik), "cozulen": cozulen, "hala_acik": kalan,
-            "dagilim": dagilim}
+            "dagilim": dagilim, "fwd": fwd}
