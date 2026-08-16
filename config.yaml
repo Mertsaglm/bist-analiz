@@ -338,6 +338,31 @@ risk:
 
 
 # ----------------------------------------------------------------------------
+# KÂĞIT PORTFÖY — sistemin kendi kararlarını kendi takip etmesi (ADR #019)
+#
+# Mert'in kararı (2026-08-16): portföy bilerek boş, çünkü proje kendini
+# kanıtlamalı. `holdings` artık Mert'in pozisyonu DEĞİL, sistemin karnesi.
+#
+# ⚠ Portföy TÜRETİLİR, defter tutulmaz: pozisyonlar `predictions` + `outcomes`
+# üzerinden yeniden hesaplanır. Ayrı bir tablo, aynı gerçeği iki yerde saklamak
+# ve ikisinin ayrışmasını beklemek olurdu (`journal.aktif_vetolar` ile aynı
+# gerekçe). Bu yüzden burada YALNIZ parametreler var, durum yok.
+# ----------------------------------------------------------------------------
+portfoy:
+  baslangic_sermaye_try: 10000.0
+  # Kaynak: canlı analist zinciri. `replay` VEKİL bir analisttir
+  # (`evaluate.kaynak_sec`) ve kararları portföye girmez — vekilin çıktısını
+  # sistemin karnesine karıştırmak, ölçümün ne ölçtüğünü belirsizleştirir.
+  haric_araclar: [replay]
+  # Aynı ticker açıkken ikinci pozisyon açılmaz. Piramitleme AYRI bir
+  # stratejidir ve bu evrende ölçülmemiştir; kapalı olması bir tercih değil,
+  # ölçülmemiş bir şeyi uygulamama disiplinidir. (2026-08-15 denetimi: KRDMD
+  # altı gün üst üste seçilmişti; harfiyen uygulansa tek isimde ~%29 birikirdi,
+  # rejim tavanı toplam %20 iken.)
+  ayni_isimde_ikinci_pozisyon: false
+
+
+# ----------------------------------------------------------------------------
 # Plan üretici (deterministik menü)
 # ----------------------------------------------------------------------------
 planlayici:

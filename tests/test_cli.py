@@ -63,7 +63,10 @@ BEKLENEN_KOMUTLAR = {
     "coz": None,
     "degerlendir": None,
     "rapor": None,
-    "portfoy": ["ekle", "sil", "listele"],
+    # `durum` 2026-08-16'da eklendi: KÂĞIT PORTFÖY (ADR #019).
+    # Sistem kendi kararlarını 10.000 TL ile takip eder; `ekle/sil`
+    # Mert'in ELLE defteri olarak kalır ve simülasyonu EZER.
+    "portfoy": ["ekle", "sil", "listele", "durum"],
     "haber": ["cek", "durum", "listele"],
     "saglik": None,
     "seviye": None,
@@ -457,7 +460,18 @@ class TestOkumaKomutlari:
         assert "THYAO" in capsys.readouterr().out
         assert _kos("portfoy", "sil", "THYAO") == 0
         assert _kos("portfoy", "listele") == 0
-        assert "kayıtlı pozisyon yok" in capsys.readouterr().out
+        assert "Elle girilmiş pozisyon yok" in capsys.readouterr().out
+
+    def test_portfoy_durum_KAGIT_karneyi_basar(self, cli_cfg, con, capsys):
+        """ADR #019 — boş journal'da bile başlangıç sermayesini gösterir.
+
+        "Kayıt yok" ile "sermaye sıfır" ayrı iki şeydir; komut sessiz kalırsa
+        okuyan kişi ikincisini varsayar (#009).
+        """
+        assert _kos("portfoy", "durum") == 0
+        cikti = capsys.readouterr().out
+        assert "Kâğıt portföy" in cikti
+        assert "10.000,00 TL" in cikti
 
     def test_gosterge_hesaplar(self, cli_cfg, con, capsys):
         from tests.conftest import add_bars, add_universe, bar_serisi

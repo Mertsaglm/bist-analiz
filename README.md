@@ -298,7 +298,8 @@ olarak bırakılmadı — koşulmayan kontrol, olmayan kontroldür.
 ```bash
 poetry run bist replay --start 2024-01-01 --end 2026-06-30   # LLM'siz tam boru hattı
 poetry run bist plan THYAO           # tek hisse için plan menüsü
-poetry run bist portfoy ekle THYAO 100 312.5
+poetry run bist portfoy durum        # KÂĞIT PORTFÖY — sistemin kendi karnesi (ADR #019)
+poetry run bist portfoy ekle THYAO 100 312.5   # elle defter (simülasyonu EZER)
 poetry run bist revizyon             # ön kayıtlı revizyon turu #1 (mühürlü)
 poetry run pytest                    # tüm suite (sayı basılır — README'ye gömülmez)
 ```
@@ -322,7 +323,8 @@ dört satıra bak:
 | `🛑 BIST otonom — Koşu DURDURULDU` | Bir KAPI kontrolü kapandı; o gün analiz YOK | **Hemen.** Mesajdaki gerekçeyi oku, Actions geçmişine bak |
 | `⚠ Sağlık: N uyarı — <adlar>` | Süreç uyarıları; koşu tamamlandı | Aynı ad **üç gün üst üste** çıkıyorsa |
 | `_Tetikleyen: …_` (rapordaki rejim satırı) | Rejimi hangi koşul kapattı | `genişlik` tek başına tetiklerken XU100 SMA200'ün epey üstündeyse — bu bir tasarım tercihi, ama farkında ol |
-| `📌 Plan seçildi: …` | Analistin menüden seçtikleri | Aynı isim **beş gün üst üste** seçiliyorsa `bist portfoy` boş demektir |
+| `📌 Plan seçildi: …` | Analistin menüden seçtikleri | Aynı isim üst üste seçilse de kâğıt portföy ikinci kez ALMAZ (`isim_zaten_acik`) — ADR #019 |
+| `💼 9.970,99 TL (-0.29%)` | Kâğıt portföyün TL karnesi | Sistemin kendi kararlarının sonucu; pp değil TL konuşur |
 
 > ⚠ **Bildirim GELMEMESİ, "sorun yok" değildir.** İş hiç başlamazsa Telegram
 > mesajı da çıkmaz (L-015/L-016 — sistem tam bu yüzden dört gün sessizce
@@ -363,15 +365,16 @@ varsaydığı veri durumuydu ve hiçbiri hata fırlatmıyordu.
 Bunlar sistemin **sana bağımlı** olduğu yerler; kod bunları kendi başına
 çözemez ve her gün rapora yazar:
 
-1. **`bist portfoy ekle <HİSSE> <adet> <maliyet>`** — portföy boş olduğu sürece
-   raporun en savunulabilir bölümü ("Elindekiler — azaltma adayları") ve
-   kontenjan hesabı **kördür**. Rapor bunu her gün yazıyor; yazması sorunu
-   çözmüyor.
-2. **Analist çıktısını gözden geçir.** Sistem tez ve veto üretir ama bunların
+1. **Analist çıktısını gözden geçir.** Sistem tez ve veto üretir ama bunların
    değerini henüz ölçemedi (canlı N tek haneli). Tezleri okuyup "bu bana mantıklı
    geldi mi" diye not tutmak, ileride ölçülecek şeyin ham maddesidir.
-3. **Kararlarını sisteme söyle.** İşlem yapıyorsan `portfoy`'a yaz; yapmıyorsan
-   da sorun yok — ama sistem neyi tuttuğunu bilmeden "azalt" diyemez.
+2. **Kâğıt portföyün karnesini oku** (`bist portfoy durum`). Sistem 2026-08-16'dan
+   beri kendi kararlarını 10.000 TL ile takip ediyor (ADR #019) — kontenjan artık
+   KÖR DEĞİL. En bilgilendirici satır **"alınmayan planlar"**: karne (pp) seçilen
+   planların ortalamasını ölçer, portföy (TL) ise kontenjanın, sektör tavanının ve
+   tek-isim kuralının süzdüğü, gerçekten alınabilenleri. İkisinin farkı bilgidir.
+3. **İşlem yapıyorsan sisteme söyle** (`bist portfoy ekle`). Elle girilen kayıt
+   simülasyonu EZER: gerçek bir pozisyonun varsa o gerçektir.
 
 ### Neye BAKMA
 

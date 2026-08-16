@@ -6,6 +6,92 @@
 
 ---
 
+## #019 — 2026-08-16 — Kâğıt portföy: sistem kendi kararlarını KENDİ takip eder; portföy TÜRETİLİR, defter tutulmaz
+
+**Bağlam.** Üç haftadır üretilen hiçbir plan gerçek pozisyona dönüşmedi.
+`holdings` boş olduğu için raporun en savunulabilir bölümü ("Elindekiler"),
+kontenjan hesabı ve sektör tavanı — üçü de KÖR çalışıyordu. 2026-08-15
+denetiminin somut karşılığı: 12 açık planın 6'sı KRDMD ve hepsi tetiklenmişti;
+harfiyen uygulansaydı tek isimde ~%29 birikirdi, rejim tavanı toplam %20 iken.
+
+Mert'in kararı (2026-08-16): *"Portföy şu an tamamen boş; proje kendisini bana
+kanıtlamalı. Başlangıç olarak proje gerçek zamanlı alım satım yapıyormuş gibi
+bu portföyü kullanmalı, kayıtlarını almalı. Ben ilerleyen zamanda
+güvenilirliğine karar vereceğim."* Yani `holdings` artık Mert'in pozisyonu
+değil, **sistemin kendi karnesi.**
+
+**Karar 1 — portföy bir TÜREV GÖRÜNÜMDÜR, ayrı bir defter değil.**
+
+Yeni tablo yok, yeni gerçek kaynağı yok. Pozisyonlar `predictions` +
+`outcomes`'tan kronolojik olarak türetilir. Gerekçe projenin kendi kuralıdır:
+`journal.aktif_vetolar` docstring'i *"`predictions` DEĞİŞMEZDİR ve veto oradan
+TÜRETİLİR — ayrı bir tablo tutmak aynı gerçeği iki yerde saklamak olurdu ve
+ikisi ayrışırdı"* diyor. Portföy için bu argüman birebir geçerli; üstelik
+ayrışmanın bedeli daha yüksek olurdu (karne ile portföy farklı sayı basardı).
+
+Yan fayda: simülasyon geriye dönük yeniden koşulabilir ve **denetlenebilir** —
+"bu pozisyon neden açıldı?" sorusunun cevabı bir satır kayıt değil, yeniden
+üretilebilir bir zincir.
+
+**Karar 2 — pozisyon plan TETİKLENDİĞİNDE açılır, `plan_sec` anında değil.**
+
+Seçenekler:
+- A) `plan_sec` günü kapanıştan al → planın kendi geometrisini yok sayar.
+  Plan "geri çekilmede al" diyorsa ve fiyat geri çekilmezse yanlış fiyattan
+  alınmış olur. Ölçüldü: 12 açık planın 4'ü (EREGL) `above_zone` ve hiç
+  tetiklenmedi — A ile hepsi alınırdı.
+- B) `resolver.entry_fill` mantığıyla, giriş bandına dokunulduğunda → **seçildi.**
+- C) Ertesi gün açılıştan piyasa emri → planın limitli giriş tasarımını iptal eder;
+  ayrıca bu bir ÖLÇÜM sorusu (STATE Backlog) ve portföyle karıştırılmamalı.
+
+**B'nin belirleyici gerekçesi:** `outcomes` zaten B mantığıyla ölçüyor
+(`outcomes.entry_date`). Portföy başka bir mantık kullansaydı portföy ile karne
+**aynı işlem için farklı giriş fiyatı** gösterirdi. Aynı fonksiyon çağrılır —
+kopya mantık yazılmaz.
+
+**Karar 3 — sermaye 10.000 TL, adet TAM SAYI, boyut plandan gelir.**
+
+`adet = floor(sermaye × position_size_pct / 100 / giris_fiyati)`. Sermaye
+kapanan işlemlerin net TL sonucuyla büyür/küçülür (mark-to-market yalnız
+raporda). Adet 0 çıkarsa pozisyon **açılmaz** ve sebebi `sermaye_yetersiz`
+diye kaydedilir — 10.000 TL'de %1.68'lik bir ASTOR planı 168 TL eder ve
+342 TL'lik hisseden 0 adet düşer. Bu gerçek bir kısıttır, gizlenmez.
+
+**Karar 4 — üç kısıt mekanik olarak uygulanır ve REDDİN SEBEBİ yazılır.**
+
+1. **Kontenjan:** açık pozisyon sayısı < rejimin `maks_pozisyon`'u.
+2. **Çift isim yok:** aynı ticker açıkken ikinci pozisyon açılmaz. (Piramitleme
+   ayrı bir stratejidir ve ölçülmemiştir.) Bu, KRDMD yığılmasını kaynağında keser.
+3. **Sektör tavanı:** `rejim.sektor_basi_maks_pozisyon`.
+
+Reddedilen her plan sebebiyle kaydedilir (`kontenjan_dolu` / `isim_zaten_acik` /
+`sektor_tavani` / `sermaye_yetersiz`). L-020'nin kuralı: bir kapı reddettiğinde
+**hangi bileşenin** düştüğü sınıf koduyla yazılır, metinden türetilmez.
+
+**Karar 5 — kaynak: canlı analist zinciri, `replay` DEĞİL.**
+
+`replay` VEKİL bir analisttir (`evaluate.kaynak_sec`'in koruduğu ayrım). Vekilin
+kararlarını portföye almak, sistemin karnesini bir ölçüm aracının çıktısıyla
+karıştırmak olurdu. Portföy `tool != 'replay'` tahminleri izler.
+
+**Neden ön kayıt gerekmez.** Bu bir KENAR iddiası değil, mevcut kararların
+mekanik sonucu. Hiçbir seçim kuralı değişmiyor: analist neyi seçtiyse o,
+planın kendi geometrisiyle, rejimin kendi tavanıyla. Portföy seçime DOKUNMAZ —
+yalnız sonucunu sayar. (Sıralama katmanının aynı sınırı için bkz. #015.)
+
+**PROJECT.md ile ilişki.** "Otomatik emir gönderimi — sistem asla işlem yapmaz"
+maddesi korunuyor: emir yok, broker yok, para yok. Bu bir **kayıt** katmanıdır.
+Kapsama eklenen şey "sistemin kendi kararlarının sonucunu takip etmesi".
+
+**Tekrar gözden geçir:** (a) Mert gerçek pozisyon girmeye başlarsa `holdings`
+elle defter olarak geri döner ve kontenjan İKİSİNİN birleşiminden sayılır —
+`portfoy.durum` bunu bugünden destekler; (b) simüle portföy 20+ kapanmış işleme
+ulaşınca `bist degerlendir`'e TL bazlı bir bölüm eklenir (şu an alfa pp bazlı);
+(c) adet-0 reddi sık tekrarlarsa sermaye ya da `position_size_pct` tabanı
+tartışılır — o zaman bu bir **parametre** sorusudur ve ön kayıt disiplinine girer.
+
+---
+
 ## #018 — 2026-08-12 — Hedefin fiyata en az `1.5×ATR` uzaklıkta olması şartı
 
 **Bağlam.** `bist otonom gunluk` her gün 18 canlı isimden yalnız 2-3'üne plan

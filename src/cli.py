@@ -468,10 +468,45 @@ def cmd_portfoy(args) -> int:
     elif args.alt == "listele":
         h = journal.holdings(con)
         if not h:
-            print("Portföyde kayıtlı pozisyon yok.")
+            print("Elle girilmiş pozisyon yok. (`bist portfoy durum` kâğıt "
+                  "portföyü gösterir — ADR #019)")
         for t, r in sorted(h.items()):
             print(f"  {t:8} {r['qty']:>10.0f} adet  ort. maliyet "
                   f"{r['avg_cost'] if r['avg_cost'] is not None else '—'}")
+    elif args.alt == "durum":
+        # KÂĞIT PORTFÖY (ADR #019) — sistemin kendi kararlarının TL karnesi.
+        from . import portfoy as pfm
+        d = pfm.simule(cfg, con, asof=args.ticker)   # opsiyonel tarih
+        print(f"\nKâğıt portföy — {d['asof']} "
+              f"(başlangıç {pfm.tl(d['baslangic_sermaye'])})\n")
+        print(f"  sermaye        {pfm.tl(d['sermaye']):>16}  "
+              f"({d['getiri_pct']:+.2f}%)")
+        print(f"  nakit          {pfm.tl(d['nakit']):>16}  (%{d['nakit_pct'] or 0:.0f})")
+        print(f"  pozisyonlar    {pfm.tl(d['pozisyon_degeri']):>16}")
+        print(f"  gerçekleşen    {pfm.tl(d['gerceklesen_kar_try']):>16}")
+        if d["pozisyonlar"]:
+            print(f"\n  {'hisse':8}{'adet':>6}{'giriş':>10}{'son':>10}"
+                  f"{'getiri':>9}{'K/Z':>14}   giriş tarihi")
+            for p in d["pozisyonlar"]:
+                print(f"  {p['ticker']:8}{p['adet']:>6}{p['giris_fiyat']:>10.2f}"
+                      f"{(p['son_fiyat'] or 0):>10.2f}{(p['getiri_pct'] or 0):>8.2f}%"
+                      f"{pfm.tl(p['kar_try']):>14}   {p['giris_tarih']}")
+        if d["kapanan"]:
+            print(f"\n  KAPANAN ({len(d['kapanan'])})")
+            for k in d["kapanan"]:
+                print(f"  {k['ticker']:8}{k['adet']:>6}  {k['giris_tarih']}→"
+                      f"{k['cikis_tarih']}  {k['sonuc']:6}{k['ret_pct']:>8.2f}%"
+                      f"{pfm.tl(k['kar_try']):>14}")
+        if d["reddedilen"]:
+            from collections import Counter
+            c = Counter(r["sebep"] for r in d["reddedilen"])
+            print("\n  ALINMAYAN PLANLAR — karne ile portföyün farkı buradan doğar")
+            for sebep, n in sorted(c.items(), key=lambda x: (-x[1], x[0])):
+                isim = sorted({f"{r['ticker']}({r['asof'][5:]})"
+                               for r in d["reddedilen"] if r["sebep"] == sebep})
+                print(f"    {n:2d}× {pfm.RED_ETIKET[sebep]:28} "
+                      + " ".join(isim[:5]) + (" …" if len(isim) > 5 else ""))
+        print()
     con.close()
     return 0
 
@@ -814,8 +849,8 @@ def build_parser() -> argparse.ArgumentParser:
     rp2.add_argument("--asof", help="YYYY-MM-DD")
     rp2.set_defaults(fn=cmd_rapor)
 
-    pf = sub.add_parser("portfoy", help="elle tutulan pozisyonlar")
-    pf.add_argument("alt", choices=["ekle", "sil", "listele"])
+    pf = sub.add_parser("portfoy", help="kâğıt portföy + elle tutulan pozisyonlar")
+    pf.add_argument("alt", choices=["ekle", "sil", "listele", "durum"])
     pf.add_argument("ticker", nargs="?")
     pf.add_argument("adet", nargs="?", type=float, default=0.0)
     pf.add_argument("maliyet", nargs="?", type=float)

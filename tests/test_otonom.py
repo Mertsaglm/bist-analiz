@@ -464,3 +464,48 @@ class TestHaftalikIC:
 
         otonom.haftalik(cfg, con)
         assert "IC " not in sessiz_telegram[0]
+
+
+# ============================================================ kâğıt portföy
+class TestKagitPortfoy:
+    """ADR #019 — portföy zincire eklendi; DÜŞERSE rapor yine üretilmeli.
+
+    Yeni bir adım eklerken sorulacak ilk soru bu: kritiklik sınıfı ne?
+    Portföy TÜREV bir görünümdür — hesaplanamaması veriye güvenilmediği
+    anlamına GELMEZ. O yüzden `KRITIK_ADIMLAR`'da değil ve düşüşü raporu
+    engellemez; yalnız o günün raporunda karne bölümü olmaz.
+    """
+
+    @pytest.fixture(autouse=True)
+    def _islem_gunu(self, monkeypatch):
+        from src.calendar_bist import BistCalendar
+        monkeypatch.setattr(BistCalendar, "is_trading_day", lambda self, d: True)
+
+    def test_portfoy_ADIMI_kosar(self, cfg, con, monkeypatch, sessiz_telegram):
+        _adimlari_sahtele(monkeypatch)
+        sonuc = otonom.gunluk(cfg, con, bugun=date(2026, 7, 29),
+                              analist_calistir=False)
+        assert "portfoy" in sonuc["adimlar"], "kâğıt portföy zincirde koşmuyor"
+        assert "TL" in sonuc["adimlar"]["portfoy"]
+
+    def test_portfoy_DUSERSE_rapor_yine_uretilir(self, cfg, con, monkeypatch,
+                                                 sessiz_telegram):
+        _adimlari_sahtele(monkeypatch)
+        from src import portfoy as pfm
+        monkeypatch.setattr(pfm, "simule", lambda *a, **k: (_ for _ in ()).throw(
+            RuntimeError("portföy bilerek düştü")))
+
+        sonuc = otonom.gunluk(cfg, con, bugun=date(2026, 7, 29),
+                              analist_calistir=False)
+        assert "portfoy" in sonuc["hatalar"]
+        assert otonom.basarisiz_mi(sonuc) == [], "portföy düşüşü koşuyu kırdı"
+        assert "rapor" in sonuc["adimlar"], "portföy düşünce rapor da üretilmedi"
+
+    def test_TELEGRAM_ozetinde_TL_satiri(self, cfg, con, monkeypatch,
+                                         sessiz_telegram):
+        """Bildirimin en somut satırı: pp değil TL."""
+        _adimlari_sahtele(monkeypatch)
+        otonom.gunluk(cfg, con, bugun=date(2026, 7, 29), analist_calistir=False)
+        assert sessiz_telegram
+        assert "💼" in sessiz_telegram[0]
+        assert "TL" in sessiz_telegram[0]

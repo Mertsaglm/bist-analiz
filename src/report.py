@@ -562,8 +562,73 @@ def _limit_hucre(ld: dict | None) -> str:
     return _LIMIT_HUCRE.get((ld or {}).get("durum"), "— değerlendirilmedi")
 
 
+def _kagit_portfoy_bolumu(cfg: dict, pf: dict, A) -> None:
+    """§1a — kâğıt portföyün TL karnesi (ADR #019).
+
+    Neden alfa/pp değil TL: bu bölümün sorusu "sıralama kalitesi" değil,
+    **"10.000 TL ile ne oldu?"**. Karne (pp) seçilen planların ortalamasını
+    ölçer; portföy ise KONTENJANIN, sektör tavanının ve tek-isim kuralının
+    süzdüğü, gerçekten alınabilmiş olanları. İkisinin farkı bilgidir ve o
+    yüzden reddedilen planlar da SEBEBİYLE basılır (L-020).
+    """
+    from . import portfoy as pfm
+
+    # ⚠ Başlık h3: §1a ve §1b ZATEN DOLU (yürürlükteki vetolar / veto katkısı).
+    # Yeni bir bölüm numarası araya sıkıştırmak, okuyucunun bildiği sıralamayı
+    # kaydırırdı — rapor her gün aynı yerde aynı şeyi göstermeli.
+    A("### Kâğıt karne — sistemin kendi kararlarıyla")
+    A("")
+    A(f"_Sistem {pfm.tl(pf['baslangic_sermaye'])} ile kendi kararlarını "
+      "uyguluyormuş gibi takip ediyor (ADR #019). Emir gönderilmez; bu bir "
+      "KAYIT katmanıdır ve seçime dokunmaz._")
+    A("")
+    A(f"**{pfm.tl(pf['sermaye'])}** · {pf['getiri_pct']:+.2f}% · "
+      f"nakit {pfm.tl(pf['nakit'])} (%{pf['nakit_pct'] or 0:.0f}) · "
+      f"gerçekleşen {pfm.tl(pf['gerceklesen_kar_try'])} · "
+      f"{len(pf['pozisyonlar'])} açık / {len(pf['kapanan'])} kapandı")
+    A("")
+
+    if pf["pozisyonlar"]:
+        A("| Hisse | adet | giriş | tarih | son | getiri | K/Z | stop | bariyer |")
+        A("|---|---|---|---|---|---|---|---|---|")
+        for p in pf["pozisyonlar"]:
+            A(f"| {p['ticker']} | {p['adet']} | {_s(p['giris_fiyat'])} | "
+              f"{p['giris_tarih']} | {_s(p['son_fiyat'])} | "
+              f"{_s(p['getiri_pct'])}% | {pfm.tl(p['kar_try'])} | "
+              f"{_s(p['stop_price'])} | {p['time_barrier_date']} |")
+        A("")
+
+    if pf["kapanan"]:
+        A("**Kapanan işlemler**")
+        A("")
+        A("| Hisse | giriş → çıkış | sonuç | adet | getiri | K/Z |")
+        A("|---|---|---|---|---|---|")
+        for k in pf["kapanan"]:
+            A(f"| {k['ticker']} | {k['giris_tarih']} → {k['cikis_tarih']} | "
+              f"`{k['sonuc']}` | {k['adet']} | {_s(k['ret_pct'])}% | "
+              f"{pfm.tl(k['kar_try'])} |")
+        A("")
+
+    if pf["reddedilen"]:
+        # ⚠ Bu liste raporun en bilgilendirici satırı olabilir: karne
+        # "seçilen planlar" üzerinden konuşur, portföy "alınabilenler"
+        # üzerinden. Aradaki fark burada duruyor ve SINIF KODUYLA yazılıyor.
+        from collections import Counter
+        c = Counter(r["sebep"] for r in pf["reddedilen"])
+        A("**Alınmayan planlar** — karne ile portföyün farkı buradan doğar")
+        A("")
+        for sebep, n in sorted(c.items(), key=lambda x: (-x[1], x[0])):
+            isimler = sorted({f"{r['ticker']} ({r['asof']})"
+                              for r in pf["reddedilen"] if r["sebep"] == sebep})
+            A(f"- **{n}×** {pfm.RED_ETIKET.get(sebep, sebep)} "
+              f"(`{sebep}`): {' · '.join(isimler[:6])}"
+              + (" …" if len(isimler) > 6 else ""))
+        A("")
+
+
 def daily_report(cfg: dict, bundle: dict, *, holdings: dict | None = None,
-                 analiz: list[dict] | None = None, acik_plan: int = 0) -> str:
+                 analiz: list[dict] | None = None, acik_plan: int = 0,
+                 portfoy: dict | None = None) -> str:
     """Günlük markdown rapor — **AZALT bölümüyle başlar.**
 
     Ölçüldü (2026-07-26): alt kuyruk (−1.03pp) üst kuyruğun ~1.8 katı. Retail
@@ -675,12 +740,22 @@ def daily_report(cfg: dict, bundle: dict, *, holdings: dict | None = None,
         A("")
 
     # --------------------------------------------------- 1) AZALT (önce)
+    #
+    # ⚠ BAŞLIK SÖZLEŞMEDİR, DEĞİŞTİRİLMEZ. İlk denemede buraya "Portföy —
+    # kâğıt karne ve azaltma adayları" yazıldı ve DÖRT sözleşme testi birden
+    # kırmızıya döndü (`test_dokuman`, `test_uctan_uca`, `test_cli`). Haklıydılar:
+    # "AZALT önce" bir estetik tercih değil, ölçüm sonucudur (alt kuyruk üst
+    # kuyruğun ~1.8 katı) ve kâğıt karne bir DURUM bölümüdür, eylem değil.
+    # Karne bu yüzden azaltma tablosunun ALTINDA duruyor.
     A("## 1. Elindekiler — azaltma adayları")
     A("")
     if not tutulan:
         A("_Portföyde kayıtlı pozisyon yok._ `bist portfoy ekle THYAO 100 312.5` "
           "ile ekleyebilirsin — sistemin en savunulabilir çıktısı bu bölüm ve "
-          "neyi tuttuğunu bilmeden çalışamaz.")
+          "neyi tuttuğunu bilmeden çalışamaz."
+          if portfoy is None else
+          "_Ne kâğıt portföyde ne elle girilmiş bir pozisyon var._ "
+          "Kâğıt portföyün neden boş olduğu §1a'da sebebiyle yazılı.")
     else:
         A("| Hisse | adet | kapanış | **sinyal** | işlem görebilirlik | "
           "veri kalitesi | plan durumu |")
@@ -727,6 +802,10 @@ def daily_report(cfg: dict, bundle: dict, *, holdings: dict | None = None,
             A("")
             A("_Analist elindekilerin hiçbirinde `reduce`/`sell`/`avoid` demedi._")
     A("")
+
+    # Kâğıt karne AZALTMADAN SONRA — yukarıdaki uyarıya bak.
+    if portfoy is not None:
+        _kagit_portfoy_bolumu(cfg, portfoy, A)
 
     # --------------------------------------------------- 1a) AKTİF VETOLAR
     # Süresi dolmamış, ÖNCEKİ koşulardan kalan vetolar. Bunlar bugünkü analiz
@@ -866,7 +945,8 @@ def daily_report(cfg: dict, bundle: dict, *, holdings: dict | None = None,
 def telegram_ozet(cfg: dict, bundle: dict, *, analiz: list[dict] | None = None,
                   holdings: dict | None = None, cozulen: list[dict] | None = None,
                   analist_model: str | None = None,
-                  saglik: str | None = None) -> str:
+                  saglik: str | None = None,
+                  portfoy: dict | None = None) -> str:
     """Telefonda okunacak KISA özet (Faz 8).
 
     Tam rapor `reports/` altında ve repoda duruyor; bunun işi onu tekrarlamak
@@ -890,6 +970,14 @@ def telegram_ozet(cfg: dict, bundle: dict, *, analiz: list[dict] | None = None,
       f"{pol['maks_pozisyon']} pozisyon")
     if saglik:
         A(saglik)
+
+    # 0) KÂĞIT PORTFÖY — tek satır (ADR #019). Rejim satırının hemen altında
+    # duruyor çünkü ikisi aynı soruyu cevaplıyor: "şu an neredeyiz?". Sistemin
+    # kendi karnesi, bildirimin en somut satırıdır — pp değil TL konuşur.
+    if portfoy:
+        from . import portfoy as pfm
+        A(f"💼 {pfm.tl(portfoy['sermaye'])} ({portfoy['getiri_pct']:+.2f}%) · "
+          f"{len(portfoy['pozisyonlar'])} açık · nakit %{portfoy['nakit_pct'] or 0:.0f}")
 
     # 1) Elindekiler — azaltma sinyali varsa ÖNCE o
     azalt = [t for t, a in an.items()

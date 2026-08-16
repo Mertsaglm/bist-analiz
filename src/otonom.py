@@ -272,11 +272,23 @@ def gunluk(cfg: dict, con: sqlite3.Connection, *, bugun: date | None = None,
             raise RuntimeError(f"paket yok: llm/in/{asof}/bundle.json")
         analiz = db.fetch_all(
             con, "SELECT * FROM predictions WHERE asof = ? ORDER BY ticker", (asof,))
-        tutulan = journal.holdings(con)
+        # KÂĞIT PORTFÖY (ADR #019). Kontenjan artık KÖR DEĞİL: `holdings`
+        # boşken "0/2 dolu" diyen satır, sistemin kendi açık pozisyonlarını
+        # saymaya başladı. Elle girilen kayıt ÜSTÜN — Mert gerçek bir pozisyon
+        # girdiyse o gerçektir ve simülasyon onu ezemez.
+        try:
+            from . import portfoy as pfm
+            pf = pfm.simule(cfg, con, asof=asof)
+            sonuc["adimlar"]["portfoy"] = pfm.ozet_satiri(pf)
+        except Exception as e:                              # noqa: BLE001
+            _hata(sonuc, "portfoy", e)
+            pf = None
+        elle = journal.holdings(con)
+        tutulan = {**(pfm.holdings_gorunumu(pf) if pf else {}), **elle}
         acik_plan = len([p for p in journal.open_predictions(con)
                          if p["action"] == "plan_sec"])
         metin = report.daily_report(cfg, b, holdings=tutulan, analiz=analiz,
-                                    acik_plan=acik_plan)
+                                    acik_plan=acik_plan, portfoy=pf)
         sonuc["rapor"] = report.write(cfg, f"gunluk_{asof}.md", metin)
 
         ozet = report.telegram_ozet(
@@ -284,7 +296,8 @@ def gunluk(cfg: dict, con: sqlite3.Connection, *, bugun: date | None = None,
             cozulen=[{"resolution": k} for k, v in
                      (sonuc.get("cozulen_dagilim") or {}).items() for _ in range(v)],
             analist_model=sonuc.get("analist_model"),
-            saglik=sag.tek_satir(sonuc["saglik"]) if sonuc.get("saglik") else None)
+            saglik=sag.tek_satir(sonuc["saglik"]) if sonuc.get("saglik") else None,
+            portfoy=pf)
         if sonuc.get("hatalar"):
             ozet += "\n\n⚠ Düşen adım: " + ", ".join(sorted(sonuc["hatalar"]))
         tg.bildir(cfg, ozet)
