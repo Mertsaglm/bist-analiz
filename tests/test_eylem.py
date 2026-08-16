@@ -150,3 +150,68 @@ class TestKenarIddiasiYok:
         """Boş azaltma listesi 'azaltacak bir şey yok' anlamına gelmez."""
         r = eylem.siralama(_bundle([_e("AAA")]), holdings={"AAA": {"qty": 1}})
         assert r["analist_var"] is False
+
+
+# ============================================================ bugünkü veto
+class TestBugunkuAnalistKarari:
+    """⚠ NE OLMUŞTU (2026-08-15 denetimi): elde-OLMAYAN isimler dalı analist
+    çıktısına HİÇ bakmıyordu. `siralama` `analiz` parametresini alıyor ve
+    `a = an.get(t)` satırı bile vardı — ama `a` yalnız `holdings` dalında
+    okunuyordu ve portföy boştu.
+
+    Okunan tek veto kaynağı `e["aktif_vetolar"]` idi; o da paket üretilirken
+    (otonom zincir adım 7) hesaplanır, analist adım 8'de koşar. Yani bugünkü
+    veto o listede YAPISAL OLARAK bulunamaz.
+
+    Ölçülen sonuç: 2026-08-14 raporunun §0'ı "🟢 KCHOL — GİR — plan bugün
+    tetiklenebilir, ENGEL YOK" yazdı; aynı raporun §2'si ve aynı günün
+    Telegram özeti "plan_reddet · VETO rejim_uyumsuz" dedi.
+
+    Aşağıdaki ilk test o günün verisinin BİREBİR kopyasıdır.
+    """
+
+    _ANALIZ = [{"ticker": "KCHOL", "signal": "hold", "action": "plan_reddet",
+                "veto_code": "rejim_uyumsuz", "thesis": "planlari uygulamiyoruz"}]
+
+    def _bundle_kchol(self):
+        return _bundle([_e("KCHOL", plan_menusu=_plan("KCHOL-2026-08-14-A"))],
+                       maks=2, etiket="risk-off")
+
+    def test_bugun_reddedilen_plan_GIR_diyemez(self):
+        r = eylem.siralama(self._bundle_kchol(), holdings={}, analiz=self._ANALIZ)
+        assert r["gir"] == [], "analist reddettiği hâlde 'GİR' önerildi"
+        assert [x.ticker for x in r["izle"]] == ["KCHOL"]
+        assert any("BUGÜN planı reddetti" in g for g in r["izle"][0].gerekce)
+        assert "rejim_uyumsuz" in " ".join(r["izle"][0].gerekce)
+
+    def test_analist_karari_CIKTIYI_DEGISTIRIR(self):
+        """Asıl kilit. Eski kodda bu iki çağrı BİREBİR aynı sonucu veriyordu —
+        yani analist katmanı eylem listesi için yok hükmündeydi."""
+        b = self._bundle_kchol()
+        ile = eylem.siralama(b, holdings={}, analiz=self._ANALIZ)
+        siz = eylem.siralama(b, holdings={}, analiz=None)
+        assert [x.baslik for x in ile["gir"]] != [x.baslik for x in siz["gir"]], (
+            "analistin plan_reddet + veto kararı eylem listesini DEĞİŞTİRMİYOR")
+
+    def test_veto_kodu_tek_basina_da_yeter(self):
+        """`action` başka olsa bile dolu bir `veto_code` bir risktir."""
+        analiz = [{"ticker": "KCHOL", "signal": "hold", "action": "izle",
+                   "veto_code": "haber_riski"}]
+        r = eylem.siralama(self._bundle_kchol(), holdings={}, analiz=analiz)
+        assert r["gir"] == []
+        assert any("haber_riski" in g for g in r["izle"][0].gerekce)
+
+    def test_azalt_sinyali_elde_OLMAYAN_ismi_de_geri_iter(self):
+        """`avoid` diyen bir analistin planına 'engel yok' denemez."""
+        analiz = [{"ticker": "KCHOL", "signal": "avoid", "action": "islem_yok"}]
+        r = eylem.siralama(self._bundle_kchol(), holdings={}, analiz=analiz)
+        assert r["gir"] == []
+        assert any("`avoid`" in g for g in r["izle"][0].gerekce)
+
+    def test_TEMIZ_analist_karari_GIR_i_engellemez(self):
+        """Simetri: düzeltme her şeyi 'BEKLE'ye çevirmemeli."""
+        analiz = [{"ticker": "KCHOL", "signal": "buy", "action": "plan_sec",
+                   "veto_code": None}]
+        r = eylem.siralama(self._bundle_kchol(), holdings={}, analiz=analiz)
+        assert [x.ticker for x in r["gir"]] == ["KCHOL"]
+        assert r["gir"][0].hazir

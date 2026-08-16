@@ -72,9 +72,42 @@ def _engeller(e: dict) -> list[str]:
     return out
 
 
-def _riskler(e: dict, vetolar: list[dict]) -> list[str]:
-    """Uygulamayı ENGELLEMEYEN ama sırayı geriye iten olgular."""
+def _analist_riskleri(a: dict | None) -> list[str]:
+    """Analistin **BUGÜNKÜ** kararı. `aktif_vetolar`'ın kapatamadığı boşluk.
+
+    ⚠ NE OLUYORDU (2026-08-15 denetimi): `siralama` analiz sözlüğünü kuruyor
+    ama elde-OLMAYAN isimler dalında ONA HİÇ BAKMIYORDU; yalnız `holdings`
+    dalı okuyordu ve portföy boş. Okunan tek veto kaynağı
+    `e["aktif_vetolar"]` idi — o da paket üretilirken (zincir adım 7)
+    hesaplanır, analist ise adım 8'de koşar. Yani bugünkü veto o listede
+    YAPISAL OLARAK bulunamaz; ancak ertesi gün "yürürlükte" diye görünürdü.
+
+    Ölçülen sonuç: 2026-08-14 raporunun §0'ı "🟢 KCHOL — GİR — plan bugün
+    tetiklenebilir, ENGEL YOK" yazdı; aynı raporun §2'si ve aynı günün
+    Telegram özeti "plan_reddet · VETO rejim_uyumsuz" dedi. Rapor kendi
+    içinde ve kanallar arasında çelişti — üstelik en çok okunan bölümde.
+
+    Bunlar ENGEL değil RİSKTİR (L-003): plan deterministik olarak hâlâ
+    uygulanabilir, ama "engel yok" cümlesi kurulamaz. `siralama`'daki
+    `gerçekten_gir = ... and not risk` koşulu gerisini kendi halleder.
+    """
+    if not a:
+        return []
     out: list[str] = []
+    vk = a.get("veto_code")
+    if a.get("action") == "plan_reddet":
+        out.append("analist BUGÜN planı reddetti"
+                   + (f" · veto `{vk}`" if vk else ""))
+    elif vk:
+        out.append(f"analist BUGÜN veto koydu: `{vk}`")
+    if a.get("signal") in AZALT_SINYALLERI:
+        out.append(f"analistin bugünkü sinyali `{a['signal']}`")
+    return out
+
+
+def _riskler(e: dict, vetolar: list[dict], analiz: dict | None = None) -> list[str]:
+    """Uygulamayı ENGELLEMEYEN ama sırayı geriye iten olgular."""
+    out: list[str] = _analist_riskleri(analiz)
     bp = e.get("bilanco_penceresi") or {}
     if bp.get("durum") == "acik":
         n = len(bp.get("bildirimler") or [])
@@ -130,8 +163,11 @@ def siralama(bundle: dict, *, holdings: dict | None = None,
         t = e["ticker"]
         vetolar = e.get("aktif_vetolar") or []
         eng = _engeller(e)
-        risk = _riskler(e, vetolar)
         a = an.get(t)
+        # `a` ARTIK HER İKİ DALDA DA OKUNUYOR. Eskiden yalnız `holdings`
+        # dalı okuyordu; elde olmayan isimler analistin bugünkü kararını
+        # görmüyordu (bkz. `_analist_riskleri`).
+        risk = _riskler(e, vetolar, a)
         planlar = e.get("plan_menusu") or []
         p = planlar[0] if planlar else None
         t1 = (p or {}).get("targets") or [{}]
