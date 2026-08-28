@@ -6,6 +6,74 @@
 
 ---
 
+## #020 — 2026-08-28 — Aynı gün iki kez analiz edilemez; ve girdi de çıktı gibi mühürlenir
+
+**Bağlam.** İki bağımsız dış denetim (biri 2026-08-25, biri 08-28) uygulandı.
+08-25 raporu 12 işlem günü eski bir kesite bakmıştı; iki "Kritik" bulgusunun
+ikisi de o tarihte gerçekti ama bugün kapalı (bkz. "Reddedilenler").
+
+Asıl olay denetimin KENDİSİ sırasında oldu: 2026-08-27'nin planlı koşusu
+GitHub'da hiç görünmedi, sonraki koşu 08-28T01:05Z'de başladı (nominal saatten
+8,5 saat sapma — **takvim gününü aştı**). O anda `bars_daily` max hâlâ
+2026-08-26 idi. Zincir `asof`u `MAX(bars_daily.date)`ten okuduğu için
+**zaten analiz edilmiş bir günü yeniden analiz etti.**
+
+Ölçülen hasar:
+
+| | koşu 1 (08-26T18:25Z) | koşu 2 (08-28T01:08Z) |
+|---|---|---|
+| tahmin | 18 | 18 |
+| `plan_sec` | **0** | **2** |
+| veto | 10 | 7 |
+
+Aynı piyasa verisi, aynı model, aynı plan menüsü (19 plan / 9 isim, tek ve
+aynı) — **18 ismin 12'sinde farklı karar.** `reports/gunluk_2026-08-26.md`
+iki gün sonra üzerine yazıldı; o gün journal'a 17 veto girdi.
+
+**Karar 1 — "bu gün zaten analiz edildi" KAPISI, ama DURDURMA değil ATLAMA.**
+
+`otonom.gunluk` adım 8'den önce `predictions`'ta o `asof` için kayıt arar;
+varsa analist adımı koşmaz ve koşu `zaten_analiz_edildi` diye işaretlenir.
+
+Sınıflandırma AGENTS §12a ile yapıldı — *"bu bulguyu bu koşunun KENDİSİ
+düzeltebilir mi?"* Hayır, o yüzden bu bir **GÖZLEM**tir ve zinciri
+durduramaz: veri/gösterge/çözüm/rapor adımları koşmaya devam eder (hepsi
+idempotent) ve o günün raporu yine üretilir. Kilitlenemez de: `asof` veriyle
+ilerler, veri adımı bundan ÖNCE koşar; yeni bar gelince analist kendiliğinden
+döner. Bar hiç akmıyorsa onu `saglik`in "bar tazeliği" ve "atlanan koşu"
+kontrolleri bağırır — bu kapı onların işini ÜSTLENMEZ.
+
+**Neden ikinci koşunun kayıtları SİLİNMEDİ.** Journal değişmezdir (ADR #014).
+Üstelik o kaza, sistemin hiç sormadığı bir soruyu ölçtü: **analist
+tekrarlanabilir mi?** Kayıt kalır; ölçüme girişi ayrıca ele alınır.
+
+**Karar 2 — GİRDİ de run'a özel mühürlenir (`journal.muhurle_girdi`).**
+
+L-018 çıktıyı 2026-08-11'de ezilmez bir kopyaya bağlamış ve aynı turda şunu
+yazmıştı: *"bir savunma kurduğunda sor: bunun aynısı akışın öbür ucunda da
+olmalı mıydı?"* Girdi tarafına uygulanmadı. `llm/in/<asof>/bundle.json` yalnız
+tarihe bağlı kaldı ve 08-26'da ezildi: `llm_runs` birinci koşu için
+`bundle_sha 91eedc59…` diyor, **o sha'nın diskte karşılığı yok** (ölçüldü —
+diskteki paket ikinci koşuya ait). Yani o analistin neyi gördüğü artık
+kanıtlanamaz ve `bundle_sha`ya bakan HF-02 denetimi onu doğrulayamaz.
+
+`bundle.json` "bugün en son hangi paket üretildi?" sorusunun cevabı olarak
+yerinde kalır; `<run_id>.json` "bu tahminler neyi görerek doğdu?" sorusunun
+ezilemez cevabıdır — `muhurle_cikti`daki ile birebir aynı ayrım.
+
+**Elenen alternatifler.**
+(a) *Bar tazeliğini 1 seansta KRİTİK yap* → gerçek bir yfinance gecikmesinde
+zinciri gereksiz durdurur ve L-016 kilitlenmesinin sınıfına yaklaşır; ayrıca
+asıl boşluğu (çift analiz) kapatmaz.
+(b) *İkinci koşunun kayıtlarını sil* → değişmezliği ihlal eder ve elimizdeki
+tek tekrarlanabilirlik gözlemini yok eder.
+(c) *Cron'u sıkılaştır* → GitHub gecikmesi bizim kontrolümüzde değil.
+
+**Tekrar gözden geçir:** (a) aynı `asof` için birden çok koşu varsa analist
+kararlılığı bir METRİĞE dönüştürülmeli ("12/18 isimde farklı") — bugün bir
+kaza, olması gereken bir ölçüm; (b) kapı bir kez tetiklendiğinde Telegram
+özetinde görünsün mü, yoksa sessiz kalması yeterli mi.
+
 ## #019 — 2026-08-16 — Kâğıt portföy: sistem kendi kararlarını KENDİ takip eder; portföy TÜRETİLİR, defter tutulmaz
 
 **Bağlam.** Üç haftadır üretilen hiçbir plan gerçek pozisyona dönüşmedi.

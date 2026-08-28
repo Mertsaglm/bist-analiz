@@ -787,6 +787,19 @@ def daily_report(cfg: dict, bundle: dict, *, holdings: dict | None = None,
                 satir += (f" · `{x.plan_id}` · riske edilen "
                           f"%{_s(x.riske_edilen_pct, 2)} · R:R net {_s(x.rr_net)}")
             A(satir)
+            # ⚠ ANALİSTİN BUGÜNKÜ AKSİYONU — NÖTR OLGU (2026-08-28 denetimi).
+            # "GİR — engel yok" cümlesi, analist `izle` demişken de basılıyordu
+            # (2026-08-24: ASELS §0'da "engel yok", journal'da `izle`). Okuyucu
+            # "analistin de itirazı yok" diye anlıyordu. Risk listesine
+            # eklenmez — `izle` bir ENGEL değildir ve sıralamayı bozmamalı
+            # (ADR #015 madde 3); ama görünmemesi de olmaz.
+            # Gerekçe listesi analisti ZATEN anlatıyorsa tekrarlama: `plan_reddet`
+            # ve azalt sinyalleri oraya RİSK olarak giriyor (L-022). Bu satır
+            # yalnız risk üretmeyen kararlar için var — `izle`, `islem_yok`,
+            # `plan_sec` — yani tam olarak daha önce hiç görünmeyenler.
+            if x.analist_aksiyon and not any(
+                    g.startswith("analist") for g in x.gerekce):
+                A(f"   - analist bugün: `{x.analist_aksiyon}`")
             for g in x.gerekce:
                 if g:
                     A(f"   - {g}")

@@ -12,7 +12,10 @@ VS Code eklentileri, Copilot...**) aynı şekilde çalışan kişisel bir
 > onu izleyen "kurallar bizden sonra da yaşasın" turunun sonucudur.
 > 7. ve 8. kural ile "kilit mi, süs mü?" adımı 2026-08-12'de eklendi: dışarıdan
 > beş bağımsız AI incelemesi + kod/veri kazısı, **doğru yazılmış bir kapının
-> sessizce bir seçim filtresine dönüştüğünü** buldu.
+> sessizce bir seçim filtresine dönüştüğünü** buldu. 9. kural 2026-08-28'de
+> eklendi: iki bağımsız dış denetim, şablonun KENDİ kurallarından birinin
+> yazılı olduğu hâlde zorlanmadığını ve **o boşluğun başka bir hatayı
+> gizlediğini** gösterdi.
 
 ## Yapı
 
@@ -86,7 +89,7 @@ Bozulan şey kodun varsaydığı VERİ DURUMUYDU ve hiçbiri hata fırlatmıyord
 Bunların hiçbiri kod okuyarak görülemez. `/denetle` bu yüzden **veritabanının
 gerçek içeriğine bakmakla başlar.** Ayrıntılı protokol: AGENTS.md bölüm 11.
 
-## Şablonun taşıdığı sekiz sert kural
+## Şablonun taşıdığı dokuz sert kural
 
 Bunlar AGENTS.md'de yazılı ve her projeye taşınır:
 
@@ -148,6 +151,24 @@ doğruydu; ölçünce elenen 15 vakanın **15'inde de A geçiyordu** — öldür
 > yaz — metinden türetme, bir **sınıf kodu** koy ve testi metne değil koda
 > baktır. Ve tanı verisini yalnız başarı yolunda saklama: sor, *"bu bilgi en
 > çok ne zaman lazım — işler yürürken mi, durduğunda mı?"*
+
+**9. Yazılı ama zorlanmayan bir kural yalnız kendisi düşmez — KÖR EDER.**
+Gerçek vaka: şablonun kendi listesinde *"testler dış servislere dokunmamalı"*
+yazıyordu ve zorlanmıyordu. Bir test tek bir dış çağrıyı mock'luyor, komut ise
+iki tane yapıyordu. Görünen zarar küçüktü (test sonucu ağ durumuna bağlı).
+
+Görünmeyen zarar büyüktü: yasak konulunca **ikinci** bir test düştü ve ortaya
+şu çıktı — bir kaynağı kapatan config anahtarı, o kaynağın ikinci kod yolunu
+kapatmıyordu. Kapatma anahtarı kapatmıyordu. Hata aylardır oradaydı ve
+**yeşil bir suite tarafından örtülüyordu**: çağrı ağa erişebildiği için
+başarılı dönüyor, başarılı dönen çağrı da hatayı görünmez kılıyordu.
+
+> Kural: bir sızıntıyı kapattığında **arkasından ne çıktığına bak.** "Kuralı
+> zorlar hale getirdim, suite hâlâ yeşil" yeterli bir sonuç değildir; asıl
+> soru **zorlama açılınca ne kırmızıya döndüğü**dür. Ve bir kapatma anahtarı
+> yazdıysan onu kaynağın SINIRINA koy (çağrı yerine değil) ve **kapattığını
+> test et** — "kapalı" ile "çekilemedi" ayrı sonuçlardır.
+> Ayrıntı: AGENTS.md bölüm 12c.
 
 ## Kuralı nasıl teste devredersin? (dile bağlı değil)
 

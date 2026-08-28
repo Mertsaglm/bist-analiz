@@ -46,8 +46,15 @@ raporunda basılır**. "Ne zaman bilebiliriz?" bir his değil, hesaplanmış bir
 - Değişmez tahmin günlüğü + **deterministik** üçlü bariyer sonuç çözümü
 - Ölçüm harness'i: walk-forward, örtüşmeyen pencere, maliyetli, in-sample/OOS
 - Yerel CLI + Türkçe markdown rapor
+- **Kâğıt portföy (#019):** sistem kendi kararlarını 10.000 TL ile takip eder.
+  Ayrı bir defter DEĞİL, `predictions` + `outcomes`'tan TÜRETİLMİŞ bir görünüm;
+  alınamayan planlar sebebiyle (`kontenjan_dolu`, `isim_zaten_acik`,
+  `giris_olmadi`) ifşa edilir. ⚠ Henüz bir TABANA karşı ölçülmüyor ve nakit
+  %0 faizle duruyor — ikisi de karar bekliyor (STATE "Karar bekleyenler").
 - **Sözleşme testleri:** projenin kendi kuralları (eşik zemini, LLM sınırı,
-  kolon↔şema eşliği, doküman tutarlılığı) koşulabilir hale getirildi (#011)
+  kolon↔şema eşliği, doküman tutarlılığı) koşulabilir hale getirildi (#011).
+  Suite **hermetiktir**: gerçek DB'ye yazamaz, çıktıyı repoya bırakmaz, ağa
+  çıkamaz — üçü de fixture'da zorlanır (#020 turu, L-025).
 
 ## Kapsam Dışı (Ne YOK — bilerek)
 - **İki-AI konsensüs** — 2× maliyet, ölçülmemiş fayda

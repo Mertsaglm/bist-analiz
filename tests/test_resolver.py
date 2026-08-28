@@ -232,3 +232,61 @@ class TestTabanCizgisiNoktaZamanli:
         add_bars(con, "AAA", [("2024-01-02", 10, 10, 10, 10, 100, 10)])
         add_universe(con, "YOK", in_measure=True)      # barı yok
         assert resolver._ew_evreni(con, "2024-01-02") == ["AAA"]
+
+
+class TestAcikSayaciAyrimi:
+    """B-11 KİLİDİ — "açık" iki ayrı olgudur, tek sayıya sıkışamaz.
+
+    ⚠ NE OLUYORDU (2026-08-28 denetimi): koşu günlüğü her gün
+    `0 çözüldü · N açık` basıyordu ve N her seans 18 artıyordu
+    (104 → 122 → … → 319 → 337). Ölçüldü: 337 açık kaydın **320'sinde**
+    `time_barrier_date` NULL — `izle`/`islem_yok`/`plan_reddet`, yani planı
+    olmayan kararlar; bunlar HİÇBİR ZAMAN çözülemez. Gerçek açık plan **17**
+    idi ve aynı gün `saglik` tam olarak "17 açık plan" diyordu.
+
+    Zarar: açık plan 17'den 40'a fırlasa 337'nin içinde görünmezdi — gerçek
+    bir sinyal, anlamsız bir sayacın içinde kayboluyordu (L-007'nin sayaç hâli).
+    """
+
+    def _karar_kaydi_ekle(self, cfg, con, ticker="KARAR"):
+        """Planı OLMAYAN bir tahmin — `izle` kararı."""
+        add_universe(con, ticker)
+        run_id = journal.create_run(cfg, con, asof="2024-01-02",
+                                    tool="test2", bundle_sha="x")
+        return journal.record(
+            cfg, con, run_id=run_id, asof="2024-01-02", ticker=ticker,
+            analist={"signal": "hold", "action": "izle", "confidence": "dusuk",
+                     "thesis": "t", "counter_scenario": "c", "key_risk": "k",
+                     "falsifier": "f"},
+            plan={}, faktor={"score": 1.0, "rank": 1, "pct": 50.0,
+                             "weights_hash": "h"},
+            referans={"close": 100.0})
+
+    def test_PLANSIZ_karar_ACIK_PLAN_sayilmaz(self, cfg, con):
+        # Bariyeri gelmemiş GERÇEK bir açık plan
+        satirlar = [("2024-01-02", 100, 101, 99, 100, 1e6, 100),
+                    ("2024-01-03", 100, 101, 99, 100, 1e6, 100)]
+        TestUctanUca._kur(TestUctanUca(), cfg, con, satirlar,
+                          stop=95, t1=110, e_low=99, e_high=100)
+        # ...ve çözülmesi hiç beklenmeyen üç karar kaydı
+        for t in ("KARAR1", "KARAR2", "KARAR3"):
+            self._karar_kaydi_ekle(cfg, con, t)
+
+        r = resolver.resolve_open(cfg, con)
+
+        assert r["cozulebilir_acik"] == 1, \
+            f"açık plan sayısı yanlış: {r['cozulebilir_acik']} (beklenen 1)"
+        assert r["karar_kaydi"] == 3, \
+            f"karar kaydı sayısı yanlış: {r['karar_kaydi']} (beklenen 3)"
+        assert r["hala_acik"] == 4, "geriye uyumlu toplam bozuldu"
+
+    def test_karar_kaydi_ASLA_cozulmez_ve_sayac_SISMEZ(self, cfg, con):
+        """Karar kayıtları outcome üretmez — 320 anlamsız satır doğmamalı."""
+        for t in ("K1", "K2"):
+            self._karar_kaydi_ekle(cfg, con, t)
+        r = resolver.resolve_open(cfg, con)
+        assert r["cozulen"] == 0
+        assert r["cozulebilir_acik"] == 0, \
+            "planı olmayan karar 'açık plan' diye sayıldı"
+        assert r["karar_kaydi"] == 2
+        assert con.execute("SELECT COUNT(*) FROM outcomes").fetchone()[0] == 0

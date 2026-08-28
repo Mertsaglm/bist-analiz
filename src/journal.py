@@ -125,6 +125,43 @@ def muhurle_cikti(cfg: dict, con: sqlite3.Connection, *, run_id: str, asof: str,
     return {"ok": True, "yol": yol, "sha": sha}
 
 
+def muhurle_girdi(cfg: dict, *, run_id: str, asof: str, bundle: dict) -> dict:
+    """Analistin GÖRDÜĞÜ paketi run'a özel bir dosyaya kopyalar.
+
+    `muhurle_cikti`nın SİMETRİĞİ — ve L-018'in kendi cümlesinin gecikmiş
+    uygulaması: *"bir savunma kurduğunda sor: bunun aynısı akışın öbür ucunda
+    da olmalı mıydı?"* Çıktı 2026-08-11'de mühürlendi; girdi tarihe bağlı
+    kaldı ve aynı sınıf hata girdi tarafında ayakta durmaya devam etti.
+
+    ⚠ YAŞANDI (2026-08-28 denetimi): `llm/in/<asof>/bundle.json` yalnız TARİHE
+    bağlıydı. 2026-08-26 iki kez analiz edilince ikinci koşunun paketi
+    birincininkini ezdi. Sonuç: `llm_runs` birinci koşu için
+    `bundle_sha 91eedc59…` diyor ama o sha'nın DİSKTE KARŞILIĞI YOK — o koşunun
+    analistinin neyi gördüğü artık kanıtlanamaz. `bundle_sha`ya bakan HF-02
+    denetimi de o paketi bir daha doğrulayamaz.
+
+    `bundle.json` "bugün en son hangi paket üretildi?" sorusunun cevabı olarak
+    YERİNDE KALIR (elle IDE akışı ona bakar); bu dosya ise "bu tahminler neyi
+    görerek doğdu?" sorusunun ezilemez cevabıdır — `muhurle_cikti`daki ile
+    birebir aynı ayrım.
+    """
+    from pathlib import Path
+
+    beklenen = bundle.get("bundle_sha")
+    hesap = util.sha256_canonical({k: v for k, v in bundle.items()
+                                   if k != "bundle_sha"})
+    if beklenen and beklenen != hesap:
+        # Mühür kendi içinde tutmuyorsa kopyalamak yanlış güven verir.
+        return {"ok": False, "not": f"bundle_sha tutmuyor: {beklenen} ≠ {hesap}"}
+
+    dizin = Path(cfg["paths"]["llm_in_dir"]) / asof
+    hedef = util.ensure_parent(dizin / f"{run_id}.json")
+    util.write_json(hedef, bundle)
+    return {"ok": True,
+            "yol": f"{cfg['paths']['llm_in_dir']}/{asof}/{run_id}.json",
+            "sha": hesap}
+
+
 # ---------------------------------------------------------------- otonom koşu
 # ⚠ HEARTBEAT — bkz. `db.SCHEMA::otonom_kosu` ve `migrations._m010`.
 # Bu üç fonksiyon "koşu gerçekten oldu mu?" sorusunu, koşunun ÜRÜNÜNE bakmadan

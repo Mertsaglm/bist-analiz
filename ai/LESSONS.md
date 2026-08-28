@@ -6,6 +6,92 @@
 
 ---
 
+## L-025 — 2026-08-28 — Testin ağa çıkabilmesi, arkasındaki hatayı GİZLER
+
+**Olay.** `test_temiz_cekim_0` yalnız `news.sync`'i mock'luyordu; ama
+`cli.cmd_haber` aynı komutta ikinci bir dış çağrı daha yapıyor
+(`news.sync_beklenen`) ve o mock'suzdu. Test gerçek KAP'a bağlanıyordu.
+Ağı olan makinede yeşil, olmayanda kırmızı — yani testin sonucu neyi
+kanıtladığına değil, **ağ durumuna** bağlıydı.
+
+Sızıntı kapatılınca (`conftest.ag_yasak`) **iki** test düştü ve ikincisi çok
+daha ciddiydi: `test_kap_kapaliysa_0`. Ölçülen çıktı şuydu —
+
+```
+KAP kapalı (config.sources.kap.enabled)
+⚠ beklenen bildirim takvimi: ConnectionError: ... kap.org.tr
+```
+
+`sources.kap.enabled=False` iken bile KAP'a çıkılıyordu: `kap.fetch_beklenen`
+yalnız kendi alt anahtarına (`beklenen_bildirim.enabled`) bakıyor, **ANA
+ANAHTARI hiç okumuyordu.** Yani kapatma anahtarı kapatmıyordu — ve KAP düştüğü
+için katmanı kapatan kullanıcı, kapattığını sanarak aynı hatayı almaya devam
+ederdi.
+
+**Kök sebep.** Testin ağa erişebilmesi, o çağrının BAŞARILI dönmesini
+sağlıyordu; başarılı dönen bir çağrı da hatayı görünmez kılıyordu. Yeşil test,
+"bu komut izole" inancını kayda geçirmişti (AGENTS §11 tuzak 4) ve o inanç
+yanlıştı.
+
+**Anti-pattern.** Bir testte tek bir dış sınırı mock'layıp "izole ettim"
+saymak. Komutun kaç dış sınırı olduğunu SAYMADAN izolasyon iddia edilemez.
+
+**Kural.**
+1. Testlerde ağ **varsayılan olarak yasaktır**, tek tek mock'lanarak değil
+   suite genelinde (`conftest.ag_yasak`). Gerçekten gereken test
+   `@pytest.mark.ag_gerekli` ile İŞARETLENİR — işaret görünürdür, sızıntı değil.
+2. Bir kapatma anahtarı yazdığında **kaynağın sınırına** koy, çağrı yerine
+   değil: orada hiçbir çağıran atlayamaz (§11 tuzak 5).
+3. "Kapalı" ile "çekilemedi" ayrı sonuçlardır (L-003) ve ayrı çıkış kodları
+   hak ederler; birini diğerinin kovasına atmak, kullanıcıya var olmayan bir
+   arıza gösterir.
+4. Bir sızıntıyı kapattığında **arkasından ne çıktığına bak** — sızıntı
+   genellikle tek başına durmaz, bir şeyi örtüyordur.
+
+---
+
+## L-024 — 2026-08-28 — Bir sayacın PAYDASI, saydığı şeyi kapsamayan bir kümeyse metrik sessizce yalan söyler
+
+**Olay.** İki ayrı sayaç, aynı sınıf hatayla, aynı hafta yakalandı.
+
+| Sayaç | Ne diyordu | Gerçek |
+|---|---|---|
+| `evaluate.araclar()` | `{replay: 20, gemini-3.6-flash: 3, claude-code: 2}` | `gemini-3.5-flash` **252 tahmin, 79 veto** — listede HİÇ YOK |
+| koşu günlüğü "açık" | `337 açık` ve her seans +18 | Gerçek açık plan **17**; 320'si `time_barrier_date` NULL, yani hiç çözülemez |
+
+Birincisinin bedeli: son üç haftanın BÜTÜN kararlarını veren model haftalık
+değerlendirmeye yapısal olarak giremiyordu (`outcomes` ile INNER JOIN).
+`reports/degerlendirme_gemini-3.5-flash_*.md` diye bir dosya yoktu ve 08-16 ile
+08-23 Telegram özetleri **birebir aynıydı**. Kullanıcının kendi sohbetinde
+günlük mesajlar her gün `🤖 gemini-3.5-flash` yazıyor, haftalık özet o modeli
+hiç anmıyordu. ADR #013'ün temel vaadi — *"hangi model daha iyi analist
+sorusunu sistem kendisi cevaplayacak"* — bu JOIN yüzünden imkânsızdı: yeni bir
+modele geçilince o model ilk sonucu çözülene kadar (≈1 ay) görünmez oluyordu.
+
+İkincisinin bedeli: açık plan sayısı 17'den 40'a fırlasa 337'nin içinde
+görünmezdi. Aynı gün `saglik` doğru sayıyı ("17 açık plan") basıyordu — yani
+**iki kanal aynı olguyu bir mertebe farkla söylüyordu.**
+
+**Kök sebep.** L-023 tam bu hatayı `veto_value` ve `llm_contribution` için
+düzeltmişti; **araç sayımına uygulanmadı** — üstelik aynı dosyanın 40 satır
+yukarısında. L-008'in "simetriğini ara" kuralının dördüncü tekrarı.
+
+**Anti-pattern.** Bir düzeltmeyi onu tetikleyen çağrı yerine uygulayıp
+bitmiş saymak. Ve: iki farklı olguyu ("çözülebilir açık" / "karar kaydı",
+"tahmin" / "çözülmüş tahmin") tek sayaçta toplamak.
+
+**Kural.**
+1. Bir sayaç yazarken sor: **saydığım küme, ölçmek istediğim olguyu kapsıyor
+   mu?** JOIN'ler kapsamı sessizce daraltır ve hata fırlatmaz.
+2. İki kanal aynı olguyu basıyorsa **eşliği bir test zorlasın** (L-022 madde 2).
+   `saglik` ile `evaluate` bu turda tam olarak bu testle bağlandı.
+3. Bir sayı "her gün artıyor ve hiç azalmıyorsa" o bir sayaç değil bir
+   birikimdir — neyin izlenmek istendiğini ayrı bas.
+4. Bir sayının ANLAMI değişince **etiketini de değiştir**: "20 çözülmüş karar"
+   ile "252 tahmin" aynı kelimeyi paylaşamaz (AGENTS §8 — yorum bir iddiadır).
+
+---
+
 ## L-023 — 2026-08-16 — Bir ölçüm, KAYNAK SORGUSUNDA kendi konusunu eleyebilir
 
 **Olay.** Üç ölçüm birden "henüz veri yok" gibi görünüyordu; gerçekte üçü de

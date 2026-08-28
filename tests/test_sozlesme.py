@@ -763,6 +763,61 @@ class TestConfigButunlugu:
 
 
 # ============================================================ 9. koruma ağı
+class TestAgKorumasi:
+    """`pytest` DIŞ SERVİSE ÇIKMAZ — iddiası test edilir.
+
+    ⚠ Bu sınıf olmadan `conftest.ag_yasak` bir SÜS olurdu: fixture silinse
+    suite yine yeşil kalır, yalnız sessizce ağa çıkmaya başlardı. AGENTS §12'nin
+    "kilit mi, süs mü?" adımı tam olarak bunu soruyor.
+
+    Kuralın kendisi AGENTS §12/4'te 2026-08-28'den ÖNCE de yazılıydı ve
+    zorlanmıyordu. Bedeli §12c'de: bir test gerçek KAP'a çıkabildiği için
+    `sources.kap.enabled=False` iken bile ağa çıkıldığı görülmedi — sızıntı,
+    arkasındaki hatayı gizledi.
+    """
+
+    def test_dis_baglanti_REDDEDILIR(self):
+        """Yasağın kendisi çalışıyor mu? (autouse fixture bu teste de uygulanır)"""
+        import socket
+        with pytest.raises(OSError, match="AĞA ÇIKMAYA ÇALIŞTI"):
+            socket.create_connection(("kap.org.tr", 443), timeout=1)
+
+    def test_socket_connect_de_REDDEDILIR(self):
+        """`requests` bu yolu kullanır — ikisi de kapalı olmalı (simetri)."""
+        import socket
+        s = socket.socket()
+        try:
+            with pytest.raises(OSError, match="AĞA ÇIKMAYA ÇALIŞTI"):
+                s.connect(("kap.org.tr", 443))
+        finally:
+            s.close()
+
+    def test_LOCALHOST_serbest(self):
+        """Yasak fazla geniş olmamalı: yerel yardımcı süreçler ağ değildir.
+
+        Fazla katı bir koruma, sonraki kişiyi korumayı KALDIRMAYA iter —
+        L-016'nın dersi (bir kapı gereğinden fazlasını durdurursa kilitlenir).
+        """
+        import socket
+        s = socket.socket()
+        try:
+            # Bağlantı REDDEDİLEBİLİR (orada dinleyen yok) ama yasağımız
+            # tarafından engellenmemeli: mesaj bizim mesajımız OLMAMALI.
+            try:
+                s.connect(("127.0.0.1", 9))
+            except OSError as e:
+                assert "AĞA ÇIKMAYA ÇALIŞTI" not in str(e), \
+                    "localhost yasaklanmış — koruma fazla geniş"
+        finally:
+            s.close()
+
+    def test_ag_gerekli_isareti_TANIMLI(self):
+        """İşaret `--strict-markers` altında tanımlı olmalı, yoksa kullanılamaz."""
+        icerik = (Path(util.ROOT) / "pyproject.toml").read_text(encoding="utf-8")
+        assert "ag_gerekli" in icerik, \
+            "ag_gerekli marker'ı pyproject.toml'da tanımlı değil"
+
+
 class TestGercekVeritabaniKorumasi:
     """`pytest` kullanıcının verisine DOKUNMAZ — iddiası test edilir."""
 

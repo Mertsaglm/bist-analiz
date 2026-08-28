@@ -242,15 +242,45 @@ def gunluk(cfg: dict, con: sqlite3.Connection, *, bugun: date | None = None,
         bundle = None
 
     # 8) Analist zinciri — KRİTİK DEĞİL (docstring'deki gerekçe)
+    #
+    # ⚠ KAPI: bu gün ZATEN analiz edildiyse analist YENİDEN KOŞMAZ.
+    # YAŞANDI (2026-08-28 denetimi): 08-27'nin planlı koşusu GitHub'da hiç
+    # görünmedi; sonraki koşu 08-28T01:05Z'de başladı ve o an `bars_daily` max
+    # hâlâ 2026-08-26 idi. `asof = MAX(bars_daily.date)` olduğu için zincir
+    # ZATEN ANALİZ EDİLMİŞ bir günü yeniden analiz etti. `create_run` sessizce
+    # `-2` sonekiyle ikinci bir koşu açtı ve journal aynı `asof` için iki karar
+    # seti taşımaya başladı — üstelik ikisi birbirinden ÇOK farklı:
+    # 18 ismin 12'sinde karar değişti (birinci koşu 0 plan seçti, ikincisi 2
+    # pozisyon açtı). Değişmezlik ürünün kendisidir (ADR #014); "3 ay önce
+    # sistem ne diyordu?" sorusu iki cevaplı hale geldi.
+    #
+    # NEDEN DURDURMA DEĞİL ATLAMA (AGENTS §12a): bu bir GÖZLEM'dir, kapı değil —
+    # "bu bulguyu bu koşunun KENDİSİ düzeltebilir mi?" sorusunun cevabı hayır.
+    # O yüzden zincir DURMAZ: veri/gösterge/çözüm/rapor adımları koşmaya devam
+    # eder (hepsi idempotent). Kilitlenemez de: `asof` veriyle ilerler ve veri
+    # adımı bundan ÖNCE koşar — yeni bar gelince analist kendiliğinden döner.
+    # Bar akmıyorsa onu zaten `saglik`in "bar tazeliği" ve "atlanan koşu"
+    # kontrolleri bağırır; bu kapı onların işini üstlenmez.
     if analist_calistir and bundle is not None:
-        try:
-            from . import analist
-            r = analist.calistir(cfg, con, asof)
-            sonuc["analist_model"] = r["model"]
-            sonuc["adimlar"]["analist"] = f"{r['model']} ({len(r['denemeler'])} deneme)"
-            _kaydet(cfg, con, asof, bundle, r["out"], sonuc)
-        except Exception as e:                              # noqa: BLE001
-            _hata(sonuc, "analist", e)
+        onceki = db.scalar(
+            con, "SELECT COUNT(*) FROM predictions WHERE asof = ?", (asof,)) or 0
+        if onceki:
+            sonuc["analist_atlandi"] = "zaten_analiz_edildi"
+            sonuc["adimlar"]["analist"] = (
+                f"ATLANDI — {asof} zaten analiz edilmiş ({onceki} tahmin). "
+                f"Journal değişmezdir; aynı gün ikinci kez analiz edilmez.")
+            log.info("analist atlandı: %s zaten analiz edilmiş (%d tahmin)",
+                     asof, onceki)
+        else:
+            try:
+                from . import analist
+                r = analist.calistir(cfg, con, asof)
+                sonuc["analist_model"] = r["model"]
+                sonuc["adimlar"]["analist"] = \
+                    f"{r['model']} ({len(r['denemeler'])} deneme)"
+                _kaydet(cfg, con, asof, bundle, r["out"], sonuc)
+            except Exception as e:                          # noqa: BLE001
+                _hata(sonuc, "analist", e)
 
     # 9) Çözüm — rapordan ÖNCE. Gold dersi: bugün kapanan tahminler o günün
     # raporundaki karneye girmeli, bir gün gecikmeli değil.
@@ -259,7 +289,14 @@ def gunluk(cfg: dict, con: sqlite3.Connection, *, bugun: date | None = None,
         r = resolver.resolve_open(cfg, con)
         sonuc["cozulen_n"] = r["cozulen"]
         sonuc["cozulen_dagilim"] = r["dagilim"]
-        sonuc["adimlar"]["coz"] = f"{r['cozulen']} çözüldü · {r['hala_acik']} açık"
+        # ⚠ İZLENECEK SAYI `cozulebilir_acik`. Eski satır `hala_acik` basıyordu
+        # ve o, planı olmayan karar kayıtlarını da içerdiği için her seans 18
+        # artıyordu (337'ye ulaşmıştı); gerçek açık plan 17'ydi ve aynı gün
+        # `saglik` onu doğru basıyordu. Bir mertebe fark, gerçek sinyali
+        # gizliyordu (bkz. `resolver.resolve_open`).
+        sonuc["adimlar"]["coz"] = (
+            f"{r['cozulen']} çözüldü · {r.get('cozulebilir_acik', 0)} açık plan"
+            f" · {r.get('karar_kaydi', 0)} karar kaydı")
     except Exception as e:                                  # noqa: BLE001
         _hata(sonuc, "coz", e)
 
@@ -353,6 +390,10 @@ def _kaydet(cfg: dict, con: sqlite3.Connection, asof: str, bundle: dict,
     m = journal.muhurle_cikti(cfg, con, run_id=run_id, asof=asof)
     if not m["ok"]:
         log.warning("çıktı mühürlenemedi (%s): %s", run_id, m.get("not"))
+    # GİRDİ de mühürlenir — L-018'in simetriği (bkz. `journal.muhurle_girdi`).
+    g = journal.muhurle_girdi(cfg, run_id=run_id, asof=asof, bundle=bundle)
+    if not g["ok"]:
+        log.warning("girdi mühürlenemedi (%s): %s", run_id, g.get("not"))
     plan_map = {p["plan_id"]: p
                 for ps in planner.load_for_date(cfg, con, asof).values() for p in ps}
     ev = {e["ticker"]: e for e in bundle["evren"]}
@@ -410,17 +451,40 @@ def haftalik(cfg: dict, con: sqlite3.Connection) -> dict:
 
     L = [f"📈 BIST haftalık — {report.bugun()}", ""]
 
+    # ⚠ "DEĞİŞMEDİ" İLE "VERİ YOK" AYRI OLGULARDIR (L-007, 2026-08-28 denetimi).
+    # 2026-08-16 ve 08-23 haftalık mesajları BİREBİR AYNIYDI ve okuyucu
+    # "bu hafta hiçbir şey değişmedi" ile "aynı rapor tekrar basıldı"yı ayırt
+    # edemiyordu. Veri değişmediyse rapor da değişmez — bu DOĞRU davranış;
+    # eksik olan, değişmediğinin SÖYLENMESİYDİ.
+    try:
+        yeni = db.scalar(
+            con, "SELECT COUNT(*) FROM outcomes "
+                 " WHERE resolved_date > date('now', '-7 day')") or 0
+        son = db.scalar(con, "SELECT MAX(resolved_date) FROM outcomes")
+        L.append(f"bu hafta yeni çözülen: {yeni}"
+                 + (f" · son çözüm: {son}" if son else " · hiç çözüm yok"))
+        L.append("")
+    except Exception as e:                                  # noqa: BLE001
+        log.warning("haftalık çözüm sayacı okunamadı: %s", e)
+
     try:
         araclar = evaluate.araclar(con)
         if not araclar:
-            L.append("Henüz çözülmüş tahmin yok — ölçüm başlamadı.")
+            # "tahmin" — bkz. `cli.cmd_degerlendir` içindeki aynı not (L-024).
+            L.append("Journal'da hiç tahmin yok — ölçüm başlamadı.")
         for arac, n in sorted(araclar.items(), key=lambda kv: -kv[1]):
             e = evaluate.run(cfg, con, tool=arac)
             metin = report.evaluate_report(cfg, e)
             report.write(cfg, f"degerlendirme_{arac}_{report.bugun()}.md", metin)
             a = e.get("alfa") or {}
             ic = e.get("ic") or {}
-            L.append(f"🔹 {arac} — {n} çözülmüş karar")
+            # ⚠ `n` ARTIK TAHMİN SAYISI. `evaluate.araclar` `outcomes` ile
+            # INNER JOIN yapıyordu ve aktif model (252 tahmin, 79 veto) bu
+            # listede HİÇ görünmüyordu; JOIN kalkınca sayının anlamı da
+            # değişti. Etiketi güncellemeden bırakmak, doğru sayının yanına
+            # yanlış kelimeyi yazmak olurdu (AGENTS §8: yorum bir iddiadır).
+            # Çözülmüş sayısı zaten alt satırda payda olarak basılıyor.
+            L.append(f"🔹 {arac} — {n} tahmin")
             # ⚠ PAYDA AÇIK YAZILIR. Eski biçim "replay (N=20) alfa 4.27pp"
             # diyordu ve iki farklı N'i yan yana basıyordu: 20 çözülmüş karar,
             # 13 gözlemli alfa. Aradaki 7 plan hiç tetiklenmemişti ve paydadan
@@ -451,6 +515,24 @@ def haftalik(cfg: dict, con: sqlite3.Connection) -> dict:
             if ic.get("n_donem"):
                 L.append(f"   IC {_say(ic.get('ic_ort'), 3)} "
                          f"(N={ic['n_donem']} dönem) · {ic.get('hukum', '—')}")
+            # ⚠ VETO SATIRI. `araclar()`ın `outcomes` JOIN'i kalkınca aktif
+            # model haftalığa girdi — ama o modelin FİİLEN ÜRETTİĞİ şey veto:
+            # 252 tahminin 79'u. Sayı zaten hesaplanıyordu (`evaluate.run`
+            # → `veto`), hiçbir kanalda BASILMIYORDU. ADR #008 sonrası sistemin
+            # kalan ana ürünü "haber/veto" diye tanımlanmıştı; o ürün üç hafta
+            # boyunca hiçbir raporda görünmedi.
+            #
+            # `n_olculen` AYRI basılır: "79 veto kondu" ile "vetonun değeri
+            # ölçüldü" iki farklı olgudur ve aynı satıra sıkıştırılamaz (L-003).
+            v = e.get("veto") or {}
+            if v.get("veto_sayisi"):
+                kod = " · ".join(f"{k} {n2}" for k, n2 in
+                                 sorted((v.get("veto_kodlari") or {}).items(),
+                                        key=lambda kv: -kv[1]))
+                L.append(f"   veto {v['veto_sayisi']}"
+                         + (f" ({kod})" if kod else "")
+                         + f" · değeri: {v.get('hukum', '—')}"
+                         + f" (ölçülen {v.get('n_olculen', 0)})")
             L.append("")
         sonuc["adimlar"]["degerlendir"] = f"{len(araclar)} araç"
     except Exception as e:                                  # noqa: BLE001

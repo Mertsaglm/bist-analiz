@@ -509,3 +509,120 @@ class TestKagitPortfoy:
         assert sessiz_telegram
         assert "💼" in sessiz_telegram[0]
         assert "TL" in sessiz_telegram[0]
+
+
+def _onceki_analiz_yaz(con, asof: str = "2026-07-29", ticker: str = "THYAO") -> None:
+    """O `asof` için journal'da ZATEN bir karar seti varmış gibi yapar.
+
+    Bar da yazılır: zincir `asof`u `MAX(bars_daily.date)`ten okur ve olayın
+    KENDİSİ tam olarak buydu — bar ilerlemeyince `asof` yerinde saydı.
+    """
+    con.execute(
+        "INSERT INTO bars_daily (ticker, date, c, c_tr, source, ingested_utc) "
+        "VALUES (?,?,100.0,100.0,'test','x')", (ticker, asof))
+    con.execute(
+        "INSERT INTO llm_runs (run_id, asof, tool, bundle_sha, output_path, "
+        "  audit_passed, hard_fail_codes, created_utc) "
+        "VALUES (?,?,'onceki','sha','',1,'[]','x')",
+        (f"{asof}-onceki-1", asof))
+    con.execute(
+        "INSERT INTO predictions (prediction_id, run_id, asof, ticker, "
+        "  factor_set_version, weights_hash, indicator_set_version, regime, "
+        "  signal, action, confidence, confidence_p, thesis, counter_scenario, "
+        "  key_risk, falsifier, close_at_asof, created_utc) "
+        "VALUES (?,?,?,?, 'v1','h','v1','neutral', 'hold','izle','dusuk',0.3, "
+        "        't','c','k','f', 100.0, 'x')",
+        (f"p-{asof}-{ticker}", f"{asof}-onceki-1", asof, ticker))
+    con.commit()
+
+
+class TestAyniGunIkiKezAnaliz:
+    """B-16 KİLİDİ — journal'ın değişmezliği (ADR #014).
+
+    ⚠ NE OLMUŞTU (2026-08-28 denetimi): 2026-08-27'nin planlı koşusu GitHub'da
+    hiç görünmedi; sonraki koşu 08-28T01:05Z'de başladı (nominal saatten 8,5
+    saat sapma, TAKVİM GÜNÜNÜ AŞTI). O anda `bars_daily` max hâlâ 2026-08-26
+    idi, yani `asof = MAX(bars_daily.date)` ZATEN ANALİZ EDİLMİŞ bir günü
+    gösterdi. Zincirde "bu gün zaten analiz edildi mi?" diye soran hiçbir yer
+    yoktu: `journal.create_run` sessizce `-2` sonekiyle ikinci bir koşu açtı.
+
+    Somut hasar: aynı `asof` için iki karar seti (18 ismin 12'sinde FARKLI
+    karar — birinci koşu 0 plan seçti, ikincisi 2 pozisyon açtı),
+    `reports/gunluk_2026-08-26.md` iki gün sonra üzerine yazıldı, o gün
+    journal'a 17 veto girdi (10+7) ve `aktif_vetolar` tekrar sayacı şişti.
+
+    Bu testler eski davranış geri konduğunda (kapı kaldırılınca) KIRMIZIYA
+    döner — doğrulandı.
+    """
+
+    def _hazirla(self, monkeypatch):
+        from src.calendar_bist import BistCalendar
+        monkeypatch.setattr(BistCalendar, "is_trading_day", lambda self, d: True)
+        return _adimlari_sahtele(monkeypatch)
+
+    def _analist_sahtele(self, monkeypatch, cagrilan):
+        """Analist koşarsa listeye yazsın — koşup koşmadığı TEK yerden okunur."""
+        from src import analist
+
+        def sahte(cfg, con, asof):
+            cagrilan.append("analist")
+            return {"model": "test-model", "denemeler": ["test-model"],
+                    "out": {"tool": "test-model", "stocks": []}}
+
+        monkeypatch.setattr(analist, "calistir", sahte)
+
+    def test_ZATEN_analiz_edilmis_gun_YENIDEN_analiz_EDILMEZ(
+            self, cfg, con, monkeypatch, sessiz_telegram):
+        cagrilan = self._hazirla(monkeypatch)
+        self._analist_sahtele(monkeypatch, cagrilan)
+
+        # O `asof` için journal'da ZATEN bir kayıt var.
+        _onceki_analiz_yaz(con)
+
+        sonuc = otonom.gunluk(cfg, con, bugun=date(2026, 7, 29),
+                              analist_calistir=True)
+
+        assert "analist" not in cagrilan, \
+            "zaten analiz edilmiş gün YENİDEN analiz edildi — journal değişmez olmalı"
+        assert sonuc.get("analist_atlandi") == "zaten_analiz_edildi"
+        n = con.execute("SELECT COUNT(*) FROM predictions "
+                        "WHERE asof='2026-07-29'").fetchone()[0]
+        assert n == 1, f"tahmin sayısı değişti: {n} (ikinci karar seti yazılmış)"
+        # İkinci bir koşu kaydı da AÇILMAMALI.
+        r = con.execute("SELECT COUNT(*) FROM llm_runs "
+                        "WHERE asof='2026-07-29'").fetchone()[0]
+        assert r == 1, f"aynı asof için {r} koşu kaydı var"
+
+    def test_ANALIZSIZ_gun_normal_analiz_EDILIR(self, cfg, con, monkeypatch,
+                                                sessiz_telegram):
+        """Kapı fazla katı olmasın: hiç analiz edilmemiş gün KOŞMALI.
+
+        Bu testin varlığı bilinçli — L-016'nın dersi, bir kapının
+        gereğinden fazlasını durdurmasının kilitlenme ürettiğidir.
+        """
+        cagrilan = self._hazirla(monkeypatch)
+        self._analist_sahtele(monkeypatch, cagrilan)
+
+        sonuc = otonom.gunluk(cfg, con, bugun=date(2026, 7, 29),
+                              analist_calistir=True)
+
+        assert "analist" in cagrilan, "temiz günde analist hiç koşmadı"
+        assert "analist_atlandi" not in sonuc
+
+    def test_kapi_ZINCIRI_DURDURMAZ(self, cfg, con, monkeypatch, sessiz_telegram):
+        """AGENTS §12a: bu bir GÖZLEM, kapı değil — atlar, DURDURMAZ.
+
+        Zincirin geri kalanı (çözüm, rapor, Telegram) koşmaya devam etmeli;
+        aksi halde bir cron gecikmesi o günün raporunu da yok ederdi.
+        """
+        cagrilan = self._hazirla(monkeypatch)
+        self._analist_sahtele(monkeypatch, cagrilan)
+        _onceki_analiz_yaz(con)
+
+        sonuc = otonom.gunluk(cfg, con, bugun=date(2026, 7, 29),
+                              analist_calistir=True)
+
+        assert "coz" in cagrilan, "analist atlanınca çözüm adımı da koşmadı"
+        assert "rapor" in sonuc["adimlar"], "analist atlanınca rapor üretilmedi"
+        assert otonom.basarisiz_mi(sonuc) == [], "atlama koşuyu BAŞARISIZ yaptı"
+        assert sessiz_telegram, "analist atlanınca bildirim hiç gitmedi"

@@ -32,10 +32,28 @@ jobs:
       - name: Bagimliliklar
         run: pip install --quiet -e . pytest
 
-      # ⚠ Veritabani KURULMAZ. Gercek veri testleri (`real_con`) veritabani
-      # yoksa kendilerini ATLAR — bu bilincli: CI'in isi mantigi dogrulamak,
-      # yfinance'in o anki davranisini degil. Aksi halde suite, bir dis
-      # servisin kotasina bagli olarak kirmiziya doner ve kirmizinin anlami
-      # asinir.
+      # ⚠ VERITABANI KURULUR. Eski hali kurmuyordu ve gerekcesi soyleydi:
+      # "suite bir dis servisin kotasina bagli olarak kirmiziya doner ve
+      # kirmizinin anlami asinir". O gerekce `yfinance`e CANLI gitmek icin
+      # dogru, ama `db restore` icin GECERLI DEGIL: dump repoda, cekim yok,
+      # ag yok, deterministik, ~10 saniye.
+      #
+      # Bedeli olculdu (2026-08-28 denetimi): `conftest.real_con` veritabani
+      # yoksa `pytest.skip` eder, yani CI `1279 passed, 19 skipped` veriyordu
+      # ve ATLANAN KUME tam olarak veri butunlugu katmaniydi —
+      # `test_gecmis_asof_gelecegi_gormez` (look-ahead kilidi),
+      # `test_temettu_duzeltmesi_uygulaniyor`, `test_bedelsiz_geri_duzeltiliyor`,
+      # `test_canli_evrende_duzeltilmemis_bar_YOK`, `test_sasa_gercekten_eleniyor`,
+      # `test_tatil_gunlerinde_bar_yok`, `test_hisse_barlari_TAMAMEN_tutarli`...
+      #
+      # Yani projenin kendi doktrininin ("en cok bulgu buradan cikti", AGENTS
+      # §11/1) en pahali hata sinifini yakalayan testleri, testlerin otomatik
+      # kostugu TEK yerde kosmuyordu. Koruma zaten yazilmisti, sadece kosmuyordu.
+      #
+      # Ag sizintisi ayrica kapatildi (`conftest.ag_yasak`), yani suite artik
+      # hermetik: dis servis erisimi olmadan da yesil.
+      - name: Veritabanini dumptan kur
+        run: python -m src.cli db restore
+
       - name: pytest
         run: python -m pytest

@@ -3,88 +3,100 @@
 > Usta her oturumun başında bu dosyayı okur, sonunda günceller.
 > KISA TUT: ~100 satırı aşınca eskiyi `ai/archive/STATE-YYYY-MM.md`'ye taşı.
 
-**Son güncelleme:** 2026-08-16
-**Aktif milestone:** **Faz 12 KAPANDI** — 2026-08-15 bağımsız denetiminin
-13 bulgusunun 12'si kapatıldı + kâğıt portföy (ADR **#019**) eklendi.
-Suite **1251 → 1299**. Yeni dersler: L-021/022/023.
+**Son güncelleme:** 2026-08-28
+**Aktif milestone:** **Faz 13** — iki bağımsız dış denetimin (2026-08-25 GPT,
+2026-08-28 Claude) uygulama turu. Kayıt bütünlüğü + görünürlük katmanı kapandı;
+ölçüm/karar gerektiren maddeler Mert'e taşındı. Suite **1299 → 1315**,
+ve suite artık **hermetik** (ağ yasak). Yeni: ADR **#020**, L-024/025.
 
 ## ✅ Tamamlananlar
 
-**Faz 12 — denetim düzeltmeleri + kâğıt portföy** (2026-08-16)
+**Faz 13 — denetim uygulaması, tur 1: kayıt ve görünürlük** (2026-08-28)
 
 | # | İş | Kanıt |
 |---|---|---|
-| 1 | **Faz 11 canlıya alındı** | 08-14 kesitinde plan üretilen isim 5→9, sektör 3→7, kayıp 0 |
-| 2 | **Endeks zincire bağlandı** (L-021) | `index_daily` 08-06'da donmuştu; gerçek veriyle 08-14'e çekildi, kontrol `KRİTİK → OK` |
-| 3 | **Eylem listesi bugünkü vetoyu okuyor** (L-022) | 08-14 raporunda "YENİ GİRİŞ" bölümü kayboldu, 5 isim gerekçeli BEKLE'ye düştü |
-| 4 | **Haftalık IC satırı** | `ic.get("n")` ≠ `n_donem`; `.get` sessizdi, satır hiç basılmıyordu |
-| 5 | **Kâğıt portföy** (ADR #019) | 10.000 TL · üretim verisinde 9.970,99 TL (−0.29%), 2 açık / 1 kapandı |
-| 6 | **Ölçüm hattı onarımı** (L-023) | `fwd_ret_20d` 24/24 NULL'du → 20 dolduruldu · `veto_value` 0 diyordu → 17 veto görünür · `llm_contribution` yapısal olarak asla dolmayacaktı → kesit 18 isme açıldı |
-| 7 | **Örtüşme ayıklaması** | TUPRS çift sayımı: gemini-3.6-flash +5.46pp (n=3) → **+2.35pp (n=2)** |
-| 8 | **IC dönem seti sonuç-koşullu değil** | Dönemler `outcomes`'tan değil `predictions`'tan |
-| 9 | **Yarım bar koşusu ayrıldı** | `2026-07-29-claude-code-1` ölçümle yakalandı (18/18 sapan, ort −1.21%) |
-| 10 | **Kaçan planın bedeli ölçülüyor** | replay: tetiklenmeyen +6.93pp vs tetiklenen +5.08pp → **+1.85pp** |
+| 1 | **Aynı gün iki kez analiz KAPISI** (ADR #020) | 08-26 iki kez analiz edilmişti: aynı veri, **12/18 farklı karar** (koşu 1: 0 plan, koşu 2: 2 pozisyon). Kapı ATLAR, durdurmaz (§12a). |
+| 2 | **Girdi mührü** — L-018'in simetriği | Koşu 1'in `bundle_sha 91eedc59…`'unun diskte karşılığı yoktu; paket ezilmişti. Artık `llm/in/<asof>/<run_id>.json`. |
+| 3 | **Aktif model değerlendirmeye girdi** (L-024) | `araclar()` `outcomes` JOIN'i eliyordu: haftalık **3 kaynak → 5**; `gemini-3.5-flash` 252 tahmin + **79 veto** ilk kez görünür. |
+| 4 | **Veto satırı haftalıkta basılıyor** | Sayı hesaplanıyordu, hiçbir kanalda yazılmıyordu — ADR #008 sonrası sistemin kalan ana ürünü 3 hafta görünmedi. |
+| 5 | **Test suite hermetik** (L-025) | 2 test gerçek KAP'a çıkıyordu. `conftest.ag_yasak` + `ag_gerekli` işareti. Suite 146s → 71s. |
+| 6 | **KAP kapatma anahtarı gerçekten kapatıyor** | `kap.enabled=False` iken bile ağa çıkılıyordu; sızıntıyı kapatmak bu hatayı ORTAYA ÇIKARDI. |
+| 7 | **CI gerçek veriyi test ediyor** | `test.yml`'e `db restore`: look-ahead kilidi + temettü + kalite kapısı dahil ~20 test CI'da hiç koşmuyordu (`19 skipped` → 0). |
+| 8 | **`saglik` kontenjanı raporla aynı kaynaktan okuyor** | 08-17'den beri her gün YANLIŞ "0 kayıtlı pozisyon → KÖR" uyarısı; önerdiği komut simülasyonu ezerdi. Şimdi ✓. |
+| 9 | **Açık sayacı ayrıldı** (L-024) | `337 açık` → **17 açık plan · 320 karar kaydı**; `saglik` ile birebir eşleşiyor. |
+| 10 | **§0 analistin kararını gösteriyor** | 08-24: "🟢 ASELS — GİR — engel yok" derken journal `izle` diyordu. Sıralama DEĞİŞMEDİ (ADR #015 madde 3). |
+| 11 | **Haftalıkta yeni-çözülen sayacı + son çözüm tarihi** | 08-16 ve 08-23 mesajları birebir aynıydı; "değişmedi" ile "veri yok" ayrıldı. |
+| 12 | **Doküman çürümesi** (`universe.yaml`) | "reports/ gitignore'dadır" (ADR #013 tersine çevirmiş) + "büyüklüğü ölçüm raporunda yazılır" (yazmıyor). |
 
-Her düzeltmenin kilidi **eski hata geri konarak** sınandı; toplam 14 test
-kırmızıya döndü ve geri alınca yeşile döndü.
+Her düzeltmenin kilidi **eski hata geri konarak** sınandı. Etkilenen hatlar
+(günlük + haftalık) gerçek veri kopyasında uçtan uca koşuldu.
 
-**Faz 11 — gizli hedef filtresi** (2026-08-12) — ADR **#018** · L-019/020.
-**Faz 10 — kilitlenme ve denetim izi** (2026-08-11) — ADR **#017** · L-016/17/18.
+**Faz 12 — denetim düzeltmeleri + kâğıt portföy** (2026-08-16) — ADR #019 · L-021/22/23.
+**Faz 11 — gizli hedef filtresi** (2026-08-12) — ADR #018 · L-019/020.
+**Faz 10 — kilitlenme ve denetim izi** (2026-08-11) — ADR #017 · L-016/17/18.
 **Faz 9 — karar anı katmanı** (2026-08-07) — ADR #015, #016 · L-012/13/14/15.
 **Faz 8 — otonom koşu** (2026-08-01) — ADR #013, L-010/011.
 **Faz 0-7 + denetim** (2026-07-26 … 07-29) — `ai/archive/STATE-2026-07.md`.
-Özet: **ölçüm kapısı KAPALI** (#007), ön kayıtlı revizyon GEÇMEDİ (#008) →
-sistem "izleme + risk disiplini + haber/veto". Kurallar teste devredildi (#011).
 
 ## 🔨 Devam Edenler
 - _(yok)_
 
 ## 🧱 Bloklar / Bekleyenler
-- _(yok)_
+- **Mert'in kararını bekleyen 5 madde** — aşağıdaki "Karar bekleyenler".
 
 ## 🎯 Sıradaki 3 İş
 
-1. **Pazartesi (2026-08-17) koşusunu doğrula — beş düzeltmenin ilk gerçek sınavı.**
-   Bakılacaklar: `index_daily` max = `bars_daily` max mı · raporun §0'ı analistin
-   bugünkü vetosunu içeriyor mu · §1'de kâğıt karne var mı · Telegram'da 💼
-   satırı geldi mi · sağlıkta "endeks tazeliği" OK mü.
-   ⚠ Endeks adımı düşerse zincir durmaz ama boşluk 2 seansı geçerse `saglik`
-   koşuyu KAPATIR — bu bilinçli, ama ilk kez canlıda sınanacak.
-   DoD: beşi de gözlendi; sapma varsa STATE'e yazıldı.
+1. **Bir sonraki koşuyu doğrula — on iki düzeltmenin ilk gerçek sınavı.**
+   Bakılacaklar: haftalıkta 5 kaynak + `gemini-3.5-flash` veto 79 satırı ·
+   `saglik`te "açık plan" ✓ mü · koşu günlüğü "17 açık plan · 320 karar kaydı"
+   diyor mu · §0'da `analist bugün:` satırı · CI'da `skipped 0`.
+   ⚠ Yeni kapı ilk kez canlıda sınanacak: bir cron gecikmesi olursa analist
+   ATLANMALI, zincir DURMAMALI. DoD: beşi de gözlendi, sapma STATE'e yazıldı.
 
-2. **Rejim OR/AND asimetrisini karara bağla.** 2026-07-24'ten beri **11 koşunun
-   11'i risk-off** ve XU100 SMA200'ün DAİMA üstünde (+5.7…+9.7%); tetikleyen tek
-   koşul genişlik. Aynı 15 işlem gününde ölçüm evreni −1.48% → duruş bu dönemde
-   pahalıya patlamadı, ama kural tartışılmadan sürüyor. Artık kâğıt portföy
-   sayesinde **bedeli TL olarak ölçülebilir**: risk-off tavanı (maks 2) yüzünden
-   alınamayan planlar `reddedilen` listesinde `kontenjan_dolu` olarak duruyor
-   (üretimde TUPRS iki kez — karnedeki en iyi iki işlem).
-   DoD: bir ADR — ya asimetri gerekçelendirilip kalır, ya ön kayıtlı bir tur açılır.
+2. **Karar bekleyen 5 maddeyi Mert'le kapat** (aşağıdaki liste). Üçü ön kayıt
+   ister, ikisi karnenin anlamını değiştirir — hiçbiri tek başına uygulanamaz.
+   DoD: her madde ya bir ADR'ye ya da Backlog'a bağlandı.
 
-3. **`falsifier` ya sınansın ya kalksın.** Alan her tahminde toplanıyor,
-   `journal.py` dışında **hiçbir yerde okunmuyor**, bazıları mantıken ters.
-   Otomatik yön kontrolü bilerek yazılmamıştı (naif metin araması kendi yorumunu
-   yakalar, L-012) — ama artık `fwd_ret_20d` dolu, yani "yanlışlayıcı gerçekleşti
-   mi" sorusu bir ölçüme bağlanabilir.
-   DoD: ya anlamlı bir HF kuralı ya da alanın kaldırılması (ikisi de karar).
+3. **Analist kararlılığı bir METRİĞE dönüşsün** (ADR #020 "tekrar gözden
+   geçir" a maddesi). 12/18 bir kazaydı; aynı `asof` için birden çok koşu
+   varsa `bist degerlendir` bunu ölçebilmeli. Kapı sayesinde bir daha
+   kendiliğinden oluşmayacak — yani ölçüm ancak bilerek kurulursa olur.
+   DoD: ya bir metrik ya da "ölçülmeyecek" kararı, gerekçesiyle.
+
+## ⚖️ Karar bekleyenler (Mert'e soruldu, 2026-08-28)
+
+1. **Rejim etiketinin zamanlaması** — 135 örtüşmeyen pencere × 4 faz: rejim vs
+   aynı ortalama maruziyetli SABİT portföy farkı ≤ +0.16pp, |t| ≤ 0.90;
+   Sharpe 0.47 vs **0.55**. Portföyün getirisini en çok belirleyen kural.
+   → ön kayıtlı tur ister.
+2. **`high52_min_ufuk_gun: 21` vs üretim ufku 20** — en güçlü faktör canlı
+   skordan SIFIR ağırlıkla düşüyor. ADR #008 buna "kurulum hatası" diyor ama
+   düzeltmeyi bilerek ön kayda bıraktı. → ön kayıtlı tur ister.
+3. **Kâğıt portföye nakit faizi + taban satırları** — portföy +0.59%,
+   evren +9.41%, XU100 +9.92%, net mevduat +2.49% (üçü de bağımsız doğrulandı).
+   Taban EKLEMEK ifşadır; nakde faiz İŞLEMEK karnenin anlamını değiştirir.
+4. **Başlangıç sermayesi 10.000 → ~100.000 TL** — tam sayı yuvarlama pahalı
+   isimleri sistematik küçültüyor (BIMAS %7.19 hedef → %3.82 gerçekleşen).
+   Karnenin sayılarını değiştirir.
+5. **`replay`in ADR #018 sonrası yeniden koşulması** — 20 replay kaydının
+   5'inde T1 uzaklığı bugünkü 1.5×ATR eşiğinin altında; haftalığın tek
+   N≥13'lük satırı iki kural setinin karışımı.
 
 ## 📦 Backlog (şimdi değil, unutma da)
-- **Analist katkısı ölçümü artık ÇALIŞIYOR ama veri bekliyor.** Üç bağımsız yol
-  (sinyal↔`pct` monotonluğu · %93 gün gün değişmeme · 68 `avoid`'in 63'ü zaten
-  `sma200_alti`) katkının ~sıfır olduğunu gösteriyor; `llm_contribution` artık
-  bunu KARNEDE ölçebilir. Canlı ufuklar dolunca (≈2026-09) ilk gerçek sayı gelir.
-- **Kâğıt portföy 20+ kapanmış işleme ulaşınca** `bist degerlendir`'e TL bazlı
-  bölüm (ADR #019 "tekrar gözden geçir" b maddesi).
-- **`levels_daily` birikmiyor** — dump'tan hariç + her koşuda DB yeniden kuruluyor.
-- **`high52_prox` ↔ hedef filtresi gerilimi** — `zirveye_yakin` sınıfıyla görünür.
-- **Ölçüm şablonundan düşen "ters yönde kanıt" uyarısı** — şablon regresyonu.
-- **TÜFE serisi ÖLDÜ** — `TP.FE.OKTG01` son gözlem 2025-12-01 (258 gün).
-  EVDS'de yeni seri kodunu bul (TÜİK 2026 baz revizyonu olabilir).
-- **Net R:R kapıya alınsın mı?** 58 planın 19'u (%33) elenirdi → **ön kayıt ister**.
-- **`high52_prox` hipotezi** — OOS +1.61pp (t=1.81), IC 0.113 (t=2.42); sonucu
-  görüp seçmek p-hacking → AYRI ve ön kayıtlı tur.
+- **Analist katkısı ölçümü ÇALIŞIYOR ama veri bekliyor** — `veto_value`
+  her araçta `n_olculen=0`; ilk gerçek sayı ufuklar dolunca (≈2026-09).
+- **Kâğıt portföy 20+ kapanmış işleme ulaşınca** TL bazlı değerlendirme
+  bölümü (ADR #019 "tekrar gözden geçir" b).
+- **Canlı sonuçların 5/5'i MÜHÜRSÜZ koşulardan** — model↔kayıt bağı
+  ispatlanamıyor. Yeni kohort mühürlü; eskiye geçmişe dönük sha YAZILMAZ.
+- **Bar yeniden yazımı** — 5 dump'ta 42 bar yeniden yazıldı, 3'ü OHLC.
+  `ingested_utc` veri değişmese de güncelleniyor → günde ~685 satır sahte
+  churn, gerçek düzeltmeler içinde kayboluyor.
+- **`llm_runs` yalnız BAŞARILI koşuyu yazıyor** — zincir 08-04'te beşinci
+  halkaya düştü, düşen dört modelin HF kodu hiçbir yerde yok.
+- **TÜFE serisi ÖLÜ** — `TP.FE.OKTG01` son gözlem 2025-12-01 (270 gün).
+- **Survivorship bias büyüklüğü ölçülmedi** — üç yerde ifşa, hiçbir yerde sayı.
+- **`levels_daily` birikmiyor** · **`high52_prox` ↔ hedef filtresi gerilimi**
+- **Net R:R kapıya alınsın mı?** 58 planın 19'u (%33) elenirdi → ön kayıt ister.
 - **R:R'ın seçimle sağlanması** (#009): `docs/on-kayit-seviye-02.md` HAZIR, koşulmadı.
-- **Ekonomik takvim (TCMB/TÜFE)** ve **ikinci fiyat kaynağı kıyası** — ölçüm bekliyor.
-- **Dump churn** — ölü koşular bile günde ~2.100 satır oynatıyor; acil değil.
-- **KAP dilim bölme derinliği** — beklenen-bildirim ucu tavan 2000; 45 günlük
-  pencere 1863 kayıt veriyor, kırpılırsa SAKLANMIYOR.
+- **KAP dilim bölme derinliği** — kırpılan yanıt SAKLANMIYOR.
