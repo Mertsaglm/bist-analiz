@@ -6,8 +6,9 @@
 **Son güncelleme:** 2026-08-28
 **Aktif milestone:** **Faz 13** — iki bağımsız dış denetimin (2026-08-25 GPT,
 2026-08-28 Claude) uygulama turu. Kayıt bütünlüğü + görünürlük katmanı kapandı;
-ölçüm/karar gerektiren maddeler Mert'e taşındı. Suite **1299 → 1315**,
-ve suite artık **hermetik** (ağ yasak). Yeni: ADR **#020**, L-024/025.
+ölçüm/karar gerektiren maddeler Mert'e taşındı. Suite **1299 → 1323**,
+ve suite artık **hermetik** (ağ yasak). Yeni: ADR **#020**, L-024/025,
+AGENTS **§12c**.
 
 ## ✅ Tamamlananlar
 
@@ -27,6 +28,8 @@ ve suite artık **hermetik** (ağ yasak). Yeni: ADR **#020**, L-024/025.
 | 10 | **§0 analistin kararını gösteriyor** | 08-24: "🟢 ASELS — GİR — engel yok" derken journal `izle` diyordu. Sıralama DEĞİŞMEDİ (ADR #015 madde 3). |
 | 11 | **Haftalıkta yeni-çözülen sayacı + son çözüm tarihi** | 08-16 ve 08-23 mesajları birebir aynıydı; "değişmedi" ile "veri yok" ayrıldı. |
 | 12 | **Doküman çürümesi** (`universe.yaml`) | "reports/ gitignore'dadır" (ADR #013 tersine çevirmiş) + "büyüklüğü ölçüm raporunda yazılır" (yazmıyor). |
+| 13 | **Şablon script'i artık TESTLİ** | `yeni-proje.sh` bir kez sessizce bozulup denetime kadar hiç çalışmamıştı (L-004/L-002) ve **hâlâ hiçbir testte koşmuyordu**. Dört kilit: koşuyor mu · güncel kuralları taşıyor mu · kaynak kimliği sızıyor mu · README ağacı gerçekle uyumlu mu. |
+| 14 | **Şablon ağacı düzeltildi** | README `Proje Yardımcısı/`'yı proje yapısında gösteriyordu; script onu KOPYALAMIYOR (ölçüldü, script koşularak). |
 
 Her düzeltmenin kilidi **eski hata geri konarak** sınandı. Etkilenen hatlar
 (günlük + haftalık) gerçek veri kopyasında uçtan uca koşuldu.

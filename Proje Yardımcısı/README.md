@@ -33,10 +33,17 @@ proje/
 │   ├── LESSONS.md                   ← Geçmiş hatalardan dersler (anti-pattern listesi)
 │   └── archive/README.md            ← STATE şişince eski içerik buraya
 ├── docs/                            ← ÖN KAYITLAR: koşudan önce mühürlenir, DEĞİŞTİRİLMEZ
-└── Proje Yardımcısı/
+└── Proje Yardımcısı/                ← ⚠ YALNIZ KAYNAK PROJEDE (kopyalanmaz)
     ├── README.md                    ← bu dosya
     └── yeni-proje.sh                ← şablonu yeni bir projeye kopyalar
 ```
+
+⚠ **`Proje Yardımcısı/` yeni projeye KOPYALANMAZ** — ölçüldü (2026-08-28,
+script gerçekten koşularak). Yani şablondan doğan bir proje kendisi şablon
+üretemez; yeni proje açmak için daima KAYNAK projeye dönersin. Bu bilinçli:
+şablonun tek bir yerde yaşaması, dokuz kuralın dokuz kopyaya bölünüp
+birbirinden ayrışmasını engeller (aynı gerçeği iki yerde saklamak, ikisinin
+ayrışması demektir). Ama bilmeden aramak zaman kaybettirir — o yüzden yazılı.
 
 ⚠ **Kural dosyaları KÖKTE, script alt klasörde.** Bu ayrım bilinçli: hiçbir IDE
 alt klasördeki AGENTS.md'yi okumaz (L-004), ama `yeni-proje.sh` bir araç olduğu
