@@ -2,7 +2,7 @@
   "bundle_version": "bist_bundle_v1",
   "asof": "2026-08-26",
   "karar_gunu": "2026-09-23",
-  "generated_utc": "2026-08-26T18:22:58+00:00",
+  "generated_utc": "2026-08-28T01:07:19+00:00",
   "uyari": "Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir.",
   "takvim": {
     "son_kapali_seans": "2026-08-26",
@@ -17,26 +17,26 @@
   },
   "haber_taramasi": {
     "ok": true,
-    "son_bildirim": "2026-08-26T15:19:01+00:00",
-    "gecikme_gun": 0,
+    "son_bildirim": "2026-08-27T17:33:12+00:00",
+    "gecikme_gun": -1,
     "not": null
   },
   "rejim": {
     "etiket": "transition",
     "tetikleyici": "XU100 SMA200'ün %10.50 ÜSTÜNDE · genişlik %44.8 — hiçbir uç eşik tetiklenmedi",
-    "xu100_sma200_farki_pct": 10.499175474354129,
+    "xu100_sma200_farki_pct": 10.499028579897507,
     "genislik_sma50_ustu_pct": 44.776119402985074,
     "genislik_n": 67,
     "genislik_istenen_n": 67,
-    "xu100_vol_yillik_21g": 17.801714994434626,
+    "xu100_vol_yillik_21g": 17.801654927127565,
     "makro": {
       "politika_faizi": 37.0,
       "tufe_bayat_tarih": "2025-12-01",
       "enf_bek_12ay": 23.69,
-      "mevduat_1yil_brut": 46.46,
-      "mevduat_1yil_net": 39.491,
+      "mevduat_1yil_brut": 46.42,
+      "mevduat_1yil_net": 39.457,
       "usdtry": 48.0982,
-      "reel_net_mevduat": 12.77467863206403
+      "reel_net_mevduat": 12.747190557037769
     },
     "pozisyon_politikasi": {
       "nakit_pct": 55.0,
@@ -56,15 +56,15 @@
         "dusuk_52h": 53.0499992371
       },
       "gostergeler": {
-        "rsi14": 63.7101607422345,
-        "macd_hist": 0.7704335034136574,
-        "atr14": 2.300981380150434,
-        "atr_pct": 3.1455657308993987,
-        "adx14": 17.72600038325228,
-        "sma20": 68.14250068664867,
-        "sma50": 70.88599983214948,
-        "sma200": 72.95024999618487,
-        "bb_pctb": 0.9674946713683652
+        "rsi14": 63.71016074224574,
+        "macd_hist": 0.7704335034127818,
+        "atr14": 2.3009813801490493,
+        "atr_pct": 3.145565730897506,
+        "adx14": 17.726000383293567,
+        "sma20": 68.14250068665184,
+        "sma50": 70.88599983215073,
+        "sma200": 72.95024999618518,
+        "bb_pctb": 0.9674946713681176
       },
       "faktorler": {
         "skor": -0.5974,
@@ -107,12 +107,12 @@
       "aktif_vetolar": [
         {
           "veto_code": "rejim_uyumsuz",
-          "konuldu": "2026-08-25",
-          "bitis": "2026-09-01",
-          "kalan_islem_gunu": 4,
+          "konuldu": "2026-08-26",
+          "bitis": "2026-09-02",
+          "kalan_islem_gunu": 5,
           "arac": "gemini-3.5-flash",
-          "gerekce": "Faiz oranlarindaki yuksekligin kredi buyumesini sinirlamasi ve aktif kalitesini olumsuz etkilemesi ana risktir.",
-          "tekrar": 5
+          "gerekce": "Para politikasindaki siki durusun gevsetilmesi beklentisi ve sektor kar marjlarindaki daralmanin devam etmesi ana risk unsurudur.",
+          "tekrar": 6
         }
       ],
       "plan_menusu": [
@@ -372,6 +372,12 @@
           "prediction_id": "2026-08-25-AKBNK-1",
           "asof": "2026-08-25",
           "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-AKBNK-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
           "bariyer": null
         }
       ],
@@ -675,6 +681,12 @@
           "asof": "2026-08-25",
           "signal": "accumulate",
           "bariyer": "2026-09-22"
+        },
+        {
+          "prediction_id": "2026-08-26-ASELS-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -741,12 +753,12 @@
       "aktif_vetolar": [
         {
           "veto_code": "rejim_uyumsuz",
-          "konuldu": "2026-08-25",
-          "bitis": "2026-09-01",
-          "kalan_islem_gunu": 4,
+          "konuldu": "2026-08-26",
+          "bitis": "2026-09-02",
+          "kalan_islem_gunu": 5,
           "arac": "gemini-3.5-flash",
-          "gerekce": "Sektor ici rekabetin artmasi ve hammadde fiyatlarindaki yukselisin kar marjlarini daraltmasi riski bulunmaktadir.",
-          "tekrar": 5
+          "gerekce": "Ham madde maliyetlerindeki kuresel artislar ve sirketin yuksek borcluluk yapisi finansman giderlerini artirma riski tasimaktadir.",
+          "tekrar": 6
         }
       ],
       "plan_menusu": [
@@ -998,6 +1010,12 @@
           "asof": "2026-08-25",
           "signal": "avoid",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-ASTOR-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -1071,12 +1089,6 @@
         "425.00 (+0.59 ATR)"
       ],
       "acik_tahminler": [
-        {
-          "prediction_id": "2026-07-29-BIMAS-1",
-          "asof": "2026-07-29",
-          "signal": "buy",
-          "bariyer": "2026-08-26"
-        },
         {
           "prediction_id": "2026-07-30-BIMAS-1",
           "asof": "2026-07-30",
@@ -1172,9 +1184,25 @@
           "asof": "2026-08-25",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-BIMAS-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
-      "haberler": [],
+      "haberler": [
+        {
+          "id": "kap-1655502",
+          "tarih": "2026-08-27 16:21",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Kredi Derecelendirmesi",
+          "ozet": "JCR Avrasya Kredi Derecelendirme Notu",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1655502"
+        }
+      ],
       "haber_tarama_baslangici": "2026-08-25T20:59:59+00:00"
     },
     {
@@ -1185,18 +1213,18 @@
         "onceki_kapanis": 20.04,
         "gunluk_degisim_pct": 2.79,
         "yuksek_52h": 27.1200008392,
-        "dusuk_52h": 17.469999313354492
+        "dusuk_52h": 17.4699993134
       },
       "gostergeler": {
-        "rsi14": 63.60054664176076,
-        "macd_hist": 0.32128338574061416,
-        "atr14": 0.6873566757132747,
-        "atr_pct": 3.336682830023494,
-        "adx14": 25.74259706278881,
-        "sma20": 18.72750015258834,
-        "sma50": 19.807400054937336,
-        "sma200": 20.89370005607683,
-        "bb_pctb": 1.0333434020633936
+        "rsi14": 63.60054664171819,
+        "macd_hist": 0.3212833857408596,
+        "atr14": 0.6873566757130731,
+        "atr_pct": 3.3366828300225158,
+        "adx14": 25.742597062814536,
+        "sma20": 18.727500152587275,
+        "sma50": 19.80740005493691,
+        "sma200": 20.893700056076728,
+        "bb_pctb": 1.0333434020627743
       },
       "faktorler": {
         "skor": -0.8092,
@@ -1239,12 +1267,12 @@
       "aktif_vetolar": [
         {
           "veto_code": "rejim_uyumsuz",
-          "konuldu": "2026-08-25",
-          "bitis": "2026-09-01",
-          "kalan_islem_gunu": 4,
+          "konuldu": "2026-08-26",
+          "bitis": "2026-09-02",
+          "kalan_islem_gunu": 5,
           "arac": "gemini-3.5-flash",
-          "gerekce": "Faizlerin yuksek seyretmesi nedeniyle konut satislarinin gerilemesi ve nakit akisinda yasanabilecek sikismalar.",
-          "tekrar": 4
+          "gerekce": "Insaat maliyet endeksindeki yukselisin devam etmesi ve sirket projelerindeki teslimat sureclerinin uzamasi temel risk faktorudur.",
+          "tekrar": 5
         }
       ],
       "plan_menusu": [
@@ -1419,6 +1447,12 @@
           "asof": "2026-08-25",
           "signal": "avoid",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-EKGYO-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [
@@ -1454,15 +1488,15 @@
         "dusuk_52h": 65.5500030518
       },
       "gostergeler": {
-        "rsi14": 54.31096680945581,
-        "macd_hist": 0.3587217206757156,
-        "atr14": 2.6255380120879153,
-        "atr_pct": 2.992066110641499,
-        "adx14": 30.329531791630316,
-        "sma20": 85.11499938964317,
-        "sma50": 88.52100006103727,
-        "sma200": 90.49849998474131,
-        "bb_pctb": 0.8025093322255411
+        "rsi14": 54.310966809451806,
+        "macd_hist": 0.35872172067516495,
+        "atr14": 2.6255380120920693,
+        "atr_pct": 2.9920661106462325,
+        "adx14": 30.32953179180068,
+        "sma20": 85.11499938964528,
+        "sma50": 88.52100006103811,
+        "sma200": 90.49849998474154,
+        "bb_pctb": 0.8025093322251418
       },
       "faktorler": {
         "skor": 0.04,
@@ -1624,6 +1658,12 @@
           "asof": "2026-08-25",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-ENKAI-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -1640,15 +1680,15 @@
         "dusuk_52h": 23.4599990845
       },
       "gostergeler": {
-        "rsi14": 46.095434606721795,
-        "macd_hist": 0.039613794830779314,
-        "atr14": 1.2425761954160957,
-        "atr_pct": 3.2107911393273985,
-        "adx14": 20.305330966220392,
-        "sma20": 39.04500045776213,
-        "sma50": 40.48200012207085,
-        "sma200": 32.349099998470216,
-        "bb_pctb": 0.4547972029022562
+        "rsi14": 46.09543460668508,
+        "macd_hist": 0.03961379482984595,
+        "atr14": 1.2425761954137244,
+        "atr_pct": 3.2107911393212714,
+        "adx14": 20.305330966174544,
+        "sma20": 39.04500045776577,
+        "sma50": 40.48200012207231,
+        "sma200": 32.34909999847058,
+        "bb_pctb": 0.45479720290168585
       },
       "faktorler": {
         "skor": 1.932,
@@ -1691,12 +1731,12 @@
       "aktif_vetolar": [
         {
           "veto_code": "rejim_uyumsuz",
-          "konuldu": "2026-08-25",
-          "bitis": "2026-09-01",
-          "kalan_islem_gunu": 4,
+          "konuldu": "2026-08-26",
+          "bitis": "2026-09-02",
+          "kalan_islem_gunu": 5,
           "arac": "gemini-3.5-flash",
-          "gerekce": "Enerji maliyetlerindeki artisin devam etmesi ve kuresel resesyon endiselerinin talebi iyice zayiflatmasi.",
-          "tekrar": 5
+          "gerekce": "Cin kaynakli ucuz ihracatin kuresel piyasalardaki baskisinin artarak devam etmesi ve ithalat vergilerindeki degisimlerdir.",
+          "tekrar": 6
         }
       ],
       "plan_menusu": [],
@@ -1811,6 +1851,12 @@
           "asof": "2026-08-25",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-EREGL-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -1827,15 +1873,15 @@
         "dusuk_52h": 25.5
       },
       "gostergeler": {
-        "rsi14": 61.44185596025706,
-        "macd_hist": 0.3194395751761725,
-        "atr14": 4.206850692797318,
-        "atr_pct": 4.227990646027456,
-        "adx14": 25.03231047713228,
-        "sma20": 92.2674987792895,
-        "sma50": 90.5619992065358,
-        "sma200": 55.38639986991945,
-        "bb_pctb": 1.0234334946245303
+        "rsi14": 61.441855960259865,
+        "macd_hist": 0.31943957517675403,
+        "atr14": 4.206850692797266,
+        "atr_pct": 4.227990646027403,
+        "adx14": 25.03231047709716,
+        "sma20": 92.26749877928738,
+        "sma50": 90.56199920653495,
+        "sma200": 55.386399869919245,
+        "bb_pctb": 1.0234334946245522
       },
       "faktorler": {
         "skor": null,
@@ -1877,12 +1923,12 @@
       "aktif_vetolar": [
         {
           "veto_code": "rejim_uyumsuz",
-          "konuldu": "2026-08-25",
-          "bitis": "2026-09-01",
-          "kalan_islem_gunu": 4,
+          "konuldu": "2026-08-26",
+          "bitis": "2026-09-02",
+          "kalan_islem_gunu": 5,
           "arac": "gemini-3.5-flash",
-          "gerekce": "Yuksek borcluluk oranlari ve finansman maliyetlerinin artmasi net kar marjini olumsuz etkileyebilir.",
-          "tekrar": 5
+          "gerekce": "Sektor icindeki rekabetin kizismasi ve sirketin isletme sermayesi ihtiyacindaki yuksek artis finansal baski olusturabilir.",
+          "tekrar": 6
         }
       ],
       "plan_menusu": [
@@ -2093,6 +2139,12 @@
           "asof": "2026-08-25",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-EUPWR-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -2109,15 +2161,15 @@
         "dusuk_52h": 75.0500030518
       },
       "gostergeler": {
-        "rsi14": 47.89289733271218,
-        "macd_hist": 0.28884321181574957,
-        "atr14": 1.9926074122791968,
-        "atr_pct": 2.5048489451128515,
-        "adx14": 26.423029317403277,
-        "sma20": 79.18249931335238,
-        "sma50": 81.80399963378696,
-        "sma200": 96.46074977874522,
-        "bb_pctb": 0.5953699749963165
+        "rsi14": 47.89289733271543,
+        "macd_hist": 0.2888432118159976,
+        "atr14": 1.9926074122812487,
+        "atr_pct": 2.5048489451154308,
+        "adx14": 26.42302931749483,
+        "sma20": 79.18249931335133,
+        "sma50": 81.80399963378653,
+        "sma200": 96.46074977874513,
+        "bb_pctb": 0.5953699749965535
       },
       "faktorler": {
         "skor": -1.0462,
@@ -2162,12 +2214,12 @@
       "aktif_vetolar": [
         {
           "veto_code": "rejim_uyumsuz",
-          "konuldu": "2026-08-25",
-          "bitis": "2026-09-01",
-          "kalan_islem_gunu": 4,
+          "konuldu": "2026-08-26",
+          "bitis": "2026-09-02",
+          "kalan_islem_gunu": 5,
           "arac": "gemini-3.5-flash",
-          "gerekce": "Doviz kurlarindaki hareketlerin maliyet yapisi uzerindeki olumsuz etkisi ve marjlarin daralmasi riski.",
-          "tekrar": 5
+          "gerekce": "Kuresel ticaret savaslari ve yuksek faiz ortaminda ic piyasadaki otomotiv talebinin daralmaya devam etmesi ana risk unsurudur.",
+          "tekrar": 6
         }
       ],
       "plan_menusu": [
@@ -2449,6 +2501,12 @@
           "asof": "2026-08-25",
           "signal": "avoid",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-FROTO-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -2467,9 +2525,9 @@
       "gostergeler": {
         "rsi14": 58.242498483652156,
         "macd_hist": 0.6244603252752996,
-        "atr14": 3.5583976443095646,
-        "atr_pct": 2.6694655385175854,
-        "adx14": 17.783909576711224,
+        "atr14": 3.5583976443089487,
+        "atr_pct": 2.669465538517123,
+        "adx14": 17.78390957677486,
         "sma20": 129.12000122070523,
         "sma50": 131.4540000915521,
         "sma200": 138.04950023651202,
@@ -2637,6 +2695,12 @@
           "asof": "2026-08-25",
           "signal": "avoid",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-GARAN-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -2653,15 +2717,15 @@
         "dusuk_52h": 146.0
       },
       "gostergeler": {
-        "rsi14": 58.729805577567696,
-        "macd_hist": 1.1117232599053022,
-        "atr14": 6.411572052260053,
-        "atr_pct": 2.99326430607247,
-        "adx14": 27.873658514309582,
-        "sma20": 206.12999801635843,
-        "sma50": 199.1619995117134,
-        "sma200": 193.12350006103733,
-        "bb_pctb": 0.733119188935414
+        "rsi14": 58.72980557756079,
+        "macd_hist": 1.1117232599045241,
+        "atr14": 6.411572052264154,
+        "atr_pct": 2.9932643060743844,
+        "adx14": 27.87365851422074,
+        "sma20": 206.12999801636133,
+        "sma50": 199.16199951171453,
+        "sma200": 193.12350006103762,
+        "bb_pctb": 0.733119188935349
       },
       "faktorler": {
         "skor": -0.0478,
@@ -2704,12 +2768,12 @@
       "aktif_vetolar": [
         {
           "veto_code": "rejim_uyumsuz",
-          "konuldu": "2026-08-25",
-          "bitis": "2026-09-01",
-          "kalan_islem_gunu": 4,
+          "konuldu": "2026-08-26",
+          "bitis": "2026-09-02",
+          "kalan_islem_gunu": 5,
           "arac": "gemini-3.5-flash",
-          "gerekce": "Makroekonomik yavaslamanin holding istiraklerinin ciro ve karlilik oranlarina dogrudan olumsuz etkisi.",
-          "tekrar": 4
+          "gerekce": "Ic talepteki yavaslamanin ana istiraklerin net satis gelirleri uzerindeki olumsuz yansimalari en buyuk risk faktorudur.",
+          "tekrar": 5
         }
       ],
       "plan_menusu": [
@@ -2870,6 +2934,12 @@
           "asof": "2026-08-25",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-KCHOL-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -2886,15 +2956,15 @@
         "dusuk_52h": 23.5
       },
       "gostergeler": {
-        "rsi14": 61.73666250751788,
-        "macd_hist": 0.29300685581089647,
-        "atr14": 1.8643989175820868,
-        "atr_pct": 4.088594254318167,
-        "adx14": 22.825959519982664,
-        "sma20": 42.66499977111543,
-        "sma50": 41.324399871826174,
-        "sma200": 33.97020004272454,
-        "bb_pctb": 0.8433014603273776
+        "rsi14": 61.73666250751605,
+        "macd_hist": 0.29300685581067676,
+        "atr14": 1.8643989175842888,
+        "atr_pct": 4.088594254322995,
+        "adx14": 22.825959519949002,
+        "sma20": 42.66499977111635,
+        "sma50": 41.32439987182654,
+        "sma200": 33.970200042724635,
+        "bb_pctb": 0.8433014603274388
       },
       "faktorler": {
         "skor": 1.5059,
@@ -3042,6 +3112,12 @@
           "asof": "2026-08-25",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-KRDMD-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -3058,15 +3134,15 @@
         "dusuk_52h": 16.1200008392
       },
       "gostergeler": {
-        "rsi14": 52.865964373553965,
-        "macd_hist": 0.15718350022194422,
-        "atr14": 0.7777859159506907,
-        "atr_pct": 3.846616925634585,
-        "adx14": 14.011720616044343,
-        "sma20": 19.473500061036212,
-        "sma50": 19.833200111392486,
-        "sma200": 19.47879994392612,
-        "bb_pctb": 0.7567239538971995
+        "rsi14": 52.86596437353517,
+        "macd_hist": 0.1571835002217715,
+        "atr14": 0.7792145200815951,
+        "atr_pct": 3.853682228203417,
+        "adx14": 14.011720615955232,
+        "sma20": 19.47350006103666,
+        "sma50": 19.833200111392664,
+        "sma200": 19.478799943926166,
+        "bb_pctb": 0.75672395389708
       },
       "faktorler": {
         "skor": 0.4368,
@@ -3109,12 +3185,12 @@
       "aktif_vetolar": [
         {
           "veto_code": "rejim_uyumsuz",
-          "konuldu": "2026-08-24",
-          "bitis": "2026-08-31",
-          "kalan_islem_gunu": 3,
+          "konuldu": "2026-08-26",
+          "bitis": "2026-09-02",
+          "kalan_islem_gunu": 5,
           "arac": "gemini-3.5-flash",
-          "gerekce": "Çin'in üretim kapasitesindeki artışın küresel petrokimya fiyatları üzerinde yarattığı damping etkisi ve yüksek borçluluk yapısının finansman yükü temel risklerdir.",
-          "tekrar": 2
+          "gerekce": "Kuresel petrokimya arz fazlasinin devam etmesi ve sirketin finansman maliyetlerinin yuksek kalmasi ana risk unsurlaridir.",
+          "tekrar": 3
         }
       ],
       "plan_menusu": [],
@@ -3126,7 +3202,7 @@
         "dogrudan/atr_2.5x: R:R 0.73 < 1.5",
         "dogrudan/atr_3x: R:R 0.61 < 1.5",
         "dogrudan/swing_low: 0.94×ATR ∉ [1.5,4.0]",
-        "dogrudan/sma_break_buffer: 1.34×ATR ∉ [1.5,4.0]",
+        "dogrudan/sma_break_buffer: 1.33×ATR ∉ [1.5,4.0]",
         "dogrudan/sma_break_buffer: 0.89×ATR ∉ [1.5,4.0]",
         "sma20_geri_cekilme/atr_2x: R:R 1.26 < 1.5",
         "sma20_geri_cekilme/atr_2.5x: R:R 1.01 < 1.5",
@@ -3135,7 +3211,7 @@
         "destek_retest/atr_2x: R:R 1.12 < 1.5",
         "destek_retest/atr_2.5x: R:R 0.89 < 1.5",
         "destek_retest/atr_3x: R:R 0.74 < 1.5",
-        "destek_retest/sma_break_buffer: 0.93×ATR ∉ [1.5,4.0]"
+        "destek_retest/sma_break_buffer: 0.92×ATR ∉ [1.5,4.0]"
       ],
       "acik_tahminler": [
         {
@@ -3239,6 +3315,12 @@
           "asof": "2026-08-25",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-PETKM-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -3255,15 +3337,15 @@
         "dusuk_52h": 32.4399986267
       },
       "gostergeler": {
-        "rsi14": 43.82448761262507,
-        "macd_hist": 0.04735761461965249,
-        "atr14": 1.1708469434557336,
-        "atr_pct": 2.9096592808600117,
-        "adx14": 19.643713449896943,
-        "sma20": 40.74100017547305,
-        "sma50": 42.76079994201522,
-        "sma200": 42.9991000366223,
-        "bb_pctb": 0.3995272438635537
+        "rsi14": 43.8244876126068,
+        "macd_hist": 0.04735761461911914,
+        "atr14": 1.1708469434582,
+        "atr_pct": 2.909659280866141,
+        "adx14": 19.643713450216776,
+        "sma20": 40.741000175475016,
+        "sma50": 42.76079994201601,
+        "sma200": 42.999100036622494,
+        "bb_pctb": 0.3995272438631836
       },
       "faktorler": {
         "skor": -0.0806,
@@ -3419,6 +3501,12 @@
         {
           "prediction_id": "2026-08-25-SISE-1",
           "asof": "2026-08-25",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-SISE-1",
+          "asof": "2026-08-26",
           "signal": "hold",
           "bariyer": null
         }
@@ -3710,6 +3798,12 @@
           "asof": "2026-08-25",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-TAVHL-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -3726,15 +3820,15 @@
         "dusuk_52h": 87.0500030518
       },
       "gostergeler": {
-        "rsi14": 46.837109812441184,
-        "macd_hist": 0.11770625628535303,
-        "atr14": 2.7932837624523112,
-        "atr_pct": 2.6988248912582717,
-        "adx14": 18.15560278189471,
-        "sma20": 103.77749977111712,
-        "sma50": 106.69099960326685,
-        "sma200": 107.56299999237072,
-        "bb_pctb": 0.4552430913395183
+        "rsi14": 46.837109812445206,
+        "macd_hist": 0.11770625628590947,
+        "atr14": 2.7932837624515936,
+        "atr_pct": 2.6988248912575785,
+        "adx14": 18.155602781812103,
+        "sma20": 103.777499771115,
+        "sma50": 106.69099960326601,
+        "sma200": 107.56299999237052,
+        "bb_pctb": 0.4552430913398668
       },
       "faktorler": {
         "skor": -0.3611,
@@ -3892,6 +3986,12 @@
           "asof": "2026-08-25",
           "signal": "avoid",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-TCELL-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -3959,12 +4059,12 @@
       "aktif_vetolar": [
         {
           "veto_code": "rejim_uyumsuz",
-          "konuldu": "2026-08-25",
-          "bitis": "2026-09-01",
-          "kalan_islem_gunu": 4,
+          "konuldu": "2026-08-26",
+          "bitis": "2026-09-02",
+          "kalan_islem_gunu": 5,
           "arac": "gemini-3.5-flash",
-          "gerekce": "Petrol fiyatlarindaki ani yukselislerin jet yakiti maliyetlerini ve sirket marjlarini olumsuz etkilemesi.",
-          "tekrar": 3
+          "gerekce": "Ucus rotalarina yonelik guvenlik uyarilari ve kuresel havacilik ittifaklarindaki olasi degisimlerin yaratacagi operasyonel risklerdir.",
+          "tekrar": 4
         }
       ],
       "plan_menusu": [],
@@ -4089,6 +4189,12 @@
           "asof": "2026-08-25",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-THYAO-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -4156,12 +4262,12 @@
       "aktif_vetolar": [
         {
           "veto_code": "tez_zayif",
-          "konuldu": "2026-08-25",
-          "bitis": "2026-09-01",
-          "kalan_islem_gunu": 4,
+          "konuldu": "2026-08-26",
+          "bitis": "2026-09-02",
+          "kalan_islem_gunu": 5,
           "arac": "gemini-3.5-flash",
-          "gerekce": "Bakim calismalarinin planlanandan uzun surmesi ve uretim kapasitesinde yasanabilecek gecici kayiplar.",
-          "tekrar": 2
+          "gerekce": "Dizel ve benzin talebindeki donemsel gerilemenin derinlesmesi ve kuresel arz kesintilerinin rafineri besleme maliyetlerini artirmasidir.",
+          "tekrar": 3
         }
       ],
       "plan_menusu": [
@@ -4310,6 +4416,12 @@
           "asof": "2026-08-25",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-TUPRS-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -4430,5 +4542,5 @@
     "Bir planı beğenmiyorsan `plan_reddet` + `veto_code` kullan — bu gerçek bir karardır ve performansı ölçülür.",
     "Bu sistemde ÖLÇÜLEN KENAR YOKTUR (ADR #008). Seviyeler planlama geometrisidir; yön iddiası üretme."
   ],
-  "bundle_sha": "91eedc594538b7829d187c81f2cbdccc090b194397fd756758d3ffbe2ed00dea"
+  "bundle_sha": "35b12806cc96f962e3f55bcc09f5c4a8bc4b0ee424d9dd1be9c9cee4233541a1"
 }
