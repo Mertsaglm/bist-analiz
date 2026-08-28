@@ -28,7 +28,7 @@ AGENTS **§12c**.
 | 10 | **§0 analistin kararını gösteriyor** | 08-24: "🟢 ASELS — GİR — engel yok" derken journal `izle` diyordu. Sıralama DEĞİŞMEDİ (ADR #015 madde 3). |
 | 11 | **Haftalıkta yeni-çözülen sayacı + son çözüm tarihi** | 08-16 ve 08-23 mesajları birebir aynıydı; "değişmedi" ile "veri yok" ayrıldı. |
 | 12 | **Doküman çürümesi** (`universe.yaml`) | "reports/ gitignore'dadır" (ADR #013 tersine çevirmiş) + "büyüklüğü ölçüm raporunda yazılır" (yazmıyor). |
-| 13 | **Şablon script'i artık TESTLİ** | `yeni-proje.sh` bir kez sessizce bozulup denetime kadar hiç çalışmamıştı (L-004/L-002) ve **hâlâ hiçbir testte koşmuyordu**. Altı kilit. **İlk CI koşusunda gerçek bir hata yakaladı:**  gitignore'da olduğu için script TAZE KLONDA hiç çalışmıyordu () — Mert'in makinesinde dosya yerelde durduğu için görünmüyordu. L-004'ün birebir tekrarı. |
+| 13 | **Şablon script'i artık TESTLİ** | `yeni-proje.sh` bir kez sessizce bozulup denetime kadar hiç çalışmamıştı (L-004/L-002) ve **hâlâ hiçbir testte koşmuyordu**. Altı kilit. **İlk CI koşusunda gerçek bir hata yakaladı:** `ai/PROFILE.md` gitignore'da olduğu için script TAZE KLONDA hiç çalışmıyordu (`cp: No such file or directory`) — Mert'in makinesinde dosya yerelde durduğu için görünmüyordu. L-004'ün birebir tekrarı; artık profil yoksa boş şablon kuruluyor. |
 | 14 | **Şablon ağacı düzeltildi** | README `Proje Yardımcısı/`'yı proje yapısında gösteriyordu; script onu KOPYALAMIYOR (ölçüldü, script koşularak). |
 
 Her düzeltmenin kilidi **eski hata geri konarak** sınandı. Etkilenen hatlar
