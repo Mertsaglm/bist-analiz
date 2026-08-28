@@ -547,6 +547,65 @@ class TestSablonScripti:
         assert "Başlangıç" in durum and "Faz" not in durum, \
             "STATE kaynak projenin ilerlemesini taşıyor"
 
+    def _sahte_kaynak(self, tmp_path, *, profil_var: bool):
+        """TAZE KLON taklidi: script'in okuduğu dosyalar + isteğe bağlı PROFILE.
+
+        Gerçek proje kökünü kullanamayız çünkü Mert'in makinesinde PROFILE.md
+        VARDIR — hatanın görünmemesinin sebebi tam olarak buydu.
+        """
+        kok = tmp_path / "kaynak"
+        (kok / "ai").mkdir(parents=True)
+        (kok / ".github").mkdir()
+        (kok / "Proje Yardımcısı").mkdir()
+        (kok / "AGENTS.md").write_text("kanonik kurallar", encoding="utf-8")
+        # Köprüler AGENTS.md'ye YÖNLENDİRMELİ — script bunu ayrıca doğruluyor.
+        for ad in ("CLAUDE.md", "GEMINI.md", ".github/copilot-instructions.md"):
+            (kok / ad).write_text("Kurallar: AGENTS.md", encoding="utf-8")
+        (kok / "ai/LESSONS.md").write_text("dersler", encoding="utf-8")
+        if profil_var:
+            (kok / "ai/PROFILE.md").write_text("# PROFILE\nMert", encoding="utf-8")
+        hedef_script = kok / "Proje Yardımcısı" / "yeni-proje.sh"
+        kaynak_script = pathlib.Path(KOK) / "Proje Yardımcısı" / "yeni-proje.sh"
+        hedef_script.write_bytes(kaynak_script.read_bytes())
+        hedef_script.chmod(0o755)
+        return hedef_script
+
+    def test_PROFILE_YOKKEN_de_kosar(self, tmp_path):
+        """⚠ TAZE KLON SENARYOSU — script'i CI'da düşüren şey buydu.
+
+        `ai/PROFILE.md` GITIGNORE'DADIR (kişisel, projeler arası ortak). Yani
+        temiz bir checkout'ta o dosya YOKTUR ve `cp` script'in tamamını
+        düşürüyordu:
+            cp: cannot stat '.../ai/PROFILE.md': No such file or directory
+
+        Mert'in makinesinde çalışıyordu çünkü dosya yerelde duruyor — L-004'ün
+        birebir tekrarı ve yine görünmezdi, çünkü script hiçbir yerden TEMİZ
+        bir kopyayla koşulmuyordu. İlk CI koşusunda yakalandı (2026-08-28).
+        """
+        script = self._sahte_kaynak(tmp_path, profil_var=False)
+        hedef = tmp_path / "yeni"
+        r = subprocess.run([str(script), str(hedef)],
+                           capture_output=True, text=True, timeout=60)
+        assert r.returncode == 0, (
+            f"PROFILE.md yokken script düştü — taze klonda kullanılamaz:\n"
+            f"{r.stderr}")
+        profil = (hedef / "ai/PROFILE.md").read_text(encoding="utf-8")
+        assert "doldurulacak" in profil, "PROFILE boş şablon olarak kurulmadı"
+
+    def test_PROFILE_VARSA_tasinir(self, tmp_path):
+        """Yokluğu tolere etmek, VARLIĞINI görmezden gelmek demek değildir.
+
+        Profil birikmiş bilgidir ve projeler arası TAŞINIR; boş şablonla
+        ezilmesi sessiz bir kayıp olurdu (§11 tuzak 1: düzeltme yeni hata doğurur).
+        """
+        script = self._sahte_kaynak(tmp_path, profil_var=True)
+        hedef = tmp_path / "yeni"
+        r = subprocess.run([str(script), str(hedef)],
+                           capture_output=True, text=True, timeout=60)
+        assert r.returncode == 0, r.stderr
+        assert "Mert" in (hedef / "ai/PROFILE.md").read_text(encoding="utf-8"), \
+            "mevcut profil taşınmadı, boş şablonla EZİLDİ"
+
     def test_README_agaci_scriptin_URETTIGIYLE_tutarli(self, tmp_path):
         """Doküman ↔ davranış: ağaçta yazan her yol gerçekten üretiliyor mu?
 
