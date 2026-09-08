@@ -1,0 +1,283 @@
+{
+  "schema_version": "bist_llm_v1",
+  "asof": "2026-09-08",
+  "bundle_sha": "6448e7b2814363bb253f002757c20e6b4bcd3503ee4003043d99f4566021ae70",
+  "tool": "gemini-3.6-flash",
+  "market_view": {
+    "regime_agreement": "katiliyorum",
+    "regime_note": "Piyasa genelinde olumlu havanın devam etmesi ve genişliğin yüksek seyretmesi risk iştahını desteklemektedir. Bununla birlikte hisse bazlı veto kararları ve seçici yaklaşım çerçevesinde portföy dengesi korunmalıdır.",
+    "portfolio_action": "koru"
+  },
+  "stocks": [
+    {
+      "ticker": "AKBNK",
+      "signal": "avoid",
+      "action": "plan_reddet",
+      "selected_plan_id": null,
+      "veto_code": "rejim_uyumsuz",
+      "confidence": "orta",
+      "thesis": "Bankacılık sektöründeki genel dalgalanma ve mevcut aktif veto kararı sebebiyle yeni pozisyon açılması uygun görülmemektedir. Hissenin teknik yapısı kısa vadeli ortalamaların üzerinde seyretse de temkinli duruş korunmaktadır.",
+      "counter_scenario": "Sektör genelinde güçlü alımların başlaması ve hacimli yükselişle birlikte geçmiş direnç seviyelerinin aşılması durumunda olumsuz beklenti geçerliliğini yitirebilir.",
+      "key_risk": "Sermaye piyasası araçları ödemeleri ve para politikası adımlarının banka net faiz marjı üzerindeki baskısı temel risk unsuru olarak öne çıkmaktadır.",
+      "falsifier": "Gelecek kısa vadeli işlem döneminde hisse kapanışının kısa vadeli ortalamasının altına inmesi ve satış hacminin belirgin şekilde artması tezimizi doğrular.",
+      "news_refs": [
+        "kap-1659886",
+        "kap-1659885"
+      ],
+      "news_reading": "Yurt dışı tahvil kupon ödemesi ve genel bilgilendirme açıklamaları rutin kurumsal işlemler olup fiyata doğrudan yeni bir ivme kazandırmamaktadır."
+    },
+    {
+      "ticker": "ASELS",
+      "signal": "hold",
+      "action": "plan_reddet",
+      "selected_plan_id": null,
+      "veto_code": "tez_zayif",
+      "confidence": "orta",
+      "thesis": "Savunma sanayii tarafında momentumun yavaşlaması ve zayıf tez vetosunun devam etmesi nedeniyle mevcut pozisyonlar korunmalı, yeni alım yapılmamalıdır.",
+      "counter_scenario": "Yeni uluslararası sözleşme açıklamaları veya sektör genelindeki kuvvetli alımlarla fiyatın yukarı yönlü ivme kazanması ivmeyi tekrar artırabilir.",
+      "key_risk": "Jeopolitik gelişmelerdeki sakinleşme ve kamusal sipariş süreçlerindeki olası gecikmeler hisse performansı üzerinde baskı yaratabilir.",
+      "falsifier": "Önümüzdeki işlem sürecinde hisse fiyatının hareketli ortalama seviyesinin altına gerileyerek günü ekside tamamlaması durumu gözlemlenecektir.",
+      "news_refs": [],
+      "news_reading": null
+    },
+    {
+      "ticker": "ASTOR",
+      "signal": "avoid",
+      "action": "plan_reddet",
+      "selected_plan_id": null,
+      "veto_code": "rejim_uyumsuz",
+      "confidence": "orta",
+      "thesis": "Şirketin yurt dışı pay devri süreçlerini tamamlamasına rağmen sektördeki dalgalı görünüm ve aktif veto kararı sebebiyle riskli kategoride kalmaktadır.",
+      "counter_scenario": "Yenilenebilir enerji ve elektrik ekipmanları sektörüne yönelik güçlü teşvik haberleri ve alım iştahı fiyatı hızlıca yukarı taşıyabilir.",
+      "key_risk": "Yurt dışı yatırımların devri sonrası nakit akışı zamanlaması ve hammadde maliyetlerindeki artışlar kârlılık üzerinde risk oluşturmaktadır.",
+      "falsifier": "İzleyen işlem günlerinde işlem hacminin düşmeye devam etmesi ve fiyatın gün içi en düşük seviyelerde kapanış yapması durumunda görünüm bozulur.",
+      "news_refs": [
+        "kap-1660480",
+        "kap-1660474"
+      ],
+      "news_reading": "Romanya merkezli bağlı ortaklık pay devir işlemlerinin tamamlanması kurumsal açıdan tamamlayıcı bir adım olsa da kısa vadeli trendi değiştirmeye yetmemektedir."
+    },
+    {
+      "ticker": "BIMAS",
+      "signal": "hold",
+      "action": "islem_yok",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "orta",
+      "thesis": "Perakende sektörünün öncü hissesi güçlü duruşunu sürdürse de mevcut fiyat seviyelerinin uygun plan geometrisi sunmaması nedeniyle yeni işlem önerilmemektedir.",
+      "counter_scenario": "Gıda enflasyonu beklentilerindeki değişim veya operasyonel marjlarda beklenenden güçlü iyileşme ile hisse yeni zirvelere doğru hareketlenebilir.",
+      "key_risk": "Tüketim harcamalarındaki olası yavaşlama ve personel ile mağaza işletim maliyetlerindeki artışlar marjlar üzerinde kısa vadeli baskı oluşturabilir.",
+      "falsifier": "Yaratılan süreçte hisse fiyatının kısa vadeli destek çizgisinin altına sarkan kapanışlar yapması durumunda yükseliş eğilimi tamamen zayıflar.",
+      "news_refs": [],
+      "news_reading": null
+    },
+    {
+      "ticker": "EKGYO",
+      "signal": "avoid",
+      "action": "plan_reddet",
+      "selected_plan_id": null,
+      "veto_code": "rejim_uyumsuz",
+      "confidence": "orta",
+      "thesis": "Gayrimenkul sektöründeki yüksek faiz ortamı baskısı ve hisse üzerindeki aktif veto durumu sebebiyle yeni pozisyon alımından uzak durulması gerekmektedir.",
+      "counter_scenario": "Konut kampanyaları veya konut kredi faizlerinde olası indirim haberleri gayrimenkul hisselerine hızlı alım getirebilir.",
+      "key_risk": "Yüksek mevduat faizlerinin gayrimenkul talebini baskılamaya devam etmesi ve proje teslim sürelerindeki uzamalar ana risk faktörüdür.",
+      "falsifier": "Önümüzdeki birkaç işlem seansında kapanış fiyatının uzun vadeli ortalamasının altına inmesi düşüş trendinin teyidi olacaktır.",
+      "news_refs": [],
+      "news_reading": null
+    },
+    {
+      "ticker": "ENKAI",
+      "signal": "hold",
+      "action": "plan_reddet",
+      "selected_plan_id": null,
+      "veto_code": "tez_zayif",
+      "confidence": "orta",
+      "thesis": "İnşaat ve taahhüt grubundaki yatay seyir ile zayıf tez vetosunun varlığı yeni pozisyon alımını engellemekte, mevcut durumun izlenmesi istenmektedir.",
+      "counter_scenario": "Yurt dışı yeni proje taahhütlerinin açıklanması veya enerji segmentinden gelecek yüksek kârlılık katkısı hisseyi direnç üstüne çıkarabilir.",
+      "key_risk": "Küresel projelerin yürütüldüğü coğrafyalardaki politik belirsizlikler ve döviz kurlarındaki yatay seyir kârlılığı sınırlayabilir.",
+      "falsifier": "Yakın işlem günleri süresince hisse fiyatının orta vadeli hareketli ortalama seviyesini aşağı yönlü kırması tezimizi doğrulayacaktır.",
+      "news_refs": [],
+      "news_reading": null
+    },
+    {
+      "ticker": "EREGL",
+      "signal": "hold",
+      "action": "plan_reddet",
+      "selected_plan_id": null,
+      "veto_code": "rejim_uyumsuz",
+      "confidence": "orta",
+      "thesis": "Demir çelik sektöründeki küresel fiyat baskıları ve hisseye uygulanan rejim veto kararı nedeniyle doğrudan alım yapmak yerine beklemede kalınmalıdır.",
+      "counter_scenario": "Çelik marjlarında küresel toparlanma veya damping karşıtı tedbirlerin getirilmesi hisse fiyatında hızlı bir yukarı tepki doğurabilir.",
+      "key_risk": "Çin kaynaklı ucuz çelik arzının devam etmesi ve küresel sanayi talebindeki durgunluk şirket marjlarını olumsuz etkileyebilir.",
+      "falsifier": "Önümüzdeki seanslarda fiyatın son günlerdeki ana destek seviyesinin altında kapanış gerçekleştirmesi düşüş baskısını artırır.",
+      "news_refs": [],
+      "news_reading": null
+    },
+    {
+      "ticker": "EUPWR",
+      "signal": "hold",
+      "action": "plan_reddet",
+      "selected_plan_id": null,
+      "veto_code": "rejim_uyumsuz",
+      "confidence": "orta",
+      "thesis": "Göreceli güç göstergesindeki dip seviyelere rağmen süregelen veto kararı ve zayıf teknik tablo nedeniyle izleme modunda kalınmalıdır.",
+      "counter_scenario": "Yatırımcı sunumu sonrası kurumsal yatırımcı ilgisinin artması ve büyük tutarlı yeni iş ilişkisi bildirimleri trendi tersine çevirebilir.",
+      "key_risk": "Sektördeki sert satış baskısının devam etmesi ve işletme sermayesi ihtiyacının artması hisse performansı üzerinde risk barındırmaktadır.",
+      "falsifier": "Gelecek işlem günleri içerisinde gün içi en düşük fiyat seviyesinin altına taze bir sarkma yaşanması zayıflığın sürdüğünü kanıtlar.",
+      "news_refs": [
+        "kap-1660406"
+      ],
+      "news_reading": "Açıklanan yatırımcı ve analist sunumu şirketin uzun vadeli potansiyelini gösterse de kısa vadeli teknik zayıflığı hemen düzeltmeye yetmemektedir."
+    },
+    {
+      "ticker": "FROTO",
+      "signal": "avoid",
+      "action": "plan_reddet",
+      "selected_plan_id": null,
+      "veto_code": "rejim_uyumsuz",
+      "confidence": "orta",
+      "thesis": "Otomotiv sektöründeki genel pazar daralması kaygıları ve hissedeki aktif veto kısıtı dolayısıyla plan seçimi reddedilerek kenarda kalınmalıdır.",
+      "counter_scenario": "Avrupa ihracat pazarlarından gelen talep artışı veya ticari araç satış rakamlarında sürpriz yükseliş hisseyi yukarı taşıyabilir.",
+      "key_risk": "İç pazarda daralma ve ihracat pazarlarındaki sıkılaşma adımlarının araç satış adetleri üzerindeki daraltıcı etkisi temel risktir.",
+      "falsifier": "Gelecek birkaç seans içinde hisse kapanışının kısa vadeli ortalamanın altına geri çekilmesi olumsuz görünümü teyit eder.",
+      "news_refs": [],
+      "news_reading": null
+    },
+    {
+      "ticker": "GARAN",
+      "signal": "accumulate",
+      "action": "plan_sec",
+      "selected_plan_id": "GARAN-2026-09-08-A",
+      "veto_code": null,
+      "confidence": "orta",
+      "thesis": "Bankacılık sektöründe teknik seviyelerin desteklemesi ve hareketli ortalamaya geri çekilme planının makul risk ödül oranı sunması sebebiyle pozisyon seçilmektedir.",
+      "counter_scenario": "Sektörel bazda yoğun satışların gelmesi ve bankacılık hisselerinden çıkışların hızlanması durumunda seçilen işlem planı stop seviyesine ulaşabilir.",
+      "key_risk": "Para politikası kararlarındaki olası değişimler ve mevduat maliyetlerindeki yükselişin net faiz marjını olumsuz etkilemesi ana risk faktörüdür.",
+      "falsifier": "Önümüzdeki işlem haftasında fiyatın destek bandının altına sarkarak günü en düşük seviyeden kapatması planın bozulduğunu gösterir.",
+      "news_refs": [
+        "kap-1660437",
+        "kap-1659855"
+      ],
+      "news_reading": "Yurt dışı borçlanma aracı itfası ve varant ihracı kararları bankanın aktif bilanço yönetimini ve likidite gücünü teyit eden olağan adımlardır."
+    },
+    {
+      "ticker": "KCHOL",
+      "signal": "hold",
+      "action": "plan_reddet",
+      "selected_plan_id": null,
+      "veto_code": "rejim_uyumsuz",
+      "confidence": "orta",
+      "thesis": "Holding hisselerindeki güçlü seyir devam etmekle birlikte aktif veto kısıtlaması ve uygun geometrik planın bulunmaması sebebiyle işlem yapılmamalıdır.",
+      "counter_scenario": "Bağlı ortaklıkların kârlılık katkısının artması ve net aktif değer iskontosunun kapanması ile yukarı yönlü trend devam edebilir.",
+      "key_risk": "Portföydeki ana sanayi ve otomotiv şirketlerinin performansındaki yavaşlama holding genel görünümü üzerinde baskı oluşturabilir.",
+      "falsifier": "İzleyen seanslar süresince hisse fiyatının kısa vadeli zirvesinden gerileyerek ortalamanın altına inmesi durumu izlenecektir.",
+      "news_refs": [],
+      "news_reading": null
+    },
+    {
+      "ticker": "KRDMD",
+      "signal": "hold",
+      "action": "islem_yok",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "orta",
+      "thesis": "Demir çelik sektöründeki görünüm dengelenme aşamasında olup uygun bir plan geometrisi tanımlanmadığından mevcut durum korunarak islem yapılmamaktadır.",
+      "counter_scenario": "İnşaat ve altyapı projelerindeki canlanma ile kütük çelik talebinin artması hisse fiyatında güçlü alımları tetikleyebilir.",
+      "key_risk": "Girdi maliyetlerindeki yükseliş ve nihai ürün fiyatlarındaki zayıf seyir şirket kârlılığı üzerinde risk unsuru olarak kalmaktadır.",
+      "falsifier": "Yakın dönemdeki işlem günlerinde hisse kapanışının son destek seviyesinin altında gerçekleşmesi görünümün olumsuza döndüğünü teyit eder.",
+      "news_refs": [],
+      "news_reading": null
+    },
+    {
+      "ticker": "PETKM",
+      "signal": "hold",
+      "action": "plan_reddet",
+      "selected_plan_id": null,
+      "veto_code": "rejim_uyumsuz",
+      "confidence": "orta",
+      "thesis": "Hissenin tavan seviyesinde kilitli kapanması dengeli fiyat oluşumunu engellemekte, ayrıca aktif veto durumu nedeniyle kenarda beklenmelidir.",
+      "counter_scenario": "Etilen nafta makasındaki güçlü toparlanmanın kalıcı hale gelmesi ve petrokimya talebinin artması yükselişi sürdürebilir.",
+      "key_risk": "Tavan kilitli kapanış sonrası yaşanabilecek kâr satışları ve küresel petrokimya marjlarındaki zayıflık temel risk kaynağıdır.",
+      "falsifier": "Önümüzdeki birkaç işlem gününde tavan kilidinin açılmasıyla birlikte yüksek hacimli satışların gelmesi geri çekilmeyi başlatabilir.",
+      "news_refs": [],
+      "news_reading": null
+    },
+    {
+      "ticker": "SISE",
+      "signal": "hold",
+      "action": "plan_reddet",
+      "selected_plan_id": null,
+      "veto_code": "veri_supheli",
+      "confidence": "orta",
+      "thesis": "Fiyatın tavan kilitli olması ve veri şüphesi gerekçeli aktif vetosunun devam etmesi nedeniyle yeni bir plan seçimi yapılmayıp red uygulanmaktadır.",
+      "counter_scenario": "Yurt dışı üretim tesislerinin katkısıyla satış gelirlerindeki artış ve enerji maliyetlerindeki düşüş fiyatı destekleyebilir.",
+      "key_risk": "Küresel inşaat ve otomotiv sektöründeki yavaşlamanın cam ürünleri talebini düşürmesi kârlılık üzerinde risk yaratmaktadır.",
+      "falsifier": "Gelecek seanslar içerisinde tavan seviyesinden çözülme yaşanıp fiyatın günün en düşük seviyesinden kapanması tez teyididir.",
+      "news_refs": [],
+      "news_reading": null
+    },
+    {
+      "ticker": "TAVHL",
+      "signal": "hold",
+      "action": "islem_yok",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "orta",
+      "thesis": "Havacılık sektöründeki olumlu yolcu verilerine karşın geçerli bir risk ödül oranlı plan sunulmaması sebebiyle kenarda beklenmesi uygundur.",
+      "counter_scenario": "Uluslararası uçuş trafiğindeki artış ve havalimanı harcamalarındaki yükseliş ile hisse direnç seviyelerini yukarı yönlü kırabilir.",
+      "key_risk": "Jeopolitik gerilimlerin uçuş rotaları üzerindeki olumsuz etkisi ve operasyonel giderlerdeki artışlar kârlılığı baskılayabilir.",
+      "falsifier": "İzleyen işlem günlerinde hisse fiyatının kısa vadeli ortalamanın altına sarkması yükseliş ivmesinin sona erdiğini gösterir.",
+      "news_refs": [],
+      "news_reading": null
+    },
+    {
+      "ticker": "TCELL",
+      "signal": "hold",
+      "action": "islem_yok",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "orta",
+      "thesis": "Telekomünikasyon sektöründeki stabil duruşa ve yönetim değişikliği haberine rağmen uygun giriş geometrisi olmaması nedeniyle işlem yapılmamaktadır.",
+      "counter_scenario": "Tarife zamlarının enflasyon üstü katkısı ve abone başı elde edilen gelirlerdeki güçlü artış hisseyi yukarı taşıyabilir.",
+      "key_risk": "Yatırım harcamalarının yüksek seyretmesi ve finansman maliyetlerindeki artış şirket üzerindeki temel risk faktörleridir.",
+      "falsifier": "Gelecek birkaç seans boyunca fiyatın orta vadeli ortalama desteğini aşağı yönlü kırması belirgin bir zayıflama işaretidir.",
+      "news_refs": [
+        "kap-1660182",
+        "kap-1660180"
+      ],
+      "news_reading": "Satış yönetimi kadrosundaki üst düzey değişiklik kurumsal yapılanmanın parçası olup kısa vadede operasyonel sonuçlara doğrudan etki etmez."
+    },
+    {
+      "ticker": "THYAO",
+      "signal": "hold",
+      "action": "plan_reddet",
+      "selected_plan_id": null,
+      "veto_code": "rejim_uyumsuz",
+      "confidence": "orta",
+      "thesis": "Açıklanan olumlu trafik verilerine rağmen mevcut rejim uyumsuzluğu vetosu ve plan uyumsuzluğu sebebiyle pozisyon almaktan kaçınılmaktadır.",
+      "counter_scenario": "Yolcu ve kargo gelirlerindeki artışın devam etmesi ve jet yakıtı maliyetlerindeki gerileme hissede güçlü alımları tetikleyebilir.",
+      "key_risk": "Küresel ekonomik yavaşlama riski ve jeopolitik gelişmelerin uçuş ağları üzerindeki baskısı temel risk unsurlarıdır.",
+      "falsifier": "İzleyen haftadaki işlem günlerinde kapanış fiyatının uzun vadeli ortalamanın altına gerilemesi olumsuz senaryoyu teyit eder.",
+      "news_refs": [
+        "kap-1660523"
+      ],
+      "news_reading": "Ağustos ayı trafik sonuçlarında açıklanan yolcu sayıları sektördeki güçlü operasyonel performansı ve yüksek doluluk oranlarını teyit etmektedir."
+    },
+    {
+      "ticker": "TUPRS",
+      "signal": "hold",
+      "action": "plan_reddet",
+      "selected_plan_id": null,
+      "veto_code": "tez_zayif",
+      "confidence": "orta",
+      "thesis": "Rafineri marjlarındaki dalgalanma ve zayıf tez vetosunun varlığı nedeniyle işlem yapılmayarak mevcut bekleme durumu sürdürülmelidir.",
+      "counter_scenario": "Dizel ve jet yakıtı marjlarında yaşanacak küresel toparlanma ve bakım periyotlarının tamamlanması hisseyi pozitif etkileyebilir.",
+      "key_risk": "Ham petrol fiyatlarındaki ani oynaklıklar ve stok değerleme zararları şirket kârlılığı üzerinde risk oluşturmaktadır.",
+      "falsifier": "Gelecek işlem seanslarında fiyatın destek seviyesinin altında kapanışlar yapması tezin kırıldığını gösterir.",
+      "news_refs": [],
+      "news_reading": null
+    }
+  ],
+  "not_covered": [],
+  "analyst_notes": "Portföy yönetimi sürecinde hisse bazlı plan disiplini ve risk yönetimi ilkeleri titizlikle uygulanmaktadır."
+}
