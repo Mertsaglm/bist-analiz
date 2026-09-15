@@ -734,16 +734,22 @@ def cmd_otonom(args) -> int:
         for s in n["satirlar"]:
             print(f"  ⚠ {s}")
         if not n["satirlar"]:
-            print(f"✅ Nöbetçi temiz — son koşu {n.get('son_kosu')} · "
+            print(f"✅ Nöbetçi temiz — beklenen seans {n.get('beklenen_seans')} · "
+                  f"son koşu {n.get('son_kosu_baslangic')} · "
                   f"son bar {n.get('son_bar')} · son analiz {n.get('son_analiz')}")
             return 0
         from . import telegram_bist as tg
         try:
-            tg.bildir(cfg, "👁 BIST nöbetçi — " + n["tarih"] + "\n"
+            tg.bildir(cfg, "👁 BIST nöbetçi — seans "
+                      + str(n.get("beklenen_seans")) + "\n"
                       + "\n".join(f"· {s}" for s in n["satirlar"]))
         except Exception as e:                              # noqa: BLE001
             print(f"  (Telegram gönderilemedi: {e})")
-        return 1 if n["sessiz"] else 0
+        # ⚠ `analizsiz` de çıkışı 1 yapar (2026-09-02). Eskiden yalnız `sessiz`
+        # yapıyordu; "seans analizsiz kaldı" bulgusu Telegram'a düşüp Actions'ta
+        # YEŞİL kalıyordu, yani GitHub'ın kendi bildirim kanalı hiç çalışmıyordu.
+        # İki kanal tek olay: gözcünün bulduğu her arıza GÖRÜNÜR olmalı.
+        return 1 if (n["sessiz"] or n.get("analizsiz")) else 0
 
     if args.alt == "gunluk":
         sonuc = otonom.gunluk(cfg, con, analist_calistir=not args.analistsiz)

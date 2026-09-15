@@ -34,7 +34,7 @@ eskiden zıt varsayım taşıyorlardı ve çelişkiyi hiçbir test görmüyordu.
 from __future__ import annotations
 
 import sqlite3
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, time, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 from . import util
@@ -193,6 +193,17 @@ class BistCalendar:
         if t < self._t(s["kapanis_muzayede_bitis"]):
             return "kapanis_muzayede"
         return "sonrasi"
+
+    def session_close_utc(self, d: date | str) -> datetime:
+        """`d` seansının KAPANIŞ anı, UTC olarak.
+
+        Neden gerekli: "bugün koşu oldu mu?" sorusu duvar saatiyle sorulamaz
+        (L-026). Doğru referans "SEANS KAPANDIKTAN SONRA koşu başladı mı?"dır
+        ve o karşılaştırma için seansın kapanış ANI lazım — takvim günü değil.
+        """
+        d = self._as_date(d)
+        t = self._t(self._seans["kapanis_muzayede_bitis"])
+        return datetime.combine(d, t, tzinfo=self.tz).astimezone(timezone.utc)
 
     def last_closed_session(self, ts_utc: datetime | None = None) -> date:
         """Kapanışı KESİNLEŞMİŞ son işlem günü.

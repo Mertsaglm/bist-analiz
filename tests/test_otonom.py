@@ -13,11 +13,16 @@ AĞ YOK: tüm dış çağrılar monkeypatch'lenir.
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime, timezone
 
 import pytest
 
 from src import otonom, saglik as sag
+
+
+def date_of(d):
+    """`is_trading_day` hem `date` hem ISO metin alabilir."""
+    return d if isinstance(d, date) else date.fromisoformat(str(d)[:10])
 
 
 @pytest.fixture
@@ -107,6 +112,36 @@ class TestTakvimKapisi:
 
         otonom.gunluk(cfg, con, bugun=date(2026, 7, 29), analist_calistir=False)
         assert "veri" in cagrilan and "gosterge" in cagrilan
+
+    def test_GECIKEN_kosu_HAFTA_SONUNA_tasinca_CUMAYI_analiz_eder(
+            self, cfg, con, monkeypatch, sessiz_telegram):
+        """⚠ GERÇEK OLAY — 2026-08-28 (Cuma) slotu 08-29T00:39Z'de koştu.
+
+        Koşunun günü `bugun_tr()`ten okunuyordu: etiket "2026-08-29"
+        (CUMARTESİ) oldu, takvim kapısı "işlem günü değil" dedi ve koşu
+        hiçbir adım atmadan ATLANDI. Cuma seansı o gün analiz edilmedi;
+        `otonom_kosu`da 2026-08-29 için `durum='atlandi'` bir kayıt duruyor.
+        GitHub gecikmesi işin TAMAMINI yedi ve hiçbir hata fırlamadı.
+
+        Sözleşme: koşunun günü ANALİZ ETTİĞİ SEANSTIR. Gecikme onu kaydıramaz.
+        """
+        cagrilan = _adimlari_sahtele(monkeypatch)
+        from src import journal
+        from src.calendar_bist import BistCalendar
+        # Cumartesi 00:39Z — kapanmış son seans hâlâ Cuma (08-28).
+        monkeypatch.setattr(BistCalendar, "last_closed_session",
+                            lambda s, ts=None: date(2026, 8, 28))
+        monkeypatch.setattr(BistCalendar, "is_trading_day",
+                            lambda s, d: date_of(d).weekday() < 5)
+
+        sonuc = otonom.gunluk(cfg, con, analist_calistir=False)
+        assert "atlandi" not in sonuc, (
+            "gecikme koşuyu Cumartesiye taşıdı ve iş atlandı — L-026 tekrarı")
+        assert "veri" in cagrilan and "gosterge" in cagrilan
+        k = journal.son_kosu_zamana_gore(con, tur="gunluk")
+        assert k["tarih_tr"] == "2026-08-28", (
+            f"heartbeat etiketi seansa değil duvar saatine bağlanmış: "
+            f"{k['tarih_tr']}")
 
     def test_ENDEKS_zincirde_kosar(self, cfg, con, monkeypatch, sessiz_telegram):
         """L-002'NİN ÜÇÜNCÜ TEKRARININ KİLİDİ.
@@ -279,8 +314,9 @@ class TestAdimSirasi:
 
 
 class TestNobetci:
-    """⚠ Gözcünün yapabileceği EN KÖTÜ hata: alarm vermesi gereken anda
-    "temiz" demek. Bu sınıf tam olarak onu kilitler.
+    """Gözcü — koşunun DIŞINDAN bakan tek kontrol (ADR #017, L-015/L-016).
+
+    ⚠ REFERANS `son_bar` DEĞİL, TAKVİMDİR.
 
     İlk sürüm `son_analiz`i `son_bar`la karşılaştırıyordu. İkisi de günlük
     koşunun ürünüdür: koşu hiç olmazsa yeni bar da girmez, analiz de yazılmaz
@@ -288,10 +324,22 @@ class TestNobetci:
     tekrarı: *"kontroller birbirini doğruluyorsa hiçbiri dış dünyaya
     bakmıyordur."* Referans artık TAKVİM (`last_closed_session`), yani koşuya
     bağlı olmayan tek şey.
+
+    ⚠⚠ İKİNCİ TUR (L-026, 2026-09-02): referans takvimdi ama SORU hâlâ duvar
+    saatiyle soruluyordu — *"bugün (TR takvim günü) koşu kaydı var mı?"*.
+    GitHub cron gecikmesi bu soruyu iki yönde birden bozdu ve gözcü,
+    OLMAYAN arızada bağırıp GERÇEK arızada sustu. Aşağıdaki iki test
+    (`test_GECE_YARISINI_ASAN_*`, `test_CUMARTESIYE_TASAN_*`) o iki gerçek
+    olayın kilididir; soru duvar saatine geri dönerse ikisi birden kırılır.
     """
 
+    # Gözcü artık ZAMANA bakıyor (heartbeat kapanıştan sonra mı başladı?),
+    # etikete değil. O yüzden testin `baslangic_utc`yi ELDE kurması şart:
+    # `kosu_basla` gerçek `utc_now()` yazar ve o değer duvar saatine bağlıdır
+    # (AGENTS §11/6 — zaman kaynağı enjekte edilebilir olmalı).
     @staticmethod
-    def _kur(con, cfg, bar_gunleri, analiz_gunu=None, kosu_gunu=None):
+    def _kur(con, cfg, bar_gunleri, analiz_gunu=None, kosu_gunu=None,
+             kosu_baslangic=None, durum="tamam"):
         from src import db, journal
         from tests.conftest import add_bars, add_index, add_universe
         add_universe(con, "AAA")
@@ -299,9 +347,16 @@ class TestNobetci:
                               for d in bar_gunleri])
         add_index(con, "XU100", bar_gunleri)
         if kosu_gunu:
-            journal.kosu_bitir(
-                con, journal.kosu_basla(cfg, con, tur="gunluk",
-                                        tarih_tr=kosu_gunu), durum="tamam")
+            kid = journal.kosu_basla(cfg, con, tur="gunluk", tarih_tr=kosu_gunu)
+            # Varsayılan: o günün seansı kapandıktan 1,5 saat sonra (19:40 TR).
+            bas = kosu_baslangic or f"{kosu_gunu}T16:40:00+00:00"
+            con.execute("UPDATE otonom_kosu SET baslangic_utc = ? WHERE kosu_id = ?",
+                        (bas, kid))
+            if durum != "kosuyor":
+                journal.kosu_bitir(con, kid, durum=durum)
+                con.execute("UPDATE otonom_kosu SET baslangic_utc = ? "
+                            "WHERE kosu_id = ?", (bas, kid))
+            con.commit()
         if analiz_gunu:
             db.upsert_many(con, "llm_runs",
                            ["run_id", "asof", "tool", "bundle_sha",
@@ -329,9 +384,9 @@ class TestNobetci:
         self._kur(con, cfg, g, analiz_gunu=g[-1], kosu_gunu=g[-1])
         self._takvim(monkeypatch, g[-1])
         n = otonom.nobetci(cfg, con, bugun_tr=g[-1])
-        assert not n["sessiz"] and n["satirlar"] == []
+        assert not n["sessiz"] and not n["analizsiz"] and n["satirlar"] == []
 
-    def test_bugun_KOSU_YOKSA_alarm(self, cfg, con, monkeypatch):
+    def test_seans_kapandi_ama_KOSU_YOKSA_alarm(self, cfg, con, monkeypatch):
         """2026-08-06 vakası: iş hiç başlamadı, o gün tamamen sessizdi."""
         from src import otonom
         from tests.conftest import is_gunleri
@@ -340,7 +395,75 @@ class TestNobetci:
         self._takvim(monkeypatch, g[-1])
         n = otonom.nobetci(cfg, con, bugun_tr=g[-1])
         assert n["sessiz"]
-        assert any("KAYDI YOK" in s for s in n["satirlar"])
+        assert any("koşu YOK" in s for s in n["satirlar"])
+
+    def test_GECE_YARISINI_ASAN_gozcu_YANLIS_ALARM_VERMEZ(self, cfg, con,
+                                                          monkeypatch):
+        """⚠ GERÇEK OLAY — 2026-09-01 (ve aynısı 2026-08-26).
+
+        Günlük iş 19:31Z'de sorunsuz koştu ve bitti. Gözcünün 19:40Z slotu
+        GitHub'da 2 saat 18 dakika gecikti: 21:58Z, yani TR saatiyle
+        02 Eylül 00:58. `bugun_tr` "2026-09-02" dedi, heartbeat "2026-09-01"
+        diyordu, gözcü "bugün koşu KAYDI YOK" deyip işi KIRMIZI yaptı ve
+        GitHub arıza maili gönderdi. Ortada arıza YOKTU.
+
+        Gecikme GitHub'ın; onu düzeltemeyiz. Düzeltilebilen şey SORUYDU.
+        """
+        from src import otonom
+        # Seans günü Salı 2026-09-01; günlük iş 19:31Z'de (TR 22:31) koştu.
+        self._kur(con, cfg, ["2026-08-31", "2026-09-01"],
+                  analiz_gunu="2026-09-01", kosu_gunu="2026-09-01",
+                  kosu_baslangic="2026-09-01T19:31:57+00:00")
+        self._takvim(monkeypatch, "2026-09-01")
+        n = otonom.nobetci(cfg, con, bugun_tr="2026-09-02",
+                           simdi=datetime(2026, 9, 1, 21, 58, tzinfo=timezone.utc))
+        assert not n["sessiz"] and not n["analizsiz"], (
+            "gözcü gece yarısını aşınca YANLIŞ ALARM verdi — duvar saatine "
+            "geri dönülmüş (L-026)")
+        assert n["satirlar"] == []
+
+    def test_CUMARTESIYE_TASAN_gozcu_SUSMAZ(self, cfg, con, monkeypatch):
+        """⚠ GERÇEK OLAY — 2026-08-29T02:25Z. Aynı hatanın SESSİZ yüzü.
+
+        Cuma (08-28) slotu gecikip Cumartesiye taştı. Eski sürüm önce
+        `is_trading_day(bugun_tr)` soruyordu; Cumartesi False döndü ve gözcü
+        "koşu beklenmiyor" deyip TEMİZ raporladı. Oysa tam o anda Cuma seansı
+        analiz edilmemişti (`son_analiz` 08-26'da duruyordu).
+
+        Bir gözcünün yapabileceği en pahalı hata: gerçek arızada susmak.
+        """
+        from src import otonom
+        # Cuma seansı kapandı; son analiz iki seans geride, koşu da eski.
+        self._kur(con, cfg, ["2026-08-26", "2026-08-27", "2026-08-28"],
+                  analiz_gunu="2026-08-26", kosu_gunu="2026-08-26",
+                  kosu_baslangic="2026-08-26T18:21:29+00:00")
+        self._takvim(monkeypatch, "2026-08-28")
+        n = otonom.nobetci(cfg, con, bugun_tr="2026-08-29",       # CUMARTESİ
+                           simdi=datetime(2026, 8, 29, 2, 25, tzinfo=timezone.utc))
+        assert n["sessiz"], "hafta sonuna taşan gözcü sustu — L-026 tekrarı"
+        assert n["analizsiz"], "analiz edilmemiş Cuma seansı görülmedi"
+
+    def test_ANALIZSIZ_seans_isi_KIRMIZIYA_cevirir(self, cfg, con, monkeypatch):
+        """⚠ GERÇEK OLAY — 2026-08-28T03:51Z.
+
+        Gözcü doğru bulguyu buldu ("son analiz 08-26, kapanmış son seans
+        08-27 → 1 işlem günü analizsiz") ama `sessiz` False olduğu için çıkış
+        0 döndü: Actions YEŞİL, GitHub maili YOK. Bulgu yalnız Telegram'a
+        düştü ve fark edilmedi; o hafta 08-27 ve 08-31 seansları hiç analiz
+        edilmeden geçti.
+
+        Gözcünün BULDUĞU arıza, gözcünün SUSTUĞU arıza olmamalı.
+        """
+        from src import otonom
+        self._kur(con, cfg, ["2026-08-26", "2026-08-27"],
+                  analiz_gunu="2026-08-26", kosu_gunu="2026-08-27",
+                  kosu_baslangic="2026-08-28T01:06:02+00:00")
+        self._takvim(monkeypatch, "2026-08-27")
+        n = otonom.nobetci(cfg, con, bugun_tr="2026-08-28",
+                           simdi=datetime(2026, 8, 28, 3, 51, tzinfo=timezone.utc))
+        assert not n["sessiz"], "koşu gerçekten olmuştu — yanlış olguya bakıldı"
+        assert n["analizsiz"], "analizsiz seans bulgusu üretilmedi"
+        assert any("analizsiz" in s for s in n["satirlar"])
 
     def test_BAYAT_BAR_gozcuyu_KANDIRAMAZ(self, cfg, con, monkeypatch):
         """⚠ ASIL KİLİT. Koşu hiç olmayınca bar da analiz de bayat kalır ve
@@ -355,27 +478,38 @@ class TestNobetci:
         assert n["son_analiz"] == n["son_bar"], "kurulum yanlış — ikisi eşit olmalı"
         assert any("analizsiz" in s for s in n["satirlar"]), (
             "iki bayat sayı birbirini doğruladı ve gözcü sustu — L-010 tekrarı")
+        assert n["analizsiz"], "bulgu üretildi ama çıkış kodunu kırmızıya çevirmiyor"
 
     def test_kosu_BASLAYIP_bitmemisse_alarm(self, cfg, con, monkeypatch):
         """`durum='kosuyor'` kalması bilgidir: süreç bitmeden ölmüş."""
-        from src import journal, otonom
+        from src import otonom
         from tests.conftest import is_gunleri
         g = is_gunleri(4, "2026-08-03")
-        self._kur(con, cfg, g, analiz_gunu=g[-1])
-        journal.kosu_basla(cfg, con, tur="gunluk", tarih_tr=g[-1])   # bitirilmedi
+        self._kur(con, cfg, g, analiz_gunu=g[-1], kosu_gunu=g[-1],
+                  durum="kosuyor")
         self._takvim(monkeypatch, g[-1])
         n = otonom.nobetci(cfg, con, bugun_tr=g[-1])
         assert n["sessiz"] and any("bitmedi" in s for s in n["satirlar"])
 
-    def test_islem_gunu_degilse_KOSU_BEKLENMEZ(self, cfg, con, monkeypatch):
+    def test_gozcu_TAKVIM_GUNUNE_degil_SEANSA_bakar(self, cfg, con, monkeypatch):
+        """Eski `test_islem_gunu_degilse_KOSU_BEKLENMEZ`in yerine geçer.
+
+        O test şunu kilitliyordu: "bugün işlem günü değilse gözcü hiçbir şey
+        sormaz". Kilitlediği şey ARIZANIN KENDİSİYDİ — gecikme gözcüyü hafta
+        sonuna taşıdığında tam olarak bu dal çalışıp gözcüyü kör ediyordu.
+
+        Yeni sözleşme: gözcünün takvim günü ne olursa olsun, sorusu daima
+        KAPANMIŞ SON SEANS hakkındadır. Hafta sonu koşan gözcü Cuma'yı sorar.
+        """
         from src import otonom
-        from src.calendar_bist import BistCalendar
-        from tests.conftest import is_gunleri
-        g = is_gunleri(4, "2026-08-03")
-        self._kur(con, cfg, g, analiz_gunu=g[-1], kosu_gunu=g[-1])
-        monkeypatch.setattr(BistCalendar, "is_trading_day", lambda s, d: False)
-        n = otonom.nobetci(cfg, con, bugun_tr="2026-08-08")
-        assert not n["sessiz"] and "işlem günü değil" in n["not"]
+        self._kur(con, cfg, ["2026-08-27", "2026-08-28"],
+                  analiz_gunu="2026-08-28", kosu_gunu="2026-08-28",
+                  kosu_baslangic="2026-08-28T16:40:00+00:00")
+        self._takvim(monkeypatch, "2026-08-28")               # Cuma
+        n = otonom.nobetci(cfg, con, bugun_tr="2026-08-30",   # PAZAR
+                           simdi=datetime(2026, 8, 30, 12, 0, tzinfo=timezone.utc))
+        assert n["beklenen_seans"] == "2026-08-28"
+        assert not n["sessiz"] and not n["analizsiz"] and n["satirlar"] == []
 
 
 # ============================================================ haftalık IC

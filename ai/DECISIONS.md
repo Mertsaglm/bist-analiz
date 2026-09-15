@@ -6,6 +6,90 @@
 
 ---
 
+## #022 — 2026-09-15 — Ayrı sanal defter, ortak panel ve ölçülen öğrenme
+
+**Bağlam.** Kullanıcı iki projeyi revize etmeyi, her birine aylık 5.000 TL sanal bütçe,
+İş Bankası referansı, anlaşılır kararlar ve web/Telegram takibi eklemeyi istedi.
+Eski BIST karnesi seçilmiş planlardan türetiliyordu; altında iki yönlü sanal defter yoktu.
+
+**Seçenekler.** A) Veri toplayıcıları dahil sıfırdan yazmak: mevcut arşiv ve operasyonu
+koparma riski. B) Mevcut veri/ayrıntılı rapor hattını koruyup sürümlü karar ve muhasebe
+hattı eklemek: geçiş geri alınabilir, yeni performans eski sonuçlara karışmaz.
+
+**Karar.** B seçildi. İki depoda bağımsız `advisor/` çalışır, `dashboard/` ortak görünüm
+sunar. JSONL olay defteri hash zinciri, dosya kilidi, atomik kayıt ve idempotent anahtarlarla
+korunur. SQL arşivi geçici DB'ye açılır; eski DB'ye migration veya geçmiş karar değişikliği yok.
+Ayrı `portfolio.yml` V2'nin tek yazarıdır. Telegram, GitHub'a kalıcı kayıt sonrası gönderilir;
+push denemeleri tükenince iş hata verir. Eski anahtarlar ve veri kaynakları korunur.
+
+**Finansal davranış.** Başlangıç/aylık katkı her hesapta 5.000 TL varsayıldı; açılmış hesabın
+bütçe geçmişi sessizce değiştirilemez. Banka alış/satış yönü, komisyon/vergi/kayma, nakit ve
+risk sınırları uygulanır. Eksik/tarihi belirsiz fiyatla yeni işlem yok. Koruyucu satışlar
+makas büyüdü diye engellenmez. Resmî Fed takviminde yakın karar varsa yeni risk yarılanır.
+
+**Öğrenme.** Sabit özellikli ridge modeli yalnız geçmişte olgunlaşmış etiketlerle eğitilir.
+Örtüşmeyen dönemler, sabit tahmin referansı ve maliyet stresiyle sınanır. Üstünlük bugün
+kanıtlanmadı; küçük sanal deneme ve olgunlaşmış sonuçlarla en fazla 2 puan yanlılık düzeltmesi
+kullanılır. Eski LLM anlatımı tek başına sayısal alım/satım yaptıramaz.
+
+**Sınırlar.** Doğrudan kişisel İşCep kotasyonu yok. BIST gecikmeli son fiyat, altında bankaya
+özgü ikincil kaynak var. Tarihsel banka makası ve temettü ödeme tarihi doğrulanamıyor;
+alacak nakit sayılmaz. Bunlar panelde ve rehberde yazılıdır.
+
+**Yayın.** Bu ADR yerel uygulama kararını kaydeder; commit/push/deploy onayı değildir.
+
+**Tekrar gözden geçir:** doğrudan banka API'si sağlanırsa, kişisel tarife değişirse veya
+bağımsız sanal sonuçlar modelin al-tut karşısındaki başarısını değiştirdiğinde.
+
+---
+
+## #021 — 2026-09-02 — Zamanlanmış işin günü SLOT'tan okunur; gözcünün sorusu takvime bağlandı
+
+**Bağlam.** ADR #017 nöbetçiyi koşunun dışına çıkardı ve doğru yaptı. Ama
+gözcünün SORUSU duvar saatinde kaldı: *"bugün (TR takvim günü) koşu kaydı
+var mı?"*. GitHub cron gecikmesi bu soruyu iki yönde birden bozdu (L-026):
+gözcü 2026-08-26 ve 09-01'de yanlış alarm verip mail attı, 08-28 ve
+08-29'da ise gerçek arızada sustu. Ayrıca aynı kayma günlük işin kendi
+etiketini de kaydırdı: 08-27 ve 08-31 için heartbeat YOK, 09-01 için İKİ
+tane var ve 08-28 Cuma koşusu Cumartesiye taşındığı için tamamen atlandı.
+
+**Karar. Zamanlanmış bir işin günü, dış dünyanın bir olgusundan türetilir.**
+
+| Ne | Eski referans | Yeni referans |
+|---|---|---|
+| `otonom.gunluk` koşu günü | `bugun_tr()` — işin başlama anı | `cal.last_closed_session()` — analiz ettiği seans |
+| Gözcünün "koşu oldu mu?" | `tarih_tr == bugun_tr` | `son_kosu.baslangic_utc >= session_close_utc(son seans)` |
+| Gözcünün "analiz oldu mu?" | (aynı) takvim | (aynı) takvim — değişmedi |
+
+Böylece **koşunun KİMLİĞİ ile ÜRÜNÜ aynı günü gösterir**: `asof` zaten
+kapanmış seansa bağlıydı, artık `tarih_tr` de öyle. Cumartesiye taşan Cuma
+koşusu Cuma'yı analiz eder; gece yarısını aşan gözcü yine dünün seansını
+sorar.
+
+**Şiddet de düzeltildi.** `analizsiz` bulgusu artık çıkışı 1 yapar. Eskiden
+yalnız `sessiz` yapıyordu ve "seans analizsiz kaldı" satırı Actions'ta YEŞİL
+kalıyordu — yani gözcünün BULDUĞU arıza, GitHub bildirim kanalına hiç
+ulaşmıyordu (ölçüldü: 2026-08-28T03:51Z). İki kanal, tek olay.
+
+**Reddedilen alternatifler.**
+* *"Cron'u erkene al / gecikme payını büyüt"* → gecikme GitHub tarafında ve
+  ölçülen dağılımı 25 dk ile 8,5 saat arasında. Pay ne kadar büyütülse bir
+  kuyruk hep dışarıda kalır; üstelik pay büyütmek gözcüyü geciktirir.
+* *"Slot saatini config'e yaz, ondan türet"* (gold'da seçilen yol) → BIST'te
+  gereksiz: takvim zaten dış bir olgu veriyor (`last_closed_session`), ikinci
+  bir ikiz değer tutmaya gerek yok. Gold'un takvimi bu soruya cevap
+  vermediği için orada slot yolu seçildi ve config↔workflow ikizi TESTLE
+  bağlandı.
+* *"Gözcü hafta sonu hiç koşmasın"* → sorunun kendisi bu: gecikme gözcüyü
+  hafta sonuna taşıyor ve tam o an susturuyordu.
+
+**Tekrar gözden geçir:** gecikme 24 SAATİ aşarsa `last_closed_session` bir
+sonraki seansa geçer ve gözcü bir günü atlayabilir. Bu yönde hata güvenlidir
+(atlanan gün ertesi gün "analizsiz" olarak bağırır) ama gözlenirse ADR açılır.
+Bugüne kadar ölçülen en büyük gecikme 8,5 saat.
+
+---
+
 ## #020 — 2026-08-28 — Aynı gün iki kez analiz edilemez; ve girdi de çıktı gibi mühürlenir
 
 **Bağlam.** İki bağımsız dış denetim (biri 2026-08-25, biri 08-28) uygulandı.

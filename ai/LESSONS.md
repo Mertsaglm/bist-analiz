@@ -6,6 +6,90 @@
 
 ---
 
+## L-027 — 2026-09-15 — Karar, muhasebe ve teslim aynı doğruluk sınırını paylaşır
+
+**Olay.** Revizyonda tek başına doğru görünen parçaların birleşiminde sorunlar çıktı:
+BIST ölçüm evreni filtresi canlı izlenen iki hisseyi düşürüyordu; analizden sonra yükselen
+fiyat eski hedefe göre yeniden kazanç gibi sayılabiliyordu; alış masrafı küçük tutarda risk
+bütçesini aşabiliyordu. Push retry döngüsünün son komutu başarılıysa kayıt teslim edilmeden
+workflow yeşil kalabiliyordu. Mobilde tablo genişliği bütün sayfayı taşırıyordu.
+
+**Ders.** Test, gerçek para akışını ve teslim sırasını kurmalı: al → aynı koşuyu tekrarla →
+yeniden aç → sat → aylık katkı. Sadece karar etiketini kontrol etmek yeterli değil.
+Katkıları kâr sayma; al-tut getirisini de aynı şekilde hesapla. Ekran geçmişi kırpıldı diye
+getiri hesabı yeniden başlamamalı. Kaynak kapsamı, modelin eğitim uygunluğundan ayrıdır.
+
+**Kilit.** `tests/test_advisor_flow.py` al/sat zincirini, fiyat hareketini iki kez saymamayı,
+katkıyı ve başarısız push çıkışını sınar. `tests/test_advisor_v2.py` muhasebe, makas, kalite,
+öğrenme ve bildirim sınırlarını sınar. Mobil 390 px görünümde sayfa genişliği de ölçüldü.
+Üretim SQL'ini salt okunur açan ayrı deney, yerel eski binary DB'ye güvenilmesini engelledi.
+
+---
+
+## L-026 — 2026-09-02 — Zamanlanmış bir işin GÜNÜ, başladığı an değildir
+
+**Olay — nöbetçi tam ters çalışıyordu.** Gelen GitHub arıza maillerinin
+tamamı (2026-08-26, 2026-09-01) `Nobetci` işindendi ve **hiçbiri gerçek
+arıza değildi.** Aynı hafta gerçek iki arıza ise HİÇ mail üretmedi.
+
+| An (UTC) | Gerçekte olan | Gözcünün dediği |
+|---|---|---|
+| 08-26 22:27 | günlük iş 18:21'de sorunsuz bitti | 🔴 "bugün koşu KAYDI YOK" → mail |
+| 08-28 03:51 | **08-27 seansı analiz edilmemiş** | 🟢 yeşil, mail YOK (satır yalnız Telegram'a düştü) |
+| 08-29 02:25 | **Cuma seansı analiz edilmemiş** | 🟢 "koşu beklenmiyor" — tamamen sustu |
+| 09-01 21:58 | günlük iş 19:32'de sorunsuz bitti | 🔴 "bugün koşu KAYDI YOK" → mail |
+
+**Tek kök sebep.** "Bu koşu hangi gün için?" sorusunun cevabı işin BAŞLAMA
+SAATİNDEN okunuyordu (`util.bugun_tr()`). GitHub cron gecikir — bu repoda
+ölçüldü: 8,5 saat. Gecikme TR gece yarısını aşınca etiket bir gün kayar:
+
+```
+günlük iş  19:32Z  →  TR 22:32, 1 Eylül  →  heartbeat "2026-09-01"
+gözcü      21:58Z  →  TR 00:58, 2 Eylül  →  soru      "2026-09-02"
+                                             cevap: kayıt yok → 🔴
+```
+
+**Aynı kayma üç yerde birden hasar verdi:**
+
+* **Etiket kayboldu.** `otonom_kosu`da 2026-08-27 ve 2026-08-31 için KAYIT
+  YOK, 2026-09-01 için İKİ kayıt var. "Hangi gün koştum?" artık journal'dan
+  okunamıyor.
+* **Bir koşunun TAMAMI yendi.** 08-28 (Cuma) slotu 08-29T00:39Z'de koştu;
+  etiket Cumartesi oldu, takvim kapısı "işlem günü değil" deyip her adımı
+  atladı. Cuma seansı o gün hiç analiz edilmedi.
+* **İki seans analizsiz geçti** (08-27 ve 08-31) ve bunu söyleyen tek satır
+  çıkışı 0 döndürdüğü için GitHub bildirim kanalı hiç çalışmadı.
+
+**En rahatsız edici kısım.** ADR #020 (08-28) tam bu olayın *bir yüzünü*
+düzeltti: "aynı gün iki kez analiz edilmez". Teşhis doğruydu ama `asof`la
+sınırlı kaldı — koşunun KİMLİĞİ hâlâ duvar saatindeydi. L-016'nın kardeşi:
+*doğru teşhis, eksik yere uygulandı.*
+
+**Ders.** Zamanlanmış bir iş için "bugün" diye bir şey yoktur; **slot**
+vardır. Duvar saati, işin ne zaman başladığını söyler — hangi iş olduğunu
+değil. Gecikme kontrolümüzde değildir, ama gecikmeye DAYANIKLI bir referans
+seçmek bizim elimizdedir.
+
+**Kural.** Zamanlanmış bir işte gün, dış dünyanın bir olgusundan türetilir:
+* günlük koşu → `cal.last_closed_session()` (analiz ettiği seans),
+* gözcü → *"kapanmış son seanstan BERİ koşu başladı mı?"* — takvim + saat,
+  takvim GÜNÜ değil.
+
+`date.today()`, `bugun_tr()`, `local_today()` bu soruların cevabı DEĞİLDİR.
+
+**Kilitler.** `test_GECE_YARISINI_ASAN_gozcu_YANLIS_ALARM_VERMEZ`,
+`test_CUMARTESIYE_TASAN_gozcu_SUSMAZ`,
+`test_ANALIZSIZ_seans_isi_KIRMIZIYA_cevirir`,
+`test_GECIKEN_kosu_HAFTA_SONUNA_tasinca_CUMAYI_analiz_eder`. Dördü de gerçek
+olayın saatiyle kurulu; soru duvar saatine dönerse dördü birden kırılır.
+Ayrıca dört olay üretim dump'ı üzerinde yeniden oynatıldı: kırmızı/yeşil
+dağılımı tam TERS döndü.
+
+**Kardeş ders:** aynı kök sebep `gold_tracking_system`'de de vardı ve orada
+bir raporu KAYBETTİRDİ (gold L-021). İki proje aynı çukura ayrı ayrı düştü.
+
+---
+
 ## L-025 — 2026-08-28 — Testin ağa çıkabilmesi, arkasındaki hatayı GİZLER
 
 **Olay.** `test_temiz_cekim_0` yalnız `news.sync`'i mock'luyordu; ama

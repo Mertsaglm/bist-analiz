@@ -36,6 +36,7 @@ import json
 import logging
 import re
 import sqlite3
+import uuid
 from pathlib import Path
 
 import requests
@@ -207,6 +208,23 @@ def _cikti_yaz(cfg: dict, asof: str, out: dict) -> Path:
         Path(cfg["paths"]["llm_out_dir"]) / asof / "analysis.json", out)
 
 
+def _guvenli_hata(error: Exception) -> str:
+    text = str(error)
+    for name in ANAHTAR.values():
+        secret = util.env(name)
+        if secret:
+            text = text.replace(secret, '[gizli]')
+    return re.sub(r'([?&](?:key|api_key)=)[^&\s]+', r'\1[gizli]', text)[:300]
+
+
+def _deneme_kaydet(cfg, asof, cycle_id, attempt):
+    path = Path(cfg['paths']['llm_out_dir']) / asof / 'attempts.jsonl'
+    path.parent.mkdir(parents=True, exist_ok=True)
+    row = {'cycle_id': cycle_id, 'at': util.utc_now_iso(), **attempt}
+    with path.open('a', encoding='utf-8') as file:
+        file.write(json.dumps(row, ensure_ascii=False) + '\n')
+
+
 # ---------------------------------------------------------------- zincir
 def calistir(cfg: dict, con: sqlite3.Connection, asof: str,
              *, modeller: list[str] | None = None) -> dict:
@@ -231,6 +249,7 @@ def calistir(cfg: dict, con: sqlite3.Connection, asof: str,
 
     prompt = istem_oku(cfg, asof)
     denemeler: list[dict] = []
+    cycle_id = uuid.uuid4().hex
     son_hata: Exception | None = None
 
     for i, model_id in enumerate(liste):
@@ -256,14 +275,16 @@ def calistir(cfg: dict, con: sqlite3.Connection, asof: str,
                 # yanıltır ve "kaydedilmiş gibi" görünür.
                 _cikti_yaz(cfg, asof, out)
                 denemeler.append({"model": model_id, "sonuc": "temiz"})
+                _deneme_kaydet(cfg, asof, cycle_id, denemeler[-1])
                 log.info("analist: %s temiz çıktı verdi", model_id)
                 return {"model": model_id, "out": out, "denemeler": denemeler}
 
             except Exception as e:                      # noqa: BLE001 - sınıf fark etmez
                 son_hata = e
-                detay = str(e)[:300]
+                detay = _guvenli_hata(e)
                 denemeler.append({"model": model_id, "sonuc": "hata",
                                   "detay": detay})
+                _deneme_kaydet(cfg, asof, cycle_id, denemeler[-1])
                 kalan = tekrar - deneme
                 log.warning("analist: %s cevap veremedi (%s)%s",
                             model_id, detay,
@@ -271,4 +292,4 @@ def calistir(cfg: dict, con: sqlite3.Connection, asof: str,
 
     raise TumModellerDustu(
         f"Zincirdeki {len(liste)} modelin hiçbiri denetimden geçen çıktı vermedi. "
-        f"Son hata: {son_hata}")
+        f"Son hata: {_guvenli_hata(son_hata)}")

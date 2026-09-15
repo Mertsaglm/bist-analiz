@@ -1,5 +1,26 @@
 # BIST Analiz
 
+## Birikim V2 — 2026-09-15 revizyonu
+
+Yeni karar ve sanal portföy hattı `advisor/`, iki piyasayı birlikte gösteren web paneli
+`dashboard/` içindedir. Her hesap 5.000 TL başlangıç ve aylık 5.000 TL katkıyla izlenir.
+Gerçek emir gönderilmez. Alım/satım kararı, miktarı, masrafı ve fiyat kaynağı deftere yazılır.
+
+- [Kullanım, mimari ve Vercel kurulumu](docs/V2-REHBER.md)
+- [İnceleme, değişiklikler ve doğrulama raporu](reports/REVIZYON-2026-09-15.md)
+- Güncel durum: `ai/STATE.md`. Yerel revizyon hazır; yayın durumu burada tutulur.
+- Kısa karar: `.venv/bin/python -m advisor status`
+- Panel: `cd dashboard` ardından `npm run dev`.
+
+Geçmiş kayıtlar korunur. V1 veri toplama ve ayrıntılı rapor üretimi sürer; V2 aktif
+workflow'larda kısa Telegram özetinin sahibi olur. Önceki modelin ölçülmüş başarısızlıkları,
+yeni hesapta kâr gibi gösterilmez. Yeni model de kendi karnesini oluşturur.
+
+## V1 referansı ve geçmiş ölçümler
+
+Aşağıdaki bölüm önceki hattın ayrıntılarıdır. V2 bütçesi, fiyatları, öğrenme ve bildirim
+kuralları için yukarıdaki rehber geçerlidir.
+
 Borsa İstanbul'da 18 hisseyi izleyen, nicel skorlama + LLM yorum katmanıyla gerekçeli
 kararlar üreten ve **kendi isabetini deterministik olarak ölçen** kişisel karar destek sistemi.
 
@@ -262,6 +283,24 @@ yokluğunu haber veremez.* 2026-08-06'da günlük iş runner alamadı ve HİÇ
 BAŞLAMADI; o gün ne rapor ne uyarı çıktı. Çözüm sürecin İÇİNE konulunca
 (L-015) sistem kilitlendi (L-016). Nöbetçi ayrı zamanlamayla, ayrı bir runner
 talebiyle koşar, **salt-okurdur** ve yalnız söyler — hiçbir şeyi düzeltmez.
+
+**Nöbetçinin sorusu TAKVİME bağlıdır, duvar saatine değil** (ADR #021, L-026).
+İki soruyu ayrı ayrı sorar ve **ikisi de** işi kırmızıya çevirir:
+
+| Soru | Referans |
+|---|---|
+| Koşu başladı mı? | son heartbeat `baslangic_utc` ≥ **kapanmış son seansın kapanış anı** |
+| Analiz üretildi mi? | `MAX(predictions.asof)` vs **kapanmış son seans** |
+
+> ⚠ Neden böyle: eskiden "bugün (TR takvim günü) koşu kaydı var mı?" diye
+> soruyordu. Cron gecikip gece yarısını aşınca gözcü **olmayan arızada mail
+> attı** (2026-08-26, 09-01) ve **gerçek arızada sustu** (08-28, 08-29 — iki
+> seans analizsiz geçti). Gecikme GitHub'ın; düzeltilen şey SORUYDU.
+
+**Koşunun günü = analiz ettiği seans.** `otonom.gunluk` gününü
+`last_closed_session()`ten alır, `bugun_tr()`ten değil. Cumartesiye taşan bir
+Cuma koşusu artık Cuma'yı analiz eder; eskiden takvim kapısı "işlem günü
+değil" deyip koşunun tamamını atlıyordu.
 
 > ⚠ **Actions repoya commit atar.** Yerel kopyan sessizce geride kalır;
 > çalışmadan önce `git pull` (LESSONS L-001). Ayrıca cron 5-30 dk gecikebilir —

@@ -21,7 +21,7 @@ bist = "src.cli:main"
 
 [tool.poetry]
 package-mode = true
-packages = [{ include = "src" }]
+packages = [{ include = "src" }, { include = "advisor" }]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3"

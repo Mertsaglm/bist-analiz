@@ -977,7 +977,8 @@ class TestOtomasyonSozlesmesi:
         commit_blogu = metin.split("Commit + push")[1]
         assert "if: always()" in metin.split("Commit + push")[0][-200:], \
             "commit adımı `if: always()` taşımıyor"
-        assert "git pull --rebase" in commit_blogu, "push çakışma koruması yok"
+        assert 'bash ops/push_retry.sh' in commit_blogu, 'ortak teslim mekanizması çağrılmıyor'
+        assert 'git pull --rebase' in (self.WF.parents[1] / 'ops/push_retry.sh').read_text(), 'push çakışma koruması yok'
 
     def test_workflowlar_ayni_concurrency_grubunda(self):
         """İki iş aynı anda push ederse biri kaybolur."""

@@ -42,7 +42,7 @@ from __future__ import annotations
 
 import logging
 import sqlite3
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 from . import db, journal, report, saglik as sag, telegram_bist as tg, util
 
@@ -80,7 +80,25 @@ def gunluk(cfg: dict, con: sqlite3.Connection, *, bugun: date | None = None,
 
     sonuc: dict = {"adimlar": {}}
     cal = BistCalendar(cfg, con)
-    gun = bugun or util.parse_date(util.bugun_tr(cfg["takvim"]["timezone"]))
+    # ⚠⚠ KOŞUNUN GÜNÜ = ANALİZ ETTİĞİ SEANS, duvar saati DEĞİL (L-026).
+    #
+    # Eskiden `bugun_tr()` okunuyordu — yani "iş hangi TR takvim gününde
+    # BAŞLADI". GitHub cron gecikince (bu repoda ölçüldü: 8,5 saat) etiket
+    # kaydı ve üç ayrı arıza üretti:
+    #
+    #   * 2026-08-27 ve 2026-08-31 slotları gece yarısını aştı; heartbeat
+    #     ertesi günün etiketiyle yazıldı. O iki gün için `otonom_kosu`da
+    #     KAYIT YOK, 2026-09-01'de ise İKİ kayıt var. "Hangi gün koştum?"
+    #     sorusunun cevabı journal'dan okunamaz hale geldi.
+    #   * 2026-08-28 (Cuma) slotu 08-29T00:39Z'de koştu; etiket Cumartesi
+    #     oldu, takvim kapısı "işlem günü değil" deyip koşuyu ATLADI ve
+    #     Cuma seansı hiç analiz edilmedi. Gecikme, işin TAMAMINI yedi.
+    #   * Gözcü de aynı etikete baktığı için yanlış alarm verdi (bkz. `nobetci`).
+    #
+    # `last_closed_session()` takvimden gelir: gecikme onu kaydıramaz. Üstelik
+    # `asof`un zaten kullandığı çıpa budur — koşunun KİMLİĞİ ile ÜRÜNÜ artık
+    # aynı günü gösteriyor. Cumartesiye taşan Cuma koşusu Cuma'yı analiz eder.
+    gun = bugun or cal.last_closed_session()
 
     # ⚠⚠ 0) HEARTBEAT — HER ŞEYDEN ÖNCE, takvim kapısından bile önce.
     #
@@ -337,7 +355,11 @@ def gunluk(cfg: dict, con: sqlite3.Connection, *, bugun: date | None = None,
             portfoy=pf)
         if sonuc.get("hatalar"):
             ozet += "\n\n⚠ Düşen adım: " + ", ".join(sorted(sonuc["hatalar"]))
-        tg.bildir(cfg, ozet)
+        import os
+        if os.environ.get('ADVISOR_V2') != '1':
+            tg.bildir(cfg, ozet)
+        elif sonuc.get('hatalar'):
+            tg.bildir(cfg, '⚠ BIST veri hattı: ' + ', '.join(sorted(sonuc['hatalar'])) + '. Ayrıntı günlük arşivde.')
         sonuc["adimlar"]["rapor"] = sonuc["rapor"]
     except Exception as e:                                  # noqa: BLE001
         _hata(sonuc, "rapor", e)
@@ -552,7 +574,8 @@ def haftalik(cfg: dict, con: sqlite3.Connection) -> dict:
 
 # ---------------------------------------------------------------- nöbetçi
 def nobetci(cfg: dict, con: sqlite3.Connection, *,
-            bugun_tr: str | None = None) -> dict:
+            bugun_tr: str | None = None,
+            simdi: datetime | None = None) -> dict:
     """DIŞARIDAN bakan gözcü — "bugün koşu oldu mu?" sorusunu sorar.
 
     ═══════════════════════════════════════════════════════════════════════
@@ -571,40 +594,67 @@ def nobetci(cfg: dict, con: sqlite3.Connection, *,
     ⚠ Bu fonksiyon hiçbir şeyi DÜZELTMEZ, yalnız SÖYLER. Bir gözcünün
     tamir etmeye kalkması, gözcülüğü de tamiri de bozar.
 
-    Çıkış: {"sessiz": bool, ...}. `sessiz=True` → bugün beklenen koşu yok.
+    Çıkış: {"sessiz": bool, "analizsiz": bool, ...}. İKİSİ DE işi kırmızıya
+    çevirir: `sessiz` → beklenen koşu hiç başlamamış · `analizsiz` →
+    koşu olmuş ama kapanmış son seans analiz edilmemiş.
     """
     from .calendar_bist import BistCalendar
 
-    bugun_tr = bugun_tr or util.bugun_tr(cfg["takvim"]["timezone"])
+    simdi = simdi or util.utc_now()
+    bugun_tr = bugun_tr or util.bugun_tr(cfg["takvim"]["timezone"], simdi=simdi)
     cal = BistCalendar(cfg, con)
-    out: dict = {"tarih": bugun_tr, "sessiz": False, "satirlar": []}
 
-    if not cal.is_trading_day(bugun_tr):
-        out["not"] = f"{bugun_tr} işlem günü değil — koşu beklenmiyor"
-        return out
+    # ⚠⚠ REFERANS DUVAR SAATİ DEĞİL, KAPANMIŞ SON SEANSTIR (L-026).
+    #
+    # Eski sürüm "bugün (TR takvim günü) koşu kaydı var mı?" diye soruyordu ve
+    # bu soru GitHub cron gecikmesi altında İKİ YÖNDE birden bozuluyordu:
+    #
+    #   YANLIŞ ALARM — günlük iş TR gece yarısından ÖNCE, gözcü SONRA koştu.
+    #     Ölçüldü: 2026-08-26 ve 2026-09-01. Günlük iş sorunsuz bitmişti;
+    #     gözcü "bugün koşu YOK" deyip işi kırmızıya çevirdi ve mail attı.
+    #
+    #   SESSİZLİK — gecikme gözcüyü CUMARTESİye taşıdı, `is_trading_day`
+    #     False döndü ve gözcü "koşu beklenmiyor" deyip SUSTU. Ölçüldü:
+    #     2026-08-29T02:25Z. Tam o anda Cuma (08-28) seansı analiz EDİLMEMİŞTİ.
+    #
+    # Yani gözcü, olmayan arızada bağırıp gerçek arızada susuyordu. Sebep tek:
+    # "hangi gün için koştum?" sorusunun cevabı koşunun BAŞLAMA SAATİNDEN
+    # okunuyordu. Takvim gecikmeyi bilmez; seans kapanışı bilir.
+    #
+    # Yeni soru — gecikmeden BAĞIMSIZ: *kapanmış son seanstan BERİ* bir günlük
+    # koşu başladı mı? Gözcü 3 saat de gecikse, gece yarısını da aşsa, hafta
+    # sonuna da taşsa cevap DEĞİŞMEZ.
+    beklenen = cal.last_closed_session(simdi)
+    kapanis = util.to_utc_iso(cal.session_close_utc(beklenen))
+    out: dict = {"tarih": bugun_tr, "beklenen_seans": beklenen.isoformat(),
+                 "seans_kapanis_utc": kapanis,
+                 "sessiz": False, "analizsiz": False, "satirlar": []}
 
-    kosu = journal.son_kosu(con, tur="gunluk")
-    bugunku = kosu if kosu and kosu["tarih_tr"] == bugun_tr else None
+    kosu = journal.son_kosu_zamana_gore(con, tur="gunluk")
     son_bar = db.scalar(con, "SELECT MAX(date) FROM bars_daily")
     son_analiz = db.scalar(con, "SELECT MAX(asof) FROM predictions")
-    out.update(son_kosu=(kosu or {}).get("tarih_tr"), son_bar=son_bar,
-               son_analiz=son_analiz)
+    out.update(son_kosu=(kosu or {}).get("tarih_tr"),
+               son_kosu_baslangic=(kosu or {}).get("baslangic_utc"),
+               son_bar=son_bar, son_analiz=son_analiz)
 
-    if bugunku is None:
+    kapanistan_sonra = bool(kosu) and str(kosu["baslangic_utc"]) >= kapanis
+
+    if not kapanistan_sonra:
         out["sessiz"] = True
         out["satirlar"].append(
-            f"Bugün ({bugun_tr}) günlük koşu KAYDI YOK. "
-            f"Son koşu: {(kosu or {}).get('tarih_tr', '—')}. "
+            f"Kapanmış son seans {beklenen.isoformat()} (kapanış {kapanis}) "
+            f"için günlük koşu YOK. Son koşu başlangıcı: "
+            f"{(kosu or {}).get('baslangic_utc', '—')}. "
             "İş hiç başlamamış olabilir (runner kapasitesi) — "
             "Actions geçmişini kontrol et.")
-    elif bugunku["durum"] == "kosuyor":
+    elif kosu["durum"] == "kosuyor":
         out["sessiz"] = True
         out["satirlar"].append(
-            f"Bugünkü koşu BAŞLADI ama bitmedi ({bugunku['baslangic_utc']}). "
+            f"Koşu BAŞLADI ama bitmedi ({kosu['baslangic_utc']}). "
             "Süreç bitmeden ölmüş olabilir (timeout / iptal).")
-    elif bugunku["durum"] == "durduruldu":
+    elif kosu["durum"] == "durduruldu":
         out["satirlar"].append(
-            f"Bugünkü koşu DURDURULDU: {bugunku.get('hatalar') or '—'}")
+            f"Son koşu DURDURULDU: {kosu.get('hatalar') or '—'}")
 
     # İkinci soru, ayrı: koşu oldu ama analiz üretti mi? (L-003: iki olgu,
     # iki satır — tek satıra sıkıştırılırsa hangisinin bozuk olduğu görünmez.)
@@ -621,14 +671,23 @@ def nobetci(cfg: dict, con: sqlite3.Connection, *,
     # `last_closed_session()` takvimden gelir ve koşuya bağlı DEĞİLDİR; dış
     # dünyanın referansı odur. Eşik 1: nöbetçi günlük işten SONRA koşar,
     # dolayısıyla kapanmış son seansın analizini talep etmeye hakkı vardır.
-    beklenen = cal.last_closed_session().isoformat()
-    out["beklenen_seans"] = beklenen
+    #
+    # ⚠ ŞİDDET (2026-09-02): bu bulgu ARTIK İŞİ KIRMIZIYA ÇEVİRİR.
+    # Eskiden yalnız `sessiz` çıkışı 1 yapardı; "koşu oldu ama seans analizsiz
+    # kaldı" satırı Telegram'a düşüp Actions'ta YEŞİL kalıyordu. Ölçüldü
+    # 2026-08-28T03:51Z: gözcü "son analiz 08-26, kapanmış son seans 08-27 →
+    # 1 işlem günü analizsiz" dedi, iş yeşil bitti, GitHub maili ÇIKMADI.
+    # Aynı hafta 08-27 ve 08-31 seansları hiç analiz edilmeden geçti.
+    # Gözcünün BULDUĞU arıza, gözcünün SUSTUĞU arızaydı.
     if not son_analiz:
+        out["analizsiz"] = True
         out["satirlar"].append("Journal boş — hiç analiz üretilmemiş.")
     else:
-        fark = cal.trading_days_between(son_analiz, beklenen)
+        fark = cal.trading_days_between(son_analiz, beklenen.isoformat())
         if fark >= 1:
+            out["analizsiz"] = True
             out["satirlar"].append(
-                f"Son analiz {son_analiz}, kapanmış son seans {beklenen} → "
-                f"{fark} işlem günü analizsiz. (son bar: {son_bar})")
+                f"Son analiz {son_analiz}, kapanmış son seans "
+                f"{beklenen.isoformat()} → {fark} işlem günü analizsiz. "
+                f"(son bar: {son_bar})")
     return out

@@ -33,3 +33,13 @@ data/backup/
 # Loglar
 logs/*.log
 logs/*.log.*
+
+# V2 çalışma kilidi ve geçici atomik dosyalar
+data/advisor/.lock
+data/advisor/**/*.tmp
+.vercel/
+.env.local
+node_modules/
+
+# Local revision experiments; never publish as paper results.
+.local-revision/

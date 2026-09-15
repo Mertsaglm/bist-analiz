@@ -218,6 +218,19 @@ def son_kosu(con: sqlite3.Connection, *, tur: str = "gunluk",
     return db.fetch_one(con, sql + " ORDER BY tarih_tr DESC, kosu_id DESC LIMIT 1", params)
 
 
+def son_kosu_zamana_gore(con: sqlite3.Connection, *,
+                         tur: str = "gunluk") -> dict | None:
+    """En son BAŞLAMIŞ koşu — sıralama `tarih_tr` DEĞİL `baslangic_utc`.
+
+    `son_kosu` etikete (`tarih_tr`) göre sıralar ve gözcü için bu YETMEZ:
+    "en son ne zaman koştum?" sorusunun cevabı etiketten değil, saatten
+    okunmalıdır. L-026'da etiketin kendisi kaydığı için ikisi ayrıştı.
+    """
+    return db.fetch_one(
+        con, "SELECT * FROM otonom_kosu WHERE tur = ? "
+             "ORDER BY baslangic_utc DESC LIMIT 1", (tur,))
+
+
 def confidence_to_p(cfg: dict, confidence: str) -> float:
     """Enum → olasılık. **KOD yazar.** Kalibrasyon ölçülene kadar sabit harita."""
     harita = cfg["llm"]["guven_olasilik"]
