@@ -97,6 +97,16 @@ sources:
     # ⚠ `bist haber cek` ÇIKIŞ KODU: 0 temiz · 1 aralık atlandı · 2 KAP hatası.
     # Boş haber listesi "bildirim yok" anlamına GELMEZ; pakette
     # `haber_taramasi.ok` alanına bak.
+    #
+    # ⚠ `enabled` ANA ANAHTARDIR ve KAP katmanının TAMAMINI kapatır —
+    # aşağıdaki `beklenen_bildirim` alt anahtarı dahil. 2026-08-28'e kadar
+    # kapatmıyordu: `kap.fetch_beklenen` yalnız kendi alt anahtarına bakıyordu
+    # ve ana anahtar kapalıyken bile ağa çıkıyordu. Komut aynı nefeste hem
+    # "KAP kapalı" hem "⚠ beklenen bildirim takvimi: ConnectionError" basıyor
+    # ve çıkış kodunu 1 yapıyordu — yani KAP düştüğü için katmanı kapatan
+    # kullanıcı, kapattığını sanarak aynı hatayı almaya devam ediyordu.
+    # Kontrol artık KAYNAK SINIRINDA (`sources/kap.py`), çağrı yerinde değil.
+    # "Kapalı" bir aksama DEĞİLDİR: çıkış kodunu yükseltmez (L-003, L-025).
     enabled: true
     base: "https://www.kap.org.tr"
     disclosures_path: "/tr/api/disclosure/members/byCriteria"

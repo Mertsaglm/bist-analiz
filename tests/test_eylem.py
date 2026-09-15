@@ -215,3 +215,61 @@ class TestBugunkuAnalistKarari:
         r = eylem.siralama(self._bundle_kchol(), holdings={}, analiz=analiz)
         assert [x.ticker for x in r["gir"]] == ["KCHOL"]
         assert r["gir"][0].hazir
+
+
+class TestAnalistAksiyonuGorunur:
+    """B-10 KİLİDİ — §0 analistin bugünkü kararını GÖSTERİR.
+
+    ⚠ NE OLUYORDU (2026-08-28 denetimi): `_analist_riskleri` yalnız
+    `plan_reddet` ve azalt sinyallerini yazıyordu; `izle` / `islem_yok`
+    hiçbir satır üretmiyordu. Ölçülen sonuç — 2026-08-24 raporu §0:
+
+        1. 🟢 **ASELS** — GİR — plan bugün tetiklenebilir, engel yok
+
+    Aynı günün journal kaydı: `ASELS · signal accumulate · action izle`.
+    Yani analist SEÇMEMEYİ tercih etmişti ve raporun en çok okunan satırı
+    bunu göstermiyordu; "engel yok" cümlesi okuyucuya analistin de itirazı
+    olmadığını ima ediyordu.
+
+    L-022 bu sınıfı `plan_reddet` için kapatmıştı; simetriği yazılmamıştı
+    (L-008 madde 1: bir parametreyi aldığın her dalda ya kullan ya da
+    kullanılmadığını yaz).
+    """
+
+    IZLE = [{"ticker": "AAA", "signal": "accumulate", "action": "izle",
+             "thesis": "t"}]
+
+    def test_izle_karari_SIRALAMADA_gorunur(self):
+        r = eylem.siralama(_bundle([_e("AAA", plan_menusu=_plan())]),
+                           analiz=self.IZLE)
+        assert r["gir"], "plan GİR listesine hiç girmedi"
+        assert r["gir"][0].analist_aksiyon == "izle", \
+            "analistin `izle` kararı §0'a hiç taşınmadı"
+
+    def test_izle_karari_SECIMI_DEGISTIRMEZ(self):
+        """ADR #015 madde 3: §0 seçimi değiştirmez — `izle` bir ENGEL değildir.
+
+        Bu test bilerek var: düzeltmenin kendisi yeni bir hata doğurabilirdi
+        (§11 tuzak 1). `izle`yi `gerekce`ye koymak hem sıralamayı hem
+        `gerçekten_gir` koşulunu değiştirir, yani bir RAPOR düzeltmesi sessizce
+        bir KARAR değişikliğine dönüşürdü.
+        """
+        b = _bundle([_e("AAA", plan_menusu=_plan())])
+        analizsiz = eylem.siralama(b, analiz=None)
+        izleli = eylem.siralama(b, analiz=self.IZLE)
+        assert [x.ticker for x in izleli["gir"]] == \
+               [x.ticker for x in analizsiz["gir"]], \
+            "`izle` kararı GİR listesini değiştirdi — ADR #015 madde 3 ihlali"
+        assert izleli["gir"][0].gerekce == analizsiz["gir"][0].gerekce, \
+            "`izle` bir RİSK olarak eklenmiş; o bir engel değil, bir olgudur"
+        assert izleli["gir"][0].baslik == analizsiz["gir"][0].baslik
+
+    def test_plan_reddet_HALA_risk_olarak_kalir(self):
+        """L-022'nin kilidi bozulmamalı: `plan_reddet` RİSKTİR, olgu değil."""
+        b = _bundle([_e("AAA", plan_menusu=_plan())])
+        r = eylem.siralama(b, analiz=[{"ticker": "AAA", "signal": "hold",
+                                       "action": "plan_reddet",
+                                       "veto_code": "rejim_uyumsuz",
+                                       "thesis": "t"}])
+        assert not r["gir"], "veto edilen isim hâlâ GİR diyor (L-022 regresyonu)"
+        assert any("planı reddetti" in g for g in r["izle"][0].gerekce)

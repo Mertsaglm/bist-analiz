@@ -229,19 +229,59 @@ class TestHaberCikisKodu:
         assert "KAP HATASI" in cikti and "DEĞİL" in cikti
 
     def test_temiz_cekim_0(self, cli_cfg, con, monkeypatch):
+        """⚠ `sync_beklenen` DE MOCK'LANIR — testin ne kanıtladığı buna bağlı.
+
+        İlk sürüm yalnız `news.sync`'i mock'luyordu. Ama `cli.cmd_haber` AYNI
+        komutta ikinci bir dış çağrı daha yapıyor (`news.sync_beklenen`) ve o
+        çağrı gerçek KAP'a gidiyordu. Yani "temiz çekim 0 döner" diye yazılmış
+        bu test, çıkış kodunun yarısını AĞ DURUMUNDAN alıyordu: ağı olan
+        makinede yeşil, olmayanda kırmızı (ölçüldü, 2026-08-25/08-28 denetimleri).
+
+        Yeşil bir test, doğrulanmış bir gerçek değil kayda geçmiş bir inançtır
+        (AGENTS §11 tuzak 4) — burada inanç "bu komut izole" idi ve yanlıştı.
+        Sızıntının kendisi de bir hatayı gizliyordu: ağ kapatılınca
+        `test_kap_kapaliysa_0` düştü ve `sources.kap.enabled=False` iken bile
+        KAP'a çıkıldığı ortaya çıktı.
+        """
         from src import news
         monkeypatch.setattr(news, "sync", lambda *a, **k: {
             "atlandi": False, "bildirim": 5, "yazilan": 5, "ticker": 2,
             "since": "x", "hata": None, "tickersiz": 0, "atlanan_aralik": None})
+        monkeypatch.setattr(news, "sync_beklenen", lambda *a, **k: {
+            "ok": True, "atlandi": False, "ham": 12, "yazilan": 12,
+            "ticker": 3, "not": None})
         assert _kos("haber", "cek") == 0
 
     def test_kap_kapaliysa_0(self, cli_cfg, con, monkeypatch, capsys):
+        """⚠ KAPATMA ANAHTARI GERÇEKTEN KAPATMALI.
+
+        NE OLUYORDU (2026-08-28 denetimi): `sources.kap.enabled=False` iken
+        `news.sync` doğru davranıp atlıyordu, ama `news.sync_beklenen` ->
+        `kap.fetch_beklenen` YALNIZ KENDİ alt anahtarına
+        (`beklenen_bildirim.enabled`) bakıyor, ANA ANAHTARI HİÇ OKUMUYORDU.
+        Komutun çıktısı şuydu:
+
+            KAP kapalı (config.sources.kap.enabled)
+            ⚠ beklenen bildirim takvimi: ConnectionError: ... kap.org.tr
+
+        Yani komut "kapalı" deyip aynı nefeste KAP'a bağlanıyor ve çıkış kodunu
+        1 yapıyordu. KAP düştüğü için katmanı kapatan kullanıcı, kapattığını
+        sanarak aynı hatayı almaya devam ederdi.
+
+        Bu hata SUITE'TE GÖRÜNMÜYORDU çünkü test ağa çıkabiliyordu ve çağrı
+        başarılı dönüyordu (§11 tuzak 4). `conftest.ag_yasak` sızıntıyı
+        kapatınca hata kendini gösterdi.
+        """
         kapali = {**cli_cfg, "sources": {**cli_cfg["sources"],
                                          "kap": {**cli_cfg["sources"]["kap"],
                                                  "enabled": False}}}
         monkeypatch.setattr(cli, "_cfg", lambda: kapali)
         assert _kos("haber", "cek") == 0
-        assert "KAP kapalı" in capsys.readouterr().out
+        cikti = capsys.readouterr().out
+        assert "KAP kapalı" in cikti
+        # "kapalı" bir aksama DEĞİLDİR — uyarı satırı basılmamalı (L-003).
+        assert "⚠ beklenen bildirim takvimi" not in cikti, \
+            "ana anahtar kapalıyken beklenen-bildirim yolu yine de koşmuş"
 
     def test_bayat_veri_durumda_1(self, cli_cfg, con):
         from tests.conftest import add_bars, add_universe

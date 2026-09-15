@@ -6,6 +6,176 @@
 
 ---
 
+## L-027 — 2026-09-15 — Karar, muhasebe ve teslim aynı doğruluk sınırını paylaşır
+
+**Olay.** Revizyonda tek başına doğru görünen parçaların birleşiminde sorunlar çıktı:
+BIST ölçüm evreni filtresi canlı izlenen iki hisseyi düşürüyordu; analizden sonra yükselen
+fiyat eski hedefe göre yeniden kazanç gibi sayılabiliyordu; alış masrafı küçük tutarda risk
+bütçesini aşabiliyordu. Push retry döngüsünün son komutu başarılıysa kayıt teslim edilmeden
+workflow yeşil kalabiliyordu. Mobilde tablo genişliği bütün sayfayı taşırıyordu.
+
+**Ders.** Test, gerçek para akışını ve teslim sırasını kurmalı: al → aynı koşuyu tekrarla →
+yeniden aç → sat → aylık katkı. Sadece karar etiketini kontrol etmek yeterli değil.
+Katkıları kâr sayma; al-tut getirisini de aynı şekilde hesapla. Ekran geçmişi kırpıldı diye
+getiri hesabı yeniden başlamamalı. Kaynak kapsamı, modelin eğitim uygunluğundan ayrıdır.
+
+**Kilit.** `tests/test_advisor_flow.py` al/sat zincirini, fiyat hareketini iki kez saymamayı,
+katkıyı ve başarısız push çıkışını sınar. `tests/test_advisor_v2.py` muhasebe, makas, kalite,
+öğrenme ve bildirim sınırlarını sınar. Mobil 390 px görünümde sayfa genişliği de ölçüldü.
+Üretim SQL'ini salt okunur açan ayrı deney, yerel eski binary DB'ye güvenilmesini engelledi.
+
+---
+
+## L-026 — 2026-09-02 — Zamanlanmış bir işin GÜNÜ, başladığı an değildir
+
+**Olay — nöbetçi tam ters çalışıyordu.** Gelen GitHub arıza maillerinin
+tamamı (2026-08-26, 2026-09-01) `Nobetci` işindendi ve **hiçbiri gerçek
+arıza değildi.** Aynı hafta gerçek iki arıza ise HİÇ mail üretmedi.
+
+| An (UTC) | Gerçekte olan | Gözcünün dediği |
+|---|---|---|
+| 08-26 22:27 | günlük iş 18:21'de sorunsuz bitti | 🔴 "bugün koşu KAYDI YOK" → mail |
+| 08-28 03:51 | **08-27 seansı analiz edilmemiş** | 🟢 yeşil, mail YOK (satır yalnız Telegram'a düştü) |
+| 08-29 02:25 | **Cuma seansı analiz edilmemiş** | 🟢 "koşu beklenmiyor" — tamamen sustu |
+| 09-01 21:58 | günlük iş 19:32'de sorunsuz bitti | 🔴 "bugün koşu KAYDI YOK" → mail |
+
+**Tek kök sebep.** "Bu koşu hangi gün için?" sorusunun cevabı işin BAŞLAMA
+SAATİNDEN okunuyordu (`util.bugun_tr()`). GitHub cron gecikir — bu repoda
+ölçüldü: 8,5 saat. Gecikme TR gece yarısını aşınca etiket bir gün kayar:
+
+```
+günlük iş  19:32Z  →  TR 22:32, 1 Eylül  →  heartbeat "2026-09-01"
+gözcü      21:58Z  →  TR 00:58, 2 Eylül  →  soru      "2026-09-02"
+                                             cevap: kayıt yok → 🔴
+```
+
+**Aynı kayma üç yerde birden hasar verdi:**
+
+* **Etiket kayboldu.** `otonom_kosu`da 2026-08-27 ve 2026-08-31 için KAYIT
+  YOK, 2026-09-01 için İKİ kayıt var. "Hangi gün koştum?" artık journal'dan
+  okunamıyor.
+* **Bir koşunun TAMAMI yendi.** 08-28 (Cuma) slotu 08-29T00:39Z'de koştu;
+  etiket Cumartesi oldu, takvim kapısı "işlem günü değil" deyip her adımı
+  atladı. Cuma seansı o gün hiç analiz edilmedi.
+* **İki seans analizsiz geçti** (08-27 ve 08-31) ve bunu söyleyen tek satır
+  çıkışı 0 döndürdüğü için GitHub bildirim kanalı hiç çalışmadı.
+
+**En rahatsız edici kısım.** ADR #020 (08-28) tam bu olayın *bir yüzünü*
+düzeltti: "aynı gün iki kez analiz edilmez". Teşhis doğruydu ama `asof`la
+sınırlı kaldı — koşunun KİMLİĞİ hâlâ duvar saatindeydi. L-016'nın kardeşi:
+*doğru teşhis, eksik yere uygulandı.*
+
+**Ders.** Zamanlanmış bir iş için "bugün" diye bir şey yoktur; **slot**
+vardır. Duvar saati, işin ne zaman başladığını söyler — hangi iş olduğunu
+değil. Gecikme kontrolümüzde değildir, ama gecikmeye DAYANIKLI bir referans
+seçmek bizim elimizdedir.
+
+**Kural.** Zamanlanmış bir işte gün, dış dünyanın bir olgusundan türetilir:
+* günlük koşu → `cal.last_closed_session()` (analiz ettiği seans),
+* gözcü → *"kapanmış son seanstan BERİ koşu başladı mı?"* — takvim + saat,
+  takvim GÜNÜ değil.
+
+`date.today()`, `bugun_tr()`, `local_today()` bu soruların cevabı DEĞİLDİR.
+
+**Kilitler.** `test_GECE_YARISINI_ASAN_gozcu_YANLIS_ALARM_VERMEZ`,
+`test_CUMARTESIYE_TASAN_gozcu_SUSMAZ`,
+`test_ANALIZSIZ_seans_isi_KIRMIZIYA_cevirir`,
+`test_GECIKEN_kosu_HAFTA_SONUNA_tasinca_CUMAYI_analiz_eder`. Dördü de gerçek
+olayın saatiyle kurulu; soru duvar saatine dönerse dördü birden kırılır.
+Ayrıca dört olay üretim dump'ı üzerinde yeniden oynatıldı: kırmızı/yeşil
+dağılımı tam TERS döndü.
+
+**Kardeş ders:** aynı kök sebep `gold_tracking_system`'de de vardı ve orada
+bir raporu KAYBETTİRDİ (gold L-021). İki proje aynı çukura ayrı ayrı düştü.
+
+---
+
+## L-025 — 2026-08-28 — Testin ağa çıkabilmesi, arkasındaki hatayı GİZLER
+
+**Olay.** `test_temiz_cekim_0` yalnız `news.sync`'i mock'luyordu; ama
+`cli.cmd_haber` aynı komutta ikinci bir dış çağrı daha yapıyor
+(`news.sync_beklenen`) ve o mock'suzdu. Test gerçek KAP'a bağlanıyordu.
+Ağı olan makinede yeşil, olmayanda kırmızı — yani testin sonucu neyi
+kanıtladığına değil, **ağ durumuna** bağlıydı.
+
+Sızıntı kapatılınca (`conftest.ag_yasak`) **iki** test düştü ve ikincisi çok
+daha ciddiydi: `test_kap_kapaliysa_0`. Ölçülen çıktı şuydu —
+
+```
+KAP kapalı (config.sources.kap.enabled)
+⚠ beklenen bildirim takvimi: ConnectionError: ... kap.org.tr
+```
+
+`sources.kap.enabled=False` iken bile KAP'a çıkılıyordu: `kap.fetch_beklenen`
+yalnız kendi alt anahtarına (`beklenen_bildirim.enabled`) bakıyor, **ANA
+ANAHTARI hiç okumuyordu.** Yani kapatma anahtarı kapatmıyordu — ve KAP düştüğü
+için katmanı kapatan kullanıcı, kapattığını sanarak aynı hatayı almaya devam
+ederdi.
+
+**Kök sebep.** Testin ağa erişebilmesi, o çağrının BAŞARILI dönmesini
+sağlıyordu; başarılı dönen bir çağrı da hatayı görünmez kılıyordu. Yeşil test,
+"bu komut izole" inancını kayda geçirmişti (AGENTS §11 tuzak 4) ve o inanç
+yanlıştı.
+
+**Anti-pattern.** Bir testte tek bir dış sınırı mock'layıp "izole ettim"
+saymak. Komutun kaç dış sınırı olduğunu SAYMADAN izolasyon iddia edilemez.
+
+**Kural.**
+1. Testlerde ağ **varsayılan olarak yasaktır**, tek tek mock'lanarak değil
+   suite genelinde (`conftest.ag_yasak`). Gerçekten gereken test
+   `@pytest.mark.ag_gerekli` ile İŞARETLENİR — işaret görünürdür, sızıntı değil.
+2. Bir kapatma anahtarı yazdığında **kaynağın sınırına** koy, çağrı yerine
+   değil: orada hiçbir çağıran atlayamaz (§11 tuzak 5).
+3. "Kapalı" ile "çekilemedi" ayrı sonuçlardır (L-003) ve ayrı çıkış kodları
+   hak ederler; birini diğerinin kovasına atmak, kullanıcıya var olmayan bir
+   arıza gösterir.
+4. Bir sızıntıyı kapattığında **arkasından ne çıktığına bak** — sızıntı
+   genellikle tek başına durmaz, bir şeyi örtüyordur.
+
+---
+
+## L-024 — 2026-08-28 — Bir sayacın PAYDASI, saydığı şeyi kapsamayan bir kümeyse metrik sessizce yalan söyler
+
+**Olay.** İki ayrı sayaç, aynı sınıf hatayla, aynı hafta yakalandı.
+
+| Sayaç | Ne diyordu | Gerçek |
+|---|---|---|
+| `evaluate.araclar()` | `{replay: 20, gemini-3.6-flash: 3, claude-code: 2}` | `gemini-3.5-flash` **252 tahmin, 79 veto** — listede HİÇ YOK |
+| koşu günlüğü "açık" | `337 açık` ve her seans +18 | Gerçek açık plan **17**; 320'si `time_barrier_date` NULL, yani hiç çözülemez |
+
+Birincisinin bedeli: son üç haftanın BÜTÜN kararlarını veren model haftalık
+değerlendirmeye yapısal olarak giremiyordu (`outcomes` ile INNER JOIN).
+`reports/degerlendirme_gemini-3.5-flash_*.md` diye bir dosya yoktu ve 08-16 ile
+08-23 Telegram özetleri **birebir aynıydı**. Kullanıcının kendi sohbetinde
+günlük mesajlar her gün `🤖 gemini-3.5-flash` yazıyor, haftalık özet o modeli
+hiç anmıyordu. ADR #013'ün temel vaadi — *"hangi model daha iyi analist
+sorusunu sistem kendisi cevaplayacak"* — bu JOIN yüzünden imkânsızdı: yeni bir
+modele geçilince o model ilk sonucu çözülene kadar (≈1 ay) görünmez oluyordu.
+
+İkincisinin bedeli: açık plan sayısı 17'den 40'a fırlasa 337'nin içinde
+görünmezdi. Aynı gün `saglik` doğru sayıyı ("17 açık plan") basıyordu — yani
+**iki kanal aynı olguyu bir mertebe farkla söylüyordu.**
+
+**Kök sebep.** L-023 tam bu hatayı `veto_value` ve `llm_contribution` için
+düzeltmişti; **araç sayımına uygulanmadı** — üstelik aynı dosyanın 40 satır
+yukarısında. L-008'in "simetriğini ara" kuralının dördüncü tekrarı.
+
+**Anti-pattern.** Bir düzeltmeyi onu tetikleyen çağrı yerine uygulayıp
+bitmiş saymak. Ve: iki farklı olguyu ("çözülebilir açık" / "karar kaydı",
+"tahmin" / "çözülmüş tahmin") tek sayaçta toplamak.
+
+**Kural.**
+1. Bir sayaç yazarken sor: **saydığım küme, ölçmek istediğim olguyu kapsıyor
+   mu?** JOIN'ler kapsamı sessizce daraltır ve hata fırlatmaz.
+2. İki kanal aynı olguyu basıyorsa **eşliği bir test zorlasın** (L-022 madde 2).
+   `saglik` ile `evaluate` bu turda tam olarak bu testle bağlandı.
+3. Bir sayı "her gün artıyor ve hiç azalmıyorsa" o bir sayaç değil bir
+   birikimdir — neyin izlenmek istendiğini ayrı bas.
+4. Bir sayının ANLAMI değişince **etiketini de değiştir**: "20 çözülmüş karar"
+   ile "252 tahmin" aynı kelimeyi paylaşamaz (AGENTS §8 — yorum bir iddiadır).
+
+---
+
 ## L-023 — 2026-08-16 — Bir ölçüm, KAYNAK SORGUSUNDA kendi konusunu eleyebilir
 
 **Olay.** Üç ölçüm birden "henüz veri yok" gibi görünüyordu; gerçekte üçü de

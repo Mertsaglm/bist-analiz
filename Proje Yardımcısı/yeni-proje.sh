@@ -35,7 +35,49 @@ cp "$KAYNAK/CLAUDE.md"  "$HEDEF/"
 cp "$KAYNAK/GEMINI.md"  "$HEDEF/"
 cp "$KAYNAK/.github/copilot-instructions.md" "$HEDEF/.github/"
 # PROFILE ve LESSONS projeler arası TAŞINIR (Mert değişmiyor, dersler birikiyor).
-cp "$KAYNAK/ai/PROFILE.md"  "$HEDEF/ai/"
+#
+# ⚠ AMA PROFILE.md GITIGNORE'DADIR (kişisel, repoya girmez). Yani TAZE BİR
+# KLONDA O DOSYA YOKTUR ve `cp` script'in tamamını düşürürdü:
+#     cp: cannot stat '.../ai/PROFILE.md': No such file or directory
+# Ölçüldü 2026-08-28: CI'da (temiz checkout) script çıkış 1 verdi; Mert'in
+# makinesinde çalışıyordu çünkü dosya YERELDE duruyor. Tam olarak L-004'ün
+# tekrarı — "yanlış yerdeki doğru dosya = yok hükmünde" — ve yine kimse fark
+# etmemişti, çünkü script hiçbir yerden TEMİZ bir kopyayla koşulmuyordu.
+# Kilidi artık var: tests/test_dokuman.py::TestSablonScripti.
+#
+# Varsa taşınır (profil birikmiş bilgidir), yoksa boş şablon kurulur —
+# PROJECT.md'de zaten uygulanan desen. Yokluğu bir HATA DEĞİLDİR.
+if [ -f "$KAYNAK/ai/PROFILE.md" ]; then
+  cp "$KAYNAK/ai/PROFILE.md" "$HEDEF/ai/"
+else
+  cat > "$HEDEF/ai/PROFILE.md" <<'EOF'
+# PROFILE.md — Kullanıcı Profili
+
+> Bu dosya projeler arasında ORTAKTIR ve repoya GİRMEZ (kişisel).
+> ⚠ BOŞ ŞABLON. Usta `/tanis` ile tanışma protokolünü çalıştırıp BURAYI
+> KENDİSİ DOLDURUR. Bir seferde en fazla 2-3 soru, sohbet havasında.
+
+## Kimlik
+- _(doldurulacak)_
+
+## Bildikleri / Deneyimi
+- Diller: _(doldurulacak)_
+- Alanlar: _(doldurulacak)_
+- Araçlar: _(doldurulacak)_
+
+## Öğrenmek İstedikleri
+- _(doldurulacak)_
+
+## Kısıtlar
+- _(bütçe, zaman, ortam, ağ — doldurulacak)_
+
+## Tercihler
+- _(iletişim dili, açıklama derinliği, soru sayısı — doldurulacak)_
+
+## Çalışma Alışkanlıkları
+- _(doldurulacak)_
+EOF
+fi
 cp "$KAYNAK/ai/LESSONS.md"  "$HEDEF/ai/"
 
 # ⚠ PROJECT.md KOPYALANMAZ, BOŞ ŞABLON olarak kurulur. Kopyalamak, her yeni

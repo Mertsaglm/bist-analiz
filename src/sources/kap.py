@@ -279,16 +279,23 @@ class BeklenenSonuc:
     `kirpik=True` ise liste TAVANA DAYANMIŞTIR ve içindeki YOKLUK hiçbir şey
     kanıtlamaz — "bu şirketin bildirimi yok" ile "listede göremedim" aynı
     çıktıya düşer. Bu yüzden kırpık yanıt SAKLANMAZ (bkz. `news.sync_beklenen`).
+
+    `kapali=True` ise katman KONFİGLE kapatılmıştır — bu bir HATA DEĞİLDİR.
+    İkisini aynı kovaya atmak L-003'tür ve yaşandı: `sources.kap.enabled=False`
+    iken komut hem "KAP kapalı" hem "⚠ beklenen bildirim takvimi:
+    ConnectionError" basıyor, üstelik çıkış kodunu 1 yapıyordu. `news.sync`
+    aynı olguyu zaten `atlandi` ile ayırıyordu; simetriği burada eksikti.
     """
     kayitlar: list[dict]
     hata: str | None = None
     kirpik: bool = False
     ham: int = 0
     sirket: int = 0
+    kapali: bool = False
 
     @property
     def ok(self) -> bool:
-        return self.hata is None and not self.kirpik
+        return self.hata is None and not self.kirpik and not self.kapali
 
 
 def _bb_tarih(s: str | None) -> str | None:
@@ -317,9 +324,26 @@ def fetch_beklenen(cfg: dict) -> BeklenenSonuc:
     ile birlikte gelmiştir — yani inşaen doğrudur).
     """
     k = cfg["sources"]["kap"]
+    # ⚠ ANA ANAHTAR ÖNCE. `sources.kap.enabled` KAP katmanının tamamını kapatır;
+    # bu fonksiyon yalnız kendi alt anahtarına (`beklenen_bildirim.enabled`)
+    # bakıyordu ve ana anahtar KAPALIYKEN BİLE ağa çıkıyordu.
+    #
+    # Ölçüldü (2026-08-28 denetimi): `sources.kap.enabled=False` iken
+    # `bist haber cek` şunu basıyordu —
+    #     KAP kapalı (config.sources.kap.enabled)
+    #     ⚠ beklenen bildirim takvimi: ConnectionError: ... kap.org.tr
+    # yani kapatma anahtarı kapatmıyordu; komut "kapalı" deyip aynı nefeste
+    # KAP'a bağlanmayı deniyordu. Bir kaynak düştüğü için onu kapatan kullanıcı,
+    # kapattığını sanarak aynı hataya devam ederdi.
+    #
+    # Kontrol KAYNAK SINIRINA konur (§11 tuzak 5): tek çağrı yerini düzeltmek
+    # kuralı uygulamak değildir — burada hiçbir çağıran atlayamaz.
+    if not k.get("enabled", False):
+        return BeklenenSonuc([], "KAP kapalı (config.sources.kap.enabled)",
+                            kapali=True)
     b = k.get("beklenen_bildirim") or {}
     if not b.get("enabled", False):
-        return BeklenenSonuc([], "beklenen_bildirim kapalı")
+        return BeklenenSonuc([], "beklenen_bildirim kapalı", kapali=True)
     gun = int(b.get("pencere_gun", 45))
     bugun = util.today_local(cfg["takvim"]["timezone"]) if hasattr(util, "today_local") \
         else date.today()

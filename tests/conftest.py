@@ -25,6 +25,66 @@ from src import db, util
 
 # --------------------------------------------------------------- güvenlik ağı
 @pytest.fixture(autouse=True)
+def ag_yasak(monkeypatch, request):
+    """Testler AĞA ÇIKAMAZ — yapısal güvence.
+
+    ⚠ YAŞANMIŞ OLAY (2026-08-25 / 08-28 denetimleri): `test_temiz_cekim_0`
+    yalnız `news.sync`'i mock'luyordu, ama `cli.cmd_haber` aynı komutta ayrıca
+    `news.sync_beklenen` çağırıyor ve o MOCK'SUZDU. Yani "temiz çekim 0 döner"
+    diye yazılmış test, gerçek KAP'a bağlanıyordu. Ağı olan makinede yeşil,
+    olmayanda kırmızı — sonuç testin ne kanıtladığına bağlı değil, ağ durumuna
+    bağlıydı (AGENTS §11 madde 5: testin gerçekten ne kanıtladığını sor).
+
+    Ölçüldü: ağ kapatılınca 2 test düştü ve İKİNCİSİ daha ciddiydi —
+    `test_kap_kapaliysa_0`, yani `sources.kap.enabled=False` iken bile KAP'a
+    çıkılıyordu. Kapatma anahtarı kapatmıyordu; testin ağ sızıntısı o hatayı
+    GİZLİYORDU. Sızıntıyı kapatmak, arkasındaki gerçek hatayı görünür kıldı.
+
+    Tek testi mock'lamak SINIFI KAPATMAZ (§11 tuzak 5): bir sonraki testte aynı
+    sızıntı yeniden açılır. Bu yüzden yasak suite geneline konur — yeni bir
+    doğrudan HTTP çağrısı ekleyen test kırmızıya döner ve bunu fark eder.
+
+    Gerçekten ağ isteyen bir test olursa `@pytest.mark.ag_gerekli` ile
+    işaretlenir; işaret GÖRÜNÜRDÜR ve gerekçesi testin docstring'ine yazılır.
+    Localhost serbesttir (yerel yardımcı süreçler ağ değildir).
+    """
+    if request.node.get_closest_marker("ag_gerekli"):
+        yield
+        return
+
+    import socket
+
+    yerel = ("127.0.0.1", "::1", "localhost")
+    orijinal_connect = socket.socket.connect
+    orijinal_create = socket.create_connection
+
+    def _yerel_mi(adres) -> bool:
+        try:
+            return isinstance(adres, tuple) and adres[0] in yerel
+        except Exception:                                    # noqa: BLE001
+            return False
+
+    def korumali_connect(self, adres, *a, **k):
+        if _yerel_mi(adres):
+            return orijinal_connect(self, adres, *a, **k)
+        raise OSError(
+            f"TEST AĞA ÇIKMAYA ÇALIŞTI: {adres}\n"
+            "Testler dış servise bağlanmaz — dış sınırları mock'la. "
+            "Gerçekten gerekiyorsa `@pytest.mark.ag_gerekli` ile işaretle ve "
+            "gerekçesini docstring'e yaz. Bu koruma tests/conftest.py "
+            "içindedir ve KALDIRILMAMALIDIR — bkz. oradaki gerekçe.")
+
+    def korumali_create(adres, *a, **k):
+        if _yerel_mi(adres):
+            return orijinal_create(adres, *a, **k)
+        raise OSError(f"TEST AĞA ÇIKMAYA ÇALIŞTI: {adres}")
+
+    monkeypatch.setattr(socket.socket, "connect", korumali_connect)
+    monkeypatch.setattr(socket, "create_connection", korumali_create)
+    yield
+
+
+@pytest.fixture(autouse=True)
 def gercek_dbye_yazma_korumasi(monkeypatch):
     """`pytest` kullanıcının GERÇEK veritabanına YAZAMAZ — yapısal güvence.
 

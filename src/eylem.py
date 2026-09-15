@@ -48,6 +48,10 @@ class Eylem:
     riske_edilen_pct: float | None = None
     rr_net: float | None = None
     uygulanabilir: bool = True
+    # Analistin O GÜNKÜ aksiyonu — NÖTR OLGU, gerekçe DEĞİL (bkz. `siralama`).
+    # `gerekce`ye konsaydı sıralamayı ve `gerçekten_gir` koşulunu değiştirirdi;
+    # oysa `izle` bir ENGEL değildir (ADR #015: §0 seçimi değiştirmez).
+    analist_aksiyon: str | None = None
 
     @property
     def hazir(self) -> bool:
@@ -214,11 +218,24 @@ def siralama(bundle: dict, *, holdings: dict | None = None,
         else:
             baslik = ("BEKLE — plan bir geri çekilmeye bağlı "
                       f"({p.get('entry_zone_status')})")
+        # ⚠ ANALİSTİN AKSİYONU NÖTR OLGU OLARAK TAŞINIR (2026-08-28 denetimi).
+        # `_analist_riskleri` yalnız `plan_reddet` ve azalt sinyallerini
+        # yazıyordu; `izle` / `islem_yok` hiçbir satır üretmiyordu. Sonuç:
+        # 2026-08-24 raporunun §0'ı "🟢 ASELS — GİR — plan bugün tetiklenebilir,
+        # ENGEL YOK" dedi; aynı günün journal kaydı `ASELS · accumulate · izle`.
+        # Yani analist seçmemeyi tercih etmişti ve en çok okunan satır bunu
+        # göstermiyordu. L-022 bu sınıfı `plan_reddet` için kapatmıştı,
+        # simetriği yazılmamıştı (L-008 madde 1).
+        #
+        # RİSK OLARAK EKLENMEZ: `izle` bir engel değildir ve `gerçekten_gir`
+        # koşulunu bozmamalı (ADR #015 madde 3 — §0 SEÇİMİ DEĞİŞTİRMEZ).
+        # Okuyucu görsün diye taşınır, sıraya girmesin diye ayrı alanda durur.
         ey = Eylem(
             "gir" if gerçekten_gir else "izle", t, baslik,
             gerekce=risk, plan_id=p.get("plan_id"),
             riske_edilen_pct=p.get("max_loss_pct_of_portfolio"),
-            rr_net=t1[0].get("rr_net"))
+            rr_net=t1[0].get("rr_net"),
+            analist_aksiyon=(a or {}).get("action"))
         (gir if ey.tur == "gir" else izle).append(ey)
 
     def _anahtar(x: Eylem):

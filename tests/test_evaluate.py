@@ -570,3 +570,83 @@ class TestTetiklenmemeBedeli:
         _kayit(cfg, con, asof="2024-01-15", ticker="AAA", alfa=2.0)
         t = evaluate.tetiklenmeme_bedeli(cfg, con)
         assert t["fark"] is None and t["hukum"] == stats.HUKUM_OLCUM_YOK
+
+
+class TestAracSayimi:
+    """B-01 KİLİDİ — sonucu OLMAYAN ama tahmini OLAN araç görünmeli.
+
+    ⚠ NE OLUYORDU (2026-08-28 denetimi): `evaluate.araclar` `outcomes` ile
+    INNER JOIN yapıyordu. Ölçüldü:
+
+        araclar()  →  {'replay': 20, 'gemini-3.6-flash': 3, 'claude-code': 2}
+        gerçek     →  gemini-3.5-flash 252 · gemini-3.6-flash 54 · replay 20 ·
+                      gpt-5-mini 18 · claude-code 18
+
+    Son üç haftanın BÜTÜN kararlarını veren model haftalık değerlendirmeye hiç
+    girmiyordu; `reports/degerlendirme_gemini-3.5-flash_*.md` diye bir dosya
+    yoktu ve 08-16 ile 08-23 Telegram özetleri birebir aynıydı. Kullanıcının
+    sohbetinde günlük mesajlar her gün o modeli yazıyor, haftalık hiç anmıyordu.
+
+    ADR #013'ün vaadi (*"hangi model daha iyi analist sorusunu sistem kendisi
+    cevaplar"*) bu JOIN yüzünden YAPISAL OLARAK imkânsızdı: yeni bir modele
+    geçilince o model ilk sonucu çözülene kadar (≈1 ay) görünmez oluyordu.
+    """
+
+    def _kur(self, con, tool, n, *, sonuclu=False):
+        """Bir aracın `n` tahmini olsun; `sonuclu` ise çözülmüş sonucu da olsun."""
+        rid = f"2026-08-26-{tool}-1"
+        con.execute(
+            "INSERT INTO llm_runs (run_id, asof, tool, bundle_sha, output_path, "
+            "  audit_passed, hard_fail_codes, created_utc) "
+            "VALUES (?,?,?,'sha','',1,'[]','x')", (rid, "2026-08-26", tool))
+        for i in range(n):
+            pid = f"{tool}-p{i}"
+            con.execute(
+                "INSERT INTO predictions (prediction_id, run_id, asof, ticker, "
+                "  factor_set_version, weights_hash, indicator_set_version, regime, "
+                "  signal, action, confidence, confidence_p, thesis, "
+                "  counter_scenario, key_risk, falsifier, close_at_asof, created_utc) "
+                "VALUES (?,?,?,?, 'v1','h','v1','neutral', 'hold','izle','dusuk',"
+                "        0.3, 't','c','k','f', 100.0, 'x')",
+                (pid, rid, "2026-08-26", f"T{i}"))
+            if sonuclu:
+                con.execute(
+                    "INSERT INTO outcomes (prediction_id, resolved_date, "
+                    "  resolution, resolver_version, resolved_utc) "
+                    "VALUES (?,'2026-08-26','sure','v1','x')", (pid,))
+        con.commit()
+
+    def test_SONUCU_OLMAYAN_arac_GORUNUR(self, con):
+        from src import evaluate
+        self._kur(con, "yeni-model", 5)                 # hiç çözülmüş sonucu yok
+        self._kur(con, "eski-model", 2, sonuclu=True)
+
+        a = evaluate.araclar(con)
+        assert "yeni-model" in a, \
+            "sonucu olmayan ama 5 tahmini olan araç sayımda YOK — aktif model görünmez"
+        assert a["yeni-model"] == 5, f"tahmin sayısı yanlış: {a}"
+        assert a["eski-model"] == 2
+
+    def test_saglik_ile_evaluate_AYNI_sayiyi_verir(self, con):
+        """L-022 madde 2: iki kanal aynı olguyu basıyorsa eşliği test zorlar.
+
+        `saglik` "journal kaynağı" kontrolü bu olguyu DOĞRU sayıyordu
+        (`predictions` × `llm_runs`), `evaluate.araclar` yanlış. İki kaynağın
+        ayrışması tam olarak bu bulguyu üretti.
+        """
+        from src import db, evaluate
+        self._kur(con, "yeni-model", 5)
+        self._kur(con, "eski-model", 2, sonuclu=True)
+
+        saglik_sayimi = {r["tool"]: r["n"] for r in db.fetch_all(
+            con, "SELECT r.tool, COUNT(*) n FROM predictions p "
+                 " JOIN llm_runs r ON r.run_id = p.run_id GROUP BY r.tool")}
+        assert evaluate.araclar(con) == saglik_sayimi, \
+            "iki kanal aynı olguyu FARKLI sayıyor"
+
+    def test_sonucu_olmayan_arac_run_COKMEZ(self, cfg, con):
+        """Görünür olmak yetmez: değerlendirme o araçta çökmemeli."""
+        from src import evaluate
+        self._kur(con, "yeni-model", 5)
+        e = evaluate.run(cfg, con, tool="yeni-model")
+        assert (e.get("alfa") or {}).get("hukum") == "ölçüm yok"

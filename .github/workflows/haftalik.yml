@@ -56,8 +56,5 @@ jobs:
             echo "degisiklik yok"
           else
             git commit -m "otonom: haftalik degerlendirme $(date -u +%Y-%m-%d)"
-            for i in 1 2 3; do
-              git pull --rebase origin main && git push && break
-              echo "push denemesi $i basarisiz"; sleep 5
-            done
+            bash ops/push_retry.sh
           fi

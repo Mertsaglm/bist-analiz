@@ -503,8 +503,37 @@ def _acik_plan(cfg: dict, con: sqlite3.Connection) -> tuple[str, str, bool, str]
         con, "SELECT COUNT(*) FROM predictions p "
              " LEFT JOIN outcomes o ON o.prediction_id = p.prediction_id "
              " WHERE o.prediction_id IS NULL AND p.action = 'plan_sec'") or 0
-    tutulan = db.scalar(con, "SELECT COUNT(*) FROM holdings") or 0
-    ozet = f"{acik} açık plan · {tutulan} kayıtlı pozisyon"
+
+    # ⚠ KAYNAK RAPORLA AYNI OLMALI (2026-08-28 denetimi). Burası `holdings`
+    # TABLOSUNU sayıyordu; oysa ADR #019 kontenjanı TÜRETİLMİŞ portföye bağladı
+    # ve `otonom.gunluk` raporu `pfm.holdings_gorunumu(pf)` ile besliyor.
+    # Sonuç: aynı gün rapor "Kontenjan: 2/4 pozisyon dolu" derken `saglik`
+    # "0 kayıtlı pozisyon → kontenjan KÖR" diyordu ve bu uyarı 2026-08-17'den
+    # beri KESİNTİSİZ basılıyordu (Telegram'daki "4 uyarı"nın içinde).
+    #
+    # İki kat zarar: (1) README "aynı ad üç gün üst üste çıkıyorsa elini uzat"
+    # diyor — bu ad on gündür çıkıyordu ve YANLIŞTI, uyarıların anlamı aşınıyor;
+    # (2) önerilen komut (`bist portfoy ekle`) ADR #019 gereği elle kaydı ÜSTÜN
+    # sayar, yani uyarıya uyan kullanıcı ölçüm aletini bozardı.
+    #
+    # L-021/L-022'nin birebir aynısı: tüketici yeni kaynağa bağlandı, GÖZLEMCİ
+    # eski kaynakta bırakıldı. Eşliği artık test zorluyor
+    # (tests/test_saglik.py::TestAcikPlanKaynagi).
+    elle = journal.holdings(con)
+    kagit: dict = {}
+    try:
+        from . import portfoy as pfm
+        pf = pfm.simule(cfg, con)
+        kagit = pfm.holdings_gorunumu(pf)
+    except Exception as e:                                   # noqa: BLE001
+        # Portföy türetilemezse GÖZLEM susmaz ama yanlış da konuşmaz.
+        return (UYARI, "açık plan", False,
+                f"{acik} açık plan · portföy türetilemedi ({e}) — kontenjan "
+                f"doğrulanamıyor")
+    tutulan = len({**kagit, **elle})
+
+    ozet = (f"{acik} açık plan · {tutulan} pozisyon "
+            f"({len(kagit)} kâğıt · {len(elle)} elle)")
     if acik == 0 or tutulan > 0:
         return OK, "açık plan", True, ozet
     return (UYARI, "açık plan", False,

@@ -44,11 +44,39 @@ class KaynakKarisik(RuntimeError):
 
 
 def araclar(con: sqlite3.Connection) -> dict[str, int]:
-    """Journal'da hangi araçtan kaç ÇÖZÜLMÜŞ tahmin var."""
+    """Journal'da hangi araçtan kaç TAHMİN var — çözülmüş olma şartı YOK.
+
+    ⚠ NE OLUYORDU (2026-08-28 denetimi): bu sorgu `outcomes` ile INNER JOIN
+    yapıyordu, yani yalnız ÇÖZÜLMÜŞ sonucu olan araçları görüyordu. Ölçüldü:
+
+        araclar()  →  {'replay': 20, 'gemini-3.6-flash': 3, 'claude-code': 2}
+        gerçek     →  gemini-3.5-flash 252 · gemini-3.6-flash 54 · replay 20 ·
+                      gpt-5-mini 18 · claude-code 18
+
+    Son üç haftanın BÜTÜN kararlarını veren model (`gemini-3.5-flash`, 252
+    tahmin, 79 veto) değerlendirmeye hiç girmiyordu: `reports/` altında
+    `degerlendirme_gemini-3.5-flash_*.md` diye bir dosya YOK ve 2026-08-16 ile
+    08-23 Telegram haftalık özetleri birbirinin birebir aynısıydı. Kullanıcının
+    sohbetinde günlük mesajlar her gün "🤖 gemini-3.5-flash" diyordu; haftalık
+    özet o modeli hiç anmadı.
+
+    Bu, ADR #013'ün temel vaadini — *"hangi model daha iyi analist sorusunu
+    sistem kendisi cevaplayacak"* — YAPISAL OLARAK imkânsız kılıyordu: yeni bir
+    modele geçildiği an o model, ilk sonucu çözülene kadar (≈1 ay) görünmez
+    oluyor ve bu arada eski modellerin karnesi rapor ediliyordu.
+
+    L-023 aynı JOIN'i `veto_value` ve `llm_contribution` için kaldırmıştı
+    (bkz. `_tum_tahminler`) ama ARAÇ SAYIMINA uygulamamıştı — L-008'in
+    "simetriğini ara" kuralı, aynı dosyanın 40 satır yukarısında.
+
+    ⚠ Dönen sayı ÇÖZÜLMÜŞ değil TAHMİN sayısıdır; tüketici bunu öyle
+    etiketlemek zorundadır. `saglik` "journal kaynağı" kontrolü aynı olguyu
+    zaten böyle sayıyordu — iki kanalın eşliğini artık test zorluyor
+    (tests/test_evaluate.py::TestAracSayimi).
+    """
     return {r["tool"]: r["n"] for r in db.fetch_all(
         con,
         "SELECT r.tool, COUNT(*) n FROM predictions p "
-        "  JOIN outcomes o ON o.prediction_id = p.prediction_id "
         "  JOIN llm_runs r ON r.run_id = p.run_id "
         " GROUP BY r.tool ORDER BY n DESC")}
 

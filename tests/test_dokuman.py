@@ -22,6 +22,7 @@ güncellemek zorunda kalır — ama dokümanın üslubuna karışılmaz.
 from __future__ import annotations
 
 import hashlib
+import pathlib
 import re
 import subprocess
 
@@ -482,3 +483,144 @@ class TestIddiaKarsiligi:
         assert "yatırım tavsiyesi değildir" in real_cfg["rapor"]["uyari"].lower()
         assert "YATIRIM TAVSİYESİ DEĞİLDİR" in cli.UYARI.upper()
         assert "yatırım tavsiyesi değildir" in _oku("README.md").lower()
+
+
+class TestSablonScripti:
+    """`Proje Yardımcısı/yeni-proje.sh` GERÇEKTEN koşuyor mu?
+
+    ⚠ Bu script bir kez sessizce bozuldu ve kimse fark etmedi: L-004'te kural
+    dosyaları alt klasörden köke taşınınca script'in kaynak yolu güncellenmedi
+    ve `cp: No such file or directory` ile HİÇ ÇALIŞMADI — 2026-07-27
+    denetimine kadar. Kendi yorumu bunu anlatıyor ama script'i hiçbir test
+    koşmuyordu (ölçüldü 2026-08-28), yani L-002'nin deseni açık duruyordu:
+    elle çalıştırılan bir şey sessizce donar.
+
+    Bu sınıf o boşluğu kapatır. Üç şeyi sınar ve üçü de ayrı bir hata sınıfı:
+      1. Script koşuyor mu?              (L-002 — donmuş script)
+      2. GÜNCEL kuralları taşıyor mu?    (kopya bayatlaması)
+      3. Kaynak projenin kimliği sızıyor mu? (2026-07-27'de yakalandı)
+    """
+
+    def _kos(self, hedef):
+        script = pathlib.Path(KOK) / "Proje Yardımcısı" / "yeni-proje.sh"
+        assert script.exists(), f"şablon script'i yok: {script}"
+        return subprocess.run([str(script), str(hedef)],
+                              capture_output=True, text=True, timeout=60)
+
+    def test_script_KOSUYOR(self, tmp_path):
+        hedef = tmp_path / "yeni"
+        r = self._kos(hedef)
+        assert r.returncode == 0, (
+            f"şablon script'i düştü (çıkış {r.returncode}):\n"
+            f"stdout: {r.stdout}\nstderr: {r.stderr}")
+        assert (hedef / "AGENTS.md").is_file(), "kanonik kural dosyası kurulmadı"
+
+    def test_GUNCEL_kurallari_tasiyor(self, tmp_path):
+        """Kopyalanan kural dosyaları kaynakla BİREBİR aynı olmalı.
+
+        Script kuralları KÖKTEN kopyalar (gömmez) — bu doğru tasarım, çünkü
+        gömülü bir kopya kaynaktan ayrışır ve hangisinin geçerli olduğu
+        belirsizleşir. Bu test o tasarımın bozulmadığını kilitler.
+        """
+        hedef = tmp_path / "yeni"
+        assert self._kos(hedef).returncode == 0
+        for ad in ("AGENTS.md", "ai/LESSONS.md", "CLAUDE.md", "GEMINI.md",
+                   ".github/copilot-instructions.md"):
+            kaynak = (pathlib.Path(KOK) / ad).read_text(encoding="utf-8")
+            kopya = (hedef / ad).read_text(encoding="utf-8")
+            assert kopya == kaynak, f"{ad} kaynaktan AYRIŞMIŞ — kopya bayatlıyor"
+
+    def test_KAYNAK_PROJENIN_kimligi_SIZMAZ(self, tmp_path):
+        """PROJECT.md boş şablon kalmalı.
+
+        ⚠ 2026-07-27 denetiminde yakalandı: PROJECT.md kopyalanıyordu ve yeni
+        proje kaynak projenin kimliğiyle başlıyordu. Daha kötüsü, Usta onu
+        "dolu" görüp KEŞİF PROTOKOLÜNÜ HİÇ ÇALIŞTIRMIYORDU.
+        """
+        hedef = tmp_path / "yeni"
+        assert self._kos(hedef).returncode == 0
+        proje = (hedef / "ai/PROJECT.md").read_text(encoding="utf-8")
+        assert "doldurulacak" in proje, "PROJECT.md boş şablon değil"
+        assert "BIST" not in proje, "kaynak projenin kimliği yeni projeye sızdı"
+        # STATE de sıfırdan başlamalı — kaynağın milestone'ları taşınmamalı
+        durum = (hedef / "ai/STATE.md").read_text(encoding="utf-8")
+        assert "Başlangıç" in durum and "Faz" not in durum, \
+            "STATE kaynak projenin ilerlemesini taşıyor"
+
+    def _sahte_kaynak(self, tmp_path, *, profil_var: bool):
+        """TAZE KLON taklidi: script'in okuduğu dosyalar + isteğe bağlı PROFILE.
+
+        Gerçek proje kökünü kullanamayız çünkü Mert'in makinesinde PROFILE.md
+        VARDIR — hatanın görünmemesinin sebebi tam olarak buydu.
+        """
+        kok = tmp_path / "kaynak"
+        (kok / "ai").mkdir(parents=True)
+        (kok / ".github").mkdir()
+        (kok / "Proje Yardımcısı").mkdir()
+        (kok / "AGENTS.md").write_text("kanonik kurallar", encoding="utf-8")
+        # Köprüler AGENTS.md'ye YÖNLENDİRMELİ — script bunu ayrıca doğruluyor.
+        for ad in ("CLAUDE.md", "GEMINI.md", ".github/copilot-instructions.md"):
+            (kok / ad).write_text("Kurallar: AGENTS.md", encoding="utf-8")
+        (kok / "ai/LESSONS.md").write_text("dersler", encoding="utf-8")
+        if profil_var:
+            (kok / "ai/PROFILE.md").write_text("# PROFILE\nMert", encoding="utf-8")
+        hedef_script = kok / "Proje Yardımcısı" / "yeni-proje.sh"
+        kaynak_script = pathlib.Path(KOK) / "Proje Yardımcısı" / "yeni-proje.sh"
+        hedef_script.write_bytes(kaynak_script.read_bytes())
+        hedef_script.chmod(0o755)
+        return hedef_script
+
+    def test_PROFILE_YOKKEN_de_kosar(self, tmp_path):
+        """⚠ TAZE KLON SENARYOSU — script'i CI'da düşüren şey buydu.
+
+        `ai/PROFILE.md` GITIGNORE'DADIR (kişisel, projeler arası ortak). Yani
+        temiz bir checkout'ta o dosya YOKTUR ve `cp` script'in tamamını
+        düşürüyordu:
+            cp: cannot stat '.../ai/PROFILE.md': No such file or directory
+
+        Mert'in makinesinde çalışıyordu çünkü dosya yerelde duruyor — L-004'ün
+        birebir tekrarı ve yine görünmezdi, çünkü script hiçbir yerden TEMİZ
+        bir kopyayla koşulmuyordu. İlk CI koşusunda yakalandı (2026-08-28).
+        """
+        script = self._sahte_kaynak(tmp_path, profil_var=False)
+        hedef = tmp_path / "yeni"
+        r = subprocess.run([str(script), str(hedef)],
+                           capture_output=True, text=True, timeout=60)
+        assert r.returncode == 0, (
+            f"PROFILE.md yokken script düştü — taze klonda kullanılamaz:\n"
+            f"{r.stderr}")
+        profil = (hedef / "ai/PROFILE.md").read_text(encoding="utf-8")
+        assert "doldurulacak" in profil, "PROFILE boş şablon olarak kurulmadı"
+
+    def test_PROFILE_VARSA_tasinir(self, tmp_path):
+        """Yokluğu tolere etmek, VARLIĞINI görmezden gelmek demek değildir.
+
+        Profil birikmiş bilgidir ve projeler arası TAŞINIR; boş şablonla
+        ezilmesi sessiz bir kayıp olurdu (§11 tuzak 1: düzeltme yeni hata doğurur).
+        """
+        script = self._sahte_kaynak(tmp_path, profil_var=True)
+        hedef = tmp_path / "yeni"
+        r = subprocess.run([str(script), str(hedef)],
+                           capture_output=True, text=True, timeout=60)
+        assert r.returncode == 0, r.stderr
+        assert "Mert" in (hedef / "ai/PROFILE.md").read_text(encoding="utf-8"), \
+            "mevcut profil taşınmadı, boş şablonla EZİLDİ"
+
+    def test_README_agaci_scriptin_URETTIGIYLE_tutarli(self, tmp_path):
+        """Doküman ↔ davranış: ağaçta yazan her yol gerçekten üretiliyor mu?
+
+        ⚠ Bu testin ilk hâli bir uyumsuzluk buldu: README ağacı
+        `Proje Yardımcısı/`'yı proje yapısında gösteriyordu ama script onu
+        KOPYALAMIYOR. Ağaç artık bunu açıkça yazıyor.
+        """
+        hedef = tmp_path / "yeni"
+        assert self._kos(hedef).returncode == 0
+        beklenen = ["AGENTS.md", "CLAUDE.md", "GEMINI.md",
+                    ".github/copilot-instructions.md", "ai/PROJECT.md",
+                    "ai/STATE.md", "ai/DECISIONS.md", "ai/PROFILE.md",
+                    "ai/LESSONS.md", "ai/archive/README.md", "docs/README.md"]
+        eksik = [y for y in beklenen if not (hedef / y).is_file()]
+        assert not eksik, f"README ağacında yazan ama üretilmeyen yollar: {eksik}"
+        # Ve ağacın söylediği gibi: şablon klasörü KOPYALANMAZ.
+        assert not (hedef / "Proje Yardımcısı").exists(), \
+            "şablon klasörü kopyalanmış — README ağacındaki not artık yanlış"

@@ -1,5 +1,26 @@
 # BIST Analiz
 
+## Birikim V2 — 2026-09-15 revizyonu
+
+Yeni karar ve sanal portföy hattı `advisor/`, iki piyasayı birlikte gösteren web paneli
+`dashboard/` içindedir. Her hesap 5.000 TL başlangıç ve aylık 5.000 TL katkıyla izlenir.
+Gerçek emir gönderilmez. Alım/satım kararı, miktarı, masrafı ve fiyat kaynağı deftere yazılır.
+
+- [Kullanım, mimari ve Vercel kurulumu](docs/V2-REHBER.md)
+- [İnceleme, değişiklikler ve doğrulama raporu](reports/REVIZYON-2026-09-15.md)
+- Güncel durum: `ai/STATE.md`. Yerel revizyon hazır; yayın durumu burada tutulur.
+- Kısa karar: `.venv/bin/python -m advisor status`
+- Panel: `cd dashboard` ardından `npm run dev`.
+
+Geçmiş kayıtlar korunur. V1 veri toplama ve ayrıntılı rapor üretimi sürer; V2 aktif
+workflow'larda kısa Telegram özetinin sahibi olur. Önceki modelin ölçülmüş başarısızlıkları,
+yeni hesapta kâr gibi gösterilmez. Yeni model de kendi karnesini oluşturur.
+
+## V1 referansı ve geçmiş ölçümler
+
+Aşağıdaki bölüm önceki hattın ayrıntılarıdır. V2 bütçesi, fiyatları, öğrenme ve bildirim
+kuralları için yukarıdaki rehber geçerlidir.
+
 Borsa İstanbul'da 18 hisseyi izleyen, nicel skorlama + LLM yorum katmanıyla gerekçeli
 kararlar üreten ve **kendi isabetini deterministik olarak ölçen** kişisel karar destek sistemi.
 
@@ -263,9 +284,41 @@ BAŞLAMADI; o gün ne rapor ne uyarı çıktı. Çözüm sürecin İÇİNE konul
 (L-015) sistem kilitlendi (L-016). Nöbetçi ayrı zamanlamayla, ayrı bir runner
 talebiyle koşar, **salt-okurdur** ve yalnız söyler — hiçbir şeyi düzeltmez.
 
+**Nöbetçinin sorusu TAKVİME bağlıdır, duvar saatine değil** (ADR #021, L-026).
+İki soruyu ayrı ayrı sorar ve **ikisi de** işi kırmızıya çevirir:
+
+| Soru | Referans |
+|---|---|
+| Koşu başladı mı? | son heartbeat `baslangic_utc` ≥ **kapanmış son seansın kapanış anı** |
+| Analiz üretildi mi? | `MAX(predictions.asof)` vs **kapanmış son seans** |
+
+> ⚠ Neden böyle: eskiden "bugün (TR takvim günü) koşu kaydı var mı?" diye
+> soruyordu. Cron gecikip gece yarısını aşınca gözcü **olmayan arızada mail
+> attı** (2026-08-26, 09-01) ve **gerçek arızada sustu** (08-28, 08-29 — iki
+> seans analizsiz geçti). Gecikme GitHub'ın; düzeltilen şey SORUYDU.
+
+**Koşunun günü = analiz ettiği seans.** `otonom.gunluk` gününü
+`last_closed_session()`ten alır, `bugun_tr()`ten değil. Cumartesiye taşan bir
+Cuma koşusu artık Cuma'yı analiz eder; eskiden takvim kapısı "işlem günü
+değil" deyip koşunun tamamını atlıyordu.
+
 > ⚠ **Actions repoya commit atar.** Yerel kopyan sessizce geride kalır;
 > çalışmadan önce `git pull` (LESSONS L-001). Ayrıca cron 5-30 dk gecikebilir —
 > "saat 19:35'te gelir" diye bekleme.
+
+**Aynı gün İKİ KEZ analiz edilmez** (ADR #020). Zincir `asof`u
+`MAX(bars_daily.date)`ten okur; cron yeterince gecikirse (gözlendi: 8,5 saat,
+takvim gününü aştı) yeni bar henüz gelmemiş olur ve zincir ZATEN analiz edilmiş
+bir günü yeniden analiz ederdi. Yaşandı: 2026-08-26 iki kez analiz edildi, aynı
+piyasa verisinde **18 ismin 12'sinde farklı karar** çıktı (biri hiç pozisyon
+açmadı, diğeri iki pozisyon açtı) ve o günün raporu iki gün sonra üzerine
+yazıldı.
+
+Kapı **durdurmaz, ATLAR**: analist adımı koşmaz, zincirin geri kalanı (veri,
+gösterge, çözüm, rapor, Telegram) normal işler ve Telegram özetinde
+`ATLANDI — <tarih> zaten analiz edilmiş` görürsün. Kilitlenemez de, çünkü
+`asof` veriyle ilerler ve veri adımı bu kapıdan ÖNCE koşar — yeni bar gelince
+analist kendiliğinden döner (AGENTS §12a: bu bir GÖZLEM, kapı değil).
 
 **Periyodik:**
 
@@ -288,10 +341,18 @@ Gösterge kapsaması/tazeliği, kalite kapısı, haber katmanı sağlığı, tic
 eder. 2026-07-27 denetiminin ürettiği risk listesi elle koşulacak SQL'ler
 olarak bırakılmadı — koşulmayan kontrol, olmayan kontroldür.
 
-> `bist degerlendir` kaynak ayrımını kendisi yapar: journal'da tek araç varsa
-> onu seçer ve raporun `Kaynak:` satırına yazar; **birden çok araç varsa DURUR**
-> ve `--tool` ister (çıkış kodu 2). `replay` VEKİL bir analisttir; alfası
+> `bist degerlendir` kaynak ayrımını kendisi yapar: `--tool` verilmezse **her
+> kaynağı AYRI AYRI** basar, hiçbir metriği toplamaz (`--tool` ile tek kaynak
+> ölçülür). Karıştırma yasağı böyle korunuyor: satırlar yan yana durur ama
+> asla aynı payda altında birleşmez. `replay` VEKİL bir analisttir; alfası
 > gerçek LLM kayıtlarıyla aynı potaya girmez.
+>
+> ⚠ Listeye giren araç **tahmini olan** araçtır, çözülmüş sonucu olan değil.
+> Eskiden kaynak sorgusu `outcomes` ile INNER JOIN yapıyordu ve bu, aktif
+> modeli yapısal olarak GÖRÜNMEZ kılıyordu: yeni bir modele geçildiğinde o
+> model ilk sonucu çözülene kadar (≈1 ay) hiçbir raporda yer almıyordu
+> (ölçüldü 2026-08-28: 252 tahmin ve 79 veto üretmiş model listede yoktu).
+> Bkz. LESSONS L-024.
 
 **Geliştirme / doğrulama:**
 
@@ -304,9 +365,12 @@ poetry run bist revizyon             # ön kayıtlı revizyon turu #1 (mühürl�
 poetry run pytest                    # tüm suite (sayı basılır — README'ye gömülmez)
 ```
 
-> `pytest`in yan etkisi YOKTUR: gerçek `data/bist.db`'ye yazılabilir bağlantı
-> açan bir test hata verir, üretilen paket/rapor dosyaları geçici dizine gider.
-> Bu bir konvansiyon değil, `tests/conftest.py`'de zorlanan bir kural.
+> `pytest`in yan etkisi YOKTUR ve bu bir konvansiyon değil,
+> `tests/conftest.py`'de zorlanan bir kural: gerçek `data/bist.db`'ye
+> yazılabilir bağlantı açan bir test hata verir, üretilen paket/rapor dosyaları
+> geçici dizine gider ve **hiçbir test ağa çıkamaz** (`ag_yasak`; gerçekten
+> gereken test `@pytest.mark.ag_gerekli` ile İŞARETLENİR — işaret görünür
+> olur, sızıntı değil).
 
 ## 🔍 Günlük kullanım — sen neye bakacaksın
 
@@ -322,9 +386,25 @@ dört satıra bak:
 |---|---|---|
 | `🛑 BIST otonom — Koşu DURDURULDU` | Bir KAPI kontrolü kapandı; o gün analiz YOK | **Hemen.** Mesajdaki gerekçeyi oku, Actions geçmişine bak |
 | `⚠ Sağlık: N uyarı — <adlar>` | Süreç uyarıları; koşu tamamlandı | Aynı ad **üç gün üst üste** çıkıyorsa |
+| `ATLANDI — … zaten analiz edilmiş` | Cron gecikmiş, yeni bar yok; o gün yeniden analiz EDİLMEZ | Üst üste tekrarlıyorsa: bar akmıyordur, `bar tazeliği` satırına bak |
 | `_Tetikleyen: …_` (rapordaki rejim satırı) | Rejimi hangi koşul kapattı | `genişlik` tek başına tetiklerken XU100 SMA200'ün epey üstündeyse — bu bir tasarım tercihi, ama farkında ol |
 | `📌 Plan seçildi: …` | Analistin menüden seçtikleri | Aynı isim üst üste seçilse de kâğıt portföy ikinci kez ALMAZ (`isim_zaten_acik`) — ADR #019 |
-| `💼 9.970,99 TL (-0.29%)` | Kâğıt portföyün TL karnesi | Sistemin kendi kararlarının sonucu; pp değil TL konuşur |
+| `💼 <tutar> TL (±%…)` | Kâğıt portföyün TL karnesi | Sistemin kendi kararlarının sonucu; pp değil TL konuşur. ⚠ Yanında henüz TABAN yok — bkz. aşağıdaki uyarı |
+
+> ⚠ **Kâğıt portföyün TL yüzdesi TEK BAŞINA okunamaz.** Karne bir tabana karşı
+> ölçülmüyor ve nakit **%0 faizle** duruyor. Ölçüldü (2026-07-30 → 08-26):
+> portföy **+%0.59** · eşit-ağırlık canlı evren **+%9.41** · XU100 +%9.92 ·
+> net 1 yıllık mevduat +%2.49. Fark bir seçim başarısızlığı DEĞİL — kapanan ve
+> açık pozisyonlar evreni yakalıyor, sürükleyen şey **%95 nakit.** Taban
+> satırlarının karneye eklenmesi ve nakde faiz işlenmesi karar bekliyor
+> (`ai/STATE.md` → "Karar bekleyenler").
+
+> ⚠ **Bir uyarının kendisi yanlış olabilir.** "Aynı ad üç gün üst üste" sezgisi
+> 2026-08-17…08-28 arasında yanıltıcı çalıştı: `açık plan` uyarısı on gün
+> boyunca her gün çıktı ve **yanlıştı** — gözlemci `holdings` tablosunu
+> sayarken rapor türetilmiş portföyü sayıyordu. Üstelik uyarının önerdiği komut
+> (`bist portfoy ekle`) simülasyonu ezerdi. Düzeltildi; ders şu: bir uyarı
+> ısrar ediyorsa **önce uyarının doğru olup olmadığına** bak (LESSONS L-024).
 
 > ⚠ **Bildirim GELMEMESİ, "sorun yok" değildir.** İş hiç başlamazsa Telegram
 > mesajı da çıkmaz (L-015/L-016 — sistem tam bu yüzden dört gün sessizce
@@ -340,10 +420,23 @@ poetry run bist saglik         # 0 temiz · 1 uyarı · 2 KRİTİK
 poetry run bist degerlendir    # TÜM kaynaklar ayrı ayrı
 ```
 
+Haftalık özetin ilk satırı **yeni çözülen sayısı ve son çözüm tarihidir.**
+Sebebi: iki ardışık haftanın raporu birebir aynı çıkabilir ve bu DOĞRU olabilir
+(yeni sonuç çözülmediyse veri değişmez). Ama o hâlde bile "değişmedi" ile
+"tekrar basıldı" ayırt edilebilmeli — 2026-08-16 ve 08-23 mesajları birebir
+aynıydı ve hiçbir yerde yazmıyordu (L-007'nin haftalık hâli).
+
+Ayrıca her kaynağın yanında **veto satırı** vardır: `veto <n> (<kodlar>) ·
+değeri: <hüküm> (ölçülen <n>)`. Veto sayısı ile vetonun DEĞERİ ayrı basılır —
+"79 veto kondu" ile "vetonun işe yaradığı ölçüldü" iki farklı olgudur ve
+ikincisi henüz ölçülmedi.
+
 Değerlendirme raporunda **hüküm sütununa** bak, yüzdeye değil:
 
 - `ölçüm yetersiz (N=…)` → **normal ve doğru.** Yanındaki büyük yüzde bir bulgu
   DEĞİLDİR. İlk ~18 ay bunu göreceksin.
+- `ölçüm yok` → o araçtan henüz ÇÖZÜLMÜŞ sonuç gelmedi. Satırın var olması
+  yeni: araç listesi artık tahminlere bakıyor, sonuçlara değil (L-024).
 - `kenar yok` → ölçüldü ve bulunamadı. Bu da bir sonuçtur.
 - `zayıf kanıt: +X.Xp` → bu sistemdeki **en güçlü** ifade. "Doğrulandı" dalı
   yoktur. ⚠ Bu etiketin belirmesi tek başına sevinilecek bir şey değil: N bir
@@ -411,8 +504,23 @@ yolu ve her `HF-xx` kodu gerçekten var mı diye kontrol edilir. Ön kayıt müh
 (`docs/on-kayit-revizyon-01.md`'nin sha256'sı) de testle korunur — belge
 sonradan düzenlenirse suite kırmızıya döner.
 
-Ayrıca `pytest` artık **yan etkisiz**: gerçek veritabanına yazılabilir bağlantı
-açan bir test hata verir, üretilen paket/rapor dosyaları geçici dizine gider.
+Ayrıca `pytest` artık **yan etkisiz ve hermetik**: gerçek veritabanına
+yazılabilir bağlantı açan bir test hata verir, üretilen paket/rapor dosyaları
+geçici dizine gider ve **ağ varsayılan olarak yasaktır**.
+
+> ⚠ Ağ yasağı 2026-08-28'de eklendi ve eklenir eklenmez bir hata ortaya çıkardı.
+> Bir test yalnız `news.sync`'i mock'luyordu ama komut ikinci bir dış çağrı daha
+> yapıyordu (`news.sync_beklenen`) — yani "temiz çekim 0 döner" diye yazılmış
+> test, sonucunun yarısını **ağ durumundan** alıyordu. Sızıntı kapatılınca
+> ikinci bir test düştü: `sources.kap.enabled=False` iken **bile** KAP'a
+> çıkılıyordu, yani kapatma anahtarı kapatmıyordu. Ders: bir sızıntı yalnız
+> kendisi değildir, arkasındaki hatayı da GİZLER (LESSONS L-025).
+
+**CI gerçek veriyle koşar.** `test.yml` suite'ten önce `bist db restore` çalıştırır.
+Eskiden çalıştırmıyordu ve `conftest.real_con` veritabanı yoksa kendini atlıyordu —
+yani look-ahead kilidi, temettü düzeltmesi ve kalite kapısı dahil veri bütünlüğü
+katmanının tamamı, testlerin otomatik koştuğu TEK yerde hiç koşmuyordu. Dump
+repoda olduğu için bu adım ağa çıkmaz ve deterministiktir.
 
 ## Denetimin bilinen sınırları
 
@@ -430,11 +538,18 @@ Bunlar gizlenmiyor çünkü gizlenen sınır, olmayan bir garantiye dönüşür:
   **zayıflattı** ama kaldırmadı: hedef mesafe zemini gelince eşitsizlik daha
   sık hedef tarafından çözülüyor ve replay'de tetiklenmeme %35 → %16 düştü.
   Yine de iki planın R:R'ı hâlâ aynı şeyi ölçmez.
-- **Canlı ölçüm N'i çok küçük.** `bist degerlendir` artık tüm kaynakları ayrı
-  ayrı basıyor, ama canlı analistlerin çözülmüş kararı hâlâ bir elin
-  parmakları kadar (2026-08-12: `gemini-3.6-flash` 3, `claude-code` 1). Her
-  satır **"ölçüm yetersiz"** diyor ve bu doğru hüküm — tablo bir sıralama
-  değil, bir dökümdür.
+- **Canlı ölçüm N'i çok küçük.** `bist degerlendir` tüm kaynakları ayrı ayrı
+  basıyor, ama canlı analistlerin çözülmüş kararı hâlâ bir elin parmakları
+  kadar (2026-08-28: toplam 5 çözülmüş canlı sonuç, ve bunlar **en fazla 4
+  bağımsız olay** — iki TUPRS kaydı aynı işlem). Her satır **"ölçüm yetersiz"**
+  diyor ve bu doğru hüküm — tablo bir sıralama değil, bir dökümdür.
+- **Canlı sonuçların tamamı MÜHÜRSÜZ koşulardan geliyor.** Çıktı mührü
+  (`output_sha`) 2026-08-11'de eklendi; ondan önceki koşularda model çıktısı ile
+  journal kaydı arasındaki bağ sonradan **kanıtlanamaz**. Ölçüldü (2026-08-28):
+  çözülmüş 5 canlı sonucun 5'i de mühürsüz. Geçmişe dönük sha YAZILMAZ — ezilmiş
+  bir dosyayı doğruymuş gibi mühürlemek olurdu; `saglik` onları "doğru" değil
+  **"doğrulanamaz"** diye sayar. Yeni kohort mühürlüdür (girdi tarafı da:
+  ADR #020).
 - **KAP geniş pencereyi sessizce kırpıyor.** Ölçüldü (2026-07-27): 90 gün
   istendiğinde 14 gün dönüyor, hata vermeden. Bu yüzden çekim dilimleniyor ve
   doyan dilim kendini ikiye bölüyor; tek gün bile doyarsa `bist haber cek`
@@ -454,9 +569,13 @@ ai/               proje hafızası: PROJECT · STATE · DECISIONS · LESSONS · 
 src/              veri → gösterge → faktör → plan → LLM sınırı → journal → ölçüm
 tests/            pytest; sözleşme + mekanizma + uçtan uca (bkz. "Regresyona karşı zırh")
 scripts/          set_secrets.py — .env anahtarlarını Actions secret'ına yükler
-.github/workflows/  gunluk · haftalik · test
+.github/workflows/  gunluk · haftalik · nobetci · test
 
 llm/              LLM girdi paketi ve çıktısı — İZLENİR
+                  in/<tarih>/bundle.json    "bugün en son hangi paket üretildi?"
+                  in/<tarih>/<run_id>.json  "bu tahminler NEYİ görerek doğdu?" (mühür)
+                  out/<tarih>/analysis.json "bugün en son ne üretildi?"
+                  out/<tarih>/<run_id>.json "bu tahmin NEDEN doğdu?" (mühür)
 data/             deterministik SQL dump İZLENİR; ikili `.db` gitignore'da
 reports/          üretilen raporlar — İZLENİR
 docs/             ön kayıtlar (koşudan önce mühürlenmiş, değiştirilmez)

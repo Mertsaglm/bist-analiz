@@ -179,8 +179,15 @@ def sync_beklenen(cfg: dict, con: sqlite3.Connection) -> dict:
     from .sources import kap
 
     s = kap.fetch_beklenen(cfg)
+    # ⚠ "KAPALI" bir HATA DEĞİLDİR (L-003). `news.sync` bu ayrımı `atlandi` ile
+    # zaten yapıyordu; burada yoktu ve sonuç şuydu: `sources.kap.enabled=False`
+    # iken komut "KAP kapalı" deyip aynı nefeste KAP'a bağlanmaya çalışıyor,
+    # sonra o bağlantı hatasını UYARI diye basıp çıkış kodunu 1 yapıyordu.
+    if s.kapali:
+        return {"ok": False, "atlandi": True, "hata": None, "kirpik": False,
+                "ham": 0, "yazilan": 0, "not": s.hata}
     if not s.ok:
-        return {"ok": False, "hata": s.hata, "kirpik": s.kirpik,
+        return {"ok": False, "atlandi": False, "hata": s.hata, "kirpik": s.kirpik,
                 "ham": s.ham, "yazilan": 0,
                 "not": ("yanıt TAVANA dayandı, saklanmadı — eski anlık görüntü "
                         "korunuyor" if s.kirpik else s.hata)}

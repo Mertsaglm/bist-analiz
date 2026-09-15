@@ -309,9 +309,18 @@ def cmd_kaydet(args) -> int:
     run_id = journal.create_run(cfg, con, asof=asof, tool=out.get("tool", "diger"),
                                 bundle_sha=bundle["bundle_sha"])
     # Çıktı mühürlenir ve run'a özel dosyaya kopyalanır — `analysis.json`
-    # ezilebilir bir yoldur ve gerçekten ezildi (2026-07-30). Simetri: girdi
-    # `bundle_sha` ile, çıktı `output_sha` ile mühürlü (L-008).
+    # ezilebilir bir yoldur ve gerçekten ezildi (2026-07-30).
+    #
+    # ⚠ ESKİ YORUM BURADA "simetri: girdi bundle_sha ile, çıktı output_sha ile
+    # mühürlü" diyordu. O cümle DOĞRU GÖRÜNÜYOR ama karşılığı yoktu (AGENTS
+    # §8/§11-4): çıktı hem hash hem EZİLEMEZ KOPYA alıyordu, girdi ise yalnız
+    # hash alıp `bundle.json` gibi EZİLEBİLİR bir yolu işaret ediyordu. Fark
+    # 2026-08-28'de patladı: 08-26'nın paketi ikinci koşuda ezilince birinci
+    # koşunun `bundle_sha`sının diskte karşılığı kalmadı. Simetri artık gerçek.
     m = journal.muhurle_cikti(cfg, con, run_id=run_id, asof=asof)
+    g = journal.muhurle_girdi(cfg, run_id=run_id, asof=asof, bundle=bundle)
+    if not g["ok"]:
+        print(f"  ⚠ girdi mühürlenemedi: {g.get('not')}")
     plan_map = {p["plan_id"]: p for ps in planner.load_for_date(cfg, con, asof).values()
                 for p in ps}
     ev = {e["ticker"]: e for e in bundle["evren"]}
@@ -417,7 +426,11 @@ def cmd_degerlendir(args) -> int:
     else:
         hepsi = evaluate.run_all(cfg, con)
         if not hepsi["kaynaklar"]:
-            print("Henüz çözülmüş tahmin yok — ölçüm başlamadı.")
+            # ⚠ "tahmin" — "çözülmüş tahmin" DEĞİL. `araclar()` 2026-08-28'de
+            # `outcomes` JOIN'inden kurtuldu ve artık TAHMİN sayıyor; bu satır
+            # eski anlamı taşıyordu (L-024: sayının anlamı değişince etiketi de
+            # değişmeli). Journal boşken basılır, sonucu olmayan araç varken DEĞİL.
+            print("Journal'da hiç tahmin yok — ölçüm başlamadı.")
             con.close()
             return 0
         metin = report.evaluate_report_all(cfg, hepsi)
@@ -543,7 +556,11 @@ def cmd_haber(args) -> int:
         # hattına bağlı olmayan tablo donar ve hiçbir hata fırlatmaz. Donması
         # burada `bilinmiyor`un sessizce kalıcılaşması demekti.
         bb = news.sync_beklenen(cfg, con)
-        if bb.get("not") and not bb["ok"]:
+        # Katman KONFİGLE kapalıysa bu bir aksama değildir — çıkış kodunu
+        # yükseltmez. "kapalı" ile "çekilemedi" ayrı satırlar (L-003).
+        if bb.get("atlandi"):
+            print(f"  beklenen bildirim: {bb.get('not') or 'kapalı'}")
+        elif bb.get("not") and not bb["ok"]:
             print(f"  ⚠ beklenen bildirim takvimi: {bb['not']}")
             kod = max(kod, 1)
         elif bb["ok"]:
@@ -717,16 +734,22 @@ def cmd_otonom(args) -> int:
         for s in n["satirlar"]:
             print(f"  ⚠ {s}")
         if not n["satirlar"]:
-            print(f"✅ Nöbetçi temiz — son koşu {n.get('son_kosu')} · "
+            print(f"✅ Nöbetçi temiz — beklenen seans {n.get('beklenen_seans')} · "
+                  f"son koşu {n.get('son_kosu_baslangic')} · "
                   f"son bar {n.get('son_bar')} · son analiz {n.get('son_analiz')}")
             return 0
         from . import telegram_bist as tg
         try:
-            tg.bildir(cfg, "👁 BIST nöbetçi — " + n["tarih"] + "\n"
+            tg.bildir(cfg, "👁 BIST nöbetçi — seans "
+                      + str(n.get("beklenen_seans")) + "\n"
                       + "\n".join(f"· {s}" for s in n["satirlar"]))
         except Exception as e:                              # noqa: BLE001
             print(f"  (Telegram gönderilemedi: {e})")
-        return 1 if n["sessiz"] else 0
+        # ⚠ `analizsiz` de çıkışı 1 yapar (2026-09-02). Eskiden yalnız `sessiz`
+        # yapıyordu; "seans analizsiz kaldı" bulgusu Telegram'a düşüp Actions'ta
+        # YEŞİL kalıyordu, yani GitHub'ın kendi bildirim kanalı hiç çalışmıyordu.
+        # İki kanal tek olay: gözcünün bulduğu her arıza GÖRÜNÜR olmalı.
+        return 1 if (n["sessiz"] or n.get("analizsiz")) else 0
 
     if args.alt == "gunluk":
         sonuc = otonom.gunluk(cfg, con, analist_calistir=not args.analistsiz)

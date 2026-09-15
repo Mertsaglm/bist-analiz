@@ -1,0 +1,53 @@
+{
+  "market": "bist",
+  "start_date": "2026-09-15",
+  "initial_try": 5000,
+  "monthly_try": 5000,
+  "horizon_sessions": 20,
+  "max_positions": 5,
+  "max_position_pct": 20,
+  "risk_per_trade_pct": 1,
+  "minimum_cash_pct": 20,
+  "max_spread_pct": 3.0,
+  "max_quote_age_minutes": 25,
+  "max_analysis_age_days": 5,
+  "min_expected_net_pct": 1.0,
+  "min_net_reward_risk": 1.5,
+  "commission_rate": 0.002,
+  "commission_min_try": 1.0,
+  "commission_bsmv_rate": 0.05,
+  "exchange_fee_rate": 3e-05,
+  "gold_buy_tax_rate": 0.002,
+  "slippage_bps": 5,
+  "learning": {
+    "ridge_penalty": 20.0,
+    "min_training_dates": 504,
+    "test_block_sessions": 126,
+    "min_validation_periods": 24,
+    "min_live_roundtrips": 10,
+    "max_live_drawdown_pct": 12,
+    "trial_position_multiplier": 0.5,
+    "min_calibration_periods": 10,
+    "max_bias_adjustment_pct": 2
+  },
+  "sources": {
+    "stocks": "https://www.isyatirim.com.tr/tr-tr/analiz/hisse/Sayfalar/default.aspx",
+    "gold": "https://altin.doviz.com/isbankasi/gram-altin",
+    "commission_reference": "https://www.isbank.com.tr/komisyon-oranlari",
+    "terms_reference": "https://www.isbank.com.tr/vadesiz-altin-hesabi",
+    "verified_on": "2026-09-15"
+  },
+  "dashboard_url": "",
+  "telegram": {
+    "enabled": true,
+    "max_characters": 1000
+  },
+  "max_positions_per_sector": 2,
+  "dividend_tax_rate": 0.15,
+  "cost_notes": [
+    "İş Bankası dijital standart tarife: %0,20 komisyon, asgari 1 TL (işlem tutarının %1 tavanı), komisyon üzerinden %5 BSMV.",
+    "Borsa payı için %0,003 ve fiyat kayması için yön başına %0,05 varsayımı kullanılır; kişisel ekstre tarifesi doğrulanmış değildir.",
+    "İş Yatırım verisi gecikmeli son fiyattır; gerçek emir defteri/dolum garantisi yoktur.",
+    "Net temettü alacağı %15 kesinti varsayımıyla izlenir; ödeme tarihi doğrulanmadan harcanmaz."
+  ]
+}

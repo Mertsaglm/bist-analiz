@@ -1,5 +1,26 @@
 # PROJECT.md — Projenin Kimliği
 
+## Güncel kapsam — 2026-09-15
+
+Mert'in yeni talebi: BIST ve İş Bankası gram altını için iki ayrı otomatik analiz ve
+sanal portföy, ortak web paneli, kısa ve net Türkçe Telegram kararları. Amaç masrafları
+hesaba katarak birikimin değerini, hisse/gram miktarlarını artıracak fırsatları izlemek.
+Gerçek emir iletimi yok. Bütçe varsayımı her hesapta 5.000 TL başlangıç + aylık 5.000 TL.
+Kullanıcının gerçek varlıkları bilinmediğinden yeni sanal hesaplara aktarılmadı.
+
+`advisor/` güncel karar/defter hattıdır; `src/` eski veri toplama ve araştırma hattıdır.
+Mevcut API anahtarları korunur. Sayısal karar bankaya özgü referans fiyat, masraf, trend,
+risk ve zaman sıralı ölçüme dayanır. Kesin ifade eylemi belirtir; fiyat tahminine kesinlik
+atfetmez. Yeni sonuçlar olgunlaşınca sınırlı hata düzeltmesi uygulanır.
+
+Başarı tanımı: para korunumu ve tekrar çalıştırma testleri geçer; fiyat eksikliği görünür;
+her işlem fiyatı ve masrafıyla izlenir; katkılar hariç getiri aynı bütçeli al-tut ile
+karşılaştırılır. Ayrıntı: `docs/V2-REHBER.md` ve `reports/REVIZYON-2026-09-15.md`.
+
+## Önceki kapsamın kaydı
+
+Aşağıdaki V1 kararları tarihsel bağlamdır; çelişen bütçe/rapor/karar kurallarında V2 geçerlidir.
+
 > Bir kez yazılır, nadiren değişir.
 
 ## Proje Adı
@@ -46,8 +67,15 @@ raporunda basılır**. "Ne zaman bilebiliriz?" bir his değil, hesaplanmış bir
 - Değişmez tahmin günlüğü + **deterministik** üçlü bariyer sonuç çözümü
 - Ölçüm harness'i: walk-forward, örtüşmeyen pencere, maliyetli, in-sample/OOS
 - Yerel CLI + Türkçe markdown rapor
+- **Kâğıt portföy (#019):** sistem kendi kararlarını 10.000 TL ile takip eder.
+  Ayrı bir defter DEĞİL, `predictions` + `outcomes`'tan TÜRETİLMİŞ bir görünüm;
+  alınamayan planlar sebebiyle (`kontenjan_dolu`, `isim_zaten_acik`,
+  `giris_olmadi`) ifşa edilir. ⚠ Henüz bir TABANA karşı ölçülmüyor ve nakit
+  %0 faizle duruyor — ikisi de karar bekliyor (STATE "Karar bekleyenler").
 - **Sözleşme testleri:** projenin kendi kuralları (eşik zemini, LLM sınırı,
-  kolon↔şema eşliği, doküman tutarlılığı) koşulabilir hale getirildi (#011)
+  kolon↔şema eşliği, doküman tutarlılığı) koşulabilir hale getirildi (#011).
+  Suite **hermetiktir**: gerçek DB'ye yazamaz, çıktıyı repoya bırakmaz, ağa
+  çıkamaz — üçü de fixture'da zorlanır (#020 turu, L-025).
 
 ## Kapsam Dışı (Ne YOK — bilerek)
 - **İki-AI konsensüs** — 2× maliyet, ölçülmemiş fayda

@@ -21,7 +21,7 @@ bist = "src.cli:main"
 
 [tool.poetry]
 package-mode = true
-packages = [{ include = "src" }]
+packages = [{ include = "src" }, { include = "advisor" }]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3"
@@ -31,6 +31,12 @@ testpaths = ["tests"]
 # `-q` KALDIRILDI: `pytest` çıktısının sonundaki "N passed" satırını gizliyordu
 # ve README'deki test sayısı bu yüzden sessizce bayatlıyordu.
 addopts = "--strict-markers"
+# `ag_gerekli`: testlerde ağ VARSAYILAN OLARAK YASAK (tests/conftest.py
+# ::ag_yasak). Gerçekten dış servise çıkması gereken bir test bu işaretle
+# açılır — işaret görünürdür, sızıntı değildir.
+markers = [
+    "ag_gerekli: bu test bilerek dış ağa çıkar (gerekçesi docstring'inde)",
+]
 
 [build-system]
 requires = ["poetry-core>=2.0"]

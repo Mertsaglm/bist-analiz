@@ -12,9 +12,16 @@
 #              ≥2000 bar (~8 yıl) gerektirir; kısa geçmişli isim ağırlık belirleyemez
 #
 # ⚠ SURVIVORSHIP BIAS: bu sabit bir listedir, nokta-zamanlı BIST-100 üyeliği değil.
-#   Backtest sonuçları bu eğilimi içerir. Düzeltiliyormuş gibi yapılmaz —
-#   büyüklüğü ölçüm raporunda yazılır (`bist backtest` → reports/olcum_*.md;
-#   reports/ gitignore'dadır, komutla yeniden üretilir).
+#   Backtest sonuçları bu eğilimi içerir ve eğilim stratejinin LEHİNEDİR.
+#   Düzeltiliyormuş gibi yapılmaz; ölçüm raporu (`bist backtest` →
+#   reports/olcum_*.md) uyarıyı YAZAR ama BÜYÜKLÜĞÜ ÖLÇMEZ — raporun kendi
+#   cümlesi: "Düzeltilmiyor; büyüklüğü bilinmiyor."
+#
+#   ⚠ Bu satır 2026-08-28 denetiminde İKİ KEZ yanlış çıktı ve ikisi de AGENTS
+#   §8'in "yorum bir iddiadır" sınıfıydı: (1) "büyüklüğü ölçüm raporunda
+#   yazılır" diyordu — yazmıyordu; (2) "reports/ gitignore'dadır, komutla
+#   yeniden üretilir" diyordu — ADR #013 bunu tersine çevirdi, `reports/`
+#   ARTIK İZLENİYOR ve dosyalar repoda duruyor.
 # ============================================================================
 
 seciim_kriterleri:

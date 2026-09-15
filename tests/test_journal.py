@@ -261,3 +261,70 @@ class TestSureliVeto:
         self._veto(con, "AAA", g[10], "likidite_zayif", run="rB")
         assert len({x["veto_code"] for x in
                     journal.aktif_vetolar(cfg, con, g[11])["AAA"]}) == 2
+
+
+class TestGirdiMuhru:
+    """L-018'in SİMETRİĞİ — girdi paketi de run'a özel mühürlenir.
+
+    ⚠ NE OLMUŞTU (2026-08-28 denetimi): `muhurle_cikti` 2026-08-11'de
+    ÇIKTIYI ezilmez bir kopyaya bağladı. Aynı turda L-018 şunu yazdı:
+    *"bir savunma kurduğunda sor: bunun aynısı akışın öbür ucunda da olmalı
+    mıydı?"* — ve GİRDİ tarafına uygulanmadı. `llm/in/<asof>/bundle.json`
+    yalnız TARİHE bağlı kaldı.
+
+    Sonuç 17 gün sonra ölçüldü: 2026-08-26 iki kez analiz edilince ikinci
+    koşunun paketi birincininkini ezdi. `llm_runs` birinci koşu için
+    `bundle_sha 91eedc59…` diyor ama o sha'nın diskte karşılığı YOK —
+    o analistin neyi gördüğü artık kanıtlanamaz.
+
+    Bu testler `muhurle_girdi` kaldırılınca KIRMIZIYA döner.
+    """
+
+    def _paket(self, asof="2026-08-26", isaret="A"):
+        from src import llm_io
+        b = {"asof": asof, "isaret": isaret, "evren": []}
+        b["bundle_sha"] = llm_io.bundle_sha(b)
+        return b
+
+    def test_girdi_run_a_OZEL_dosyaya_muhurlenir(self, cfg):
+        from pathlib import Path
+        from src import journal
+        b = self._paket()
+        r = journal.muhurle_girdi(cfg, run_id="2026-08-26-m-1",
+                                  asof="2026-08-26", bundle=b)
+        assert r["ok"], r
+        p = Path(cfg["paths"]["llm_in_dir"]) / "2026-08-26" / "2026-08-26-m-1.json"
+        assert p.exists(), "run'a özel girdi kopyası yazılmadı"
+
+    def test_IKINCI_kosu_BIRINCININ_paketini_EZEMEZ(self, cfg):
+        """Olayın kendisi: aynı gün iki koşu, iki AYRI paket."""
+        import json
+        from pathlib import Path
+        from src import journal
+
+        b1 = self._paket(isaret="BIRINCI")
+        b2 = self._paket(isaret="IKINCI")
+        assert b1["bundle_sha"] != b2["bundle_sha"]
+
+        journal.muhurle_girdi(cfg, run_id="2026-08-26-m-1",
+                              asof="2026-08-26", bundle=b1)
+        journal.muhurle_girdi(cfg, run_id="2026-08-26-m-2",
+                              asof="2026-08-26", bundle=b2)
+
+        d = Path(cfg["paths"]["llm_in_dir"]) / "2026-08-26"
+        k1 = json.loads((d / "2026-08-26-m-1.json").read_text(encoding="utf-8"))
+        k2 = json.loads((d / "2026-08-26-m-2.json").read_text(encoding="utf-8"))
+        assert k1["isaret"] == "BIRINCI", \
+            "birinci koşunun paketi ikinci koşu tarafından EZİLDİ"
+        assert k2["isaret"] == "IKINCI"
+        assert k1["bundle_sha"] == b1["bundle_sha"], \
+            "journal'daki bundle_sha'nın diskte karşılığı yok"
+
+    def test_TUTMAYAN_sha_KOPYALANMAZ(self, cfg):
+        """Mühür kendi içinde tutmuyorsa kopyalamak yanlış güven verir."""
+        from src import journal
+        b = self._paket()
+        b["isaret"] = "SONRADAN-DEGISTI"      # sha artık içeriği anlatmıyor
+        r = journal.muhurle_girdi(cfg, run_id="2026-08-26-m-1",
+                                  asof="2026-08-26", bundle=b)
+        assert not r["ok"] and "bundle_sha tutmuyor" in r["not"]

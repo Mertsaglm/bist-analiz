@@ -303,6 +303,8 @@ miyim?** Getirebiliyorsan getir. Somut olarak şu dört sınıf hemen devredileb
 4. **Test suite'inin yan etkisizliği.** Testler kullanıcının gerçek verisine,
    çıktı klasörlerine ya da dış servislere DOKUNMAMALI — ve bu bir konvansiyon
    değil, fixture'da zorlanan bir kural olmalı.
+   *(Bu maddenin "dış servis" yarısı 2026-08-28'e kadar yazılıydı ama
+   ZORLANMIYORDU ve tam da bu yüzden bir hatayı gizledi — bkz. §12c.)*
 
 **Üç katman, üç ayrı soru** (birini diğerinin yerine koyma):
 
@@ -398,3 +400,41 @@ baktırdı. Birleşik bir koşulun ihlalini raporlarken **hangi bileşenin**
 düştüğünü yaz — metinden türetme, bir **sınıf kodu** koy, testi metne değil
 koda baktır (L-012). Ve tanı verisini yalnız başarı yolunda saklama: sor,
 *"bu bilgi en çok ne zaman lazım — işler yürürken mi, durduğunda mı?"*
+
+### 12c. Yazılı ama zorlanmayan bir kural, yalnız kendisi düşmez — KÖR EDER
+
+2026-08-28 denetimi §12'nin kendi listesindeki bir maddenin ihlal edildiğini
+gösterdi ve asıl ders ihlalin kendisi değil, **bedeli** oldu.
+
+§12/4 *"testler dış servislere DOKUNMAMALI"* diyordu. Bir test yalnız
+`news.sync`'i mock'luyordu; ama komut ikinci bir dış çağrı daha yapıyordu ve o
+mock'suzdu — test gerçek KAP'a bağlanıyordu. Görünen zarar küçüktü: testin
+sonucu ağ durumuna bağlıydı.
+
+**Görünmeyen zarar büyüktü.** Ağ yasağı konulunca İKİNCİ bir test düştü ve
+ortaya çıkan şey şuydu: `sources.kap.enabled=False` iken bile KAP'a
+çıkılıyordu. Kapatma anahtarı kapatmıyordu. O hata aylardır oradaydı ve
+**yeşil bir suite tarafından örtülüyordu**: çağrı ağa erişebildiği için
+başarılı dönüyor, başarılı dönen çağrı da hatayı görünmez kılıyordu.
+
+**Kural: bir sızıntıyı kapattığında arkasından ne çıktığına BAK.** Sızıntı
+nadiren tek başına durur; genellikle bir şeyi örtüyordur. "Bu kuralı zorlar
+hale getirdim, suite hâlâ yeşil" yeterli bir sonuç değildir — asıl soru,
+**zorlama açılınca ne kırmızıya döndüğü**dür. Kırmızıya dönen şey, o kuralın
+yokluğunda kaç zamandır saklanan hatadır.
+
+Üç soru:
+
+1. **Bu kural yazılı mı, zorlanıyor mu?** İkisi aynı şey değil. §12'nin dört
+   maddesini periyodik olarak "gerçekten koşuyor mu?" diye SINA — yazıldığı
+   için koştuğunu varsayma. Bu vakada kuralı yazan dosyanın kendisi ihlal
+   ediliyordu.
+2. **Bir kapatma anahtarı yazdıysan, KAPATTIĞINI test ettin mi?** Anahtarı
+   kaynağın SINIRINA koy (çağrı yerine değil): orada hiçbir çağıran atlayamaz.
+   Ve "kapalı" ile "çekilemedi" ayrı sonuçlardır (L-003) — birini diğerinin
+   kovasına atmak, kullanıcıya var olmayan bir arıza gösterir.
+3. **Bir sayının ANLAMI değiştiyse ETİKETİNİ de değiştirdin mi?** Aynı denetimde
+   bir JOIN kaldırıldı ve sayı "çözülmüş tahmin"den "tahmin"e döndü; etiketi
+   güncellemeden bırakmak, doğru sayının yanına yanlış kelimeyi yazmak olurdu
+   (§8: yorum bir iddiadır). Sayının anlamını değiştiren her düzeltmede
+   **onu basan HER kanalı ara** — §11 tuzak 5'in metin hâli.

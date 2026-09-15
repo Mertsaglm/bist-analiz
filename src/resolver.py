@@ -400,19 +400,42 @@ def fwd_doldur(cfg: dict, con: sqlite3.Connection) -> dict:
 
 # ---------------------------------------------------------------- toplu
 def resolve_open(cfg: dict, con: sqlite3.Connection, asof: str | None = None) -> dict:
-    """Açık tüm tahminleri çözmeye çalışır. Çözülemeyenler AÇIK KALIR."""
+    """Açık tüm tahminleri çözmeye çalışır. Çözülemeyenler AÇIK KALIR.
+
+    ⚠ "AÇIK" İKİ AYRI ŞEYDİR ve tek sayıya sıkıştırmak bir sinyali gizliyordu
+    (2026-08-28 denetimi). Koşu günlüğü her gün `0 çözüldü · N açık` basıyordu
+    ve N her seans 18 artıyordu: 104 → 122 → … → 319 → 337. Ölçüldü: 337 açık
+    kaydın **320'sinde `time_barrier_date` NULL** — bunlar `izle`/`islem_yok`/
+    `plan_reddet`, yani PLANI OLMAYAN kararlar ve HİÇBİR ZAMAN çözülemezler.
+    Gerçek açık plan yalnız **17**'ydi; aynı gün `saglik` da "17 açık plan"
+    diyordu. İki sayaç, aynı konu, bir mertebe fark.
+
+    Zararı: açık plan sayısı 17'den 40'a fırlasa 337'nin içinde görünmezdi.
+    Payda görünür kılma kuralının (L-007) sayaç tarafına uygulanmamış hâliydi.
+
+    Dönen iki sayı:
+      `cozulebilir_acik` — planı var, bariyeri henüz gelmedi (İZLENECEK sayı)
+      `karar_kaydi`      — planı yok; kayıt olarak durur, çözülmesi beklenmez
+
+    Davranış DEĞİŞMEDİ: `resolve_prediction` yine hepsini geziyor (karar
+    kayıtlarının sayısı da izlenmeye değer). Değişen tek şey, iki farklı
+    olgunun artık iki farklı sayı olarak basılması.
+    """
     acik = db.fetch_all(
         con,
         "SELECT p.* FROM predictions p "
         "LEFT JOIN outcomes o ON o.prediction_id = p.prediction_id "
         "WHERE o.prediction_id IS NULL ORDER BY p.asof, p.ticker")
 
-    cozulen, kalan = 0, 0
+    cozulen, cozulebilir_acik, karar_kaydi = 0, 0, 0
     dagilim: dict[str, int] = {}
     for pred in acik:
         out = resolve_prediction(cfg, con, pred)
         if out is None:
-            kalan += 1
+            if pred["time_barrier_date"]:
+                cozulebilir_acik += 1
+            else:
+                karar_kaydi += 1
             continue
         db.upsert_many(con, "outcomes", OUTCOME_COLS,
                        [tuple(out[k] for k in OUTCOME_COLS)])
@@ -422,5 +445,8 @@ def resolve_open(cfg: dict, con: sqlite3.Connection, asof: str | None = None) ->
     # İleri getiri, çözümle AYNI adımda. Ayrı bir script'e bırakmak L-002'dir.
     fwd = fwd_doldur(cfg, con)
 
-    return {"acik_baslangic": len(acik), "cozulen": cozulen, "hala_acik": kalan,
+    return {"acik_baslangic": len(acik), "cozulen": cozulen,
+            "hala_acik": cozulebilir_acik + karar_kaydi,   # geriye uyumluluk
+            "cozulebilir_acik": cozulebilir_acik,
+            "karar_kaydi": karar_kaydi,
             "dagilim": dagilim, "fwd": fwd}

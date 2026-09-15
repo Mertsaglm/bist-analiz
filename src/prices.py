@@ -36,7 +36,16 @@ def _store_bars(con: sqlite3.Connection, ticker: str, df: pd.DataFrame) -> int:
          (_f(r.c) or 0.0) * (_f(r.v) or 0.0), "yfinance", now)
         for r in df.itertuples(index=False)
     ]
-    return db.upsert_many(con, "bars_daily", BAR_COLS, rows)
+    # Aynı fiyatı yeniden görmek yeni bir veri sürümü değildir. Eski kod her
+    # tekrar okumada ingested_utc'yi değiştirip tüm SQL arşivini yeniden yazıyordu.
+    changed = [c for c in BAR_COLS if c not in ('ticker', 'date', 'ingested_utc')]
+    updates = ','.join(f'{c}=excluded.{c}' for c in BAR_COLS if c not in ('ticker', 'date'))
+    different = ' OR '.join(f'bars_daily.{c} IS NOT excluded.{c}' for c in changed)
+    sql = f"INSERT INTO bars_daily ({','.join(BAR_COLS)}) VALUES ({','.join('?' for _ in BAR_COLS)}) ON CONFLICT(ticker,date) DO UPDATE SET {updates} WHERE {different}"
+    before = con.total_changes
+    con.executemany(sql, rows)
+    con.commit()
+    return con.total_changes - before
 
 
 def _f(x) -> float | None:

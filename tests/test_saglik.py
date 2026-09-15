@@ -617,6 +617,59 @@ class TestAcikPlan:
         _takvim_sabitle(monkeypatch, g[-1])
         assert self._bul(cfg, con, g[-1])[0] == sag.OK
 
+    def test_KAGIT_portfoyde_pozisyon_varken_UYARI_BASILMAZ(
+            self, cfg, con, monkeypatch):
+        """B-09 KİLİDİ — gözlemci raporla AYNI kaynağı okumalı.
+
+        ⚠ NE OLUYORDU (2026-08-28 denetimi): bu kontrol `holdings` TABLOSUNU
+        sayıyordu (0 satır), oysa ADR #019 kontenjanı TÜRETİLMİŞ portföye
+        bağladı ve `otonom.gunluk` raporu ondan besliyor. Aynı gün, aynı olgu,
+        iki cevap: rapor "Kontenjan: 2/4 pozisyon dolu", `saglik` "0 kayıtlı
+        pozisyon → kontenjan KÖR". Uyarı 2026-08-17'den beri KESİNTİSİZ
+        basılıyordu ve önerdiği komut (`bist portfoy ekle`) simülasyonu ezerdi.
+
+        L-021/L-022'nin aynısı: tüketici yeni kaynağa taşındı, gözlemci eskide
+        bırakıldı.
+        """
+        from src import portfoy as pfm
+        g = is_gunleri(4, "2026-08-03")
+        _veri_kur(con, cfg, g)
+        add_index(con, "XU100", g)
+        _tahmin_ekle(con, g[-2], action="plan_sec")
+        _takvim_sabitle(monkeypatch, g[-1])
+
+        # `holdings` TABLOSU BOŞ ama kâğıt portföyde pozisyon VAR.
+        monkeypatch.setattr(pfm, "simule", lambda *a, **k: {
+            "pozisyonlar": [{"ticker": "THYAO", "adet": 10,
+                             "giris_fiyat": 10.0}]})
+
+        seviye, _, mesaj = self._bul(cfg, con, g[-1])
+        assert seviye == sag.OK, \
+            f"kâğıt portföyde pozisyon varken yanlış uyarı basıldı: {mesaj}"
+        assert "1 kâğıt" in mesaj
+
+    def test_saglik_ile_RAPOR_ayni_pozisyon_sayisini_gorur(
+            self, cfg, con, monkeypatch):
+        """L-022 madde 2: iki kanal aynı olguyu basıyorsa eşliği test zorlar."""
+        from src import journal, portfoy as pfm
+        g = is_gunleri(4, "2026-08-03")
+        _veri_kur(con, cfg, g)
+        add_index(con, "XU100", g)
+        _tahmin_ekle(con, g[-2], action="plan_sec")
+        _takvim_sabitle(monkeypatch, g[-1])
+
+        pf = {"pozisyonlar": [{"ticker": "THYAO", "adet": 10,
+                               "giris_fiyat": 10.0},
+                              {"ticker": "GARAN", "adet": 5,
+                               "giris_fiyat": 20.0}]}
+        monkeypatch.setattr(pfm, "simule", lambda *a, **k: pf)
+
+        # Raporun/eylem katmanının gördüğü sayı:
+        rapor_sayisi = len({**pfm.holdings_gorunumu(pf), **journal.holdings(con)})
+        _, _, mesaj = self._bul(cfg, con, g[-1])
+        assert f"{rapor_sayisi} pozisyon" in mesaj, \
+            f"saglik {mesaj!r} diyor, rapor {rapor_sayisi} pozisyon görüyor"
+
 
 class TestCiktiMuhru:
     """⚠ REGRESYON KİLİDİ — GERÇEK OLAY 2026-07-30.
