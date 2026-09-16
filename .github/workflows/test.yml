@@ -18,6 +18,15 @@ on:
   workflow_dispatch: {}
 
 jobs:
+  dashboard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.14.0'
+      - run: npm test --prefix dashboard
+      - run: npm run build --prefix dashboard
   pytest:
     runs-on: ubuntu-latest
     steps:
@@ -28,9 +37,11 @@ jobs:
           python-version: "3.12"
           cache: pip
 
-      # Bagimliliklar pyproject.toml'dan; yalniz pytest ayrica (dev grubu).
+      # Python ve test bagimliliklari dogrulanmis runtime kilidinden kurulur.
       - name: Bagimliliklar
-        run: pip install --quiet -e . pytest
+        run: |
+          pip install --quiet -r requirements-runtime.txt
+          pip install --quiet --no-deps -e .
 
       # ⚠ VERITABANI KURULUR. Eski hali kurmuyordu ve gerekcesi soyleydi:
       # "suite bir dis servisin kotasina bagli olarak kirmiziya doner ve

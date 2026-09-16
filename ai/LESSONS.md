@@ -6,6 +6,27 @@
 
 ---
 
+## L-028 — 2026-09-16 — Koruyucu çıkışın kapısını ayrı sına
+
+**Anti-pattern:** Eski analizle yeni alımı engelleyen şartın mevcut stopu da
+engellemesi; bayat kotasyonun güncel servet/risk bütçesi sayılması. Bir testin
+geçmesi, hatalı eski uygulamayı gerçekten yakaladığını tek başına göstermez.
+
+**Düzeltme:** Girdi fiyat güvenilirliği ve yeni fırsat için analiz yeterliliği
+ayrıldı. Bayat değerleme bilinmiyor olarak taşındı. Stop testi geçici kopyada
+eski analiz kilidi geri konularak sınandı: beklenen SAT yerine VERİ BEKLENİYOR
+üretildi ve test kırmızıya döndü. İki repo ve ortak mekanizma birlikte korundu.
+
+**Ek ders:** Gerçek günlük fiyatlarla simülasyon, tam %3 makasın float hatasıyla
+sınırı aştığını ortaya çıkardı. Ondalık karşılaştırma ve ihmal edilebilir sayısal
+tolerans eklendi; eşik üstündeki gerçek fiyat farkını reddeden sınır testi kondu.
+
+**Kilitler:** `tests/test_advisor_safety.py`, `tests/test_advisor_measurement.py`,
+`tests/test_advisor_operations.py`. Test verisi gerçek data/advisor'a yazamaz;
+simülasyon ve geri dönüş yalnız geçici dizinlerde sınanır.
+
+---
+
 ## L-027 — 2026-09-15 — Karar, muhasebe ve teslim aynı doğruluk sınırını paylaşır
 
 **Olay.** Revizyonda tek başına doğru görünen parçaların birleşiminde sorunlar çıktı:
