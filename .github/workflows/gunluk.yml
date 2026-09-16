@@ -43,11 +43,11 @@ jobs:
           python-version: "3.12"
           cache: pip
 
-      # Bagimliliklar pyproject.toml'dan gelir — burada IKINCI bir liste
-      # tutulsaydi, yeni bir bagimlilik eklendiginde workflow sessizce eskir
-      # ve hata CI'da "modul yok" diye gorunurdu.
+      # Araliklar pyproject.toml'da; dogrulanmis ortam requirements-runtime.txt ile sabit.
       - name: Bagimliliklar
-        run: pip install --quiet -e .
+        run: |
+          pip install --quiet -r requirements-runtime.txt
+          pip install --quiet --no-deps -e .
 
       # Ikili SQLite git'te YOK; deterministik SQL dump'tan kurulur.
       - name: Veritabanini dump'tan kur

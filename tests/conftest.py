@@ -416,3 +416,18 @@ def bar_serisi(n: int, *, baslangic: str = "2023-01-02", fiyat: float = 100.0,
         rows.append((d, round(o, 4), round(h, 4), round(low, 4), round(c, 4),
                      hacim, round(c_tr, 4)))
     return rows
+
+
+@pytest.fixture(autouse=True)
+def advisor_real_archive_is_read_only(monkeypatch):
+    """2026-09-16: yeni V2 defteri de testlerin gerçek veri yasağına dahildir."""
+    from pathlib import Path
+    project = Path(__file__).resolve().parents[1]
+    protected = [project/'data/advisor', project.parent/'gold_tracking_system/data/advisor', project.parent/'BIST tahmin/data/advisor']
+    original = Path.open
+    def safe_open(path, mode='r', *args, **kwargs):
+        target = path.resolve()
+        if any(flag in mode for flag in ('w','a','x','+')) and any(target.is_relative_to(p.resolve()) for p in protected):
+            raise RuntimeError('Test gerçek V2 arşivine yazamaz; tmp_path kullan.')
+        return original(path, mode, *args, **kwargs)
+    monkeypatch.setattr(Path, 'open', safe_open)

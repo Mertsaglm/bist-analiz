@@ -28,7 +28,8 @@
     "max_live_drawdown_pct": 12,
     "trial_position_multiplier": 0.5,
     "min_calibration_periods": 10,
-    "max_bias_adjustment_pct": 2
+    "max_bias_adjustment_pct": 2,
+    "min_live_periods": 24
   },
   "sources": {
     "stocks": "https://www.isyatirim.com.tr/tr-tr/analiz/hisse/Sayfalar/default.aspx",
@@ -49,5 +50,12 @@
     "Borsa payı için %0,003 ve fiyat kayması için yön başına %0,05 varsayımı kullanılır; kişisel ekstre tarifesi doğrulanmış değildir.",
     "İş Yatırım verisi gecikmeli son fiyattır; gerçek emir defteri/dolum garantisi yoktur.",
     "Net temettü alacağı %15 kesinti varsayımıyla izlenir; ödeme tarihi doğrulanmadan harcanmaz."
-  ]
+  ],
+  "max_portfolio_risk_pct": 5,
+  "watchdog_grace_minutes": 90,
+  "execution_window": {
+    "open": "10:15",
+    "close": "17:45",
+    "half_day_close": "12:15"
+  }
 }
