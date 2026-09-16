@@ -45,7 +45,9 @@ jobs:
           cache: pip
 
       - name: Bagimliliklar
-        run: pip install --quiet -e .
+        run: |
+          pip install --quiet -r requirements-runtime.txt
+          pip install --quiet --no-deps -e .
 
       # Veritabani dump'tan kurulur — heartbeat (`otonom_kosu`) dump'ta OLDUGU
       # icin gunluk isin bugun kosup kosmadigi buradan okunabilir. Tablo
