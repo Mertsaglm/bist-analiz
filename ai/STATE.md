@@ -1,7 +1,7 @@
 # Mevcut durum
 
 **Güncelleme:** 2026-09-16
-**Aktif iş:** Üç öncelik grubu yerelde uygulandı ve doğrulandı; yayın yapılmadı.
+**Aktif iş:** Üç öncelik grubu yerelde uygulandı ve doğrulandı; GitHub yayın ve CI takibi sürüyor.
 
 ## Kapsam
 
@@ -54,9 +54,19 @@
 3. Doğrulanmış üyelik/ödeme/masraf kaynaklarını edin ve yeni sanal kanıtı biriktir.
    DoD: belgeli kayıtlar idempotent içe alındı; boşluklar ve bağımsız dönem sayısı görünür.
 
+## TAKVİM & SENDE KALANLAR
+
+| Tarih | Kim | İş | DoD | Durum |
+|---|---|---|---|---|
+| 2026-09-16 | 🤖 | BIST paketi GitHub inceleme dalına gönderildi | Uzak dal commit'i içeriyor | Tamam |
+| 2026-09-16 | 🤖 | Altın paketi uzaktaki arşivlerle birleştirildi | Test + fast-forward push | Devam ediyor |
+| Sonraki Actions koşusu | 🤖 | Yeni workflow'ları izle | Test, nöbetçi ve yedek işleri görünür | Bekliyor |
+| Veri bulunduğunda | 👤 | Üyelik/ödeme/masraf kanıtı sağla | Belgeli içe alma kaydı | Bekliyor |
+
 ## Backlog
 
 - Grup 4: panelden ayar, gerçek işlem günlüğü, etkileşimli senaryo ekranı.
+- Bekleyen ön kayıt: `docs/on-kayit-seviye-02.md`; tetikleyici oluşmadan koşulmayacak.
 - Bankanın yetkili fiyat kaynağı ve kişisel tarife doğrulaması.
 - 2026-11-25: altın GC=F referansında roll etkisini ayrı ölç.
 - Önceki ayrıntılar: `ai/archive/STATE-2026-09-16-before-improvements.md`.
