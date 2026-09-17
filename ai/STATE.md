@@ -1,7 +1,7 @@
 # Mevcut durum
 
-**Güncelleme:** 2026-09-16
-**Aktif iş:** Üç öncelik grubu yerelde uygulandı ve doğrulandı; GitHub yayın ve CI takibi sürüyor.
+**Güncelleme:** 2026-09-17
+**Aktif iş:** V2 seans içi otomasyonu macOS `launchd` ile yerelde her 10 dakikada bir çalışır; GitHub Actions teslim/yedek gözcüsü olarak kalır.
 
 ## Kapsam
 
@@ -35,6 +35,17 @@
 
 ## Açık sınırlar
 
+- **GitHub Actions cron saatlik V2 çevrim için güvence vermez (2026-09-16 kanıtı):**
+  iki projede de `portfolio.yml` job'larının çoğu hiç başlatılmadı; başlatılan
+  geç job seans penceresi dışında kaldı. Nöbetçi bu nedenle doğru biçimde
+  `missed_cycle` ile kırmızıya döndü. Nöbetçiyi susturmak gerçek boşluğu
+  gizler; güvenilir saatlik çalışma ancak sürekli/haricî bir runner ile mümkün.
+- **Yerel karşılık (2026-09-17):** `com.mertsaglm.advisor-v2.bist` LaunchAgent'i,
+  Mac uyanıkken yalnız işlem penceresinde 10 dakikada bir V2 çevrimi çalıştırır;
+  arşivi önce güvenli biçimde günceller, sonra veri ve Telegram makbuzunu ayrı
+  commit/push ile teslim eder. Mac kapalı/uykuda kalırsa GitHub nöbetçisi bunun
+  görünür uyarısını korur; bu fiziksel sınır sessizce örtülmez.
+
 - 2026-06-01–2026-08-26 yerel tarihsel denemelerinde strateji işlemi yok.
   Kârlılık kanıtı yok; işlemli mekanizma senaryoları kontrollü testlerde doğrulandı.
 - Tarihsel banka makası, kişisel masraf ve ödeme belgeleri henüz sağlanmadı.
@@ -46,12 +57,12 @@
 
 ## Sıradaki 3 İş
 
-1. BIST `main`deki ilk yeni V2 koşusu ile nöbetçi/yedek işlerini izle.
-   DoD: yeni defter yazımı, nöbetçi ve geri dönüş artifact'i ayrı ayrı yeşil.
-2. Vercel'de panel için proje/GitHub erişimi kur, preview'a yalnız sunucu değişkenlerini ekle.
+1. İlk üç işlem gününde yerel V2 teslim aralığını izle.
+   DoD: Mac açıkken `data/advisor/events.jsonl` içindeki ardışık `session_check` aralığı en fazla 10 dakika + çevrim süresi.
+2. Mac kapalı kaldığında GitHub nöbetçisi uyarısının görünür kaldığını doğrula.
+   DoD: eksik seans çevrimi e-postaya/Actions'a düşer, yerel agent sonraki seansı normal sürdürür.
+3. Vercel'de panel için proje/GitHub erişimi kur, preview'a yalnız sunucu değişkenlerini ekle.
    DoD: iki gerçek hesapta güncel tarih/hash, korunmuş sunucu anahtarı, teslim makbuzu.
-3. Doğrulanmış üyelik/ödeme/masraf kaynaklarını edin ve yeni sanal kanıtı biriktir.
-   DoD: belgeli kayıtlar idempotent içe alındı; boşluklar ve bağımsız dönem sayısı görünür.
 
 ## TAKVİM & SENDE KALANLAR
 

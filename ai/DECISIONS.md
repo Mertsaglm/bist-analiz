@@ -6,6 +6,32 @@
 
 ---
 
+## #024 — 2026-09-17 — Seans içi V2, GitHub cron değil yerel uyanık runner ile çalışır
+
+**Bağlam:** 2026-09-16'da GitHub Actions, iki repodaki saatlik `portfolio.yml`
+tetiklemelerinin çoğunu hiç başlatmadı. Başlatılan geç iş işlem penceresi dışına
+sarktı; salt-okur nöbetçi doğru olarak `missed_cycle` ile kırmızıya döndü.
+
+**Karar:** Mert'in macOS'unda `launchd`, V2 çevrimini yalnız işlem penceresinde
+10 dakikada bir çalıştırır. Her koşu önce `main`i fast-forward günceller, yalnız
+temiz çalışma ağacında devam eder, sonra defter ve Telegram makbuzunu ayrı
+commit/push ile teslim eder. GitHub Actions üretim yedeği, recovery ve bağımsız
+gözcü olarak kalır; yerel runner eksikliği gizlemez.
+
+**Neden:** V2'nin işlem kapısı seans içi kotasyon ister; kapanış-sonrası tek
+günlük koşu yeni işlemi sistematik olarak `VERİ BEKLENİYOR`a düşürür. GitHub
+cron ise saatlik zaman garantisi vermez. Mac uyanıkken `launchd` bu dar zaman
+gereksinimi için daha güvenilir ve ilave ücret gerektirmeyen tek mevcut ortamdır.
+
+**Sınır:** Mac kapalı veya uykudaysa yerel süreç de koşamaz. Bu fiziksel sınır
+gözcü ile görünür kalır; kesintisiz garanti gerekirse bir sonraki seçenek sürekli
+haricî runner'dır.
+
+**Tekrar gözden geçir:** Mac'in seans saatlerinde düzenli kapalı kaldığı veya
+üç işlem gününde teslim aralıkları 10 dakika + çevrim süresini aştığı ölçülürse.
+
+---
+
 ## #023 — 2026-09-16 — Üç öncelik grubu, koruyucu karar ve ölçülebilir sonuç
 
 **Bağlam:** Kullanıcı 25 öneriyi dört öncelik grubuna ayırıp ilk üç grubun

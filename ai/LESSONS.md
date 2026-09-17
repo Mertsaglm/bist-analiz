@@ -6,6 +6,22 @@
 
 ---
 
+## L-029 — 2026-09-17 — Cron sıklığı, zaman garantisi değildir
+
+**Anti-pattern:** Saatlik bir piyasa çevrimini GitHub Actions `schedule` ile
+çalıştırıp cron ifadesinin çalışma sıklığını garanti ettiğini varsaymak.
+
+**Düzeltme:** 2026-09-16 üretim kanıtında işlerin çoğu hiç başlamadı; geç
+başlayan koşu seans dışına düştü. Seans içi V2 çevrimi, Mac uyanıkken `launchd`
+ile 10 dakikada bir yürütülür; GitHub bağımsız teslim/gözcü yedeği kalır.
+Nöbetçiyi yeşile zorlamak yerine eksikliği görünür tutmak zorunludur.
+
+**Kilit:** `ops/advisor_local_runner.sh` temiz olmayan ağaçta koşmaz, önce
+fast-forward günceller, hata arşivini de teslim eder; iki LaunchAgent plist'i
+`plutil -lint` ile doğrulanır.
+
+---
+
 ## L-028 — 2026-09-16 — Koruyucu çıkışın kapısını ayrı sına
 
 **Anti-pattern:** Eski analizle yeni alımı engelleyen şartın mevcut stopu da
