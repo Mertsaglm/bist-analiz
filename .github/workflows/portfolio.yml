@@ -34,7 +34,9 @@ jobs:
           pip install --quiet --no-deps -e .
       - name: Fiyat, karar ve sanal defter
         id: cycle
-        run: python -m advisor cycle
+        run: |
+          python -m advisor cycle
+          echo "skipped=$(python -c \"import json; print(str(json.load(open('data/advisor/run_status.json')).get('skipped', False)).lower())\")" >> "$GITHUB_OUTPUT"
       - name: Arşivi koru
         if: always()
         run: |
@@ -51,7 +53,7 @@ jobs:
             bash ops/push_retry.sh
           fi
       - name: Kisa Telegram ozeti
-        if: always() && steps.persist.outcome == 'success'
+        if: always() && steps.persist.outcome == 'success' && steps.cycle.outputs.skipped != 'true'
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -65,7 +67,7 @@ jobs:
             bash ops/push_retry.sh
           fi
       - name: Cuma haftalik V2 ozeti
-        if: success()
+        if: success() && steps.cycle.outputs.skipped != 'true'
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
