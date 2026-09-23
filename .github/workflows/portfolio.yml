@@ -6,6 +6,10 @@ on:
     types: [completed]
     branches: [main]
   workflow_dispatch: {}
+  schedule:
+    # Dış 15 dk tetikleyici aksarsa ilk taraf yedeği; GitHub cron zaman garantisi vermez.
+    - cron: '17,47 7-13 * * 1-5'
+    - cron: '17 14 * * 1-5'
 
 permissions:
   contents: write

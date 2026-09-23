@@ -38,7 +38,7 @@
     "terms_reference": "https://www.isbank.com.tr/vadesiz-altin-hesabi",
     "verified_on": "2026-09-15"
   },
-  "dashboard_url": "",
+  "dashboard_url": "https://birikim-paneli.vercel.app/",
   "telegram": {
     "enabled": true,
     "max_characters": 1000
@@ -49,7 +49,8 @@
     "İş Bankası dijital standart tarife: %0,20 komisyon, asgari 1 TL (işlem tutarının %1 tavanı), komisyon üzerinden %5 BSMV.",
     "Borsa payı için %0,003 ve fiyat kayması için yön başına %0,05 varsayımı kullanılır; kişisel ekstre tarifesi doğrulanmış değildir.",
     "İş Yatırım verisi gecikmeli son fiyattır; gerçek emir defteri/dolum garantisi yoktur.",
-    "Net temettü alacağı %15 kesinti varsayımıyla izlenir; ödeme tarihi doğrulanmadan harcanmaz."
+    "Net temettü alacağı %15 kesinti varsayımıyla izlenir; ödeme tarihi doğrulanmadan harcanmaz.",
+    "Saklama, MKK ve diğer dönemsel hesap ücretleri bu sanal defterde modellenmiyor; kişisel ekstreyle mutabakat gerekli."
   ],
   "max_portfolio_risk_pct": 5,
   "watchdog_grace_minutes": 90,
