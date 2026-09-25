@@ -1,9 +1,12 @@
 # BIST Analiz
 
+Yerel eğitim ve son tamamlanma denetimi (2026-09-25): [rapor](docs/YEREL-DENETIM-2026-09-25.md). Commit/push/deploy yapılmadı.
+
 ## Birikim V2 — 2026-09-15 revizyonu
 
 Yeni karar ve sanal portföy hattı `advisor/`, iki piyasayı birlikte gösteren web paneli
-`dashboard/` içindedir. Her hesap 5.000 TL başlangıç ve aylık 5.000 TL katkıyla izlenir.
+`dashboard/` içindedir. Bütçe ve hesap sürümü `advisor/config.json` ile belirlenir.
+2026-09-25 revizyonu: [yeni hesap ve öğrenme düzeni](docs/REVIZYON-2026-09-25.md).
 Gerçek emir gönderilmez. Alım/satım kararı, miktarı, masrafı ve fiyat kaynağı deftere yazılır.
 
 - [2026-09-16: öncelik grupları ve uygulama sonucu](reports/IYILESTIRME-2026-09-16.md)
@@ -601,3 +604,5 @@ docs/             ön kayıtlar (koşudan önce mühürlenmiş, değiştirilmez)
 - **Örtüşmeyen pencere + taban çizgisi** olmadan her "üstünlük" sahtedir.
 - **Verisi gelmeyen gösterge paydadan düşer** — uydurma yapılmaz.
 - *"Sayıların küçülmesi dürüstlüğün büyümesidir."*
+
+Basit rakip ve kontrollü katkı/rejim sınavı: [uygulama ve sonuçlar](docs/KARSILASTIRMA-2026-09-25.md).

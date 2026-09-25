@@ -4,6 +4,8 @@ from .ledger import cents
 
 def step(ledger, cfg, quotes, symbols, now):
     from . import marketdata, policy
+    if cfg.get('execution_phase', 'entry') != 'entry':
+        return
     symbols = sorted(set(symbols))
     if not symbols:
         return
@@ -40,6 +42,8 @@ def step(ledger, cfg, quotes, symbols, now):
             continue
         q = quotes.get(symbol)
         if marketdata.usable(q, cfg, now, cfg.get('holidays', ())):
+            continue
+        if not marketdata.entry_ready(ledger, cfg, q, symbol, now, 'benchmark'):
             continue
         px = policy.execution_price(q, cfg, 'BUY')
         qty = policy.quantity_for(min(budget, ledger.account('benchmark')['cash_cents']), px, cfg)

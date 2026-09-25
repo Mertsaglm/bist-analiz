@@ -425,3 +425,23 @@ class TestGercekVerideKurumsalIslem:
         assert all(x["ticker"] in {"TSPOR", "CCOLA", "AYGAZ", "HEKTS"} for x in b), \
             ("2026-08-07'de bilinen dört isim dışında YENİ bir vaka çıktı: "
              + "; ".join(f"{x['ticker']} {x['date']}" for x in b))
+
+
+def test_daily_bootstraps_only_missing_symbol_history(cfg, con, monkeypatch):
+    """2026-09-25: yeni BIST30 üyesini 15 barla aylarca bekletme."""
+    import pandas as pd
+    add_universe(con, "AAA")
+    add_universe(con, "BBB")
+    add_bars(con, "AAA", [("2026-09-01",100.,101.,99.,100.,1000.,100.)])
+    calls = {}
+    def fetch(ticker, config, start):
+        calls[ticker] = start
+        return pd.DataFrame()
+    monkeypatch.setattr(prices.yf, 'fetch_bars', fetch)
+    monkeypatch.setattr(prices, '_store_bars', lambda *a:0)
+    monkeypatch.setattr(prices, 'purge_phantom_bars', lambda *a:{'silinen':0})
+    monkeypatch.setattr(prices, 'purge_incomplete_bars', lambda *a:{'silinen_bar':0,'silinen_endeks':0})
+    monkeypatch.setattr(prices, 'assess_quality', lambda *a,**k:[])
+    result=prices.daily(cfg,con,tickers=['AAA','BBB'])
+    assert calls['AAA']==result['start']
+    assert calls['BBB']==cfg['sources']['yf']['backfill_start']

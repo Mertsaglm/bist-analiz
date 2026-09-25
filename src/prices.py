@@ -183,7 +183,9 @@ def daily(cfg: dict, con: sqlite3.Connection,
     start = (date.today() - timedelta(days=gun)).isoformat()
     sonuc: dict[str, int] = {}
     for t in tickers:
-        sonuc[t] = _store_bars(con, t, yf.fetch_bars(t, cfg, start=start))
+        exists = con.execute('SELECT 1 FROM bars_daily WHERE ticker=? LIMIT 1', (t,)).fetchone()
+        fetch_start = start if exists else cfg['sources']['yf']['backfill_start']
+        sonuc[t] = _store_bars(con, t, yf.fetch_bars(t, cfg, start=fetch_start))
     temiz = purge_phantom_bars(cfg, con)
     # ⚠ SIRA ÖNEMLİ: yarım bar ayıklaması kalite kapısından ÖNCE. Aksi halde
     # kapı kapanmamış bir seansın barını değerlendirir ve "temiz" der.

@@ -1,7 +1,7 @@
 {
   "market": "bist",
-  "start_date": "2026-09-15",
-  "initial_try": 5000,
+  "start_date": "2026-09-25",
+  "initial_try": 50000,
   "monthly_try": 5000,
   "horizon_sessions": 20,
   "max_positions": 5,
@@ -36,7 +36,7 @@
     "gold": "https://altin.doviz.com/isbankasi/gram-altin",
     "commission_reference": "https://www.isbank.com.tr/komisyon-oranlari",
     "terms_reference": "https://www.isbank.com.tr/vadesiz-altin-hesabi",
-    "verified_on": "2026-09-15"
+    "verified_on": "2026-09-25"
   },
   "dashboard_url": "https://birikim-paneli.vercel.app/",
   "telegram": {
@@ -50,13 +50,87 @@
     "Borsa payı için %0,003 ve fiyat kayması için yön başına %0,05 varsayımı kullanılır; kişisel ekstre tarifesi doğrulanmış değildir.",
     "İş Yatırım verisi gecikmeli son fiyattır; gerçek emir defteri/dolum garantisi yoktur.",
     "Net temettü alacağı %15 kesinti varsayımıyla izlenir; ödeme tarihi doğrulanmadan harcanmaz.",
-    "Saklama, MKK ve diğer dönemsel hesap ücretleri bu sanal defterde modellenmiyor; kişisel ekstreyle mutabakat gerekli."
+    "Yeni sanal alım ilk sinyalden sonraki taze referans kotasyonunu bekler; gerçek emir defteri veya banka dolumu değildir.",
+    "Üç aylık saklama tarifesi günlük brüt kıymet ortalaması yaklaşımıyla modellenir. MKK ve kişiye özel ek ücretler dahil değildir; eksik değerleme günleri görünür bekler."
   ],
   "max_portfolio_risk_pct": 5,
   "watchdog_grace_minutes": 90,
   "execution_window": {
     "open": "10:15",
+    "close": "18:00",
+    "half_day_close": "12:30"
+  },
+  "account_id": "paper-2026-09-25",
+  "candidates_enabled": true,
+  "require_next_quote": true,
+  "entry_intent_minutes": 90,
+  "entry_window": {
+    "open": "10:15",
     "close": "17:45",
     "half_day_close": "12:15"
+  },
+  "observation_window": {
+    "open": "10:15",
+    "close": "20:00",
+    "half_day_close": "20:00"
+  },
+  "adaptive_risk": {
+    "enabled": true,
+    "target_daily_vol_pct": 2.0
+  },
+  "watchlist_enabled": true,
+  "custody": {
+    "enabled": true,
+    "source": "https://www.isbank.com.tr/urun-ve-hizmet-ucretleri",
+    "verified_on": "2026-09-25",
+    "bsmv_rate": 0.05,
+    "bands": [
+      {
+        "up_to_try": 1000,
+        "fee_try": 0
+      },
+      {
+        "up_to_try": 10000,
+        "fee_try": 85
+      },
+      {
+        "up_to_try": 50000,
+        "fee_try": 115
+      },
+      {
+        "up_to_try": 250000,
+        "fee_try": 200
+      },
+      {
+        "up_to_try": 500000,
+        "fee_try": 260
+      },
+      {
+        "up_to_try": 750000,
+        "fee_try": 360
+      },
+      {
+        "up_to_try": 1000000,
+        "fee_try": 430
+      },
+      {
+        "up_to_try": 5000000,
+        "fee_try": 650
+      },
+      {
+        "up_to_try": 10000000,
+        "fee_try": 920
+      },
+      {
+        "up_to_try": null,
+        "fee_try": 1375
+      }
+    ]
+  },
+  "risk_factors": {
+    "TRALT": {
+      "factor": "gold_related",
+      "label": "Altın üreticisi; gram altınla eşdeğer değildir."
+    }
   }
 }

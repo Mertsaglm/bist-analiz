@@ -752,6 +752,9 @@ def cmd_otonom(args) -> int:
         return 1 if (n["sessiz"] or n.get("analizsiz")) else 0
 
     if args.alt == "gunluk":
+        # İzleme listesine eklenen isim yalnız YAML'da kalmasın; fiyat hattının
+        # kullandığı gerçek tablo da aynı koşuda yenilenir (2026-09-25).
+        universe.sync(cfg, con)
         sonuc = otonom.gunluk(cfg, con, analist_calistir=not args.analistsiz)
     else:
         sonuc = otonom.haftalik(cfg, con)

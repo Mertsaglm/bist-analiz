@@ -435,7 +435,8 @@ llm:
     # görünür. Zorlanıyor: tests/test_analist.py::test_zincir_modelleri_enum_icinde
     tool: [claude-code, codex, antigravity, kiro, diger,
            gemini-3.5-flash, gemini-3.6-flash, gemini-2.5-pro,
-           gemini-3.1-pro-preview, gpt-5.6-luna, gpt-5-mini]
+           gemini-3.1-pro-preview, gpt-5.6-luna, gpt-5-mini,
+           gemini-3.8-flash, gemini-3.7-flash, gpt-6-luna]
   # confidence_p'yi KOD yazar; LLM enum verir. Sayısal güven LLM'den ASLA gelmez.
   # Bu haritanın kendisi kalibre edilecek (Faz 6+, 2 yıl "ölçüm yetersiz" diyecek).
   # --- VETO SÜRESİ (2026-08-07, Merdiven'in "bypass" fikrinden) --------------
@@ -473,31 +474,23 @@ llm:
   # denetimi zincirin bir halkası gibi çalışır: şemaya uyan ama denetimden
   # geçemeyen çıktı "cevap verilmedi" sayılır ve sıradaki model denenir.
   #
-  # SIRA GEREKÇESİ (maliyet 2026-07-29'da GERÇEK paketle ölçüldü:
-  # girdi ~10.0K token, çıktı ~8.2K token):
-  #   1-3  ÜCRETSİZ katmanı olan Gemini'ler. Günde 1 istek attığımız için
-  #        ücretsiz kota pratikte hiç dolmaz; sıra kotaya göre değil KALİTEYE
-  #        göre kuruldu. 3. sıradaki 2.5-pro bilinçli olarak FARKLI NESİL:
-  #        1-2 birden düşerse sorun aile geneli demektir, kardeş model kurtarmaz.
-  #   4    gemini-3.1-pro-preview — ücretsiz katmanı YOK (~$0.12/tur) ama en
-  #        güçlü Gemini. Buraya düşmek "tüm ücretsiz Gemini'ler tıkandı" demek.
-  #   5-6  OpenAI — DAİMA sonda (kullanıcı kuralı). luna ~$0.012, mini ~$0.019.
-  # Her gün 4. halkaya düşülse bile ay maliyeti ~$2.6; gerçekte oraya düşmek
-  # istisna olacak.
+  # 2026-09-24: Mert'in istediği sıra. İlk üç Gemini'nin API ücretsiz katmanı
+  # var; 3.1 Pro Preview'ın API ücretsiz katmanı yok. OpenAI en sonda kalır.
+  # Ücret, kota ve model erişimi sağlayıcı hesabına göre ayrıca izlenmeli;
+  # eski model sırasının 2026-07-29 maliyet hesabı bu sıra için geçerli değil.
   #
   # ⚠ 4. sıra PREVIEW bir model: kimliği değişebilir ya da emekli olabilir.
   # Zincir hatayı yutup sıradakine geçtiği için bozulma yumuşak; haftalık rapor
   # model başına kaç tur cevaplandığını gösterdiği için sessiz de kalmaz.
   zincir:
-    - gemini-3.5-flash          # ücretsiz · "en akıllı" flash · ana analist
-    - gemini-3.6-flash          # ücretsiz · kardeş model, ayrı kota kovası
-    - gemini-2.5-pro            # ücretsiz · Pro sınıfı, FARKLI nesil
-    - gemini-3.1-pro-preview    # ücretli ~$0.12/tur · en güçlü Gemini
-    - gpt-5.6-luna              # ücretli ~$0.012/tur
-    - gpt-5-mini                # ücretli ~$0.019/tur
-  # Düşünme bütçesi. Gemini 3+ `thinkingLevel` alır; gemini-2.5-* bu alanı
-  # TANIMAZ ve gönderilirse 400 döner (inkline'da yaşandı) — kod sürüme bakıp
-  # göndermez. OpenAI tarafında karşılığı `reasoning_effort`.
+    - gemini-3.8-flash
+    - gemini-3.7-flash
+    - gemini-3.6-flash
+    - gemini-3.1-pro-preview
+    - gpt-6-luna
+    - gpt-5.6-luna
+  # Düşünme bütçesi. Gemini 3+ `thinkingLevel` alır; tarihsel 2.5 kayıtları
+  # için korunan kod yolu bu alanı göndermez. OpenAI karşılığı `reasoning_effort`.
   zincir_dusunme:
     gemini: "high"      # yargı kalitesi > hız; günde 1 istek, acele yok
     openai: "medium"

@@ -6,6 +6,33 @@
 
 ---
 
+## L-032 — 2026-09-25 — Düzeltme sonrası toplam fark, nedenin payı değildir
+
+**Anti-pattern:** Takvim, veri kapsamı, ücret ve dolum mantığı birlikte değişince
+eski/yeni getiri farkını tek bir “düzeltmenin etkisi” diye anlatmak; `data_block`
+ile biten tam çevrimi emir/dolum kolunun doğrulaması saymak.
+
+**Ölçüm:** Altın `sma50` geliştirme farkı +10,254 yüzde puan yalnız 2025
+takviminden; `recency` son bölüm farkı +1,552 puan yalnız hayali gün içi
+dolumun kaldırılmasından geldi. BIST `sma50` geliştirme farkında takvim ve
+DSTKF/TRALT geçmişi birbirine bağlı: eski takvim altında veri eklemek aynı
+getiriyi verirken, yeni takvim altında +11,460 puan fark yaratıyor. Eski
+makbuzun `data_block` kolu işlem açmamıştı; kontrollü taze kotasyonlu geçici
+SQL kopyasında ikinci çevrim TUPRS için bir sanal `BUY` ve dengeli defter üretti.
+Sonraki kontrolde bu kanıtın pozisyonu kapatmadığı görüldü; ayrı stop ve hedef
+dallarında `SAT` → `SELL` → sıfır pozisyon ve gerçekleşen sonuç doğrulandı.
+
+**Kural:** Birden çok düzeltme sonrası büyük sayısal sıçramayı bileşen anahtarlarıyla
+yeniden koş; eski ve yeni uçların arşiv çıktılarıyla eşleşmesini zorla ve
+etkileşim varsa seçilen sırayı açıkça yaz. Uçtan uca denetimde en az bir
+gerçekleşen sanal alım ve stop/hedef için ayrı çıkış, lot/nakit/ücret/gerçekleşen
+sonuç eşitliği ve tekrar çağrı sınansın. BUY kolunu “emir zinciri tamam” diye
+adlandırma; pozisyonun kapanışı ayrı bir sözleşmedir.
+Kontrollü bar/kotasyon/tahmin gerçek banka dolumu veya model üstünlüğü diye
+sunulmasın. Kanıt: `docs/YEREL-DENETIM-EK-2026-09-25.md`.
+
+---
+
 ## L-031 — 2026-09-23 — Üretici yeşilken tüketici eksik kapanışla karar verebilir
 
 **Anti-pattern:** Akşam işi bugünün yarım barını doğru biçimde dışlıyor, fakat
@@ -1016,3 +1043,48 @@ kontrolü (`git rev-list --count HEAD..origin/main`) yap. Yerel eskiyse önce
 
 **Kural:** Usta bundan sonra somut olarak ne yapacak/soracak?
 -->
+
+
+## 2026-09-25 — Kapsam ve öğrenme sözleşmesi
+
+**Anti-pattern:** Listeyi değiştirmek veri hattını, bütçeyi değiştirmek tüm defter
+okuyucularını otomatik değiştirmez. Yeni hesap yolunun bildirim/nöbetçi/yedek
+simetriği; yeni sembolün tablo senkronu ve ilk geçmiş toplaması ayrıca bağlanmalıdır.
+
+**Kilidi:** `tests/test_advisor_revision.py` eski defter korunumu, sonraki kotasyon,
+farklı vade/para ayrımı ve gelecek etiket sızıntısını davranışla sınar. Eski deftere
+yazma ve ilk kotasyonda alım hataları geri konunca testler kırmızıya döndü.
+**Ölçüm:** MAE net getiri değildir. Örtüşmeyen dönem bağımsızlık garantisi değildir.
+Daha hızlı eğitilen aday arşivde daha kötü çıkabilir; başarısızlık rapordan silinmez.
+
+**Aynı revizyonda yakalanan hata:** Aday hata listesinin sonradan değişmesi,
+mühürlü session_check olayına referans üzerinden sızdı. Ledger.add girdiyi
+derin kopyalar; ayrıca aday hatası ana muhasebenin kaydını durduramaz.
+
+
+## 2026-09-25 — Karşılaştırılmayan karmaşıklık ve sessiz eksik gösterge
+
+Anti-pattern: yakın döneme ağırlık vermeyi, daha fazla özelliği veya ayrı hesapları
+kendiliğinden daha iyi/bağımsız saymak. Kontrollü sınavda altın zaman ağırlığı
+sonucu kötüleştirdi; basit trend BIST'in son bölümünde al-tutun gerisinde kaldı.
+V1 rejim karşılaştırmasında eksik SMA50 arşivi ayrıca görüldü; yalnız geçici bellek
+kopyasında geçmiş fiyatlardan yeniden üretildi, üretim arşivi düzelmiş sayılmadı.
+Kural: basit rakip, sınırlı tek-değişken sınavı ve payda/girdi açıklaması olmadan
+üstünlük iddia etme. İşlem oluşmayan karşılaştırmadaki sıfır fark kanıt değildir.
+
+
+## 2026-09-25 — Çalışan araştırma, tam sınav demek değildir
+
+**Anti-pattern:** Takvim eksikliği nedeniyle işlem yapılamayan dönemi normal
+performans saymak; kayan pencere kullanıp bütün arşivi eğitim sayacı olarak
+basmak; gram kapanışından gün içi stop dolumu uydurmak; çeyrek sınırında bilinen
+önceki değeri unutmak. Bunlar hata fırlatmadan yanlış güven veya eksiklik üretir.
+**Kilit:** `tests/test_advisor_training_audit.py`: eksik yıl sınavı reddeder;
+fit satırı/zarar örneği/gelecek etiket ve kalıcı katsayılar ölçülür; tatilde başlayan
+çeyrek doğru taşınır; altın sonraki referanstan çıkar; sıfır hacimde dolum olmaz.
+Beş koruma bellek içinde kaldırıldığında ilgili testler kırmızıya döndü.
+**Veri dersi:** Endeksin arşiv boşluğu hisse verisinin yanlış olduğunu tek başına
+göstermez. Mevcut birleşik hayalet bar kuralı kullanılmalı; gerçek seanstaki
+sıfır hacimli referans değerlemede korunmalı, işlem üretmemelidir.
+**Yorum:** Aynı portföy sonucu farklı tahminlerden gelebilir. Eğitim katsayılarının
+varlığı veya daha fazla özellik, basit kıyasa üstünlük kanıtı değildir.

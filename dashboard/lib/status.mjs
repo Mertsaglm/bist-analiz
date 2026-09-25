@@ -33,9 +33,15 @@ export function validate(data, market) {
        && Array.isArray(d.reasons) && d.reasons.every(x=>typeof x==='string') && nullable(d.price))) {
     throw new Error('Portföy verisinin biçimi doğrulanamadı.');
   }
-  const invalid = (data.risk != null && (!obj(data.risk) || !Array.isArray(data.risk.stress)
+  const invalid = (data.risk_factors != null && (!obj(data.risk_factors) || !Object.values(data.risk_factors).every(t=>obj(t) && ['gold_direct','gold_related'].includes(t.factor) && typeof t.label==='string')))
+    || (data.risk != null && (!obj(data.risk) || !Array.isArray(data.risk.stress)
       || !data.risk.stress.every(x=>obj(x) && num(x.fall_pct) && nullable(x.loss_try))
       || !Array.isArray(data.risk.missing) || !data.risk.missing.every(x=>typeof x==='string')))
+    || (data.candidates != null && (!Array.isArray(data.candidates) || !data.candidates.every(c=>obj(c) && typeof c.name==='string' && account(c.strategy) && account(c.benchmark) && obj(c.evidence))))
+    || (data.monitoring != null && (!obj(data.monitoring) || !obj(data.monitoring.calendar)
+      || !['years','full_days','half_days'].every(k=>Array.isArray(data.monitoring.calendar[k]))
+      || !['entry_window','observation_window'].every(k=>obj(data.monitoring[k]) && ['open','close','half_day_close'].every(t=>/^\d{2}:\d{2}$/.test(data.monitoring[k][t])))))
+    || (data.risk_control != null && (!obj(data.risk_control) || !Array.isArray(data.risk_control.reasons)))
     || (data.funnel != null && (!obj(data.funnel) || !obj(data.funnel.groups)
       || !Object.values(data.funnel.groups).every(num) || !num(data.funnel.total)))
     || data.decisions.some(d => d.change != null && (!obj(d.change) || !Array.isArray(d.change.items)

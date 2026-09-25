@@ -1,0 +1,274 @@
+[
+  {
+    "symbol": "AEFES",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "BIST30"
+  },
+  {
+    "symbol": "AKBNK",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "BIST30"
+  },
+  {
+    "symbol": "ASELS",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "BIST30"
+  },
+  {
+    "symbol": "ASTOR",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "BIST30"
+  },
+  {
+    "symbol": "BIMAS",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "BIST30"
+  },
+  {
+    "symbol": "CCOLA",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "Sınırlı ek araştırma: sektör çeşitliliği, likidite; getiri garantisi yok."
+  },
+  {
+    "symbol": "CIMSA",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "Sınırlı ek araştırma: sektör çeşitliliği, likidite; getiri garantisi yok."
+  },
+  {
+    "symbol": "DSTKF",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "BIST30"
+  },
+  {
+    "symbol": "EKGYO",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "BIST30"
+  },
+  {
+    "symbol": "ENKAI",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "BIST30"
+  },
+  {
+    "symbol": "EREGL",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "BIST30"
+  },
+  {
+    "symbol": "FROTO",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "BIST30"
+  },
+  {
+    "symbol": "GARAN",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "BIST30"
+  },
+  {
+    "symbol": "GUBRF",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "BIST30"
+  },
+  {
+    "symbol": "ISCTR",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "BIST30"
+  },
+  {
+    "symbol": "KCHOL",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "BIST30"
+  },
+  {
+    "symbol": "KRDMD",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "BIST30"
+  },
+  {
+    "symbol": "MGROS",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "BIST30"
+  },
+  {
+    "symbol": "PETKM",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "BIST30"
+  },
+  {
+    "symbol": "PGSUS",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "BIST30"
+  },
+  {
+    "symbol": "SAHOL",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "BIST30"
+  },
+  {
+    "symbol": "SASA",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "BIST30"
+  },
+  {
+    "symbol": "SISE",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "BIST30"
+  },
+  {
+    "symbol": "TAVHL",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "BIST30"
+  },
+  {
+    "symbol": "TCELL",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "BIST30"
+  },
+  {
+    "symbol": "THYAO",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "BIST30"
+  },
+  {
+    "symbol": "TOASO",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "BIST30"
+  },
+  {
+    "symbol": "TRALT",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "BIST30"
+  },
+  {
+    "symbol": "TTKOM",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "BIST30"
+  },
+  {
+    "symbol": "TUPRS",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "BIST30"
+  },
+  {
+    "symbol": "VAKBN",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "BIST30"
+  },
+  {
+    "symbol": "YKBNK",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-09-25",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/Endeksler",
+    "reason": "BIST30"
+  },
+  {
+    "symbol": "DSTKF",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-10-01",
+    "active": false,
+    "source": "https://www.kap.org.tr/tr/api/file/download/4028328da0b8438a01a0c54eaeec2faa",
+    "reason": "2026 son çeyrek BIST30 değişimi"
+  },
+  {
+    "symbol": "TRMET",
+    "known_at": "2026-09-25",
+    "effective_from": "2026-10-01",
+    "active": true,
+    "source": "https://www.kap.org.tr/tr/api/file/download/4028328da0b8438a01a0c54eaeec2faa",
+    "reason": "2026 son çeyrek BIST30 değişimi"
+  }
+]

@@ -1,12 +1,14 @@
+# 2025 arşiv takvimi 2026-09-25 tarihinde Borsa İstanbul resmi tablosuyla doğrulandı.
+# Kaynak: https://www.borsaistanbul.com/resmi-tatil-gunleri
 # ============================================================================
-# BIST tatil takvimi — YALNIZCA GELECEK TARİHLER İÇİN
+# BIST tatil takvimi — V1 gelecek vadesi ve V2 işlem/sınav takvimi
 #
 # GEÇMİŞ işlem günleri bu dosyadan DEĞİL, XU100 bar tarihlerinden türetilir
 # (src/calendar_bist.py). Ölçüm 2026-07-26: 2026 YTD 138 bar / 147 iş günü;
 # eksik 9 hafta-içi gün aşağıdaki listeyle BİREBİR aynı. Yani geçmiş için bu
 # dosya gereksiz ve otoriter değil — endeks barları otoriter.
 #
-# Bu dosya sadece şunun için var: zaman bariyeri hesabı
+# V1 kullanımı: zaman bariyeri hesabı
 # ("bugünden 20 işlem günü sonrası hangi tarih?") geleceğe bakar ve
 # gelecekteki bar tarihleri henüz yoktur.
 #
@@ -16,6 +18,21 @@
 
 # Tam gün kapalı — BIST'te hiç bar oluşmaz
 tam_gun:
+  "2025":
+    - 2025-01-01
+    - 2025-03-30
+    - 2025-03-31
+    - 2025-04-01
+    - 2025-04-23
+    - 2025-05-01
+    - 2025-05-19
+    - 2025-06-06
+    - 2025-06-07
+    - 2025-06-08
+    - 2025-06-09
+    - 2025-07-15
+    - 2025-08-30
+    - 2025-10-29
   "2026":
     - 2026-01-01   # Yılbaşı
     - 2026-03-20   # Ramazan Bayramı 1. gün
@@ -49,6 +66,10 @@ tam_gun:
 # Yarım gün (arife) — BIST'te bar OLUŞUR ama seans kısadır.
 # Takvim aritmetiği için işlem günü SAYILIR; hacim/likidite yorumunda dikkat.
 yarim_gun:
+  "2025":
+    - 2025-03-29
+    - 2025-06-05
+    - 2025-10-28
   "2026":
     - 2026-03-19   # Ramazan Bayramı arifesi
     - 2026-05-26   # Kurban Bayramı arifesi

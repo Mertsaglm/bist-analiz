@@ -91,17 +91,15 @@ def _dusunme_destekler(model_id: str) -> bool:
     """`thinkingLevel` Gemini 3 ve sonrasının parametresi.
 
     ⚠ gemini-2.5-* bunu TANIMAZ ve gönderilirse istek 400 döner (inkline'da
-    yaşandı). O modeller kendi dinamik düşünme varsayılanıyla çalışır. Zincirin
-    3. halkası tam olarak bir 2.5 modeli olduğu için bu kontrol süs değil:
-    olmazsa o halka HER ZAMAN düşer ve sebebi "kota" sanılır.
+    yaşandı). Eski analizleri yeniden koşarken bu ayrım hâlâ gereklidir.
     """
     m = re.match(r"^gemini-(\d+)", model_id)
     return bool(m) and int(m.group(1)) >= 3
 
 
 def _akil_yurutme_modeli(model_id: str) -> bool:
-    """OpenAI akıl yürütme modelleri (gpt-5*, o-serisi) `temperature` KABUL ETMEZ."""
-    return bool(re.match(r"^(gpt-5|o[1-9])", model_id)) and not model_id.endswith("-chat-latest")
+    """OpenAI GPT-5/6 ve o-serisi akıl yürütme modellerini ayırt et."""
+    return bool(re.match(r"^(gpt-[56](?:\.|-|$)|o[1-9])", model_id)) and not model_id.endswith("-chat-latest")
 
 
 # ---------------------------------------------------------------- çağrı

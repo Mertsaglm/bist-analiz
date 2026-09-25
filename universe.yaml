@@ -33,6 +33,10 @@ seciim_kriterleri:
   - "veri çözülmeyen veya idari kontrol altındaki isimler dışarıda"
 
 hisseler:
+  # V2 BIST30 kapsamı; V1 sinyal/kalibrasyon kapsamını değiştirmez.
+  - { ticker: DSTKF, sektor: finans, tier: v2_izleme, in_live: false, in_measure: false }
+  - { ticker: TRALT, sektor: madencilik, tier: v2_izleme, in_live: false, in_measure: false }
+  - { ticker: TRMET, sektor: madencilik, tier: v2_izleme, in_live: false, in_measure: false }
   # --- Çekirdek: kalite / likit (9) ---------------------------------------
   - ticker: THYAO
     sektor: ulasim

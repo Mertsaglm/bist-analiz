@@ -8,8 +8,7 @@ on:
   workflow_dispatch: {}
   schedule:
     # Dış 15 dk tetikleyici aksarsa ilk taraf yedeği; GitHub cron zaman garantisi vermez.
-    - cron: '17,47 7-13 * * 1-5'
-    - cron: '17 14 * * 1-5'
+    - cron: '17,47 7-16 * * 1-5'
 
 permissions:
   contents: write
@@ -39,7 +38,7 @@ jobs:
       - name: Fiyat, karar ve sanal defter
         id: cycle
         run: |
-          python -m advisor cycle
+          python -m advisor cycle ${{ github.event_name == 'workflow_run' && '--closing-refresh' || '' }}
           echo "skipped=$(python -c 'import json; print(str(json.load(open("data/advisor/run_status.json")).get("skipped", False)).lower())')" >> "$GITHUB_OUTPUT"
       - name: Arşivi koru
         if: always()

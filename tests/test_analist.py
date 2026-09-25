@@ -16,6 +16,16 @@ from src import analist, util
 
 # ============================================================ SÖZLEŞME
 class TestZincirSozlesmesi:
+    def test_istenen_model_sirasi_birebir_korunur(self, real_cfg):
+        """2026-09-24: Model sırası değişirken eski/yanlış kimlikler geri gelmesin."""
+        assert real_cfg["llm"]["zincir"] == [
+            "gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.6-flash",
+            "gemini-3.1-pro-preview", "gpt-6-luna", "gpt-5.6-luna",
+        ]
+        # Eski analizlerin kaynak etiketleri silinirse geçmiş karne okunamaz.
+        assert {"gemini-3.5-flash", "gemini-2.5-pro", "gpt-5-mini"} <= set(
+            real_cfg["llm"]["enums"]["tool"])
+
     def test_zincir_modelleri_enum_icinde(self, real_cfg):
         """Zincirdeki her model `llm.enums.tool` içinde OLMALI.
 
@@ -33,13 +43,8 @@ class TestZincirSozlesmesi:
             f"Zincirde olup `llm.enums.tool`'da olmayan model: {eksik} — "
             f"bu modellerin turları ölçümde kaybolur")
 
-    def test_ucretsiz_gemini_ucretli_openaiden_once(self, real_cfg):
-        """Kullanıcının açık kuralı: OpenAI DAİMA sonda (ADR #013).
-
-        Gerekçe bir tercih değil bütçe: Gemini halkalarının ücretsiz katmanı
-        var, OpenAI'ın yok. Sıra bozulursa her gün para ödenir ve bu fark
-        faturaya bakılana kadar görünmez.
-        """
+    def test_gemini_openaiden_once(self, real_cfg):
+        """2026-09-24 sırası: dört Gemini halkasından sonra iki OpenAI halkası."""
         zincir = real_cfg["llm"]["zincir"]
         saglayicilar = [analist.provider_of(m) for m in zincir]
         ilk_openai = next((i for i, p in enumerate(saglayicilar)
@@ -48,7 +53,7 @@ class TestZincirSozlesmesi:
                           if p == "google"), default=-1)
         assert son_google < ilk_openai, (
             f"OpenAI modeli Gemini'den ÖNCE geliyor: {zincir} — "
-            f"ücretsiz halkalar daima önce denenmeli")
+            f"kullanıcının belirlediği sağlayıcı sırası değişmiş")
 
     def test_zincir_bos_degil_ve_tekrarsiz(self, real_cfg):
         zincir = real_cfg["llm"]["zincir"]
@@ -64,16 +69,20 @@ class TestZincirSozlesmesi:
 # ============================================================ MEKANİZMA
 class TestSaglayiciOzellikleri:
     def test_provider_ayrimi(self):
+        assert analist.provider_of("gemini-3.8-flash") == "google"
+        assert analist.provider_of("gemini-3.7-flash") == "google"
         assert analist.provider_of("gemini-3.5-flash") == "google"
         assert analist.provider_of("gemini-2.5-pro") == "google"
         assert analist.provider_of("gpt-5-mini") == "openai"
         assert analist.provider_of("gpt-5.6-luna") == "openai"
+        assert analist.provider_of("gpt-6-luna") == "openai"
 
     def test_gemini_3_dusunme_destekler_25_DESTEKLEMEZ(self):
         """⚠ NE OLURDU: gemini-2.5-* `thinkingLevel` alanını TANIMAZ ve
-        gönderilirse istek 400 döner (inkline'da yaşandı). Zincirin 3. halkası
-        bir 2.5 modeli — bu ayrım olmasa o halka HER ZAMAN düşer ve sebebi
-        "kota doldu" sanılırdı."""
+        gönderilirse istek 400 döner (inkline'da yaşandı). Eski model
+        kayıtlarını yeniden koşarken bu davranış korunmalıdır."""
+        assert analist._dusunme_destekler("gemini-3.8-flash")
+        assert analist._dusunme_destekler("gemini-3.7-flash")
         assert analist._dusunme_destekler("gemini-3.5-flash")
         assert analist._dusunme_destekler("gemini-3.6-flash")
         assert analist._dusunme_destekler("gemini-3.1-pro-preview")
@@ -144,7 +153,8 @@ class TestSaglayiciOzellikleri:
         analist._openai_cagir(cfg, "gpt-5-mini", "x", 30)
         assert yakalanan["o"]["max_completion_tokens"] == tavan
 
-    def test_openai_akil_yurutme_modelinde_reasoning_effort(self, cfg, monkeypatch):
+    @pytest.mark.parametrize("model", ["gpt-6-luna", "gpt-5.6-luna"])
+    def test_openai_akil_yurutme_modelinde_reasoning_effort(self, cfg, monkeypatch, model):
         yakalanan = {}
 
         class SahteYanit:
@@ -160,14 +170,20 @@ class TestSaglayiciOzellikleri:
         monkeypatch.setenv("OPENAI_API_KEY", "test")
         monkeypatch.setattr(analist.requests, "post", sahte_post)
 
-        analist._openai_cagir(cfg, "gpt-5-mini", "merhaba", 30)
+        analist._openai_cagir(cfg, model, "merhaba", 30)
+        assert yakalanan["govde"]["model"] == model
         assert yakalanan["govde"]["reasoning_effort"] == \
             cfg["llm"]["zincir_dusunme"]["openai"]
-        # temperature GÖNDERİLMEZ — akıl yürütme modelleri 400 döner
+        # Her iki Luna sürümüne akıl yürütme ayarı gitmeli; temperature gönderilmez.
         assert "temperature" not in yakalanan["govde"]
 
 
 class TestZincirEleme:
+    def test_anahtarlar_varsa_istenen_sira_korunur(self, real_cfg, monkeypatch):
+        """Gerçek çağrı zinciri YAML sırasını aynen kullanmalı."""
+        monkeypatch.setattr(analist, "_anahtar_var", lambda provider: True)
+        assert analist.zincir(real_cfg) == real_cfg["llm"]["zincir"]
+
     def test_anahtarsiz_saglayici_zincirden_DUSER(self, cfg, monkeypatch):
         """Anahtarı olmayan sağlayıcının modelleri denenmez.
 

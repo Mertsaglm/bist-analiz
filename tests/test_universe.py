@@ -24,7 +24,7 @@ import pytest
 from src import universe, util
 from src.sources import yf
 
-TIER_KUMESI = {"cekirdek", "sanayi", "firsat", "yuksek_risk", "test_vakasi", "olcum"}
+TIER_KUMESI = {"v2_izleme", "cekirdek", "sanayi", "firsat", "yuksek_risk", "test_vakasi", "olcum"}
 
 
 @pytest.fixture

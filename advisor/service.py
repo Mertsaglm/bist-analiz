@@ -10,6 +10,7 @@ from zoneinfo import ZoneInfo
 from . import history, learning, marketdata, news, policy, outcomes, corporate as corporate_module
 from . import engine, capsule, evidence, shadow, universe as universe_module, reporting, observations, risk as portfolio_risk
 from .ledger import Ledger, atomic_json, cents, digest, fund, locked
+from .accounts import state_path
 
 IST = ZoneInfo("Europe/Istanbul")
 
@@ -74,7 +75,7 @@ def benchmark_nav(ledger, view):
     return nav
 
 
-def cycle(root, *, database=None, now=None, quotes=None, offline=False, notify=False):
+def cycle(root, *, database=None, now=None, quotes=None, offline=False, notify=False, closing_refresh=False):
     root = Path(root).resolve()
     now = now or datetime.now(timezone.utc)
     if now.tzinfo is None:
@@ -87,9 +88,18 @@ def cycle(root, *, database=None, now=None, quotes=None, offline=False, notify=F
 
     # Bu kapı fiyat/model/veritabanı hattından ÖNCE çalışır. Mesai dışındaki
     # workflow_run yalnız iz bırakır; yeni karar veya sanal işlem üretmez.
-    from .calendar import session_block
-    blocked = session_block(now, cfg)
-    state = root / "data/advisor"
+    from .calendar import session_block, phase, monitoring_snapshot
+    current_phase = phase(now, cfg) if 'observation_window' in cfg else ('closed' if session_block(now, cfg) else 'entry')
+    if closing_refresh and cfg['market']=='bist':
+        from .calendar import trading_day, window
+        local = now.astimezone(IST)
+        _, end = window(local.date(), cfg)
+        cal = cfg.get('calendar', {})
+        calendar_ok = not cal or (cal.get('available') and str(local.year) in cal.get('years', []))
+        current_phase = 'valuation' if calendar_ok and trading_day(local.date(), cfg) and local >= end else 'closed'
+    cfg['execution_phase'] = current_phase
+    blocked = (session_block(now, cfg) or 'Gözlem penceresi dışında.') if current_phase == 'closed' else None
+    state = state_path(root, cfg)
     if blocked is not None:
         with locked(state / ".lock"):
             ledger = Ledger(state / "events.jsonl")
@@ -129,13 +139,23 @@ def cycle(root, *, database=None, now=None, quotes=None, offline=False, notify=F
                 from src import util
                 from src.calendar_bist import BistCalendar
                 asof = BistCalendar(util.load_config(), con).last_closed_session(now).isoformat()
+                local = now.astimezone(IST)
+                if local_day in cfg.get('calendar', {}).get('half_days', []) and local.strftime('%H:%M') >= '12:40':
+                    asof = local_day
             else:
                 asof = (now.astimezone(IST).date() - timedelta(days=1)).isoformat()
             frame = history.load(con, cfg["market"], asof)
+            if cfg.get('watchlist_enabled'):
+                membership = universe_module.read(root)
+                watched = universe_module.members(membership, local_day)
+                if not watched or len(watched) > 40:
+                    raise ValueError('Tarihli izleme evreni boş veya 40 sınırını aşıyor.')
+                frame['in_live'] = frame.symbol.isin(watched).astype(int)
+                frame.attrs['live_symbols'] = sorted(watched)
             data_date = str(frame.date.max())
             # Aynı veri+ayar aynı modeli kullanır; aylık/hatalı yeniden yazım gizlenmez.
             import pandas as pd
-            fingerprint = digest({"data": str(pd.util.hash_pandas_object(frame, index=False).sum()), 'engine':digest(Path(learning.__file__).read_text()), 'config': cfg})
+            fingerprint = digest({"data": str(pd.util.hash_pandas_object(frame, index=False).sum()), 'engine':digest(Path(learning.__file__).read_text()), 'config': {k:v for k,v in cfg.items() if k != 'execution_phase'}})
             cache = state / "model.json"
             model = json.loads(cache.read_text()) if cache.exists() else {}
             previous_model = dict(model)
@@ -161,6 +181,9 @@ def cycle(root, *, database=None, now=None, quotes=None, offline=False, notify=F
             cfg['allowed_entry_symbols'] = live_symbols
             # Önceden alınmış ama izleme evreninden çıkarılmış varlık da izlenmeye devam eder.
             owned = set().union(*(set(ledger.account(book)['positions']) for book in ('strategy','benchmark','shadow_reference','shadow_candidate')))
+            if cfg.get('candidates_enabled'):
+                from .candidates import owned as candidate_owned
+                owned |= candidate_owned(state)
             current = features[features.symbol.isin(set(symbols) | owned)].groupby('symbol').tail(1).copy()
             symbols = sorted(set(symbols) | owned)
             missing = set(symbols) - set(current.symbol)
@@ -201,13 +224,15 @@ def cycle(root, *, database=None, now=None, quotes=None, offline=False, notify=F
         scorecard = outcomes.calibration(ledger, cfg)
         forecasts = {}
         if model.get("ready"):
-            valid = current.dropna(subset=learning.FEATURES)
+            valid = current.dropna(subset=model.get('features', learning.FEATURES))
             forecasts = dict(zip(valid.symbol, learning.predict(model, valid).tolist()))
         raw_forecasts = dict(forecasts)
         from .calendar import trading_day
         expected_close = now.astimezone(IST).date() - timedelta(days=1)
         while not trading_day(expected_close, cfg):
             expected_close -= timedelta(days=1)
+        if cfg['market'] == 'bist' and current_phase == 'valuation':
+            expected_close = datetime.fromisoformat(asof).date()
         # Önceki kapanış gelmediyse eski model yeni sanal alım açamaz.
         # Mevcut pozisyonun stop/hedef izlemesi policy içinde açık kalır.
         cfg['expected_analysis_date'] = expected_close.isoformat()
@@ -231,6 +256,9 @@ def cycle(root, *, database=None, now=None, quotes=None, offline=False, notify=F
         imminent = [e for e in agenda.get('upcoming',[]) if 0 <= (datetime.fromisoformat(e['date']).date()-now.astimezone(IST).date()).days <= 1]
         if imminent:
             cfg['risk_multiplier'] *= .5
+        cfg['event_risk_multiplier'] = .5 if imminent else 1
+        risk_control = portfolio_risk.control(current, learned, cfg)
+        cfg['risk_multiplier'] *= risk_control['multiplier']
         records = capsule.clean(current.to_dict('records'))
         analysis_issues = {r['symbol']: ('Fiyat geçmişi eksik/geçersiz.' if not r.get('quality_ok') else
                                       'Beklenen kapanış gerisinde: ' + r['date'])
@@ -247,6 +275,8 @@ def cycle(root, *, database=None, now=None, quotes=None, offline=False, notify=F
         for d in decisions:
             ledger.add("decision", d["key"], now.isoformat(), **{k: v for k, v in d.items() if k != "key"})
         benchmark_step(ledger, cfg, quotes, live_symbols, now)
+        from .costs import accrue
+        custody = accrue(ledger, cfg, quotes, now, books=('strategy','benchmark','shadow_reference','shadow_candidate'))
         strategy = policy.value_account(ledger.account(), quotes, cfg, now)
         benchmark = policy.value_account(ledger.account("benchmark"), quotes, cfg, now)
         learned = feedback(ledger, strategy)
@@ -271,10 +301,10 @@ def cycle(root, *, database=None, now=None, quotes=None, offline=False, notify=F
         ledger.add('session_check','session-check:'+now.isoformat(),now.isoformat(),
                    expected_quotes=len(symbols),
                    valid_quotes=sum(marketdata.price_problem(quotes.get(s),cfg,now) is None for s in symbols),
-                   decisions=len(decisions),corporate_ok=not blocked_symbols,errors=errors,
+                   decisions=len(decisions),corporate_ok=not blocked_symbols,errors=list(errors),
                    analysis_issues=analysis_issues,
                    data_blocked_symbols=[d['symbol'] for d in decisions if d['action']=='VERİ BEKLENİYOR'],
-                   in_execution_window=True)
+                   in_execution_window=current_phase in ('entry', 'protection'), in_observation_window=True)
         snapshot = {"schema_version": 2, "market": cfg["market"], "generated_at": now.isoformat(),
                     "analysis_date": data_date, "mode": "paper", "strategy": strategy, "benchmark": benchmark,
                     "decisions": decisions, "quotes": quotes, "news": agenda, "learning": {k: model.get(k) for k in ("id", "asof", "ready", "status", "approved", "training_rows", "training_dates", "evaluation", "limitations", "features")},
@@ -286,9 +316,25 @@ def cycle(root, *, database=None, now=None, quotes=None, offline=False, notify=F
                     'risk': portfolio_risk.summary(ledger.account(), quotes, cfg, now),
                     'weekly': reporting.weekly(ledger, now), 'funnel': reporting.funnel(decisions),
                     'reproduction': receipt, 'cost_observations': observations.summary(ledger),
+                    'account_id': cfg.get('account_id', 'legacy'), 'monitoring': dict(monitoring_snapshot(now, cfg), phase=current_phase, closing_refresh=closing_refresh),
+                    'risk_control': risk_control, 'custody': custody, 'risk_factors': cfg.get('risk_factors', {}),
                     "budget": budget_signature, 'cost_notes': cfg.get('cost_notes', []), "costs": {k: cfg[k] for k in ("commission_rate", "commission_min_try", "commission_bsmv_rate", "exchange_fee_rate", "gold_buy_tax_rate", "slippage_bps")}}
+        if cfg.get('candidates_enabled'):
+            from .candidates import cycle as candidate_cycle
+            try:
+                snapshot['candidates'] = candidate_cycle(state, frame, cfg, quotes, now, corporate)
+            except Exception as exc:
+                # Araştırma kolu ana hesabın kendi gözlemini/stop kaydını kilitlemez.
+                # Hata görünürdür; eski aday sonucunu yeni sonuç gibi sunma.
+                snapshot['candidates'] = []
+                errors.append('Aday sınavı tamamlanamadı: ' + type(exc).__name__)
+            ledger.add('candidate_check', 'candidate-check:' + now.isoformat(), now.isoformat(),
+                       completed=len(snapshot['candidates']), ok=bool(snapshot['candidates']))
+        snapshot['health']['ledger_hash'] = ledger.root_hash
         ledger.save()
         atomic_json(state / "latest.json", snapshot)
+        if state != root / 'data/advisor':
+            atomic_json(root / 'data/advisor/latest.json', snapshot)
         if notify and not offline:
             from .notifications import publish
             publish(root, cfg, snapshot, ledger, now)
