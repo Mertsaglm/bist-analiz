@@ -1,11 +1,10 @@
 # Mevcut durum
 
 **Güncelleme:** 2026-10-01
-**Aktif iş:** %80 çekirdek/%20 taktik yeni sanal sınavı iki repoda yerel olarak
-kuruldu; eski üretim düzeltmeleriyle birlikte yayın incelemesi bekliyor.
-BIST 25 Eylül revizyonu üretimde; altın yeni hesap revizyonu ve sonraki kod yerel.
-Yeni sınav T0 kapalı (`experiment_start_date: null`). Üretim yayını,
-üretim SQL/defter yazımı ve yeni Telegram gönderimi yapılmadı.
+**Aktif iş:** İki piyasada yeni kod 2026-10-01'de `main` dalına yayımlandı.
+Altın canlı çevrimi ve Telegram teslim makbuzu geçti; BIST ilk yeni koşusu
+seans dışı olduğu için atlandı. Ortak deney T0 kapalı (`experiment_start_date: null`);
+yeni beş aday hesap henüz canlı işlemedi. BIMAS geçmiş karne düzeltmesi ayrı.
 
 ## Tamamlananlar
 
@@ -55,20 +54,24 @@ Yeni sınav T0 kapalı (`experiment_start_date: null`). Üretim yayını,
 - Güncel BIST ana hesap defterinde 7.124, altın defterinde 1.863 olayın hash
   zinciri ve dörder hesabın bağımsız muhasebesi doğrulandı. BIST ana hesap
   55.000 TL, altın ana hesap 10.000 TL nakitte; ikisinde de ana işlem yok.
-- Üretim Telegram defterinde BIST için 31, altın için 32 başarılı bildirim
+- Üretim Telegram defterinde BIST için 32, altın için 33 başarılı bildirim
   makbuzu var. Vercel paneli HTTP 200, yetkisiz durum API'si HTTP 401 verdi;
   parolalı veri görünümü henüz sınanmadı.
+- Eski veri sınavı 2026-10-01'de yeniden koştu: altın raporu birebir aynı;
+  BIST'e sonradan eklenen dört test satırı ayrı makbuzda saklandı.
+- Yayın sonrası [BIST koşusu](https://github.com/Mertsaglm/bist-analiz/actions/runs/36901914212)
+  başarılı fakat seans dışı atlandı. [Altın koşusu](https://github.com/Mertsaglm/gold_tracking_system/actions/runs/36901918911)
+  başarılı; Telegram `message_id: 320`. Vercel'in üç statik dosyası yeni sürümle eş.
 
 ## Sıradaki 3 İş
 
-1. 👤 İki depodaki `codex/portfolio-research` dalı için üretim yayın kararını ver.
-   DoD: üretim kapsamı ve geri dönüş adımı açıkça onaylanır.
-2. Yayın onayıyla iki piyasayı birlikte yayımla; taze çevrim,
-   Telegram bildirimi, parolalı panel verisi ve yedeği doğrula.
-   DoD: ana defter hash'leri korunur, yeni beş kol ayrı açılır.
-3. Taze veri ve iki başarılı çevrimden sonra ortak gelecek T0'ı sabitle.
-   DoD: 30 çekirdek üye/fiyat, GRAM, beş kol ve eski
-   defter hash'i eşleşir; 20/63/126 seans takvimi kayıtlıdır.
+1. 2026-10-02 seansında BIST ve altının yeni kodla taze çevrimlerini,
+   Telegram makbuzunu ve 2026-10-01 kapanış verisini doğrula.
+   DoD: iki piyasada geçerli veri, atlanmamış çevrim ve eski defter eşliği.
+2. Koşullar geçince ortak gelecek işlem günü T0'ı iki ayarda sabitle.
+   DoD: BIST30 30/30 fiyat, GRAM ve beş ayrı hesap ilk çevrimde mutabık.
+3. Parolalı Vercel görünümünü ve 20/63/126 seans değerlendirmesini izle.
+   DoD: panel iki yeni hesabı gösterir; sonuçlar pasif kolla maliyet sonrası kıyaslanır.
 
 ## Takvim
 
