@@ -2,7 +2,7 @@
   "bundle_version": "bist_bundle_v1",
   "asof": "2026-09-30",
   "karar_gunu": "2026-10-28",
-  "generated_utc": "2026-09-30T21:00:02+00:00",
+  "generated_utc": "2026-10-01T21:20:08+00:00",
   "uyari": "Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir.",
   "takvim": {
     "son_kapali_seans": "2026-09-30",
@@ -17,26 +17,26 @@
   },
   "haber_taramasi": {
     "ok": true,
-    "son_bildirim": "2026-09-30T19:24:02+00:00",
-    "gecikme_gun": 0,
+    "son_bildirim": "2026-10-01T17:04:21+00:00",
+    "gecikme_gun": -1,
     "not": null
   },
   "rejim": {
     "etiket": "risk-off",
     "tetikleyici": "XU100 SMA200'ün %11.96 ALTINDA (≤ %-3.0) · genişlik %10.4 ≤ %35.0",
-    "xu100_sma200_farki_pct": -11.956309084326977,
+    "xu100_sma200_farki_pct": -11.956158619110358,
     "genislik_sma50_ustu_pct": 10.44776119402985,
     "genislik_n": 67,
     "genislik_istenen_n": 67,
-    "xu100_vol_yillik_21g": 30.69581378099629,
+    "xu100_vol_yillik_21g": 30.695672750938325,
     "makro": {
       "politika_faizi": 37.0,
       "tufe_bayat_tarih": "2025-12-01",
       "enf_bek_12ay": 23.7,
-      "mevduat_1yil_brut": 43.56,
-      "mevduat_1yil_net": 37.026,
+      "mevduat_1yil_brut": 43.35,
+      "mevduat_1yil_net": 36.847500000000004,
       "usdtry": 49.0013,
-      "reel_net_mevduat": 10.772837510105093
+      "reel_net_mevduat": 10.62853678253839
     },
     "pozisyon_politikasi": {
       "nakit_pct": 80.0,
@@ -56,15 +56,15 @@
         "dusuk_52h": 53.0499992371
       },
       "gostergeler": {
-        "rsi14": 39.80272704754107,
-        "macd_hist": -0.4680366915836336,
+        "rsi14": 39.80272704753815,
+        "macd_hist": -0.4680366915841694,
         "atr14": 2.685790460120313,
         "atr_pct": 4.008642477791511,
         "adx14": 19.87038912227774,
-        "sma20": 71.28749961852816,
-        "sma50": 69.60299995422527,
-        "sma200": 73.97974985122481,
-        "bb_pctb": 0.005802669654473248
+        "sma20": 71.28749961853028,
+        "sma50": 69.60299995422612,
+        "sma200": 73.97974985122502,
+        "bb_pctb": 0.005802669653845481
       },
       "faktorler": {
         "skor": 0.1135,
@@ -370,9 +370,33 @@
           "asof": "2026-09-28",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-AKBNK-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [
+        {
+          "id": "kap-1670857",
+          "tarih": "2026-10-01 13:55",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "XS3096174951 ISIN Kodlu Tahvilin İtfası",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1670857"
+        },
+        {
+          "id": "kap-1670856",
+          "tarih": "2026-10-01 13:55",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "XS3195081479 ISIN Kodlu Yurtdışı Piyasalara İhraç Edilen Tahvilin Kupon Ödemesi",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1670856"
+        },
         {
           "id": "kap-1670273",
           "tarih": "2026-09-30 13:33",
@@ -451,9 +475,31 @@
         "aciklama": "getiri %-0.59 — marjdan uzak."
       },
       "bilanco_penceresi": {
-        "durum": "kapali",
-        "bildirimler": [],
-        "not": "takvimde yok; 2026-08-04 tarihli finansal rapor bildirimi var (57 gün önce) → dönemin raporunu AÇIKLAMIŞ"
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "3 bekleyen bildirim plan penceresine (2026-09-30 … 2026-10-28) düşüyor"
       },
       "aktif_vetolar": [
         {
@@ -695,9 +741,25 @@
           "asof": "2026-09-28",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-ASELS-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
-      "haberler": [],
+      "haberler": [
+        {
+          "id": "kap-1670614",
+          "tarih": "2026-10-01 06:20",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Yeni İş İlişkisi",
+          "ozet": "Sözleşme İmzalanması",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1670614"
+        }
+      ],
       "haber_tarama_baslangici": "2026-09-28T20:59:59+00:00"
     },
     {
@@ -754,9 +816,31 @@
         "aciklama": "TABANDA kapandı (getiri %-9.97). Kapanış bastırılmış bir fiyattır; karşı taraf boştur ve gerçek denge fiyatı bilinmez."
       },
       "bilanco_penceresi": {
-        "durum": "kapali",
-        "bildirimler": [],
-        "not": "takvimde yok; 2026-08-17 tarihli finansal rapor bildirimi var (44 gün önce) → dönemin raporunu AÇIKLAMIŞ"
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "3 bekleyen bildirim plan penceresine (2026-09-30 … 2026-10-28) düşüyor"
       },
       "aktif_vetolar": [
         {
@@ -1014,6 +1098,12 @@
           "asof": "2026-09-28",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-ASTOR-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [
@@ -1084,19 +1174,41 @@
         "aciklama": "getiri %-0.77 — marjdan uzak."
       },
       "bilanco_penceresi": {
-        "durum": "kapali",
-        "bildirimler": [],
-        "not": "takvimde yok; 2026-08-17 tarihli finansal rapor bildirimi var (44 gün önce) → dönemin raporunu AÇIKLAMIŞ"
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "3 bekleyen bildirim plan penceresine (2026-09-30 … 2026-10-28) düşüyor"
       },
       "aktif_vetolar": [
         {
           "veto_code": "tez_zayif",
-          "konuldu": "2026-09-24",
-          "bitis": "2026-10-01",
-          "kalan_islem_gunu": 1,
-          "arac": "gpt-5.6-luna",
-          "gerekce": "Riskten kaçış rejiminde tüketim hisselerindeki göreli dayanıklılık hızla bozulabilir. Aktif veto devam ederken destek bölgesine dönüş, planın geometrik olarak geçerli olmasına rağmen beklenen davranışı üretmeyebilir.",
-          "tekrar": 1
+          "konuldu": "2026-09-30",
+          "bitis": "2026-10-07",
+          "kalan_islem_gunu": 5,
+          "arac": "gpt-6-luna",
+          "gerekce": "Planın giriş bölgesine yaklaşması, gerçekleşme olasılığı veya ölçülmüş avantaj kanıtı değildir; genel piyasa baskısı destek alanının çalışmaması riskini taşır.",
+          "tekrar": 2
         }
       ],
       "plan_menusu": [
@@ -1370,6 +1482,12 @@
           "asof": "2026-09-28",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-BIMAS-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -1386,15 +1504,15 @@
         "dusuk_52h": 17.4699993134
       },
       "gostergeler": {
-        "rsi14": 41.536999967092825,
-        "macd_hist": -0.16185816654293156,
-        "atr14": 0.8007666558983894,
-        "atr_pct": 4.342552238105522,
+        "rsi14": 41.5369999670844,
+        "macd_hist": -0.16185816654343263,
+        "atr14": 0.8007666558973338,
+        "atr_pct": 4.342552238099798,
         "adx14": 19.334245899328632,
-        "sma20": 19.69650001526546,
-        "sma50": 19.246400108338182,
-        "sma200": 20.856100063326544,
-        "bb_pctb": 0.17320691600024313
+        "sma20": 19.696500015267432,
+        "sma50": 19.24640010833897,
+        "sma200": 20.856100063326743,
+        "bb_pctb": 0.17320691599980276
       },
       "faktorler": {
         "skor": -0.1149,
@@ -1432,9 +1550,38 @@
         "aciklama": "getiri %-1.76 — marjdan uzak."
       },
       "bilanco_penceresi": {
-        "durum": "kapali",
-        "bildirimler": [],
-        "not": "takvimde yok; 2026-08-14 tarihli finansal rapor bildirimi var (47 gün önce) → dönemin raporunu AÇIKLAMIŞ"
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Portföy Sınırlamalarına Uyumun Kontrolü",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "4 bekleyen bildirim plan penceresine (2026-09-30 … 2026-10-28) düşüyor"
       },
       "aktif_vetolar": [
         {
@@ -1700,6 +1847,12 @@
           "asof": "2026-09-28",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-EKGYO-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [
@@ -1726,15 +1879,15 @@
         "dusuk_52h": 67.75
       },
       "gostergeler": {
-        "rsi14": 39.3847623239672,
-        "macd_hist": -0.4054273206164427,
-        "atr14": 2.661020668921607,
-        "atr_pct": 3.2274357397393927,
-        "adx14": 25.22299475142022,
-        "sma20": 86.96250000000316,
-        "sma50": 86.49599990844726,
-        "sma200": 91.69299987792833,
-        "bb_pctb": 0.031721474728250806
+        "rsi14": 39.384762323964395,
+        "macd_hist": -0.4054273206169612,
+        "atr14": 2.6610206689196065,
+        "atr_pct": 3.227435739736966,
+        "adx14": 25.222994751415914,
+        "sma20": 86.96250000000528,
+        "sma50": 86.49599990844813,
+        "sma200": 91.69299987792853,
+        "bb_pctb": 0.03172147472783357
       },
       "faktorler": {
         "skor": -0.0984,
@@ -1772,9 +1925,31 @@
         "aciklama": "getiri %-2.71 — marjdan uzak."
       },
       "bilanco_penceresi": {
-        "durum": "kapali",
-        "bildirimler": [],
-        "not": "takvimde yok; 2026-08-14 tarihli finansal rapor bildirimi var (47 gün önce) → dönemin raporunu AÇIKLAMIŞ"
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "3 bekleyen bildirim plan penceresine (2026-09-30 … 2026-10-28) düşüyor"
       },
       "aktif_vetolar": [
         {
@@ -2040,6 +2215,12 @@
           "asof": "2026-09-28",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-ENKAI-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -2056,15 +2237,15 @@
         "dusuk_52h": 23.4599990845
       },
       "gostergeler": {
-        "rsi14": 39.92740968117482,
-        "macd_hist": -0.06136711031143671,
-        "atr14": 1.376592226377406,
-        "atr_pct": 3.830251193594606,
-        "adx14": 14.313146276542934,
-        "sma20": 37.67699985504224,
-        "sma50": 38.8823999786349,
-        "sma200": 34.05259996413773,
-        "bb_pctb": 0.1588640986797139
+        "rsi14": 39.927409681179284,
+        "macd_hist": -0.06136711031102188,
+        "atr14": 1.376592226379703,
+        "atr_pct": 3.8302511936009975,
+        "adx14": 14.313146276523145,
+        "sma20": 37.676999855040584,
+        "sma50": 38.88239997863423,
+        "sma200": 34.052599964137556,
+        "bb_pctb": 0.15886409867983342
       },
       "faktorler": {
         "skor": 1.1623,
@@ -2100,9 +2281,31 @@
         "aciklama": "getiri %-2.23 — marjdan uzak."
       },
       "bilanco_penceresi": {
-        "durum": "kapali",
-        "bildirimler": [],
-        "not": "takvimde yok; 2026-08-06 tarihli finansal rapor bildirimi var (55 gün önce) → dönemin raporunu AÇIKLAMIŞ"
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "3 bekleyen bildirim plan penceresine (2026-09-30 … 2026-10-28) düşüyor"
       },
       "aktif_vetolar": [
         {
@@ -2344,6 +2547,12 @@
           "asof": "2026-09-28",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-EREGL-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -2360,15 +2569,15 @@
         "dusuk_52h": 25.5
       },
       "gostergeler": {
-        "rsi14": 29.644277657865644,
-        "macd_hist": -0.9062476553472578,
+        "rsi14": 29.64427765786523,
+        "macd_hist": -0.906247655347526,
         "atr14": 6.251886793420804,
         "atr_pct": 12.478816334994871,
         "adx14": 37.91590205701124,
-        "sma20": 65.59499988555697,
-        "sma50": 82.2879993438628,
-        "sma200": 60.6792998313887,
-        "bb_pctb": -0.03997104417901331
+        "sma20": 65.59499988555804,
+        "sma50": 82.2879993438632,
+        "sma200": 60.67929983138881,
+        "bb_pctb": -0.03997104417900311
       },
       "faktorler": {
         "skor": null,
@@ -2403,9 +2612,31 @@
         "aciklama": "TABANDA kapandı (getiri %-9.97). Kapanış bastırılmış bir fiyattır; karşı taraf boştur ve gerçek denge fiyatı bilinmez."
       },
       "bilanco_penceresi": {
-        "durum": "kapali",
-        "bildirimler": [],
-        "not": "takvimde yok; 2026-08-17 tarihli finansal rapor bildirimi var (44 gün önce) → dönemin raporunu AÇIKLAMIŞ"
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "3 bekleyen bildirim plan penceresine (2026-09-30 … 2026-10-28) düşüyor"
       },
       "aktif_vetolar": [
         {
@@ -2663,6 +2894,12 @@
           "asof": "2026-09-28",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-EUPWR-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -2679,15 +2916,15 @@
         "dusuk_52h": 72.05000305175781
       },
       "gostergeler": {
-        "rsi14": 37.730196866495504,
-        "macd_hist": -0.5065159764824549,
-        "atr14": 2.494054291122803,
-        "atr_pct": 3.3909642252056935,
-        "adx14": 25.721492277777017,
-        "sma20": 78.24500007629395,
-        "sma50": 78.52299972533757,
-        "sma200": 94.4597498702984,
-        "bb_pctb": 0.10895055613858895
+        "rsi14": 37.73019686649406,
+        "macd_hist": -0.5065159764827376,
+        "atr14": 2.494054291120803,
+        "atr_pct": 3.3909642252029735,
+        "adx14": 25.721492277774942,
+        "sma20": 78.24500007629499,
+        "sma50": 78.52299972533801,
+        "sma200": 94.45974987029851,
+        "bb_pctb": 0.10895055613850996
       },
       "faktorler": {
         "skor": -1.2551,
@@ -2725,9 +2962,31 @@
         "aciklama": "getiri %-1.14 — marjdan uzak."
       },
       "bilanco_penceresi": {
-        "durum": "kapali",
-        "bildirimler": [],
-        "not": "takvimde yok; 2026-08-04 tarihli finansal rapor bildirimi var (57 gün önce) → dönemin raporunu AÇIKLAMIŞ"
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "3 bekleyen bildirim plan penceresine (2026-09-30 … 2026-10-28) düşüyor"
       },
       "aktif_vetolar": [
         {
@@ -2989,6 +3248,12 @@
           "asof": "2026-09-28",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-FROTO-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [
@@ -3015,15 +3280,15 @@
         "dusuk_52h": 115.4000015259
       },
       "gostergeler": {
-        "rsi14": 38.13833825472525,
-        "macd_hist": -0.7509217386673319,
-        "atr14": 4.346918815327481,
-        "atr_pct": 3.536955867662992,
-        "adx14": 20.92545129814064,
-        "sma20": 131.0299987793,
-        "sma50": 129.947999877936,
-        "sma200": 137.5104999923735,
-        "bb_pctb": -0.04417907626641179
+        "rsi14": 38.138338254723635,
+        "macd_hist": -0.7509217386678806,
+        "atr14": 4.3469188153248135,
+        "atr_pct": 3.5369558676608217,
+        "adx14": 20.92545129813828,
+        "sma20": 131.0299987793021,
+        "sma50": 129.94799987793684,
+        "sma200": 137.5104999923737,
+        "bb_pctb": -0.044179076266817593
       },
       "faktorler": {
         "skor": -0.0045,
@@ -3311,6 +3576,12 @@
           "asof": "2026-09-28",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-GARAN-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [
@@ -3346,15 +3617,15 @@
         "dusuk_52h": 146.0
       },
       "gostergeler": {
-        "rsi14": 42.28342679054136,
-        "macd_hist": -1.6223042943388386,
-        "atr14": 6.954435802083457,
-        "atr_pct": 3.337061423110135,
+        "rsi14": 42.283426790540105,
+        "macd_hist": -1.6223042943394053,
+        "atr14": 6.9544358020839505,
+        "atr_pct": 3.337061423110373,
         "adx14": 25.384245995218382,
-        "sma20": 218.36000061035156,
-        "sma50": 210.83399932861062,
-        "sma200": 199.12800003051868,
-        "bb_pctb": 0.026802122550869716
+        "sma20": 218.3600006103537,
+        "sma50": 210.83399932861147,
+        "sma200": 199.12800003051888,
+        "bb_pctb": 0.026802122550783777
       },
       "faktorler": {
         "skor": 0.3308,
@@ -3390,9 +3661,31 @@
         "aciklama": "getiri %-2.66 — marjdan uzak."
       },
       "bilanco_penceresi": {
-        "durum": "kapali",
-        "bildirimler": [],
-        "not": "takvimde yok; 2026-08-05 tarihli finansal rapor bildirimi var (56 gün önce) → dönemin raporunu AÇIKLAMIŞ"
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "3 bekleyen bildirim plan penceresine (2026-09-30 … 2026-10-28) düşüyor"
       },
       "aktif_vetolar": [
         {
@@ -3658,6 +3951,12 @@
           "asof": "2026-09-28",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-KCHOL-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [
@@ -3686,8 +3985,8 @@
       "gostergeler": {
         "rsi14": 46.395078310229366,
         "macd_hist": -0.11076507627153509,
-        "atr14": 2.0626077302329597,
-        "atr_pct": 4.6898766523454105,
+        "atr14": 2.0626077302334402,
+        "atr_pct": 4.689876652346502,
         "adx14": 15.580723629468944,
         "sma20": 45.18400020598805,
         "sma50": 43.94960006713322,
@@ -3728,9 +4027,31 @@
         "aciklama": "getiri %-2.66 — marjdan uzak."
       },
       "bilanco_penceresi": {
-        "durum": "kapali",
-        "bildirimler": [],
-        "not": "takvimde yok; 2026-08-14 tarihli finansal rapor bildirimi var (47 gün önce) → dönemin raporunu AÇIKLAMIŞ"
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "3 bekleyen bildirim plan penceresine (2026-09-30 … 2026-10-28) düşüyor"
       },
       "aktif_vetolar": [],
       "plan_menusu": [],
@@ -3939,9 +4260,24 @@
           "asof": "2026-09-28",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-KRDMD-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [
+        {
+          "id": "kap-1670761",
+          "tarih": "2026-10-01 09:31",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "GES yatırımları hk.",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1670761"
+        },
         {
           "id": "kap-1669755",
           "tarih": "2026-09-29 15:29",
@@ -3965,15 +4301,15 @@
         "dusuk_52h": 16.1200008392
       },
       "gostergeler": {
-        "rsi14": 38.79825207084903,
-        "macd_hist": -0.45866868951119355,
-        "atr14": 1.3172923079333145,
-        "atr_pct": 6.966114852262095,
-        "adx14": 17.41553841913399,
-        "sma20": 21.96449995040516,
-        "sma50": 20.681200027460065,
-        "sma200": 20.04689993858402,
-        "bb_pctb": 0.09458454263186904
+        "rsi14": 38.79825207084608,
+        "macd_hist": -0.45866868951150047,
+        "atr14": 1.3172923079358616,
+        "atr_pct": 6.966114852275565,
+        "adx14": 17.41553841912336,
+        "sma20": 21.96449995040637,
+        "sma50": 20.681200027460545,
+        "sma200": 20.046899938584136,
+        "bb_pctb": 0.09458454263180727
       },
       "faktorler": {
         "skor": -0.0286,
@@ -4011,9 +4347,31 @@
         "aciklama": "getiri %-2.73 — marjdan uzak."
       },
       "bilanco_penceresi": {
-        "durum": "kapali",
-        "bildirimler": [],
-        "not": "takvimde yok; 2026-08-06 tarihli finansal rapor bildirimi var (55 gün önce) → dönemin raporunu AÇIKLAMIŞ"
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "3 bekleyen bildirim plan penceresine (2026-09-30 … 2026-10-28) düşüyor"
       },
       "aktif_vetolar": [
         {
@@ -4279,6 +4637,12 @@
           "asof": "2026-09-28",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-PETKM-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -4295,15 +4659,15 @@
         "dusuk_52h": 32.4399986267
       },
       "gostergeler": {
-        "rsi14": 35.44783474952125,
-        "macd_hist": -0.4381176475982115,
-        "atr14": 1.5757507907123607,
-        "atr_pct": 4.29359879551717,
-        "adx14": 21.44851405591097,
-        "sma20": 40.78900051117397,
-        "sma50": 40.86960021972759,
-        "sma200": 43.434200057984896,
-        "bb_pctb": 0.10136848469315564
+        "rsi14": 35.447834749519316,
+        "macd_hist": -0.4381176475984834,
+        "atr14": 1.5757507907139907,
+        "atr_pct": 4.2935987955216115,
+        "adx14": 21.448514055902823,
+        "sma20": 40.78900051117502,
+        "sma50": 40.86960021972801,
+        "sma200": 43.43420005798501,
+        "bb_pctb": 0.10136848469315639
       },
       "faktorler": {
         "skor": -0.612,
@@ -4341,9 +4705,31 @@
         "aciklama": "getiri %-3.98 — marjdan uzak."
       },
       "bilanco_penceresi": {
-        "durum": "kapali",
-        "bildirimler": [],
-        "not": "takvimde yok; 2026-08-14 tarihli finansal rapor bildirimi var (47 gün önce) → dönemin raporunu AÇIKLAMIŞ"
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "3 bekleyen bildirim plan penceresine (2026-09-30 … 2026-10-28) düşüyor"
       },
       "aktif_vetolar": [
         {
@@ -4609,6 +4995,12 @@
           "asof": "2026-09-28",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-SISE-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [
@@ -4635,8 +5027,8 @@
         "dusuk_52h": 217.6000061035
       },
       "gostergeler": {
-        "rsi14": 41.878883550331835,
-        "macd_hist": -0.519564908819023,
+        "rsi14": 41.878883550331786,
+        "macd_hist": -0.5195649088189754,
         "atr14": 9.70456650183484,
         "atr_pct": 3.7146666035731446,
         "adx14": 14.52811124985655,
@@ -4681,9 +5073,31 @@
         "aciklama": "getiri %-1.97 — marjdan uzak."
       },
       "bilanco_penceresi": {
-        "durum": "kapali",
-        "bildirimler": [],
-        "not": "takvimde yok; 2026-07-28 tarihli finansal rapor bildirimi var (64 gün önce) → dönemin raporunu AÇIKLAMIŞ"
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "3 bekleyen bildirim plan penceresine (2026-09-30 … 2026-10-28) düşüyor"
       },
       "aktif_vetolar": [
         {
@@ -4943,9 +5357,25 @@
           "asof": "2026-09-28",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-TAVHL-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
-      "haberler": [],
+      "haberler": [
+        {
+          "id": "kap-1670746",
+          "tarih": "2026-10-01 08:40",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Finansal Takvim",
+          "ozet": "2026 Üçüncü Çeyrek Finansal Takvimi",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1670746"
+        }
+      ],
       "haber_tarama_baslangici": "2026-09-28T20:59:59+00:00"
     },
     {
@@ -4959,15 +5389,15 @@
         "dusuk_52h": 90.0
       },
       "gostergeler": {
-        "rsi14": 40.09950872551629,
-        "macd_hist": -0.10481497809027185,
+        "rsi14": 40.09950872551493,
+        "macd_hist": -0.10481497809054974,
         "atr14": 3.1753551497020447,
         "atr_pct": 3.3042197711971246,
-        "adx14": 26.82673665495595,
-        "sma20": 99.47500000000106,
-        "sma50": 101.48500000000041,
-        "sma200": 107.95200004577711,
-        "bb_pctb": 0.09593428645193922
+        "adx14": 26.826736654953777,
+        "sma20": 99.47500000000211,
+        "sma50": 101.48500000000084,
+        "sma200": 107.9520000457772,
+        "bb_pctb": 0.09593428645180369
       },
       "faktorler": {
         "skor": -0.6319,
@@ -5005,9 +5435,31 @@
         "aciklama": "getiri %-2.19 — marjdan uzak."
       },
       "bilanco_penceresi": {
-        "durum": "kapali",
-        "bildirimler": [],
-        "not": "takvimde yok; 2026-08-13 tarihli finansal rapor bildirimi var (48 gün önce) → dönemin raporunu AÇIKLAMIŞ"
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "3 bekleyen bildirim plan penceresine (2026-09-30 … 2026-10-28) düşüyor"
       },
       "aktif_vetolar": [
         {
@@ -5273,6 +5725,12 @@
           "asof": "2026-09-28",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-TCELL-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -5335,9 +5793,31 @@
         "aciklama": "getiri %-2.83 — marjdan uzak."
       },
       "bilanco_penceresi": {
-        "durum": "kapali",
-        "bildirimler": [],
-        "not": "takvimde yok; 2026-08-05 tarihli finansal rapor bildirimi var (56 gün önce) → dönemin raporunu AÇIKLAMIŞ"
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "3 bekleyen bildirim plan penceresine (2026-09-30 … 2026-10-28) düşüyor"
       },
       "aktif_vetolar": [
         {
@@ -5597,6 +6077,12 @@
           "asof": "2026-09-28",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-THYAO-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -5613,8 +6099,8 @@
         "dusuk_52h": 170.8000030518
       },
       "gostergeler": {
-        "rsi14": 43.66068882503617,
-        "macd_hist": -6.087654587074502,
+        "rsi14": 43.66068882503664,
+        "macd_hist": -6.0876545870740095,
         "atr14": 16.17160366660754,
         "atr_pct": 4.298100642287718,
         "adx14": 28.065405175260487,
@@ -5657,9 +6143,31 @@
         "aciklama": "getiri %-1.83 — marjdan uzak."
       },
       "bilanco_penceresi": {
-        "durum": "kapali",
-        "bildirimler": [],
-        "not": "takvimde yok; 2026-08-04 tarihli finansal rapor bildirimi var (57 gün önce) → dönemin raporunu AÇIKLAMIŞ"
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "3 bekleyen bildirim plan penceresine (2026-09-30 … 2026-10-28) düşüyor"
       },
       "aktif_vetolar": [
         {
@@ -5911,6 +6419,12 @@
           "asof": "2026-09-28",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-TUPRS-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -6008,5 +6522,5 @@
     "Bir planı beğenmiyorsan `plan_reddet` + `veto_code` kullan — bu gerçek bir karardır ve performansı ölçülür.",
     "Bu sistemde ÖLÇÜLEN KENAR YOKTUR (ADR #008). Seviyeler planlama geometrisidir; yön iddiası üretme."
   ],
-  "bundle_sha": "c567fea5a122052f1e9de5f0e4453195d244126fb4486c93ed23a234d41aa715"
+  "bundle_sha": "bb06e6b4012a921a8f1df2c8834b00b046012c37d14000b4884c8a11682301e6"
 }
