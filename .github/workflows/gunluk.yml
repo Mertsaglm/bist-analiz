@@ -26,6 +26,7 @@ permissions:
 concurrency:
   group: repo-commit          # haftalik is ile ayni grup → push cakismasi yok
   cancel-in-progress: false
+  queue: max
 
 jobs:
   gunluk:
@@ -37,6 +38,8 @@ jobs:
       # atlanmadi: ana surum sicramasi dogrulanmamis davranis degisikligi
       # getirebilir ve buradaki kazanc yalnizca bir uyariyi susturmak.
       - uses: actions/checkout@v5
+        with:
+          ref: main
 
       - uses: actions/setup-python@v6
         with:

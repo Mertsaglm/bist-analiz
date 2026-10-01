@@ -10,6 +10,7 @@ from .ledger import cents
 
 
 def fee(cfg, notional, side):
+    notional = float(notional)
     if notional <= 0:
         return 0
     if cfg["market"] == "gold":
@@ -30,7 +31,7 @@ def quantity_for(budget_cents, price, cfg):
     upper = Decimal(str(budget_cents / 100 / price))
     qty = (upper / step).to_integral_value(rounding=ROUND_FLOOR) * step
     while qty > 0:
-        total = float(qty) * price
+        total = qty * Decimal(str(price))
         if cents(total) + fee(cfg, total, "BUY") <= budget_cents:
             return qty
         qty -= step
@@ -48,7 +49,8 @@ def value_account(account, quotes, cfg, now=None):
         q = quotes.get(symbol)
         problem = cfg.get('blocked_symbols', {}).get(symbol) or price_problem(q, cfg, now)
         mark = execution_price(q, cfg, "SELL") if q and all(isinstance(q.get(k), (int, float)) and math.isfinite(q[k]) and q[k] > 0 for k in ('bid', 'ask')) and q['ask'] >= q['bid'] else None
-        net = cents(float(p["quantity"]) * mark) - fee(cfg, float(p["quantity"]) * mark, "SELL") if mark else None
+        mark_value = p["quantity"] * Decimal(str(mark)) if mark else None
+        net = cents(mark_value) - fee(cfg, float(mark_value), "SELL") if mark_value else None
         if net is None or problem:
             complete = False
         else:
@@ -266,8 +268,10 @@ def execute(ledger, cfg, decisions, quotes, now, book="strategy"):
             step = Decimal('1') if cfg['market']=='bist' else Decimal('0.01')
             price_now = execution_price(quotes[symbol], cfg, side)
             while qty > 0:
-                full_risk = (cents(float(qty)*price_now) + fee(cfg,float(qty)*price_now,'BUY')
-                             - cents(float(qty)*d['stop']) + fee(cfg,float(qty)*d['stop'],'SELL'))
+                entry_value = qty * Decimal(str(price_now))
+                stop_value = qty * Decimal(str(d['stop']))
+                full_risk = (cents(entry_value) + fee(cfg, float(entry_value), 'BUY')
+                             - cents(stop_value) + fee(cfg, float(stop_value), 'SELL'))
                 if full_risk <= allowed_risk:
                     break
                 qty -= step
@@ -275,12 +279,12 @@ def execute(ledger, cfg, decisions, quotes, now, book="strategy"):
                 d.update(action="BEKLE", code="budget", reasons=["Masraflar ve risk sınırı sonrası bütçe en küçük alıma yetmiyor."])
                 continue
         price = execution_price(quotes[symbol], cfg, side)
-        notional = float(qty) * price
+        notional = qty * Decimal(str(price))
         # Sabit trend kuralı hedef fiyat tahmin etmez; ortak masraf/stop/bütçe
         # sınırları yukarıda aynen çalışır, yalnız tahmine dayalı R:R uygulanmaz.
         if side == 'BUY' and not (cfg.get('strategy_kind') == 'sma50' and d.get('strategy_kind') == 'sma50'):
-            target_value = float(qty) * d['target']
-            stop_value = float(qty) * d['stop']
+            target_value = qty * Decimal(str(d['target']))
+            stop_value = qty * Decimal(str(d['stop']))
             cost = cents(notional) + fee(cfg, notional, 'BUY')
             reward = cents(target_value) - fee(cfg, target_value, 'SELL') - cost
             risk_amount = cost - cents(stop_value) + fee(cfg, stop_value, 'SELL')

@@ -1,0 +1,185 @@
+{
+  "version": 1,
+  "actions": [
+    {
+      "ticker": "BIMAS",
+      "date": "2026-09-16",
+      "kind": "temettu",
+      "value": 2.5,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "DOAS",
+      "date": "2026-08-13",
+      "kind": "temettu",
+      "value": 15.0,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TAVHL",
+      "date": "2026-09-22",
+      "kind": "temettu",
+      "value": 1.80499,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TRALT",
+      "date": "2010-05-24",
+      "kind": "temettu",
+      "value": 0.008586,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TRALT",
+      "date": "2010-06-16",
+      "kind": "bolunme",
+      "value": 2.5417,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TRALT",
+      "date": "2011-05-06",
+      "kind": "temettu",
+      "value": 0.007029,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TRALT",
+      "date": "2012-05-15",
+      "kind": "temettu",
+      "value": 0.029613,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TRALT",
+      "date": "2013-05-14",
+      "kind": "temettu",
+      "value": 0.040971,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TRALT",
+      "date": "2014-04-04",
+      "kind": "temettu",
+      "value": 0.042376,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TRALT",
+      "date": "2014-09-03",
+      "kind": "temettu",
+      "value": 0.047619,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TRALT",
+      "date": "2015-04-01",
+      "kind": "temettu",
+      "value": 0.046838,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TRALT",
+      "date": "2022-07-07",
+      "kind": "temettu",
+      "value": 0.835682,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TRALT",
+      "date": "2023-02-17",
+      "kind": "bolunme",
+      "value": 21.0,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TRALT",
+      "date": "2023-07-14",
+      "kind": "temettu",
+      "value": 0.4,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TRMET",
+      "date": "2003-06-20",
+      "kind": "bolunme",
+      "value": 3.85,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TRMET",
+      "date": "2005-01-03",
+      "kind": "bolunme",
+      "value": 0.001,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TRMET",
+      "date": "2007-11-30",
+      "kind": "bolunme",
+      "value": 2.1,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TUPRS",
+      "date": "2026-09-30",
+      "kind": "temettu",
+      "value": 6.746953,
+      "source": "yfinance"
+    }
+  ],
+  "changes": [
+    {
+      "before": {
+        "prediction_id": "2026-09-15-BIMAS-1",
+        "resolved_date": "2026-09-22",
+        "resolution": "hedef",
+        "entry_date": "2026-09-16",
+        "entry_price": 403.75,
+        "exit_date": "2026-09-22",
+        "exit_price": 437.5,
+        "holding_days": 4,
+        "ret_pct": 8.0591,
+        "ret_pct_gross": 8.3591,
+        "ret_pct_equal_size": 0.8059,
+        "xu100_ret_pct": 0.581,
+        "ew_universe_ret_pct": 2.507,
+        "alpha_vs_xu100": 7.4781,
+        "alpha_vs_ew": 5.5521,
+        "fwd_ret_20d": null,
+        "fwd_alpha_20d_ew": null,
+        "slippage_pct": 0.0,
+        "hit": 1,
+        "error_tag": "hedef",
+        "resolver_version": "resolver_v1",
+        "resolved_utc": "2026-09-22T19:57:02+00:00"
+      },
+      "after": {
+        "prediction_id": "2026-09-15-BIMAS-1",
+        "resolved_date": "2026-09-16",
+        "resolution": "iptal_kurumsal",
+        "entry_date": "2026-09-16",
+        "entry_price": 403.75,
+        "exit_date": null,
+        "exit_price": null,
+        "holding_days": null,
+        "ret_pct": null,
+        "ret_pct_gross": null,
+        "ret_pct_equal_size": null,
+        "xu100_ret_pct": null,
+        "ew_universe_ret_pct": null,
+        "alpha_vs_xu100": null,
+        "alpha_vs_ew": null,
+        "fwd_ret_20d": null,
+        "fwd_alpha_20d_ew": null,
+        "slippage_pct": null,
+        "hit": null,
+        "error_tag": "kurumsal_islem:temettu",
+        "resolver_version": "resolver_v2_corporate_window_repair_20260930",
+        "resolved_utc": "2026-09-30T17:29:15+00:00"
+      }
+    }
+  ],
+  "created_at": "2026-09-30T17:29:15+00:00",
+  "id": "33765bf7505228edd2c020c6b0f78e8ee9c33d5e93223f058140f8c67e58ccda"
+}

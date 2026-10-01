@@ -1,0 +1,44 @@
+{
+  "market": "bist",
+  "initial_active_events": 5473,
+  "cycles": [
+    {
+      "analysis_date": "2026-09-29",
+      "expected": "2026-09-29",
+      "issues": {
+        "SASA": "Fiyat geçmişi eksik/geçersiz."
+      },
+      "decision_codes": {
+        "reward_risk": 9,
+        "data_block": 1,
+        "no_edge": 22
+      },
+      "equity": 50000.0,
+      "contributed": 50000.0,
+      "candidate_count": 4
+    },
+    {
+      "analysis_date": "2026-09-29",
+      "expected": "2026-09-29",
+      "issues": {
+        "SASA": "Fiyat geçmişi eksik/geçersiz."
+      },
+      "decision_codes": {
+        "reward_risk": 9,
+        "data_block": 1,
+        "no_edge": 22
+      },
+      "equity": 50000.0,
+      "contributed": 50000.0,
+      "candidate_count": 4
+    }
+  ],
+  "repeat_unchanged": true,
+  "legacy_unchanged": true,
+  "midnight": {
+    "skipped": false,
+    "phase": "valuation"
+  },
+  "restore_hash": "2eac4f6ae39c4710bf25c1c98dc0f5b9edeb491c23823e4aef219542fdc8c268",
+  "restore_files": 809
+}

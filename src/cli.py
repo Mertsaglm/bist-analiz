@@ -51,6 +51,9 @@ def cmd_veri(args) -> int:
         print("\nKurumsal işlemler…")
         a = prices.sync_actions(cfg, con, tickers)
         print(f"  {a['kayit']} kayıt")
+        if not a["ok"]:
+            print("Kurumsal işlem kaynağı eksik: " + ", ".join(sorted(a["failed"])))
+            return 1
 
     elif args.alt == "gunluk":
         prices.sync_indices(cfg, con, start=(
@@ -61,6 +64,11 @@ def cmd_veri(args) -> int:
         print(f"Kalite kapısı otomatik koştu: {r['kalite_degerlendirilen']} "
               f"ticker, {r['kalite_gecmeyen']} tanesi geçemedi "
               f"(ayrıntı: `bist veri kalite`)")
+
+        a = prices.sync_actions(cfg, con)
+        if not a['ok']:
+            print('Kurumsal işlem kaynağı eksik: ' + ', '.join(sorted(a['failed'])))
+            return 1
 
     elif args.alt == "temizle":
         r = prices.purge_phantom_bars(cfg, con)

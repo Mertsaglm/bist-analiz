@@ -50,7 +50,7 @@ log = logging.getLogger(__name__)
 
 # Bu adımlardan biri düşerse koşu BAŞARISIZ sayılır (çıkış 1).
 # `analist`, `haber` ve `makro` listede YOK: üçü de düşse rapor hâlâ anlamlıdır.
-KRITIK_ADIMLAR = ("veri", "gosterge", "saglik", "rapor")
+KRITIK_ADIMLAR = ("veri", "kurumsal", "gosterge", "saglik", "rapor")
 
 
 def _hata(sonuc: dict, adim: str, e: Exception) -> None:
@@ -137,6 +137,15 @@ def gunluk(cfg: dict, con: sqlite3.Connection, *, bugun: date | None = None,
             f"· kalite {r['kalite_gecmeyen']} isim geçemedi")
     except Exception as e:                                  # noqa: BLE001
         _hata(sonuc, "veri", e)
+
+    # D-01: V1 resolver'ın okuduğu SQL tablosunu aynı koşu beslemeli.
+    try:
+        r = prices.sync_actions(cfg, con)
+        if not r['ok']:
+            raise RuntimeError('Kurumsal işlem kaynağı doğrulanamadı: ' + ', '.join(sorted(r['failed'])))
+        sonuc['adimlar']['kurumsal'] = f"{r['kayit']} kayıt / {r['tickers']} hisse"
+    except Exception as e:
+        _hata(sonuc, 'kurumsal', e)
 
     # 2b) ENDEKS ve KUR — kritik DEĞİL, ama sağlık onu 2 seans TOLERANSLA izler.
     #
@@ -231,6 +240,9 @@ def gunluk(cfg: dict, con: sqlite3.Connection, *, bugun: date | None = None,
         s = sag.kontrol(cfg, con)
         sonuc["saglik"] = s
         sonuc["adimlar"]["saglik"] = sag.tek_satir(s)
+        if 'kurumsal' in sonuc.get('hatalar', {}):
+            # Bu koşunun yenileyebildiği GİRDİ kapısıdır; eski karne gözlemi değildir.
+            s['kritik'].append((sag.KRITIK, 'kurumsal işlem kaynağı', sonuc['hatalar']['kurumsal']))
         if s["kritik"]:
             # Kapı KAPALI: paket üretme, analiz etme, rapor yazma.
             _hata(sonuc, "saglik",

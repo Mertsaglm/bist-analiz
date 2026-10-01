@@ -34,6 +34,19 @@ export function validate(data, market) {
     throw new Error('Portföy verisinin biçimi doğrulanamadı.');
   }
   const invalid = (data.risk_factors != null && (!obj(data.risk_factors) || !Object.values(data.risk_factors).every(t=>obj(t) && ['gold_direct','gold_related'].includes(t.factor) && typeof t.label==='string')))
+    || (data.portfolio_experiments != null && (!obj(data.portfolio_experiments)
+      || typeof data.portfolio_experiments.status!=='string'
+      || !Array.isArray(data.portfolio_experiments.accounts)
+      || !data.portfolio_experiments.accounts.every(c=>obj(c) && typeof c.id==='string' && account(c.strategy)
+        && obj(c.strategy.parts) && Array.isArray(c.diagnostics)
+        && (c.target_portfolio == null || (obj(c.target_portfolio) && Array.isArray(c.target_portfolio.rows)
+          && c.target_portfolio.rows.every(r=>obj(r) && typeof r.symbol==='string'
+            && ['core','tactical'].includes(r.book) && nullable(r.target_weight_pct)))))
+      || (data.portfolio_experiments.comparison != null && (!obj(data.portfolio_experiments.comparison)
+        || !Array.isArray(data.portfolio_experiments.comparison.arms)
+        || !data.portfolio_experiments.comparison.arms.every(a=>obj(a) && typeof a.id==='string'
+          && nullable(a.wealth_try) && num(a.contributed_try) && nullable(a.twr_pct)
+          && nullable(a.max_drawdown_pct))))))
     || (data.risk != null && (!obj(data.risk) || !Array.isArray(data.risk.stress)
       || !data.risk.stress.every(x=>obj(x) && num(x.fall_pct) && nullable(x.loss_try))
       || !Array.isArray(data.risk.missing) || !data.risk.missing.every(x=>typeof x==='string')))
@@ -44,8 +57,10 @@ export function validate(data, market) {
     || (data.risk_control != null && (!obj(data.risk_control) || !Array.isArray(data.risk_control.reasons)))
     || (data.funnel != null && (!obj(data.funnel) || !obj(data.funnel.groups)
       || !Object.values(data.funnel.groups).every(num) || !num(data.funnel.total)))
-    || data.decisions.some(d => d.change != null && (!obj(d.change) || !Array.isArray(d.change.items)
-      || !d.change.items.every(obj)));
+    || data.decisions.some(d => (d.change != null && (!obj(d.change) || !Array.isArray(d.change.items)
+      || !d.change.items.every(obj))) || (d.checks != null && (!Array.isArray(d.checks)
+      || !d.checks.every(c=>obj(c) && typeof c.check==='string'
+        && ['geçti','kaldı','değerlendirilmedi'].includes(c.status)))));
   if (invalid) throw new Error('Portföy açıklamalarının biçimi doğrulanamadı.');
   return data;
 }

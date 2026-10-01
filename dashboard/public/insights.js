@@ -13,14 +13,46 @@ export function decisionDetail(d) {
     ${metric('Miktar',x.quantity??'İşlem yok')}${metric('İşlem tutarı',money(x.notional_try))}${metric('İşlem masrafı',money(x.fee_try))}
     ${metric('Zarar sınırı',money(d.stop))}${metric('Hedef fiyat',money(d.target))}
     ${metric('Stopta tahmini kayıp',money(x.stop_risk_try))}${metric('Hedefte net sonuç',money(x.target_net_try))}
-    <p>${esc(x.note)}</p><h3>Ne değişti?</h3>${change}</details>`;
+    <p>${esc(x.note)}</p>${d.checks?.length?`<h3>Karar kontrolleri</h3>${d.checks.map(c=>metric(`${c.check} · ${c.status}`,`${c.observed??'—'} / ${c.threshold??'—'}`)).join('')}`:''}<h3>Ne değişti?</h3>${change}</details>`;
+}
+
+export function portfolioExperimentPanel(s) {
+  const experiment=s.portfolio_experiments;
+  if (!experiment) return '';
+  if (!experiment.accounts?.length) return panel('Çekirdek ve taktik deneyi',
+    `<p>${esc(experiment.status)}. İki piyasanın ortak ileri başlangıç tarihi yayımdan sonra sabitlenecek; eski ana hesabın sonucu bu yeni yarışa katılmıyor.</p>`,'portfolio-experiment');
+  const names={'legacy-control':'Mevcut politika','core-cash':'%80 çekirdek + %20 nakit',
+    'core-passive':'Çekirdek + pasif yatırım','core-ridge':'Çekirdek + mevcut Ridge',
+    'core-specialized':'Çekirdek + özel model'};
+  const metrics=new Map((experiment.comparison?.arms||[]).map(a=>[a.id,a]));
+  const rows=experiment.accounts.map(a=>{
+    const r=metrics.get(a.id)||{},parts=a.strategy?.parts||{};
+    return `<tr><td><strong>${esc(names[a.id]||a.id)}</strong><small>${esc(a.start_date)} başlangıç</small></td>`+
+      `<td>${money(r.wealth_try)}<small>Katkı: ${money(r.contributed_try)}</small>${r.vs_passive?`<small>Pasife fark: ${money(r.vs_passive.wealth_difference_try)}</small>`:''}</td>`+
+      `<td>${r.twr_pct==null?'—':`${number(r.twr_pct)}%`}<small>Düşüş: ${r.max_drawdown_pct==null?'—':`${number(r.max_drawdown_pct)}%`}</small></td>`+
+      `<td>${money(parts.core?.equity_try)}<small>Taktik: ${money(parts.tactical?.equity_try)}</small></td>`+
+      `<td>${number(r.trade_count,0)} işlem<small>İşlem masrafı: ${money(r.transaction_fees_try)}</small></td></tr>`;
+  }).join('');
+  const ridge=experiment.accounts.find(a=>a.id==='core-ridge');
+  const targets=(ridge?.target_portfolio?.rows||[]).filter(r=>r.book==='tactical');
+  return `<section class="panel" data-testid="portfolio-experiment"><div class="panel-head"><h2>Çekirdek ve taktik deneyi</h2></div>`+
+    `<p class="panel-subtitle">Aynı başlangıç ve katkılar; her kolun parası ayrıdır. Sonuçlar ana servete eklenmez.</p>`+
+    `<div class="table-wrap"><table><thead><tr><th>KOL</th><th>NET SERVET</th><th>KATKISIZ GETİRİ</th><th>ÇEKİRDEK / TAKTİK</th><th>İŞLEMLER</th></tr></thead><tbody>${rows}</tbody></table></div>`+
+    `${targets.length?`<div class="panel-body"><h3>Mevcut Ridge taktik hedefi</h3>${targets.map(t=>metric(t.symbol,`şimdi ${number(t.current_weight_pct)}% · hedef ${number(t.target_weight_pct)}% · net beklenti ${number(t.net_forecast_pct)}%`)).join('')}</div>`:''}`+
+    `<div class="note-strip">${esc(experiment.comparison?.evaluation_status||'Ölçüm bekleniyor')} · Otomatik terfi yok. Çekirdeğin stopu yoktur; piyasa riski sıfır değildir. BIST eşit ağırlıklı sepet, resmî BIST30 endeks getirisi değildir. Tarihsel banka dolumu varsayılmaz.</div></section>`;
 }
 
 export function funnelPanel(s) {
   const f=s.funnel;
   if (!f) return '';
+  const detail=s.filter_diagnostics, interaction=detail?.bist_interaction;
   return panel('Kararlar nasıl dağıldı?',Object.entries(f.groups).map(([label,n])=>metric(label,`${number(n)} varlık`)).join('')+
-    `<p>Toplam ${number(f.total)} varlık. Veri eksikliği, bütçe sınırı ve fırsat yokluğu ayrı sayılır.</p>`,'decision-funnel');
+    `<p>Toplam ${number(f.total)} varlık. Veri eksikliği, bütçe sınırı ve fırsat yokluğu ayrı sayılır.</p>`+
+    (interaction?.fully_evaluated?`<h3>Filtre etkileşimi</h3>${metric('Dört kontrolü ölçülen',number(interaction.fully_evaluated))}`+
+      `${metric('Hepsi geçti',number(interaction.all_pass))}${metric('R:R olmadan',number(interaction.without_rr))}`+
+      `${metric('Trend olmadan',number(interaction.without_trend))}${metric('İkisi olmadan',number(interaction.without_both))}`+
+      `<p>${esc(detail.note)}</p>`:'')
+    ,'decision-funnel');
 }
 
 export function weeklyPanel(s) {

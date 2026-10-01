@@ -1,0 +1,3 @@
+gunluk	UNKNOWN STEP	2026-09-29T21:01:57.3626183Z WARNING KAP beklenen bildirim TAVANA DAYANDI (2000 ≥ 1950) — liste kırpık, SAKLANMAYACAK
+gunluk	UNKNOWN STEP	2026-09-29T21:03:12.2207608Z   ✓ beklenen_bildirim BAŞARISIZ: yanıt TAVANA dayandı, saklanmadı — eski anlık görüntü korunuyor
+gunluk	UNKNOWN STEP	2026-09-29T21:03:12.2214768Z   ⚠ beklenen bildirim takvimi: yanıt TAVANA dayandı, saklanmadı — eski anlık görüntü korunuyor

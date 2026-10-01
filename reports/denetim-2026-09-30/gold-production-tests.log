@@ -1,0 +1,29 @@
+........................................................................ [  7%]
+........................................................................ [ 14%]
+........................................................................ [ 22%]
+........................................................................ [ 29%]
+........................................................................ [ 36%]
+........................................................................ [ 44%]
+...................................................s....s.......s.ss.... [ 51%]
+...s.....s...................................s.......................... [ 58%]
+........................................................................ [ 66%]
+.................................................................sssssss [ 73%]
+sssssssssssssssssssssssss............................................... [ 80%]
+........................................................................ [ 88%]
+........................................................................ [ 95%]
+...........................................                              [100%]
+=========================== short test summary info ============================
+SKIPPED [7] tests/test_modul_saglik.py:106: CLI girişi yok
+SKIPPED [1] tests/test_modul_saglik.py:317: git deposu yok
+SKIPPED [1] tests/test_sozlesme_gizlilik.py:73: git deposu yok
+SKIPPED [1] tests/test_sozlesme_gizlilik.py:91: git deposu yok
+SKIPPED [10] tests/test_sozlesme_gizlilik.py:98: git deposu yok
+SKIPPED [13] tests/test_sozlesme_gizlilik.py:105: git deposu yok
+SKIPPED [1] tests/test_sozlesme_gizlilik.py:116: git deposu yok
+SKIPPED [1] tests/test_sozlesme_gizlilik.py:130: git deposu yok
+SKIPPED [1] tests/test_sozlesme_gizlilik.py:156: git deposu yok
+SKIPPED [1] tests/test_sozlesme_gizlilik.py:180: git deposu yok
+SKIPPED [1] tests/test_sozlesme_gizlilik.py:188: git deposu yok
+SKIPPED [1] tests/test_sozlesme_gizlilik.py:200: git deposu yok
+SKIPPED [1] tests/test_sozlesme_gizlilik.py:213: git deposu yok
+939 passed, 40 skipped in 31.65s

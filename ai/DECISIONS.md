@@ -6,6 +6,48 @@
 
 ---
 
+## #033 — 2026-10-01 — Ayrı %80 çekirdek/%20 taktik ileri sanal sınav
+
+**Bağlam:** Ana hesaplar nakitte kalıyor; mevcut fırsat filtresi düzenli birikim
+amacını karşılamıyor. Daha çok AL üretmek tek başına yarar kanıtı değil.
+**Seçenekler:** A) Ana politikanın kapılarını gevşetmek; B) mevcut hesabı
+koruyup ortak T0'lı ayrı çekirdek/taktik ve pasif kontrol kolları kurmak;
+C) LLM/RL ile karar motorunu değiştirmek.
+**Karar:** B. BIST30 eşit ağırlıklı ve GRAM çekirdeği katkının %80'ini
+modelden bağımsız yatırır; en fazla %20 taktik ayrı risktir. Beş sabit kol,
+aynı para/maliyet ve ayrı mühürlü defterle izlenir. BIST göreli Ridge ve altın
+ons/kur Ridge ayrı adaydır; LightGBM yalnız offline araştırmadır. Otomatik
+terfi yok; T0 iki piyasada taze veriyle aynı tarihte açılana dek kapalıdır.
+**Neden:** Mert'in düşük maliyetli, uzun vadeli birikim ve sınırlı fırsat
+yakalama hedefini ana geçmişi bozmadan ölçer. Pasif %20 kolu taktiğin
+gerçek ek katkısını ayırır. İlk offline sonuçlar yeni modellerin üstünlüğünü
+göstermedi; aday olarak kalmaları ve ön kayıt bu yüzden önemlidir.
+**Tekrar gözden geçir:** 63/126 ileri seansta aynı katkı ve masrafla servet,
+katkısız getiri ve en yüksek düşüş birlikte değerlendirildiğinde; veri/üyelik
+ve maliyet kaynakları değişirse yeni deney sürümü açılır.
+**Kanıt:** `docs/PORTFOY-DENEYI-2026-10-01.md`; yerel arşiv kopyası ve model
+makbuzları orada listelidir. Yayın ve T0 aktivasyonu yapılmadı.
+
+---
+
+## #032 — 2026-09-30 — SQL yazarlarının bekleyen işleri kaybetmeyen kuyruğu
+
+**Bağlam:** Kapanış telafisi portföy işini SQL yazarı yaptı. Ayrı gruplar ortak SQL'i
+çatıştırır; eski tek bekleyen concurrency davranışı sık portföy çağrısında günlük
+işi iptal ediyordu. Yalnız grup adını birleştirmek bu eski hatayı geri getirir.
+**Seçenekler:** Ayrı gruplar ve veri birleşimi; tek iş mimarisi; ortak grup + kuyruk.
+**Karar:** İki repoda SQL yazan işler `repo-commit`, `cancel-in-progress: false`,
+`queue: max` kullanır; checkout açıkça güncel `main` dalını alır. Workflow sözleşme
+testleri bütün SQL yazarlarında bunu zorlar. Yayın ayrı onay bekler.
+**Neden:** Mevcut düşük maliyetli Actions hattını korur; SQL çakışması ve bekleyen
+tek işin ezilmesi birlikte önlenir. Takvim cron'u gerçek zaman garantisi değildir.
+**Kaynak:** GitHub'ın kuyruk belgesi, 2026-09-30 kontrol edildi:
+https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency
+**Tekrar gözden geçir:** 100 bekleyen sınırına yaklaşılırsa veya sırada bekleme
+veri/gözlem tazeliğini bozarsa tek zamanlayıcı/iş düzenine geçiş değerlendirilsin.
+
+---
+
 ## #031 — 2026-09-25 — Yerel eğitim makbuzu ve gerçek veriyle kapanış
 
 **Bağlam:** Kullanıcı commit/push istemiyor; eksikleri tamamlamayı ve modelleri

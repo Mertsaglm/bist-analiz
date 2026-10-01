@@ -1,5 +1,17 @@
 # PROJECT.md — Projenin Kimliği
 
+## İleri sanal sınav kapsamı — 2026-10-01
+
+Ana hesap geçmişi ve eski adaylar korunur. Ortak ileri T0 ile iki ayrı piyasada
+50.000 TL + aylık 5.000 TL bütçeli beş yeni sanal kol kurulur. %80 çekirdek
+düzenli birikimdir; BIST'te tarihli BIST30 eşit ağırlıklı sepet, altında İş Bankası
+GRAM. En fazla %20 taktik, masraf sonrası tahmin ve açık stop riskiyle sınırlıdır.
+Çekirdek + nakit/pasif kollar taktiğin ek katkısını ölçer. Eski Ridge kontrol,
+göreli BIST/ons-kur altın Ridge ayrı model adayıdır. LightGBM yalnız offline'dır.
+Başarı, aynı katkılarla maliyet sonrası servet ve katkısız getirinin pasif kola
+göre değerlendirilmesidir; düşüş daha kötü olmamalı. İleri T0 henüz açılmadı;
+otomatik terfi ve gerçek emir yok. Ayrıntı: `docs/PORTFOY-DENEYI-2026-10-01.md`.
+
 ## Güncel kapsam — 2026-09-25
 
 Mert'in yeni talebi: BIST ve İş Bankası gram altını için iki ayrı otomatik analiz ve

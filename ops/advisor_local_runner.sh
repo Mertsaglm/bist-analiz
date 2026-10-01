@@ -29,13 +29,13 @@ fi
 if ! "$PYTHON" - <<'PY'
 from datetime import datetime, timezone
 from pathlib import Path
-from advisor.calendar import load, session_block
+from advisor.calendar import load, phase
 from advisor.service import configuration
 
 root = Path.cwd()
 cfg = configuration(root)
 cfg['calendar'] = load(root)
-raise SystemExit(0 if session_block(datetime.now(timezone.utc), cfg) is None else 1)
+raise SystemExit(0 if phase(datetime.now(timezone.utc), cfg) != 'closed' else 1)
 PY
 then
   log 'Seans dışında veya tatildeyiz; V2 çevrimi gerekmiyor.'
@@ -48,22 +48,24 @@ set +a
 export ADVISOR_V2=1
 
 set +e
+"$PYTHON" scripts/refresh_market_history.py
+HISTORY_STATUS=$?
 "$PYTHON" -m advisor cycle
 CYCLE_STATUS=$?
 set -e
 
-git add data/advisor/
+git add data/advisor/ data/bist.sql
 if ! git diff --cached --quiet; then
   git commit -m "advisor: yerel V2 çevrimi $(date -u +%Y-%m-%dT%H:%MZ)"
   "$ROOT/ops/push_retry.sh"
 fi
-if (( CYCLE_STATUS != 0 )); then
+if (( CYCLE_STATUS != 0 || HISTORY_STATUS != 0 )); then
   log "V2 çevrimi hata kodu $CYCLE_STATUS ile bitti; hata arşivi teslim edildi."
-  exit "$CYCLE_STATUS"
+  exit 1
 fi
 
 "$PYTHON" -m advisor notify
-git add data/advisor/
+git add data/advisor/ data/bist.sql
 if ! git diff --cached --quiet; then
   git commit -m 'advisor: yerel V2 bildirim makbuzu'
   "$ROOT/ops/push_retry.sh"

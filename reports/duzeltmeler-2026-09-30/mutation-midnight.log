@@ -1,0 +1,129 @@
+FFFF.F.                                                                  [100%]
+=================================== FAILURES ===================================
+_ test_closing_date_is_a_session_not_midnight[2026-09-29T21:03:58+00:00-2026-09-29] _
+
+stamp = '2026-09-29T21:03:58+00:00', expected = '2026-09-29'
+
+    @pytest.mark.parametrize('stamp,expected',[
+        ('2026-09-29T21:03:58+00:00','2026-09-29'),
+        ('2026-09-25T22:18:00+00:00','2026-09-25'),
+        ('2026-09-28T06:00:00+00:00','2026-09-25'),
+        ('2026-09-30T15:09:00+00:00','2026-09-29'),
+        ('2026-09-30T15:10:00+00:00','2026-09-30'),
+        ('2026-10-28T09:39:00+00:00','2026-10-27'),
+        ('2026-10-28T09:40:00+00:00','2026-10-28'),
+    ])
+    def test_closing_date_is_a_session_not_midnight(stamp,expected):
+        cfg=service.configuration(ROOT);cfg['calendar']=calendar.load(ROOT)
+>       assert calendar.last_closed_session(datetime.fromisoformat(stamp),cfg).isoformat()==expected
+E       AssertionError: assert '2026-09-30' == '2026-09-29'
+E
+E         - 2026-09-29
+E         ?         ^^
+E         + 2026-09-30
+E         ?         ^^
+
+tests/test_production_repairs.py:90: AssertionError
+_ test_closing_date_is_a_session_not_midnight[2026-09-25T22:18:00+00:00-2026-09-25] _
+
+stamp = '2026-09-25T22:18:00+00:00', expected = '2026-09-25'
+
+    @pytest.mark.parametrize('stamp,expected',[
+        ('2026-09-29T21:03:58+00:00','2026-09-29'),
+        ('2026-09-25T22:18:00+00:00','2026-09-25'),
+        ('2026-09-28T06:00:00+00:00','2026-09-25'),
+        ('2026-09-30T15:09:00+00:00','2026-09-29'),
+        ('2026-09-30T15:10:00+00:00','2026-09-30'),
+        ('2026-10-28T09:39:00+00:00','2026-10-27'),
+        ('2026-10-28T09:40:00+00:00','2026-10-28'),
+    ])
+    def test_closing_date_is_a_session_not_midnight(stamp,expected):
+        cfg=service.configuration(ROOT);cfg['calendar']=calendar.load(ROOT)
+>       assert calendar.last_closed_session(datetime.fromisoformat(stamp),cfg).isoformat()==expected
+E       AssertionError: assert '2026-09-26' == '2026-09-25'
+E
+E         - 2026-09-25
+E         ?          ^
+E         + 2026-09-26
+E         ?          ^
+
+tests/test_production_repairs.py:90: AssertionError
+_ test_closing_date_is_a_session_not_midnight[2026-09-28T06:00:00+00:00-2026-09-25] _
+
+stamp = '2026-09-28T06:00:00+00:00', expected = '2026-09-25'
+
+    @pytest.mark.parametrize('stamp,expected',[
+        ('2026-09-29T21:03:58+00:00','2026-09-29'),
+        ('2026-09-25T22:18:00+00:00','2026-09-25'),
+        ('2026-09-28T06:00:00+00:00','2026-09-25'),
+        ('2026-09-30T15:09:00+00:00','2026-09-29'),
+        ('2026-09-30T15:10:00+00:00','2026-09-30'),
+        ('2026-10-28T09:39:00+00:00','2026-10-27'),
+        ('2026-10-28T09:40:00+00:00','2026-10-28'),
+    ])
+    def test_closing_date_is_a_session_not_midnight(stamp,expected):
+        cfg=service.configuration(ROOT);cfg['calendar']=calendar.load(ROOT)
+>       assert calendar.last_closed_session(datetime.fromisoformat(stamp),cfg).isoformat()==expected
+E       AssertionError: assert '2026-09-28' == '2026-09-25'
+E
+E         - 2026-09-25
+E         ?          ^
+E         + 2026-09-28
+E         ?          ^
+
+tests/test_production_repairs.py:90: AssertionError
+_ test_closing_date_is_a_session_not_midnight[2026-09-30T15:09:00+00:00-2026-09-29] _
+
+stamp = '2026-09-30T15:09:00+00:00', expected = '2026-09-29'
+
+    @pytest.mark.parametrize('stamp,expected',[
+        ('2026-09-29T21:03:58+00:00','2026-09-29'),
+        ('2026-09-25T22:18:00+00:00','2026-09-25'),
+        ('2026-09-28T06:00:00+00:00','2026-09-25'),
+        ('2026-09-30T15:09:00+00:00','2026-09-29'),
+        ('2026-09-30T15:10:00+00:00','2026-09-30'),
+        ('2026-10-28T09:39:00+00:00','2026-10-27'),
+        ('2026-10-28T09:40:00+00:00','2026-10-28'),
+    ])
+    def test_closing_date_is_a_session_not_midnight(stamp,expected):
+        cfg=service.configuration(ROOT);cfg['calendar']=calendar.load(ROOT)
+>       assert calendar.last_closed_session(datetime.fromisoformat(stamp),cfg).isoformat()==expected
+E       AssertionError: assert '2026-09-30' == '2026-09-29'
+E
+E         - 2026-09-29
+E         ?         ^^
+E         + 2026-09-30
+E         ?         ^^
+
+tests/test_production_repairs.py:90: AssertionError
+_ test_closing_date_is_a_session_not_midnight[2026-10-28T09:39:00+00:00-2026-10-27] _
+
+stamp = '2026-10-28T09:39:00+00:00', expected = '2026-10-27'
+
+    @pytest.mark.parametrize('stamp,expected',[
+        ('2026-09-29T21:03:58+00:00','2026-09-29'),
+        ('2026-09-25T22:18:00+00:00','2026-09-25'),
+        ('2026-09-28T06:00:00+00:00','2026-09-25'),
+        ('2026-09-30T15:09:00+00:00','2026-09-29'),
+        ('2026-09-30T15:10:00+00:00','2026-09-30'),
+        ('2026-10-28T09:39:00+00:00','2026-10-27'),
+        ('2026-10-28T09:40:00+00:00','2026-10-28'),
+    ])
+    def test_closing_date_is_a_session_not_midnight(stamp,expected):
+        cfg=service.configuration(ROOT);cfg['calendar']=calendar.load(ROOT)
+>       assert calendar.last_closed_session(datetime.fromisoformat(stamp),cfg).isoformat()==expected
+E       AssertionError: assert '2026-10-28' == '2026-10-27'
+E
+E         - 2026-10-27
+E         ?          ^
+E         + 2026-10-28
+E         ?          ^
+
+tests/test_production_repairs.py:90: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_production_repairs.py::test_closing_date_is_a_session_not_midnight[2026-09-29T21:03:58+00:00-2026-09-29]
+FAILED tests/test_production_repairs.py::test_closing_date_is_a_session_not_midnight[2026-09-25T22:18:00+00:00-2026-09-25]
+FAILED tests/test_production_repairs.py::test_closing_date_is_a_session_not_midnight[2026-09-28T06:00:00+00:00-2026-09-25]
+FAILED tests/test_production_repairs.py::test_closing_date_is_a_session_not_midnight[2026-09-30T15:09:00+00:00-2026-09-29]
+FAILED tests/test_production_repairs.py::test_closing_date_is_a_session_not_midnight[2026-10-28T09:39:00+00:00-2026-10-27]
+5 failed, 2 passed in 0.67s

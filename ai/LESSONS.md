@@ -6,6 +6,24 @@
 
 ---
 
+## L-033 — 2026-10-01 — Okunma saati yeni kotasyon değildir
+
+**Anti-pattern:** Sağlayıcı aynı fiyatın `quoted_at` damgasını koruyup yalnız
+`observed_at` alanını günceller. Bütün kotasyon JSON'unu işlem anahtarı yapmak,
+her gözlemde yeni alım üretir. Tarihli üyeliği yalnız `reason == BIST30`
+ile tanımak da 2026-10-01 TRMET değişimini çekirdekten sessizce çıkarır.
+
+**Düzeltme:** Sanal dolum kimliği kaynak + kotasyon damgasına bağlandı;
+aynı damganın ikinci okunması ikinci işlem olmaz. Üyelik, etkin tarih ve
+`BIST30` işaretli değişim kayıtlarıyla hesaplanır. 2026-09-30/2026-10-01
+üyelik sayısı ve aynı damga tekrar dolumu davranış testiyle kilitlendi.
+
+**Kural:** Kimlik için "ne zaman okudum" yerine "hangi fiyatı/olayı gördüm"
+sor. Tarihli veri metin alanlarında yalnız tam eşitlik kullanmadan önce
+değişim kaydının nasıl yazıldığını gerçek arşivde ölç.
+
+---
+
 ## L-032 — 2026-09-25 — Düzeltme sonrası toplam fark, nedenin payı değildir
 
 **Anti-pattern:** Takvim, veri kapsamı, ücret ve dolum mantığı birlikte değişince
@@ -1088,3 +1106,40 @@ göstermez. Mevcut birleşik hayalet bar kuralı kullanılmalı; gerçek seansta
 sıfır hacimli referans değerlemede korunmalı, işlem üretmemelidir.
 **Yorum:** Aynı portföy sonucu farklı tahminlerden gelebilir. Eğitim katsayılarının
 varlığı veya daha fazla özellik, basit kıyasa üstünlük kanıtı değildir.
+
+
+## 2026-09-30 — Veri onarımı, geçerli kaybı silemez
+
+**Anti-pattern:** Eksik kurumsal girdiyi ekleyince resolver'ın bütün plan ufkunu
+iptal etmesini doğru kabul etmek. Gerçek TAVHL 1 Eylül stop'u, 22 Eylül temettüsüyle
+siliniyordu. Kaynak eksikliğini düzeltmek mevcut çözümleyici kusurunu ortaya çıkardı.
+**Kural:** Olayı açık pozisyon zamanına uygula; kapanıştan sonraki olay eski sonucu
+silmez. Geçmiş düzeltmesi mühürlü önce/sonra planı, satır eşliği, açık uygulama ve
+tekrar koşu testiyle yapılır. `tests/test_production_repairs.py` eski resolver geri
+konunca kırmızı; gerçek 47 sonuçta yalnız hatalı BIMAS değişti.
+
+## 2026-09-30 — Ağ yasağı yalnız socket değildir
+
+**Anti-pattern:** Socket kapalıysa yfinance dahil bütün ağın kapalı olduğunu sanmak;
+yakalanan OSError yüzünden boş sonuç dönen testi izole ve başarılı saymak.
+**Kural:** requests ve curl_cffi taşıyıcılarını da engelle; test ihlali uygulamanın
+`except Exception` bloğuyla yutulamasın. İki depoda yeni kapı açılınca BIST CLI ve
+altın Trends mock eksikleri kırmızı oldu. Yeni kaynağın tüm çağrı simetrilerini ara.
+
+## 2026-10-01 — Defter testi bağımsız para hesabı değildir
+
+**Anti-pattern:** Tekrar çalışma ve defter hash'i geçti diye işlem tutarının doğru
+olduğunu varsaymak. Gerçek arşiv kopyasındaki taktik alımda `float` lot × fiyat
+yarım kuruşu aşağı yuvarladı; bağımsız Decimal indirgemesi bir kuruşluk farkı
+yakaladı. Haftalık kontrol de engellenmiş satışı tamamlandı sayabiliyordu.
+**Kilit:** `scripts/portfolio_smoke.py` altı defteri ayrı para/lot hesabıyla
+mutabık tutar; `tests/test_portfolio_experiments.py` yarım kuruş, eksik BIST30
+üyeliği ve engelli satışın haftalık tekrarını davranışla sınar. Yürütme tutarı
+lot × fiyat için Decimal olarak kuruşa çevrilir.
+**2026-10-01 ek kanıt:** Daha güncel üretim SQL'siyle aynı prova,
+`benchmark:pocket:TOASO` alımında da bir kuruşluk sapma yakaladı. İlk kilit
+yalnız taktik yolu koruyordu; aynı para kuralı karşılaştırma ve eski politika
+yollarında da uygulanmalı. `test_benchmark_pocket_half_cent_reconciles_with_independent_ledger`
+ve `test_legacy_mark_rounds_lot_times_price_before_cents` bu simetriyi korur.
+Temettü alacağı da lot × tutar × net oranı `Decimal` ile hesaplar;
+`test_dividend_receivable_rounds_fractional_lot_value_once` bu yolu kilitler.

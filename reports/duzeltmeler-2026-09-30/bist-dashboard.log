@@ -1,0 +1,22 @@
+
+> test
+> node --test test/*.test.mjs
+
+✔ decision details show real fees, zero values and escaped history (32.354375ms)
+✔ unknown risk and evidence stay unknown; contributions are separately labelled (0.656958ms)
+✔ overnight/weekend age is compared with expected observation, not wall time (2.032375ms)
+✔ candidate capital is explicitly excluded from wealth and zeros stay visible (29.013292ms)
+✔ joint exposure counts only actual main books and refuses unknown values (0.853291ms)
+✔ private endpoint refuses missing or wrong passwords before fetching (1.737666ms)
+✔ a corrupt or unavailable account cannot hide the healthy account (1.259917ms)
+✔ GitHub credentials stay at a fixed server-side destination (39.572792ms)
+✔ only read operations are offered by the API (0.132792ms)
+✔ nested malformed data is rejected before the browser can lose both accounts (0.72525ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 173.868084

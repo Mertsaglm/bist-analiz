@@ -13,9 +13,9 @@ DÖRT KURAL — hepsi KÖTÜMSER tarafa yuvarlar:
    açılışta stop fiyatından çıkamazsın; açılıştan çıkarsın (daha kötü).
 3. **Giriş bandına dokunulduysa dolum bandın ÜST ucundan.** Bandın içindeki en
    kötü fiyat — iyimser dolum varsaymak slippage'ı gizler.
-4. **Plan penceresine kurumsal işlem ex-tarihi düşerse sonuç `iptal_kurumsal`.**
+4. **Pozisyon açıkken kurumsal işlem ex-tarihi gelirse sonuç `iptal_kurumsal`.**
    Fiyat mekanik olarak düşer; bunu kayıp saymak sistemin hatası değil,
-   ölçümün hatası olur.
+   ölçümün hatası olur. Önceden kapanmış işlem sonraki olayla iptal edilmez.
 """
 
 from __future__ import annotations
@@ -30,7 +30,7 @@ from . import db, prices, util
 
 log = logging.getLogger(__name__)
 
-RESOLVER_VERSION = "resolver_v1"
+RESOLVER_VERSION = "resolver_v2_corporate_window"
 
 # Sonuç türleri
 HEDEF = "hedef"
@@ -126,11 +126,6 @@ def resolve_prediction(cfg: dict, con: sqlite3.Connection, pred: dict) -> dict |
     son_veri = db.scalar(con, "SELECT MAX(date) FROM bars_daily WHERE ticker = ?",
                          (ticker,))
 
-    # --- kurumsal işlem penceresi ---
-    ex = db.fetch_one(
-        con, "SELECT date, kind FROM corporate_actions WHERE ticker=? AND date>? "
-             "AND date<=? ORDER BY date LIMIT 1", (ticker, asof, bariyer_tarih))
-
     stop = pred["stop_price"]
     t1 = pred["t1_price"]
     e_low, e_high = pred["entry_low"], pred["entry_high"]
@@ -147,15 +142,20 @@ def resolve_prediction(cfg: dict, con: sqlite3.Connection, pred: dict) -> dict |
         return None                                   # pencere henüz kapanmadı
 
     giris_tarih, giris_fiyat = dolum
-    if ex and ex["date"] >= giris_tarih:
-        return _outcome(pred, IPTAL_KURUMSAL, resolved_date=ex["date"],
-                        entry_date=giris_tarih, entry_price=giris_fiyat,
-                        error_tag=f"kurumsal_islem:{ex['kind']}")
+    ex = db.fetch_one(
+        con, 'SELECT date, kind FROM corporate_actions WHERE ticker=? AND date>=? '
+             'AND date<=? ORDER BY date LIMIT 1', (ticker, giris_tarih, bariyer_tarih))
 
     sonrasi = bars[bars["date"] >= giris_tarih].reset_index(drop=True)
     kind = exit_tarih = None
     exit_fiyat = None
     for r in sonrasi.itertuples(index=False):
+        # D-01 karşı olgusu: sonraki temettü, daha önce kapanan TAVHL stop'unu
+        # silemez. Olayı bar sırasıyla işle; aynı gün mekanik fiyat önceliklidir.
+        if ex and str(r.date) >= ex['date']:
+            return _outcome(pred, IPTAL_KURUMSAL, resolved_date=ex['date'],
+                            entry_date=giris_tarih, entry_price=giris_fiyat,
+                            error_tag=f"kurumsal_islem:{ex['kind']}")
         if str(r.date) == giris_tarih:
             continue                                  # giriş günü bariyer sayılmaz
         vurus = barrier_hit({"l": r.l, "h": r.h, "o": r.o, "c": r.c}, stop, t1)

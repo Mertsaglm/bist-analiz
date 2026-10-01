@@ -195,6 +195,12 @@ def test_new_cycle_runs_candidates_with_separate_budget_and_horizon(tmp_path,mon
         assert close['monitoring']['phase']=='valuation'
         assert len(close['strategy']['fills'])==len(two['strategy']['fills'])
         assert close['strategy']['valuation_complete']
+        # D-04: Cuma kapanışı Cumartesi 00:30'a sarkınca da değerleme koşmalı.
+        midnight=late.replace(hour=21,minute=30)
+        after_midnight=service.cycle(tmp_path,now=midnight,quotes={'AAA':quote(midnight,130)},offline=True,closing_refresh=True)
+        assert after_midnight['monitoring']['phase']=='valuation'
+        assert len(after_midnight['strategy']['fills'])==len(two['strategy']['fills'])
+
     def failed_candidate(*a,**k):
         raise RuntimeError('fixture')
     monkeypatch.setattr(candidates,'cycle',failed_candidate)

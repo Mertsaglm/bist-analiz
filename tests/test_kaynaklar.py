@@ -349,7 +349,7 @@ class TestVeriAkisi:
             columns=["date", "o", "h", "l", "c", "v", "c_tr"]))
         monkeypatch.setattr(prices.yf, "fetch_index", lambda s, cfg, **k: pd.DataFrame(
             bar_serisi(30), columns=["date", "o", "h", "l", "c", "v", "c_tr"]))
-        monkeypatch.setattr(prices.yf, "fetch_actions", lambda t, cfg: [
+        monkeypatch.setattr(prices.yf, "fetch_actions", lambda t, cfg, **kwargs: [
             {"date": "2023-02-01", "kind": "temettu", "value": 1.5}])
 
     def test_backfill_HAYALET_AYIKLAMAYI_kosar(self, cfg, con, sahte_yf):

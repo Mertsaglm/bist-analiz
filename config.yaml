@@ -145,8 +145,9 @@ sources:
     beklenen_bildirim:
       enabled: true
       path: "/tr/api/expected-disclosure-inquiry/company"
-      pencere_gun: 45          # 1863 kayıt — 2000 tavanına pay bırakır
-      tavan_kayit: 1950        # bu sayıya ulaşan yanıt KIRPIK sayılır
+      pencere_gun: 45          # Doyan aralıklar kapsama kaybı olmadan ikiye bölünür.
+      tavan_kayit: 1950        # bu sayıya ulaşan dilim bölünür; tek gün de doygunsa bilinmiyor
+      maks_sorgu: 63          # kaynak sorunu sonsuz istek döngüsüne dönüşmez
       # Anlık görüntü bu yaştan eskiyse `bilinmiyor` — bayat takvim, olmayan
       # takvimden daha tehlikelidir (bugün açıklanmış olabilir).
       maks_yas_gun: 7

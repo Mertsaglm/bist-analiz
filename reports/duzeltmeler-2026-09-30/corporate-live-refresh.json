@@ -1,0 +1,329 @@
+{
+  "tickers": 73,
+  "kayit": 1281,
+  "ok": true,
+  "failed": {},
+  "elapsed_seconds": 60.8,
+  "added": [
+    {
+      "ticker": "BIMAS",
+      "date": "2026-09-16",
+      "kind": "temettu",
+      "value": 2.5,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "DOAS",
+      "date": "2026-08-13",
+      "kind": "temettu",
+      "value": 15.0,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TAVHL",
+      "date": "2026-09-22",
+      "kind": "temettu",
+      "value": 1.80499,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TRALT",
+      "date": "2010-05-24",
+      "kind": "temettu",
+      "value": 0.008586,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TRALT",
+      "date": "2010-06-16",
+      "kind": "bolunme",
+      "value": 2.5417,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TRALT",
+      "date": "2011-05-06",
+      "kind": "temettu",
+      "value": 0.007029,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TRALT",
+      "date": "2012-05-15",
+      "kind": "temettu",
+      "value": 0.029613,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TRALT",
+      "date": "2013-05-14",
+      "kind": "temettu",
+      "value": 0.040971,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TRALT",
+      "date": "2014-04-04",
+      "kind": "temettu",
+      "value": 0.042376,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TRALT",
+      "date": "2014-09-03",
+      "kind": "temettu",
+      "value": 0.047619,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TRALT",
+      "date": "2015-04-01",
+      "kind": "temettu",
+      "value": 0.046838,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TRALT",
+      "date": "2022-07-07",
+      "kind": "temettu",
+      "value": 0.835682,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TRALT",
+      "date": "2023-02-17",
+      "kind": "bolunme",
+      "value": 21.0,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TRALT",
+      "date": "2023-07-14",
+      "kind": "temettu",
+      "value": 0.4,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TRMET",
+      "date": "2003-06-20",
+      "kind": "bolunme",
+      "value": 3.85,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TRMET",
+      "date": "2005-01-03",
+      "kind": "bolunme",
+      "value": 0.001,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TRMET",
+      "date": "2007-11-30",
+      "kind": "bolunme",
+      "value": 2.1,
+      "source": "yfinance"
+    },
+    {
+      "ticker": "TUPRS",
+      "date": "2026-09-30",
+      "kind": "temettu",
+      "value": 6.746953,
+      "source": "yfinance"
+    }
+  ],
+  "revised": [
+    {
+      "before": {
+        "ticker": "AEFES",
+        "date": "2007-09-17",
+        "kind": "bolunme",
+        "value": 3.986647,
+        "source": "yfinance"
+      },
+      "after": {
+        "ticker": "AEFES",
+        "date": "2007-09-17",
+        "kind": "bolunme",
+        "value": 3.9866469999999996,
+        "source": "yfinance"
+      }
+    },
+    {
+      "before": {
+        "ticker": "AGHOL",
+        "date": "2005-07-04",
+        "kind": "bolunme",
+        "value": 1.9536,
+        "source": "yfinance"
+      },
+      "after": {
+        "ticker": "AGHOL",
+        "date": "2005-07-04",
+        "kind": "bolunme",
+        "value": 1.9536000000000002,
+        "source": "yfinance"
+      }
+    },
+    {
+      "before": {
+        "ticker": "ALARK",
+        "date": "2018-09-14",
+        "kind": "bolunme",
+        "value": 1.946596,
+        "source": "yfinance"
+      },
+      "after": {
+        "ticker": "ALARK",
+        "date": "2018-09-14",
+        "kind": "bolunme",
+        "value": 1.9465960000000002,
+        "source": "yfinance"
+      }
+    },
+    {
+      "before": {
+        "ticker": "DOHOL",
+        "date": "2009-01-12",
+        "kind": "bolunme",
+        "value": 1.633333,
+        "source": "yfinance"
+      },
+      "after": {
+        "ticker": "DOHOL",
+        "date": "2009-01-12",
+        "kind": "bolunme",
+        "value": 1.6333330000000001,
+        "source": "yfinance"
+      }
+    },
+    {
+      "before": {
+        "ticker": "ENKAI",
+        "date": "2008-05-26",
+        "kind": "bolunme",
+        "value": 1.3333,
+        "source": "yfinance"
+      },
+      "after": {
+        "ticker": "ENKAI",
+        "date": "2008-05-26",
+        "kind": "bolunme",
+        "value": 1.3333000000000002,
+        "source": "yfinance"
+      }
+    },
+    {
+      "before": {
+        "ticker": "EREGL",
+        "date": "2008-05-28",
+        "kind": "temettu",
+        "value": 0.042601,
+        "source": "yfinance"
+      },
+      "after": {
+        "ticker": "EREGL",
+        "date": "2008-05-28",
+        "kind": "temettu",
+        "value": 0.057984,
+        "source": "yfinance"
+      }
+    },
+    {
+      "before": {
+        "ticker": "EREGL",
+        "date": "2008-05-28",
+        "kind": "bolunme",
+        "value": 1.3611,
+        "source": "yfinance"
+      },
+      "after": {
+        "ticker": "EREGL",
+        "date": "2008-05-28",
+        "kind": "bolunme",
+        "value": 1.3611000000000002,
+        "source": "yfinance"
+      }
+    },
+    {
+      "before": {
+        "ticker": "KCHOL",
+        "date": "2004-01-19",
+        "kind": "bolunme",
+        "value": 2.874379,
+        "source": "yfinance"
+      },
+      "after": {
+        "ticker": "KCHOL",
+        "date": "2004-01-19",
+        "kind": "bolunme",
+        "value": 2.8743790000000002,
+        "source": "yfinance"
+      }
+    },
+    {
+      "before": {
+        "ticker": "SAHOL",
+        "date": "2002-05-06",
+        "kind": "bolunme",
+        "value": 1.3333333333,
+        "source": "yfinance"
+      },
+      "after": {
+        "ticker": "SAHOL",
+        "date": "2002-05-06",
+        "kind": "bolunme",
+        "value": 1.3333333333333333,
+        "source": "yfinance"
+      }
+    },
+    {
+      "before": {
+        "ticker": "SASA",
+        "date": "2023-05-23",
+        "kind": "bolunme",
+        "value": 2.3291758,
+        "source": "yfinance"
+      },
+      "after": {
+        "ticker": "SASA",
+        "date": "2023-05-23",
+        "kind": "bolunme",
+        "value": 2.3291758000000002,
+        "source": "yfinance"
+      }
+    },
+    {
+      "before": {
+        "ticker": "TSKB",
+        "date": "2018-06-04",
+        "kind": "bolunme",
+        "value": 1.166667,
+        "source": "yfinance"
+      },
+      "after": {
+        "ticker": "TSKB",
+        "date": "2018-06-04",
+        "kind": "bolunme",
+        "value": 1.1666670000000001,
+        "source": "yfinance"
+      }
+    },
+    {
+      "before": {
+        "ticker": "VAKBN",
+        "date": "2007-01-29",
+        "kind": "bolunme",
+        "value": 1.9546,
+        "source": "yfinance"
+      },
+      "after": {
+        "ticker": "VAKBN",
+        "date": "2007-01-29",
+        "kind": "bolunme",
+        "value": 1.9546000000000001,
+        "source": "yfinance"
+      }
+    }
+  ]
+}

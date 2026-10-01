@@ -97,3 +97,18 @@ def monitoring_snapshot(now, cfg):
             'observation_window': cfg.get('observation_window', cfg.get('execution_window', {})),
             'calendar': cfg.get('calendar', {'available':False,'years':[],'full_days':[],'half_days':[]}), 'checked_on': local.date().isoformat(),
             'note': 'Gözlem saati ile yeni işlem saati ayrıdır; referans fiyat anlık emir defteri değildir.'}
+
+
+def last_closed_session(now, cfg):
+    """Gece yarısı duvar tarihini değiştirir, tamamlanan seansı değiştirmez."""
+    local = now.astimezone(IST)
+    day = local.date()
+    close = '12:40' if day.isoformat() in cfg.get('calendar', {}).get('half_days', []) else '18:10'
+    if not trading_day(day, cfg) or local.strftime('%H:%M') < close:
+        day -= timedelta(days=1)
+        while not trading_day(day, cfg):
+            day -= timedelta(days=1)
+    cal = cfg.get('calendar')
+    if cal is not None and (not cal.get('available') or str(day.year) not in cal.get('years', [])):
+        raise ValueError('Kapanış seansı için doğrulanmış takvim kaydı yok.')
+    return day

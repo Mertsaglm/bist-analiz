@@ -23,9 +23,16 @@ def accrue(ledger, cfg, quotes, now, books=('strategy', 'benchmark')):
     from .policy import value_account
     from .calendar import trading_day
     today = now.astimezone(IST).date()
-    for book in books:
-        view = value_account(ledger.account(book), quotes, cfg, now)
-        value = sum(float(p['quantity']) * quotes[p['symbol']]['bid'] for p in view['positions']) if view['valuation_complete'] else None
+    def components(book):
+        # (ücret kimliği, birlikte değerlenen alt hesaplar, ücretin borçlandığı hesap)
+        return (book[0], book[1], book[2]) if isinstance(book, tuple) else (book, (book,), book)
+
+    for item in books:
+        book, members, _ = components(item)
+        views = [value_account(ledger.account(member), quotes, cfg, now) for member in members]
+        value = (sum(float(p['quantity']) * quotes[p['symbol']]['bid']
+                     for view in views for p in view['positions'])
+                 if all(view['valuation_complete'] for view in views) else None)
         ledger.add('custody_mark', f'custody-mark:{book}:{now.isoformat()}', now.isoformat(),
                    book=book, day=today.isoformat(), value_try=value)
     pending = []
@@ -35,7 +42,8 @@ def accrue(ledger, cfg, quotes, now, books=('strategy', 'benchmark')):
         end = date(quarter.year + 1, 1, 1) if quarter.month == 10 else date(quarter.year, quarter.month + 3, 1)
         if end > today:
             break
-        for book in books:
+        for item in books:
+            book, _, charge_book = components(item)
             key = f'custody:{book}:{quarter.isoformat()}'
             if key in ledger.keys:
                 continue
@@ -65,7 +73,7 @@ def accrue(ledger, cfg, quotes, now, books=('strategy', 'benchmark')):
                 continue
             average = sum(values) / len(values)
             amount = quarterly_fee(average, policy)
-            ledger.add('account_fee', key, now.isoformat(), book=book, amount_cents=amount,
+            ledger.add('account_fee', key, now.isoformat(), book=charge_book, amount_cents=amount,
                        average_securities_try=average, source=policy['source'], policy_id=digest(policy),
                        basis='Gözlenen brüt kıymet değerinin takvim günü ortalaması; banka ekstresi değildir.')
         quarter = end

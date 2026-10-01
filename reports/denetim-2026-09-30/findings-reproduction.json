@@ -1,0 +1,104 @@
+{
+  "snapshot_at": "2026-09-30T14:46:38.576087+00:00",
+  "analysis_date": "2026-09-28",
+  "expected_analysis_date": "2026-09-29",
+  "account_id": "paper-2026-09-25",
+  "initial_try": 50000,
+  "decision_codes": {
+    "data_block": 32
+  },
+  "corporate_latest": "2026-07-21",
+  "price_latest": "2026-09-28",
+  "expected_disclosures_latest": "2026-09-24T20:07:38+00:00",
+  "stored": {
+    "prediction_id": "2026-09-15-BIMAS-1",
+    "resolved_date": "2026-09-22",
+    "resolution": "hedef",
+    "entry_date": "2026-09-16",
+    "entry_price": 403.75,
+    "exit_date": "2026-09-22",
+    "exit_price": 437.5,
+    "holding_days": 4,
+    "ret_pct": 8.0591,
+    "ret_pct_gross": 8.3591,
+    "ret_pct_equal_size": 0.8059,
+    "xu100_ret_pct": 0.581,
+    "ew_universe_ret_pct": 2.507,
+    "alpha_vs_xu100": 7.4781,
+    "alpha_vs_ew": 5.5521,
+    "fwd_ret_20d": null,
+    "fwd_alpha_20d_ew": null,
+    "slippage_pct": 0.0,
+    "hit": 1,
+    "error_tag": "hedef",
+    "resolver_version": "resolver_v1",
+    "resolved_utc": "2026-09-22T19:57:02+00:00"
+  },
+  "corporate_used": {
+    "date": "2026-09-16",
+    "kind": "temettu",
+    "ticker": "BIMAS",
+    "value": 2.5
+  },
+  "recomputed": {
+    "prediction_id": "2026-09-15-BIMAS-1",
+    "resolved_date": "2026-09-16",
+    "resolution": "iptal_kurumsal",
+    "entry_date": "2026-09-16",
+    "entry_price": 403.75,
+    "exit_date": null,
+    "exit_price": null,
+    "holding_days": null,
+    "ret_pct": null,
+    "ret_pct_gross": null,
+    "ret_pct_equal_size": null,
+    "xu100_ret_pct": null,
+    "ew_universe_ret_pct": null,
+    "alpha_vs_xu100": null,
+    "alpha_vs_ew": null,
+    "fwd_ret_20d": null,
+    "fwd_alpha_20d_ew": null,
+    "slippage_pct": null,
+    "hit": null,
+    "error_tag": "kurumsal_islem:temettu",
+    "resolver_version": "resolver_v1",
+    "resolved_utc": "2026-09-30T15:44:59+00:00"
+  },
+  "october_contribution": {
+    "once_cents": 5500000,
+    "twice_cents": 5500000
+  },
+  "october_custody": {
+    "enabled": true,
+    "pending": [],
+    "source": "https://www.isbank.com.tr/urun-ve-hizmet-ucretleri",
+    "note": "Dönemsel saklama tarifesi uygulanır. Matrah günlük brüt referans değer yaklaşımıdır; eksik günler görünür bekler."
+  },
+  "october_fees": [
+    {
+      "book": "strategy",
+      "amount_cents": 0,
+      "average_securities_try": 0.0,
+      "source": "https://www.isbank.com.tr/urun-ve-hizmet-ucretleri",
+      "policy_id": "8e6c9dc453eff95370159cd8778d7afbbf661a161f9bed331e83eaa1c279683c",
+      "basis": "Gözlenen brüt kıymet değerinin takvim günü ortalaması; banka ekstresi değildir."
+    },
+    {
+      "book": "benchmark",
+      "amount_cents": 12075,
+      "average_securities_try": 45949.549999999996,
+      "source": "https://www.isbank.com.tr/urun-ve-hizmet-ucretleri",
+      "policy_id": "8e6c9dc453eff95370159cd8778d7afbbf661a161f9bed331e83eaa1c279683c",
+      "basis": "Gözlenen brüt kıymet değerinin takvim günü ortalaması; banka ekstresi değildir."
+    }
+  ],
+  "october_membership": {
+    "added": [
+      "TRMET"
+    ],
+    "removed": [
+      "DSTKF"
+    ],
+    "count": 32
+  }
+}

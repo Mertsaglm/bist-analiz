@@ -1,0 +1,79 @@
+{
+  "market": "gold",
+  "replays": [
+    {
+      "path": "/tmp/bist-audit-20260930/Mertsaglm-gold_tracking_system-d4db91e/data/advisor/capsules/68f3338d8660be2fbd62ef72c0605869726d08a381175ea63bf412ebdea60c9b.json.gz",
+      "ok": true,
+      "id": "68f3338d8660be2fbd62ef72c0605869726d08a381175ea63bf412ebdea60c9b",
+      "decisions": 1,
+      "code_hash": "f9c9469c63b9421ac87ee3a0097e40d78c51da74f0118e48840346bf8b54a6e1"
+    },
+    {
+      "path": "/tmp/bist-audit-20260930/Mertsaglm-gold_tracking_system-d4db91e/data/advisor/capsules/d9fd88c930f9523860bfe4cc44d04fe3d2b05c1dabf9701b50522d62da77d63f.json.gz",
+      "ok": true,
+      "id": "d9fd88c930f9523860bfe4cc44d04fe3d2b05c1dabf9701b50522d62da77d63f",
+      "decisions": 1,
+      "code_hash": "ca1a67c1731adfeee552bad6024397dcaf1b242ef39ccc569eac4882d917a084"
+    },
+    {
+      "path": "/tmp/bist-audit-20260930/Mertsaglm-gold_tracking_system-d4db91e/data/advisor/capsules/8a3006fee44e68698a05abe3fb93f04b879c8011cd098de458fcb0e002147a61.json.gz",
+      "ok": true,
+      "id": "8a3006fee44e68698a05abe3fb93f04b879c8011cd098de458fcb0e002147a61",
+      "decisions": 1,
+      "code_hash": "ca1a67c1731adfeee552bad6024397dcaf1b242ef39ccc569eac4882d917a084"
+    }
+  ],
+  "models": [
+    {
+      "name": "main",
+      "max_coefficient_difference": 1.1102230246251565e-14,
+      "approved": false,
+      "training_rows": 2388,
+      "evaluation": {
+        "periods": 95,
+        "mae_pct": 5.301210375732119,
+        "baseline_mae_pct": 4.875019424201294,
+        "lower_95_pct": -2.0620942947823684
+      }
+    }
+  ],
+  "repeat_cycles": [
+    {
+      "run": 0,
+      "accounts_unchanged": {
+        "strategy": true,
+        "benchmark": true,
+        "shadow_reference": true,
+        "shadow_candidate": true
+      },
+      "errors": [],
+      "candidates_unchanged": {}
+    },
+    {
+      "run": 1,
+      "accounts_unchanged": {
+        "strategy": true,
+        "benchmark": true,
+        "shadow_reference": true,
+        "shadow_candidate": true
+      },
+      "errors": [],
+      "candidates_unchanged": {}
+    }
+  ],
+  "backup": {
+    "files": 307,
+    "archive": "/var/folders/7c/cbt7d09n267_43kyv3j222_h0000gn/T/bist-runtime-audit-za57_55r/backup.zip"
+  },
+  "restore": {
+    "ok": true,
+    "ledger_hash": "0401a92c0dbc014011b4c4b22c16450b769185825de48783617eacf569b50558",
+    "files": 307,
+    "cash_cents": {
+      "strategy": 500000,
+      "benchmark": 4968,
+      "shadow_reference": 500000,
+      "shadow_candidate": 500000
+    }
+  }
+}

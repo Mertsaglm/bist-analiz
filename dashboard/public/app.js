@@ -1,4 +1,4 @@
-import {decisionDetail, funnelPanel, weeklyPanel, riskPanel, evidencePanel, candidatePanel, operatingPanel, exposurePanel, freshness} from './insights.js';
+import {decisionDetail, funnelPanel, weeklyPanel, riskPanel, evidencePanel, candidatePanel, portfolioExperimentPanel, operatingPanel, exposurePanel, freshness} from './insights.js';
 const $ = s => document.querySelector(s);
 const esc = x => String(x ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const num = (n, digits=2) => n == null || !Number.isFinite(Number(n)) ? '—' : Number(n).toLocaleString('tr-TR', {minimumFractionDigits:digits, maximumFractionDigits:digits});
@@ -92,8 +92,8 @@ function renderContent() {
   let content='';
   if (view==='overview') content=`<div class="grid"><div>${chartPanel(s)}${decisionPanel(s)}</div><div class="side-column">${hero(s)}${metricsPanel(s)}${exposurePanel(response?.portfolios)}${operatingPanel(s)}${weeklyPanel(s)}${newsPanel(s)}</div></div>`;
   if (view==='decisions') content=funnelPanel(s)+decisionPanel(s,true)+costs(s);
-  if (view==='portfolio') content=positions(s)+exposurePanel(response?.portfolios)+riskPanel(s)+weeklyPanel(s)+trades(s)+chartPanel(s)+costs(s);
-  if (view==='learning') content=candidatePanel(s)+evidencePanel(s)+learningPage(s);
+  if (view==='portfolio') content=portfolioExperimentPanel(s)+positions(s)+exposurePanel(response?.portfolios)+riskPanel(s)+weeklyPanel(s)+trades(s)+chartPanel(s)+costs(s);
+  if (view==='learning') content=portfolioExperimentPanel(s)+candidatePanel(s)+evidencePanel(s)+learningPage(s);
   if (view==='legacy') content=legacyPage(s);
   $('#content').innerHTML=content;
   if ($('#search')) { $('#search').value=search; $('#action-filter').value=actionFilter; }

@@ -1,0 +1,11 @@
+{
+  "plan_id": "33765bf7505228edd2c020c6b0f78e8ee9c33d5e93223f058140f8c67e58ccda",
+  "changed": 1,
+  "source_hash_unchanged": "520ca7661e8c5bcf6952695f031b7407a734781ef5c7e55589a2b49f740a670b",
+  "changed_prediction_ids": [
+    "2026-09-15-BIMAS-1"
+  ],
+  "total_outcomes": 47,
+  "idempotent": true,
+  "new_corporate_actions": 18
+}

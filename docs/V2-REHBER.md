@@ -340,8 +340,13 @@ düzeltilmiş seri nedeniyle sonucu canlı üstünlük kanıtı olarak onaylamaz
 Getiriler nominal TL’dir; faizsiz nakit kullanılır, enflasyon düşülmüş değildir.
 Ayrıntılar ve başarısız sınavlar: [revizyon raporu](REVIZYON-2026-09-25.md).
 
-BIST günlük veri workflow’u geç biterse `--closing-refresh` aynı işlem gününde
-gözlem saatinden sonra da yalnız değerleme yapabilir; bu kipte dolum yasaktır.
+BIST günlük veri workflow’u geç biterse `--closing-refresh` son tamamlanan
+seansı kullanır; gece yarısından sonra ve hafta sonunda da yalnız değerleme
+yapabilir. Bu kipte dolum yasaktır. `python scripts/refresh_market_history.py`
+portföy çevriminden önce eksik hisse/endeks kapanışlarını SQL arşivine tamamlar;
+eksiklik sürerse sağlık engeli korunur ve workflow başarısız görünür.
+SQL yazan günlük/haftalık/portföy işleri ortak `repo-commit` grubunda
+`queue: max` ile sıraya girer, sıradan çıkınca güncel `main` dalını alır.
 Aday kolundaki hata ana defterin kaydını engellemez; açık hata olarak raporlanır.
 
 

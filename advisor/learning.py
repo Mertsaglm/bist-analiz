@@ -40,6 +40,13 @@ def features(frame, horizon):
         g["atr"] = tr.rolling(14).mean()
         # Gram tarihi ons×kur sentetik kapanıştır; ATR diye gerçek OHLC uydurulmaz.
         g["daily_jump_pct"] = ret.abs() * 100
+        if {'ons_usd', 'usdtry'} <= set(g.columns):
+            for source, prefix in (('ons_usd', 'ons'), ('usdtry', 'usdtry')):
+                leg = g[source].where(g[source] > 0)
+                for period in (20, 60):
+                    g[f'{prefix}_momentum{period}'] = leg.pct_change(period, fill_method=None) * 100
+                g[f'{prefix}_volatility20'] = leg.pct_change(fill_method=None).rolling(20).std() * 100
+                g[f'{prefix}_trend50'] = (leg / leg.rolling(50).mean() - 1) * 100
         g["quality_ok"] = (g.close > 0) & (g.total_close > 0) & (g.volume > 0) & (g.high >= g.low)
         g["quality_ok"] &= ret.abs().rolling(20).max().fillna(1) < 0.3
         parts.append(g)

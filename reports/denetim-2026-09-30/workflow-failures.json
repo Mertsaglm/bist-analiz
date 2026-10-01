@@ -1,0 +1,86 @@
+[
+  {
+    "id": 36716911044,
+    "date": "2026-09-30T12:46:03Z",
+    "exit": 0,
+    "evidence": [
+      "portfolio\tUNKNOWN STEP\t2026-09-30T12:47:45.4458682Z {\"market\": \"bist\", \"analysis_date\": \"2026-09-28\", \"decisions\": 32, \"errors\": [\"Banka fiyat kaynağı alınamadı: ConnectionError\"]}",
+      "portfolio\tUNKNOWN STEP\t2026-09-30T12:47:45.5728368Z ##[error]Process completed with exit code 1.",
+      "portfolio\tUNKNOWN STEP\t2026-09-30T12:47:54.6735516Z (node:2234) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities."
+    ]
+  },
+  {
+    "id": 36575561800,
+    "date": "2026-09-29T13:30:13Z",
+    "exit": 0,
+    "evidence": [
+      "portfolio\tUNKNOWN STEP\t2026-09-29T13:31:11.2407763Z {\"market\": \"bist\", \"analysis_date\": \"2026-09-25\", \"decisions\": 32, \"errors\": [\"Banka fiyat kaynağı alınamadı: ConnectTimeout\"]}",
+      "portfolio\tUNKNOWN STEP\t2026-09-29T13:31:11.3192992Z ##[error]Process completed with exit code 1.",
+      "portfolio\tUNKNOWN STEP\t2026-09-29T13:31:19.5547876Z (node:2137) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities."
+    ]
+  },
+  {
+    "id": 36535531862,
+    "date": "2026-09-29T07:15:08Z",
+    "exit": 0,
+    "evidence": [
+      "portfolio\tUNKNOWN STEP\t2026-09-29T07:17:16.8949763Z {\"market\": \"bist\", \"analysis_date\": \"2026-09-25\", \"decisions\": 32, \"errors\": [\"Banka fiyat kaynağı alınamadı: ValueError\"]}",
+      "portfolio\tUNKNOWN STEP\t2026-09-29T07:17:16.9872294Z ##[error]Process completed with exit code 1.",
+      "portfolio\tUNKNOWN STEP\t2026-09-29T07:17:24.8644962Z (node:2273) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities."
+    ]
+  },
+  {
+    "id": 36420637806,
+    "date": "2026-09-28T12:15:10Z",
+    "exit": 0,
+    "evidence": [
+      "portfolio\tUNKNOWN STEP\t2026-09-28T12:16:28.0522368Z {\"market\": \"bist\", \"analysis_date\": \"2026-09-25\", \"decisions\": 32, \"errors\": [\"Banka fiyat kaynağı alınamadı: ConnectionError\"]}",
+      "portfolio\tUNKNOWN STEP\t2026-09-28T12:16:28.1707841Z ##[error]Process completed with exit code 1.",
+      "portfolio\tUNKNOWN STEP\t2026-09-28T12:16:35.1432801Z (node:2193) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities."
+    ]
+  },
+  {
+    "id": 36410090066,
+    "date": "2026-09-28T10:30:15Z",
+    "exit": 0,
+    "evidence": [
+      "portfolio\tUNKNOWN STEP\t2026-09-28T10:31:34.6831873Z WARNING: Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ReadTimeoutError(\"HTTPSConnectionPool(host='pypi.org', port=443): Read timed out. (read timeout=15)\")': /simple/python-dateutil/",
+      "portfolio\tUNKNOWN STEP\t2026-09-28T10:31:53.7440837Z WARNING: Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ReadTimeoutError(\"HTTPSConnectionPool(host='pypi.org', port=443): Read timed out. (read timeout=15)\")': /simple/python-dateutil/",
+      "portfolio\tUNKNOWN STEP\t2026-09-28T10:32:08.8762914Z ##[error]Process completed with exit code 1.",
+      "portfolio\tUNKNOWN STEP\t2026-09-28T10:32:09.5597308Z Traceback (most recent call last):",
+      "portfolio\tUNKNOWN STEP\t2026-09-28T10:32:09.5611259Z ModuleNotFoundError: No module named 'pandas'",
+      "portfolio\tUNKNOWN STEP\t2026-09-28T10:32:09.5678717Z ##[error]Process completed with exit code 1.",
+      "portfolio\tUNKNOWN STEP\t2026-09-28T10:32:10.6581760Z (node:2116) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities."
+    ]
+  },
+  {
+    "id": 36390652647,
+    "date": "2026-09-28T07:15:13Z",
+    "exit": 0,
+    "evidence": [
+      "portfolio\tUNKNOWN STEP\t2026-09-28T07:16:13.9637283Z {\"market\": \"bist\", \"analysis_date\": \"2026-09-25\", \"decisions\": 32, \"errors\": [\"Banka fiyat kaynağı alınamadı: ValueError\"]}",
+      "portfolio\tUNKNOWN STEP\t2026-09-28T07:16:14.0553264Z ##[error]Process completed with exit code 1.",
+      "portfolio\tUNKNOWN STEP\t2026-09-28T07:16:19.8188915Z (node:2089) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities."
+    ]
+  },
+  {
+    "id": 36125702646,
+    "date": "2026-09-25T10:45:31Z",
+    "exit": 0,
+    "evidence": [
+      "portfolio\tUNKNOWN STEP\t2026-09-25T10:46:23.4887311Z {\"market\": \"bist\", \"analysis_date\": \"2026-09-24\", \"decisions\": 18, \"errors\": [\"Banka fiyat kaynağı alınamadı: ConnectTimeout\"]}",
+      "portfolio\tUNKNOWN STEP\t2026-09-25T10:46:23.6041508Z ##[error]Process completed with exit code 1.",
+      "portfolio\tUNKNOWN STEP\t2026-09-25T10:46:30.6368822Z (node:2102) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities."
+    ]
+  },
+  {
+    "id": 36106734398,
+    "date": "2026-09-25T07:15:31Z",
+    "exit": 0,
+    "evidence": [
+      "portfolio\tUNKNOWN STEP\t2026-09-25T07:16:24.2148891Z {\"market\": \"bist\", \"analysis_date\": \"2026-09-24\", \"decisions\": 18, \"errors\": [\"Banka fiyat kaynağı alınamadı: ValueError\"]}",
+      "portfolio\tUNKNOWN STEP\t2026-09-25T07:16:24.2999312Z ##[error]Process completed with exit code 1.",
+      "portfolio\tUNKNOWN STEP\t2026-09-25T07:16:30.6060388Z (node:2103) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities."
+    ]
+  }
+]

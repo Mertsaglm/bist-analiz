@@ -1,0 +1,37 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_________ test_refresh_catches_missing_close_and_skips_after_recovery __________
+
+cfg = {'denetim': {'ek_izinli_sayilar': [0, 1, 2, 3, 5, 10, ...], 'ondalik_tolerans_basamak': 2, 'sayisal_beyaz_liste_tamsay...gostergeler': {'adx_length': 14, 'atr_length': 14, 'bollinger': {'length': 20, 'std': 2.0}, 'ema': [12, 26], ...}, ...}
+con = <sqlite3.Connection object at 0x10ad886d0>
+tmp_path = PosixPath('/private/var/folders/7c/cbt7d09n267_43kyv3j222_h0000gn/T/pytest-of-mert/pytest-19/test_refresh_catches_missing_c0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x106606120>
+
+    def test_refresh_catches_missing_close_and_skips_after_recovery(cfg,con,tmp_path,monkeypatch):
+        # Çok sayıda taze kotasyon, eski günlük SQL'i kendiliğinden yenilemiyordu.
+        module=script('refresh_market_history')
+        (tmp_path/'advisor').mkdir();(tmp_path/'data').mkdir()
+        (tmp_path/'advisor/config.json').write_text((ROOT/'advisor/config.json').read_text())
+        (tmp_path/'holidays_tr.yaml').write_text((ROOT/'holidays_tr.yaml').read_text())
+        (tmp_path/'config.yaml').write_text(yaml.safe_dump(cfg))
+        add_universe(con,'AAA');add_bars(con,'AAA',[('2026-09-28',100,101,99,100,1000,100)])
+        dbdump.dump(cfg,tmp_path/'data/bist.sql')
+        calls=[]
+        def daily(c,conn,**kwargs):
+            calls.append(kwargs['tickers']);add_bars(conn,'AAA',[('2026-09-29',101,102,100,101,1000,101)])
+        def indices(c,conn,**kwargs):
+            from src.universe import index_symbols
+            for symbol in index_symbols(c):
+                conn.execute('INSERT INTO index_daily(symbol,date,o,h,l,c,ingested_utc) VALUES(?,?,?,?,?,?,?)',
+                             (symbol,'2026-09-29',100,101,99,100,'2026-09-30T08:00:00+00:00'))
+            conn.commit()
+        monkeypatch.setattr(module.prices,'daily',daily);monkeypatch.setattr(module.prices,'sync_indices',indices)
+        now=datetime(2026,9,30,8,tzinfo=timezone.utc)
+>       result=module.refresh(tmp_path,now);assert result['ok'] and result['missing_before']==['AAA']
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       assert (False)
+
+tests/test_production_repairs.py:113: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_production_repairs.py::test_refresh_catches_missing_close_and_skips_after_recovery
+1 failed in 0.71s

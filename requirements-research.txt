@@ -1,0 +1,4 @@
+# Yalnız offline model sınavı; sanal çevrimin çalışma bağımlılığı değildir.
+lightgbm==4.6.0
+scipy==1.18.1
+scikit-learn==1.7.2

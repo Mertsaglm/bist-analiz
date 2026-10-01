@@ -1,0 +1,23 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___ test_daily_fetches_corporate_before_decision_and_stops_on_source_failure ___
+
+cfg = {'denetim': {'ek_izinli_sayilar': [0, 1, 2, 3, 5, 10, ...], 'ondalik_tolerans_basamak': 2, 'sayisal_beyaz_liste_tamsay...gostergeler': {'adx_length': 14, 'atr_length': 14, 'bollinger': {'length': 20, 'std': 2.0}, 'ema': [12, 26], ...}, ...}
+con = <sqlite3.Connection object at 0x10c946c50>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10c885f40>
+
+    def test_daily_fetches_corporate_before_decision_and_stops_on_source_failure(cfg,con,monkeypatch):
+        # Eski tabloda eksik temettü sessiz BIMAS başarısı üretmişti.
+        calls=_adimlari_sahtele(monkeypatch)
+        monkeypatch.setattr(otonom.tg,'bildir',lambda *a: True)
+        from src.calendar_bist import BistCalendar
+        monkeypatch.setattr(BistCalendar,'is_trading_day',lambda *a: True)
+        otonom.gunluk(cfg,con,bugun=date(2026,9,30),analist_calistir=False)
+>       assert calls.index('kurumsal') < calls.index('paket') < calls.index('coz')
+               ^^^^^^^^^^^^^^^^^^^^^^^
+E       ValueError: 'kurumsal' is not in list
+
+tests/test_production_repairs.py:36: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_production_repairs.py::test_daily_fetches_corporate_before_decision_and_stops_on_source_failure
+1 failed in 0.84s

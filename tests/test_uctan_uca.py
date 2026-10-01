@@ -462,7 +462,7 @@ class TestOtonomKosu:
     @pytest.fixture
     def dis_dunya_kapali(self, cfg, con, monkeypatch):
         """Ağ çağrılarını sustur; veri ZATEN kurulu olsun."""
-        from src import indicators, news, otonom, prices
+        from src import indicators, news, otonom, prices, macro
         from src.calendar_bist import BistCalendar
 
         # `asof_geri=0`: otonom koşu `MAX(bars_daily.date)`i asof sayar; seride
@@ -474,6 +474,11 @@ class TestOtonomKosu:
                             lambda self, ts=None: date.fromisoformat(asof))
         monkeypatch.setattr(BistCalendar, "is_trading_day", lambda self, d: True)
         # Dış kaynaklar: veri zaten var, tekrar çekilmesin.
+        monkeypatch.setattr(prices, 'sync_actions', lambda *a, **k: {'ok':True,'kayit':0,'tickers':6,'failed':{}})
+        monkeypatch.setattr(prices, 'sync_indices', lambda *a, **k: {})
+        monkeypatch.setattr(macro, 'daily', lambda *a, **k: {})
+        monkeypatch.setattr(news, 'sync_beklenen', lambda *a, **k: {'ok':True,'yazilan':0,'ticker':0})
+
         monkeypatch.setattr(prices, "daily", lambda *a, **k: {
             "tickers": 6, "hayalet_silinen": 0, "yarim_bar_silinen": 0,
             "kalite_gecmeyen": 0, "kalite_degerlendirilen": 6, "start": asof})

@@ -1,0 +1,30 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+______ test_expected_calendar_splits_full_window_and_requires_all_slices _______
+
+cfg = {'denetim': {'ek_izinli_sayilar': [0, 1, 2, 3, 5, 10, ...], 'ondalik_tolerans_basamak': 2, 'sayisal_beyaz_liste_tamsay...gostergeler': {'adx_length': 14, 'atr_length': 14, 'bollinger': {'length': 20, 'std': 2.0}, 'ema': [12, 26], ...}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x106178bc0>
+
+    def test_expected_calendar_splits_full_window_and_requires_all_slices(cfg,monkeypatch):
+        cfg=copy.deepcopy(cfg);b=cfg['sources']['kap']['beklenen_bildirim'];b.update(tavan_kayit=3,pencere_gun=1)
+        calls=[]
+        def row(name):return dict(kapTitle=name,subject='Finansal Rapor',startDate='01.09.2026',endDate='30.09.2026')
+        class Response:
+            def __init__(self,rows):self.rows=rows
+            def raise_for_status(self):pass
+            def json(self):return self.rows
+        def post(url,**kwargs):
+            q=kwargs['json'];calls.append((q['startDate'],q['endDate']))
+            return Response([row('full')]*3 if q['startDate']!=q['endDate'] else [row(q['startDate']),row('duplicate')])
+        monkeypatch.setattr(kap.requests,'post',post)
+        result=kap.fetch_beklenen(cfg)
+>       assert result.ok and result.ham==4 and len(result.kayitlar)==3
+E       AssertionError: assert (False)
+E        +  where False = BeklenenSonuc(kayitlar=[{'kap_title': 'full', 'subject': 'Finansal Rapor', 'period': None, 'year': None, 'start_date':...': None, 'start_date': '2026-09-01', 'end_date': '2026-09-30'}], hata=None, kirpik=True, ham=3, sirket=1, kapali=False).ok
+
+tests/test_production_repairs.py:136: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  src.sources.kap:kap.py:387 KAP beklenen bildirim TAVANA DAYANDI (3 ≥ 3) — liste kırpık, SAKLANMAYACAK
+=========================== short test summary info ============================
+FAILED tests/test_production_repairs.py::test_expected_calendar_splits_full_window_and_requires_all_slices
+1 failed in 0.63s

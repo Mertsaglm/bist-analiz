@@ -1,10 +1,10 @@
 """Canlı koşu ve yeniden üretimin tek karar/uygulama sınırı."""
-from . import marketdata, policy
+from . import marketdata, policy, decision_trace
 from .calendar import IST
 from .ledger import digest
 
 
-def run(ledger, rows, forecasts, model, cfg, quotes, now, event_note=None, book='strategy'):
+def run(ledger, rows, forecasts, model, cfg, quotes, now, event_note=None, book='strategy', raw_forecasts=None):
     account=ledger.account(book);local_day=now.astimezone(IST).date().isoformat()
     decisions=[]
     for row in rows:
@@ -28,7 +28,18 @@ def run(ledger, rows, forecasts, model, cfg, quotes, now, event_note=None, book=
             d.update(action='BEKLE', code='valuation_only', reasons=['Kapanış değerlemesi; bu saatte sanal dolum üretilmez.'])
         if d['action'] == 'AL' and not marketdata.entry_ready(ledger, cfg, quotes.get(symbol), symbol, now, book):
             d.update(action='BEKLE', code='awaiting_next_quote', reasons=['Alım adayı kaydedildi; sonraki taze kotasyonda koşullar yeniden sınanacak.'])
+        d['prediction'] = {'horizon_sessions': cfg['horizon_sessions'], 'kind': 'absolute_total_return',
+                           'unit': 'percent', 'model_id': model.get('id'),
+                           'feature_id': digest(model.get('features', [])), 'data_date': row.get('date'),
+                           'raw_pct': (raw_forecasts if raw_forecasts is not None else cfg.get('raw_forecasts', forecasts)).get(symbol),
+                           'calibrated_pct': forecasts.get(symbol)}
         d['key']='decision:'+digest({'day':local_day,'data':d,'quote':quotes.get(symbol)})
         decisions.append(d)
     fills=policy.execute(ledger,cfg,decisions,quotes,now,book=book)
+    by_symbol={r['symbol']:r for r in rows}
+    for d in decisions:
+        d['checks']=decision_trace.describe(by_symbol[d['symbol']],forecasts.get(d['symbol']),d,
+                                            quotes.get(d['symbol']),cfg,now)
+        d['failed_checks']=[c['check'] for c in d['checks'] if c['status']=='kaldı']
+        d['decisive_code']=d['code']
     return decisions,fills

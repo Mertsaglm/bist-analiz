@@ -12,8 +12,8 @@
 Bunlar `tests/test_prices.py` içinde fixture testine bağlandı — Yahoo regresyona
 giderse CI söyler. Bkz. LESSONS L-005.
 
-Bu modül ASLA istisna fırlatmaz; başarısızlıkta boş DataFrame / boş liste döner.
-Çağıran taraf "veri yok"u normal bir durum olarak ele alır (uydurma yapılmaz).
+Fiyat çağrıları başarısızlıkta boş DataFrame döner. Kurumsal işlem çağrısının
+strict=True kipi kaynak hatasını yükseltir; boş takvim ile arıza ayrılır.
 """
 
 from __future__ import annotations
@@ -104,19 +104,26 @@ def fetch_index(symbol: str, cfg: dict, *, start: str | None = None,
     return _normalize(_history(symbol, cfg, start=start, end=end))
 
 
-def fetch_actions(ticker: str, cfg: dict) -> list[dict]:
+def fetch_actions(ticker: str, cfg: dict, *, strict: bool = False) -> list[dict]:
     """Kurumsal işlemler: temettü ve bölünme/bedelsiz.
 
     Döner: [{date, kind, value}] — kind ∈ {temettu, bolunme}.
     yfinance bunları hem uygular hem listeler; biz ayrıca SAKLIYORUZ çünkü
-    plan penceresine düşen bir ex-tarih stop'u yapay olarak tetikler ve o planın
+    pozisyon açıkken gelen bir ex-tarih stop'u yapay olarak tetikler ve o planın
     sonucu 'iptal_kurumsal' olmalıdır (getiri/kayıp olarak sayılmamalı).
     """
     sym = yf_symbol(ticker, cfg)
     out: list[dict] = []
     try:
         t = yf.Ticker(sym)
-        acts = t.actions
+        # t.actions arıza halinde boş dönebilir. Otomatik hat boşluğu kanıt
+        # saymadan önce fiyat cevabını ve son tarihini de doğrular (D-01).
+        acts = (t.history(period="max", auto_adjust=False, actions=True, raise_errors=True)
+                if strict else t.actions)
+        if strict and (acts is None or acts.empty or
+                       not {'Close', 'Dividends', 'Stock Splits'} <= set(acts.columns) or
+                       (date.today() - acts.index[-1].date()).days > 7):
+            raise ValueError('Kurumsal işlem kaynağı boş, eksik veya eski.')
         time.sleep(float(cfg["sources"]["yf"].get("istek_arasi_saniye", 0.4)))
         if acts is None or acts.empty:
             return out
@@ -130,6 +137,8 @@ def fetch_actions(ticker: str, cfg: dict) -> list[dict]:
                 out.append({"date": d, "kind": "bolunme", "value": spl})
     except Exception as e:                                       # noqa: BLE001
         log.warning("%s: kurumsal işlem alınamadı: %s", sym, e)
+        if strict:
+            raise
     return out
 
 

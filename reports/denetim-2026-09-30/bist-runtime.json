@@ -1,0 +1,235 @@
+{
+  "market": "bist",
+  "replays": [
+    {
+      "path": "/tmp/bist-audit-20260930/Mertsaglm-bist-analiz-59e26644d61b15a2a7b3d9ed175aa2f3683fcfbd/data/advisor/capsules/b46a35ca1447b7652c8bd4879285bc66836d65cc600de9100c1f153d3488a0d7.json.gz",
+      "ok": true,
+      "id": "b46a35ca1447b7652c8bd4879285bc66836d65cc600de9100c1f153d3488a0d7",
+      "decisions": 18,
+      "code_hash": "f9c9469c63b9421ac87ee3a0097e40d78c51da74f0118e48840346bf8b54a6e1"
+    },
+    {
+      "path": "/tmp/bist-audit-20260930/Mertsaglm-bist-analiz-59e26644d61b15a2a7b3d9ed175aa2f3683fcfbd/data/advisor/capsules/5cf69c4a64c9ae2d7669c5d245ea14a73bdec7882fc187b59fa3855e08f217a0.json.gz",
+      "ok": true,
+      "id": "5cf69c4a64c9ae2d7669c5d245ea14a73bdec7882fc187b59fa3855e08f217a0",
+      "decisions": 18,
+      "code_hash": "d40bd77e9a74645f491f149d0c94d61c5b3e2a9b58112954da9c925b61b73ca2"
+    },
+    {
+      "path": "/tmp/bist-audit-20260930/Mertsaglm-bist-analiz-59e26644d61b15a2a7b3d9ed175aa2f3683fcfbd/data/advisor/capsules/940183ad19cf95bc53e1c13574935a229756cdc6fe7e268b2774d0e578f3daa2.json.gz",
+      "ok": true,
+      "id": "940183ad19cf95bc53e1c13574935a229756cdc6fe7e268b2774d0e578f3daa2",
+      "decisions": 18,
+      "code_hash": "ca1a67c1731adfeee552bad6024397dcaf1b242ef39ccc569eac4882d917a084"
+    },
+    {
+      "path": "/tmp/bist-audit-20260930/Mertsaglm-bist-analiz-59e26644d61b15a2a7b3d9ed175aa2f3683fcfbd/data/advisor/accounts/paper-2026-09-25/capsules/1a5e95d9a12bee3a891f1d4a788b7469bb17dcb0900e8a8b1d65f43db226eb73.json.gz",
+      "ok": true,
+      "id": "1a5e95d9a12bee3a891f1d4a788b7469bb17dcb0900e8a8b1d65f43db226eb73",
+      "decisions": 32,
+      "code_hash": "841f75118fa6aff2df856226b06fbc45f6d09647174fc7ca0700d32d6f8666e1"
+    },
+    {
+      "path": "/tmp/bist-audit-20260930/Mertsaglm-bist-analiz-59e26644d61b15a2a7b3d9ed175aa2f3683fcfbd/data/advisor/accounts/paper-2026-09-25/capsules/3f7f88583ff0d6f118f40ee726079e8d85ca0b87af6658b6f7f5758e2abcf2b8.json.gz",
+      "ok": true,
+      "id": "3f7f88583ff0d6f118f40ee726079e8d85ca0b87af6658b6f7f5758e2abcf2b8",
+      "decisions": 32,
+      "code_hash": "841f75118fa6aff2df856226b06fbc45f6d09647174fc7ca0700d32d6f8666e1"
+    },
+    {
+      "path": "/tmp/bist-audit-20260930/Mertsaglm-bist-analiz-59e26644d61b15a2a7b3d9ed175aa2f3683fcfbd/data/advisor/accounts/paper-2026-09-25/capsules/de871a3bb4a24a76b88e60f9a25b2a148f25409772da39f177d0045061644a61.json.gz",
+      "ok": true,
+      "id": "de871a3bb4a24a76b88e60f9a25b2a148f25409772da39f177d0045061644a61",
+      "decisions": 32,
+      "code_hash": "841f75118fa6aff2df856226b06fbc45f6d09647174fc7ca0700d32d6f8666e1"
+    },
+    {
+      "path": "/tmp/bist-audit-20260930/Mertsaglm-bist-analiz-59e26644d61b15a2a7b3d9ed175aa2f3683fcfbd/data/advisor/accounts/paper-2026-09-25/candidates/reversion-5-v1/capsules/97b92fafb1be7b8e699a2539b86a0decc7bea6ce0679010e4d89588fce07348b.json.gz",
+      "ok": true,
+      "id": "97b92fafb1be7b8e699a2539b86a0decc7bea6ce0679010e4d89588fce07348b",
+      "decisions": 32,
+      "code_hash": "841f75118fa6aff2df856226b06fbc45f6d09647174fc7ca0700d32d6f8666e1"
+    },
+    {
+      "path": "/tmp/bist-audit-20260930/Mertsaglm-bist-analiz-59e26644d61b15a2a7b3d9ed175aa2f3683fcfbd/data/advisor/accounts/paper-2026-09-25/candidates/reversion-5-v1/capsules/338900450316f40e8ac1869cb08b4a05b940bbfb923ad01ec62eaab244a14367.json.gz",
+      "ok": true,
+      "id": "338900450316f40e8ac1869cb08b4a05b940bbfb923ad01ec62eaab244a14367",
+      "decisions": 32,
+      "code_hash": "841f75118fa6aff2df856226b06fbc45f6d09647174fc7ca0700d32d6f8666e1"
+    },
+    {
+      "path": "/tmp/bist-audit-20260930/Mertsaglm-bist-analiz-59e26644d61b15a2a7b3d9ed175aa2f3683fcfbd/data/advisor/accounts/paper-2026-09-25/candidates/reversion-5-v1/capsules/f0ba8e0b9077e70489e4b6c7bc6c111857b80205baea98b8f01bf46192607541.json.gz",
+      "ok": true,
+      "id": "f0ba8e0b9077e70489e4b6c7bc6c111857b80205baea98b8f01bf46192607541",
+      "decisions": 32,
+      "code_hash": "841f75118fa6aff2df856226b06fbc45f6d09647174fc7ca0700d32d6f8666e1"
+    },
+    {
+      "path": "/tmp/bist-audit-20260930/Mertsaglm-bist-analiz-59e26644d61b15a2a7b3d9ed175aa2f3683fcfbd/data/advisor/accounts/paper-2026-09-25/candidates/recent-20-v1/capsules/4722b324758b20fbccf15d46a4b021ec11a87869f7267f3600d004d9aa70b89f.json.gz",
+      "ok": true,
+      "id": "4722b324758b20fbccf15d46a4b021ec11a87869f7267f3600d004d9aa70b89f",
+      "decisions": 32,
+      "code_hash": "841f75118fa6aff2df856226b06fbc45f6d09647174fc7ca0700d32d6f8666e1"
+    },
+    {
+      "path": "/tmp/bist-audit-20260930/Mertsaglm-bist-analiz-59e26644d61b15a2a7b3d9ed175aa2f3683fcfbd/data/advisor/accounts/paper-2026-09-25/candidates/recent-20-v1/capsules/487597ca5e92f9fb86aaffc507f8dbbc305a0aa32f0fe67e7779f74a786f757c.json.gz",
+      "ok": true,
+      "id": "487597ca5e92f9fb86aaffc507f8dbbc305a0aa32f0fe67e7779f74a786f757c",
+      "decisions": 32,
+      "code_hash": "841f75118fa6aff2df856226b06fbc45f6d09647174fc7ca0700d32d6f8666e1"
+    },
+    {
+      "path": "/tmp/bist-audit-20260930/Mertsaglm-bist-analiz-59e26644d61b15a2a7b3d9ed175aa2f3683fcfbd/data/advisor/accounts/paper-2026-09-25/candidates/recent-20-v1/capsules/ce3741ce13545e4120ae56fa366e6e50614afb05a060d346b6d3370b65de0d27.json.gz",
+      "ok": true,
+      "id": "ce3741ce13545e4120ae56fa366e6e50614afb05a060d346b6d3370b65de0d27",
+      "decisions": 32,
+      "code_hash": "841f75118fa6aff2df856226b06fbc45f6d09647174fc7ca0700d32d6f8666e1"
+    },
+    {
+      "path": "/tmp/bist-audit-20260930/Mertsaglm-bist-analiz-59e26644d61b15a2a7b3d9ed175aa2f3683fcfbd/data/advisor/accounts/paper-2026-09-25/candidates/sma50-v1/capsules/107ee18d2ab304ea23ac08154dcaa597b045f3fb0e01011817771c69a95b1b4a.json.gz",
+      "ok": true,
+      "id": "107ee18d2ab304ea23ac08154dcaa597b045f3fb0e01011817771c69a95b1b4a",
+      "decisions": 32,
+      "code_hash": "841f75118fa6aff2df856226b06fbc45f6d09647174fc7ca0700d32d6f8666e1"
+    },
+    {
+      "path": "/tmp/bist-audit-20260930/Mertsaglm-bist-analiz-59e26644d61b15a2a7b3d9ed175aa2f3683fcfbd/data/advisor/accounts/paper-2026-09-25/candidates/sma50-v1/capsules/a0faf74467a76ffc454f0f163af6486261fd23edf64d054c207ebf67fc78c056.json.gz",
+      "ok": true,
+      "id": "a0faf74467a76ffc454f0f163af6486261fd23edf64d054c207ebf67fc78c056",
+      "decisions": 32,
+      "code_hash": "841f75118fa6aff2df856226b06fbc45f6d09647174fc7ca0700d32d6f8666e1"
+    },
+    {
+      "path": "/tmp/bist-audit-20260930/Mertsaglm-bist-analiz-59e26644d61b15a2a7b3d9ed175aa2f3683fcfbd/data/advisor/accounts/paper-2026-09-25/candidates/sma50-v1/capsules/ea8900865f596366af06b2d64a305fd051a53971d7afdc5890fd415024188627.json.gz",
+      "ok": true,
+      "id": "ea8900865f596366af06b2d64a305fd051a53971d7afdc5890fd415024188627",
+      "decisions": 32,
+      "code_hash": "841f75118fa6aff2df856226b06fbc45f6d09647174fc7ca0700d32d6f8666e1"
+    },
+    {
+      "path": "/tmp/bist-audit-20260930/Mertsaglm-bist-analiz-59e26644d61b15a2a7b3d9ed175aa2f3683fcfbd/data/advisor/accounts/paper-2026-09-25/candidates/recent-5-v1/capsules/e10e14d1230d3965075b7eccf627ef1c8a602cff7bdfe0f5992dae05fbb6210a.json.gz",
+      "ok": true,
+      "id": "e10e14d1230d3965075b7eccf627ef1c8a602cff7bdfe0f5992dae05fbb6210a",
+      "decisions": 32,
+      "code_hash": "841f75118fa6aff2df856226b06fbc45f6d09647174fc7ca0700d32d6f8666e1"
+    },
+    {
+      "path": "/tmp/bist-audit-20260930/Mertsaglm-bist-analiz-59e26644d61b15a2a7b3d9ed175aa2f3683fcfbd/data/advisor/accounts/paper-2026-09-25/candidates/recent-5-v1/capsules/618b71d590ea38950f665e84adf12ff51d42f1e9ba5dd5e3a4751272a22a9a44.json.gz",
+      "ok": true,
+      "id": "618b71d590ea38950f665e84adf12ff51d42f1e9ba5dd5e3a4751272a22a9a44",
+      "decisions": 32,
+      "code_hash": "841f75118fa6aff2df856226b06fbc45f6d09647174fc7ca0700d32d6f8666e1"
+    },
+    {
+      "path": "/tmp/bist-audit-20260930/Mertsaglm-bist-analiz-59e26644d61b15a2a7b3d9ed175aa2f3683fcfbd/data/advisor/accounts/paper-2026-09-25/candidates/recent-5-v1/capsules/920bd5edd4043e7d18d7bb9fb179594db7ebd6f3b6bc7ca82ae0cbef89d3286f.json.gz",
+      "ok": true,
+      "id": "920bd5edd4043e7d18d7bb9fb179594db7ebd6f3b6bc7ca82ae0cbef89d3286f",
+      "decisions": 32,
+      "code_hash": "841f75118fa6aff2df856226b06fbc45f6d09647174fc7ca0700d32d6f8666e1"
+    }
+  ],
+  "models": [
+    {
+      "name": "main",
+      "max_coefficient_difference": 9.403589018575076e-13,
+      "approved": false,
+      "training_rows": 189985,
+      "evaluation": {
+        "periods": 111,
+        "mae_pct": 10.793651747533403,
+        "baseline_mae_pct": 10.733497624183949,
+        "lower_95_pct": -0.19780517328955916
+      }
+    },
+    {
+      "name": "recent-20-v1",
+      "max_coefficient_difference": 7.593925488436071e-13,
+      "approved": false,
+      "training_rows": 54259,
+      "evaluation": {
+        "periods": 111,
+        "mae_pct": 11.17565443544913,
+        "baseline_mae_pct": 10.801313964357675,
+        "lower_95_pct": -1.4045464130165604
+      }
+    },
+    {
+      "name": "recent-5-v1",
+      "max_coefficient_difference": 5.655476087440547e-13,
+      "approved": false,
+      "training_rows": 54292,
+      "evaluation": {
+        "periods": 447,
+        "mae_pct": 4.922243315440456,
+        "baseline_mae_pct": 4.867817689807841,
+        "lower_95_pct": -0.2785748848850486
+      }
+    },
+    {
+      "name": "reversion-5-v1",
+      "max_coefficient_difference": 5.655476087440547e-13,
+      "approved": false,
+      "training_rows": 54292,
+      "evaluation": {
+        "periods": 447,
+        "mae_pct": 4.922243315440456,
+        "baseline_mae_pct": 4.867817689807841,
+        "lower_95_pct": -0.2785748848850486
+      }
+    }
+  ],
+  "repeat_cycles": [
+    {
+      "run": 0,
+      "accounts_unchanged": {
+        "strategy": true,
+        "benchmark": true,
+        "shadow_reference": true,
+        "shadow_candidate": true
+      },
+      "errors": [],
+      "candidates_unchanged": {
+        "reversion-5-v1": true,
+        "recent-20-v1": true,
+        "sma50-v1": true,
+        "recent-5-v1": true
+      }
+    },
+    {
+      "run": 1,
+      "accounts_unchanged": {
+        "strategy": true,
+        "benchmark": true,
+        "shadow_reference": true,
+        "shadow_candidate": true
+      },
+      "errors": [],
+      "candidates_unchanged": {
+        "reversion-5-v1": true,
+        "recent-20-v1": true,
+        "sma50-v1": true,
+        "recent-5-v1": true
+      }
+    }
+  ],
+  "midnight_closing_refresh": {
+    "generated_at": "2026-09-29T21:03:58+00:00",
+    "skipped": true,
+    "skip_reason": "İşlem penceresi dışında; uygun saat bekleniyor."
+  },
+  "backup": {
+    "files": 792,
+    "archive": "/var/folders/7c/cbt7d09n267_43kyv3j222_h0000gn/T/bist-runtime-audit-d9n4ower/backup.zip"
+  },
+  "restore": {
+    "ok": true,
+    "ledger_hash": "ecb3c5ee4533eb129bb320d3b790664de583505e896bc7360b594d9cd349f474",
+    "files": 792,
+    "cash_cents": {
+      "strategy": 5000000,
+      "benchmark": 280163,
+      "shadow_reference": 5000000,
+      "shadow_candidate": 5000000
+    }
+  }
+}

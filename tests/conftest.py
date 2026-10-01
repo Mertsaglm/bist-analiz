@@ -81,6 +81,26 @@ def ag_yasak(monkeypatch, request):
 
     monkeypatch.setattr(socket.socket, "connect", korumali_connect)
     monkeypatch.setattr(socket, "create_connection", korumali_create)
+    # DNS/HTTP hatası uygulamada yakalansa bile test yeşile dönmemeli.
+    import requests
+    from urllib.parse import urlparse
+    original_request = requests.Session.request
+    def http_guard(self, method, url, *args, **kwargs):
+        if urlparse(str(url)).hostname in yerel:
+            return original_request(self, method, url, *args, **kwargs)
+        pytest.fail('TEST AĞA ÇIKMAYA ÇALIŞTI: requests taşıyıcısı')
+    monkeypatch.setattr(requests.Session, 'request', http_guard)
+    # yfinance curl_cffi taşıyıcısı Python socket sınırını atlar. Ağ yasağı
+    # orada da zorlanır; yeni kaynak çağrısı sessizce gerçek Yahoo'ya çıkamaz.
+    try:
+        from curl_cffi.requests import Session
+    except ImportError:
+        pass
+    else:
+        def curl_forbidden(*args, **kwargs):
+            pytest.fail('TEST AĞA ÇIKMAYA ÇALIŞTI: curl_cffi taşıyıcısı')
+        monkeypatch.setattr(Session, 'request', curl_forbidden)
+
     yield
 
 

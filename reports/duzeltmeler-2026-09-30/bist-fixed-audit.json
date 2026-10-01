@@ -1,0 +1,804 @@
+{
+  "market": "bist",
+  "through": "2026-09-30T21:03:58+00:00",
+  "snapshot_at": "2026-09-30T21:03:58+00:00",
+  "analysis_date": "2026-09-30",
+  "ledger_sha256": "90daecceae51bac09d038ab0cb5cae433f66a584660306106a2edc21dfa3f622",
+  "ledger_hash": "2eac4f6ae39c4710bf25c1c98dc0f5b9edeb491c23823e4aef219542fdc8c268",
+  "events": 5655,
+  "kinds": {
+    "account_opened": 1,
+    "contribution": 6,
+    "model_review": 6,
+    "quote_snapshot": 109,
+    "universe_snapshot": 5,
+    "cost_policy": 1,
+    "shadow_forecast": 126,
+    "account_checkpoint": 2,
+    "shadow_books_opened": 1,
+    "shadow_valuation": 114,
+    "decision_capsule": 116,
+    "forecast": 93,
+    "decision": 3630,
+    "benchmark_policy_started": 1,
+    "entry_intent": 576,
+    "custody_mark": 456,
+    "valuation": 114,
+    "session_check": 122,
+    "candidate_check": 114,
+    "notification": 22,
+    "fill": 34,
+    "weekly_notification": 1,
+    "dividend_receivable": 1,
+    "account_fee": 4
+  },
+  "accounts": {
+    "strategy": {
+      "cash_cents": 5500000,
+      "contributed_cents": 5500000,
+      "realized_cents": 0,
+      "receivable_cents": 0,
+      "fee_liability_cents": 0,
+      "account_fees_cents": 0,
+      "positions": {}
+    },
+    "benchmark": {
+      "cash_cents": 768088,
+      "contributed_cents": 5500000,
+      "realized_cents": 0,
+      "receivable_cents": 1720,
+      "fee_liability_cents": 0,
+      "account_fees_cents": 12075,
+      "positions": {
+        "AEFES": {
+          "quantity": "83",
+          "cost_cents": 155951
+        },
+        "AKBNK": {
+          "quantity": "21",
+          "cost_cents": 149598
+        },
+        "ASELS": {
+          "quantity": "4",
+          "cost_cents": 148991
+        },
+        "ASTOR": {
+          "quantity": "6",
+          "cost_cents": 155057
+        },
+        "BIMAS": {
+          "quantity": "3",
+          "cost_cents": 128813
+        },
+        "CCOLA": {
+          "quantity": "20",
+          "cost_cents": 153904
+        },
+        "CIMSA": {
+          "quantity": "36",
+          "cost_cents": 154341
+        },
+        "DSTKF": {
+          "quantity": "1",
+          "cost_cents": 117709
+        },
+        "EKGYO": {
+          "quantity": "80",
+          "cost_cents": 154966
+        },
+        "ENKAI": {
+          "quantity": "17",
+          "cost_cents": 148119
+        },
+        "EREGL": {
+          "quantity": "41",
+          "cost_cents": 155963
+        },
+        "FROTO": {
+          "quantity": "20",
+          "cost_cents": 155709
+        },
+        "GARAN": {
+          "quantity": "12",
+          "cost_cents": 156239
+        },
+        "GUBRF": {
+          "quantity": "3",
+          "cost_cents": 135280
+        },
+        "ISCTR": {
+          "quantity": "118",
+          "cost_cents": 155223
+        },
+        "KCHOL": {
+          "quantity": "7",
+          "cost_cents": 152580
+        },
+        "KRDMD": {
+          "quantity": "33",
+          "cost_cents": 155442
+        },
+        "MGROS": {
+          "quantity": "2",
+          "cost_cents": 106078
+        },
+        "PETKM": {
+          "quantity": "74",
+          "cost_cents": 156234
+        },
+        "PGSUS": {
+          "quantity": "10",
+          "cost_cents": 147186
+        },
+        "SAHOL": {
+          "quantity": "17",
+          "cost_cents": 151101
+        },
+        "SASA": {
+          "quantity": "756",
+          "cost_cents": 156146
+        },
+        "SISE": {
+          "quantity": "39",
+          "cost_cents": 153047
+        },
+        "TAVHL": {
+          "quantity": "5",
+          "cost_cents": 136483
+        },
+        "TCELL": {
+          "quantity": "15",
+          "cost_cents": 149869
+        },
+        "THYAO": {
+          "quantity": "5",
+          "cost_cents": 146259
+        },
+        "TOASO": {
+          "quantity": "5",
+          "cost_cents": 145633
+        },
+        "TRALT": {
+          "quantity": "31",
+          "cost_cents": 154600
+        },
+        "TTKOM": {
+          "quantity": "28",
+          "cost_cents": 153423
+        },
+        "TUPRS": {
+          "quantity": "3",
+          "cost_cents": 122421
+        },
+        "VAKBN": {
+          "quantity": "45",
+          "cost_cents": 153041
+        },
+        "YKBNK": {
+          "quantity": "43",
+          "cost_cents": 154431
+        }
+      }
+    },
+    "shadow_reference": {
+      "cash_cents": 5500000,
+      "contributed_cents": 5500000,
+      "realized_cents": 0,
+      "receivable_cents": 0,
+      "fee_liability_cents": 0,
+      "account_fees_cents": 0,
+      "positions": {}
+    },
+    "shadow_candidate": {
+      "cash_cents": 5500000,
+      "contributed_cents": 5500000,
+      "realized_cents": 0,
+      "receivable_cents": 0,
+      "fee_liability_cents": 0,
+      "account_fees_cents": 0,
+      "positions": {}
+    }
+  },
+  "snapshot_accounts_match": true,
+  "daily_cycles": [
+    {
+      "date": "2026-09-25",
+      "count": 18,
+      "first": "2026-09-25T11:01:00.496787+00:00",
+      "last": "2026-09-25T20:10:16.705143+00:00",
+      "max_gap_minutes": 261.27,
+      "full_quote_cycles": 18
+    },
+    {
+      "date": "2026-09-28",
+      "count": 31,
+      "first": "2026-09-28T07:15:45.952529+00:00",
+      "last": "2026-09-28T15:25:45.788212+00:00",
+      "max_gap_minutes": 39.89,
+      "full_quote_cycles": 29
+    },
+    {
+      "date": "2026-09-29",
+      "count": 32,
+      "first": "2026-09-29T07:15:43.812197+00:00",
+      "last": "2026-09-29T14:45:41.826977+00:00",
+      "max_gap_minutes": 15.31,
+      "full_quote_cycles": 30
+    },
+    {
+      "date": "2026-09-30",
+      "count": 33,
+      "first": "2026-09-30T07:15:42.597229+00:00",
+      "last": "2026-09-30T21:03:58+00:00",
+      "max_gap_minutes": 377.32,
+      "full_quote_cycles": 31
+    }
+  ],
+  "decisions": {
+    "no_edge": 925,
+    "reward_risk": 514,
+    "data_block": 2191
+  },
+  "fills": [
+    {
+      "book": "benchmark",
+      "symbol": "AEFES",
+      "side": "BUY",
+      "quantity": "83",
+      "price": 18.74937,
+      "fee_cents": 331,
+      "decision_key": "benchmark:pocket:AEFES:180",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "AKBNK",
+      "side": "BUY",
+      "quantity": "21",
+      "price": 71.08552499999999,
+      "fee_cents": 318,
+      "decision_key": "benchmark:pocket:AKBNK:181",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "ASELS",
+      "side": "BUY",
+      "quantity": "4",
+      "price": 371.68575,
+      "fee_cents": 317,
+      "decision_key": "benchmark:pocket:ASELS:182",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "ASTOR",
+      "side": "BUY",
+      "quantity": "6",
+      "price": 257.878875,
+      "fee_cents": 330,
+      "decision_key": "benchmark:pocket:ASTOR:183",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "BIMAS",
+      "side": "BUY",
+      "quantity": "3",
+      "price": 428.46412499999997,
+      "fee_cents": 274,
+      "decision_key": "benchmark:pocket:BIMAS:184",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "CCOLA",
+      "side": "BUY",
+      "quantity": "20",
+      "price": 76.788375,
+      "fee_cents": 327,
+      "decision_key": "benchmark:pocket:CCOLA:185",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "CIMSA",
+      "side": "BUY",
+      "quantity": "36",
+      "price": 42.78138,
+      "fee_cents": 328,
+      "decision_key": "benchmark:pocket:CIMSA:186",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "DSTKF",
+      "side": "BUY",
+      "quantity": "1",
+      "price": 1174.587,
+      "fee_cents": 250,
+      "decision_key": "benchmark:pocket:DSTKF:187",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "EKGYO",
+      "side": "BUY",
+      "quantity": "80",
+      "price": 19.32966,
+      "fee_cents": 329,
+      "decision_key": "benchmark:pocket:EKGYO:188",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "ENKAI",
+      "side": "BUY",
+      "quantity": "17",
+      "price": 86.94345,
+      "fee_cents": 315,
+      "decision_key": "benchmark:pocket:ENKAI:189",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "EREGL",
+      "side": "BUY",
+      "quantity": "41",
+      "price": 37.958969999999994,
+      "fee_cents": 331,
+      "decision_key": "benchmark:pocket:EREGL:190",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "FROTO",
+      "side": "BUY",
+      "quantity": "20",
+      "price": 77.68882500000001,
+      "fee_cents": 331,
+      "decision_key": "benchmark:pocket:FROTO:191",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "GARAN",
+      "side": "BUY",
+      "quantity": "11",
+      "price": 130.4652,
+      "fee_cents": 306,
+      "decision_key": "benchmark:pocket:GARAN:192",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "GUBRF",
+      "side": "BUY",
+      "quantity": "3",
+      "price": 449.974875,
+      "fee_cents": 288,
+      "decision_key": "benchmark:pocket:GUBRF:193",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "ISCTR",
+      "side": "BUY",
+      "quantity": "118",
+      "price": 13.126559999999998,
+      "fee_cents": 330,
+      "decision_key": "benchmark:pocket:ISCTR:194",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "KCHOL",
+      "side": "BUY",
+      "quantity": "7",
+      "price": 217.5087,
+      "fee_cents": 324,
+      "decision_key": "benchmark:pocket:KCHOL:195",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "KRDMD",
+      "side": "BUY",
+      "quantity": "33",
+      "price": 47.00348999999999,
+      "fee_cents": 330,
+      "decision_key": "benchmark:pocket:KRDMD:196",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "MGROS",
+      "side": "BUY",
+      "quantity": "2",
+      "price": 529.2645,
+      "fee_cents": 225,
+      "decision_key": "benchmark:pocket:MGROS:197",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "PETKM",
+      "side": "BUY",
+      "quantity": "73",
+      "price": 21.090539999999997,
+      "fee_cents": 328,
+      "decision_key": "benchmark:pocket:PETKM:198",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "PGSUS",
+      "side": "BUY",
+      "quantity": "10",
+      "price": 146.8734,
+      "fee_cents": 313,
+      "decision_key": "benchmark:pocket:PGSUS:199",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "SAHOL",
+      "side": "BUY",
+      "quantity": "17",
+      "price": 88.694325,
+      "fee_cents": 321,
+      "decision_key": "benchmark:pocket:SAHOL:200",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "SASA",
+      "side": "BUY",
+      "quantity": "756",
+      "price": 2.06103,
+      "fee_cents": 332,
+      "decision_key": "benchmark:pocket:SASA:201",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "SISE",
+      "side": "BUY",
+      "quantity": "39",
+      "price": 39.159569999999995,
+      "fee_cents": 325,
+      "decision_key": "benchmark:pocket:SISE:202",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "TAVHL",
+      "side": "BUY",
+      "quantity": "5",
+      "price": 272.386125,
+      "fee_cents": 290,
+      "decision_key": "benchmark:pocket:TAVHL:203",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "TCELL",
+      "side": "BUY",
+      "quantity": "15",
+      "price": 99.699825,
+      "fee_cents": 319,
+      "decision_key": "benchmark:pocket:TCELL:204",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "THYAO",
+      "side": "BUY",
+      "quantity": "5",
+      "price": 291.895875,
+      "fee_cents": 311,
+      "decision_key": "benchmark:pocket:THYAO:205",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "TOASO",
+      "side": "BUY",
+      "quantity": "5",
+      "price": 290.64525,
+      "fee_cents": 310,
+      "decision_key": "benchmark:pocket:TOASO:206",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "TRALT",
+      "side": "BUY",
+      "quantity": "31",
+      "price": 49.76487,
+      "fee_cents": 329,
+      "decision_key": "benchmark:pocket:TRALT:207",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "TTKOM",
+      "side": "BUY",
+      "quantity": "28",
+      "price": 54.677324999999996,
+      "fee_cents": 326,
+      "decision_key": "benchmark:pocket:TTKOM:208",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "TUPRS",
+      "side": "BUY",
+      "quantity": "3",
+      "price": 407.20349999999996,
+      "fee_cents": 260,
+      "decision_key": "benchmark:pocket:TUPRS:209",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "VAKBN",
+      "side": "BUY",
+      "quantity": "45",
+      "price": 33.93696,
+      "fee_cents": 325,
+      "decision_key": "benchmark:pocket:VAKBN:210",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "YKBNK",
+      "side": "BUY",
+      "quantity": "43",
+      "price": 35.83791,
+      "fee_cents": 328,
+      "decision_key": "benchmark:pocket:YKBNK:211",
+      "at": "2026-09-25T11:15:59.720434+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "PETKM",
+      "side": "BUY",
+      "quantity": "1",
+      "price": 19.249619999999997,
+      "fee_cents": 20,
+      "decision_key": "benchmark:pocket:PETKM:4075",
+      "at": "2026-09-30T07:30:54.197966+00:00"
+    },
+    {
+      "book": "benchmark",
+      "symbol": "GARAN",
+      "side": "BUY",
+      "quantity": "1",
+      "price": 123.16154999999999,
+      "fee_cents": 105,
+      "decision_key": "benchmark:pocket:GARAN:5255",
+      "at": "2026-09-30T13:41:22.736777+00:00"
+    }
+  ],
+  "last_notification": {
+    "at": "2026-09-30T13:02:13.553015+00:00",
+    "text": "BIST · SANAL PORTFÖY\nAnaliz: 2026-09-28\nVERİ BEKLENİYOR · AEFES\nVERİ BEKLENİYOR · AKBNK\n• AEFES: Beklenen son kapanış eksik: 2026-09-29.\n• AKBNK: Beklenen son kapanış eksik: 2026-09-29.\nYeni sanal işlem yok. 32 varlık değerlendirildi.\nAnaliz güncelliği uyarısı: AEFES, AKBNK, ASELS, ASTOR, BIMAS, CCOLA, CIMSA, DSTKF, EKGYO, ENKAI, EREGL, FROTO, GARAN, GUBRF, ISCTR, KCHOL, KRDMD, MGROS, PETKM, PGSUS, SAHOL, SASA, SISE, TAVHL, TCELL, THYAO, TOASO, TRALT, TTKOM, TUPRS, VAKBN, YKBNK\nPortföy 50,000.00 TL · K/Z +0.00 TL · nakit 50,000.00 TL\nhttps://birikim-paneli.vercel.app/"
+  },
+  "latest_notification_matches_current_state": false,
+  "learning": {
+    "roundtrips": 0,
+    "live_gate_passed": false,
+    "scorecard": {
+      "correction_pct": 0.0,
+      "independent_periods": 0,
+      "mean_error_pct": null,
+      "missed_upside_count": 0,
+      "note": "Hata, tahmin eksi düzeltilmiş toplam getiri serisinin değişimidir; net banka getirisi değildir. Kaçan yükseliş, net işlem kârı değildir.",
+      "recent": [],
+      "resolved_forecasts": 0
+    },
+    "evidence": {
+      "approved": false,
+      "lower_95_pct": null,
+      "mean_excess_pct": null,
+      "method": "Örtüşmeyen eşleştirilmiş dönemler; yaklaşık t ve HAC hata payının geniş olanı. Örtüşmeme bağımsızlık garantisi değildir.",
+      "minimum_periods": 24,
+      "periods": 0,
+      "series": [],
+      "status": "sanal üstünlük kanıtı yetersiz",
+      "upper_95_pct": null
+    }
+  },
+  "models": [
+    {
+      "id": "1a1e02056b77c419",
+      "asof": "2026-09-29",
+      "training_dates": 2724,
+      "training_rows": 190057,
+      "approved": false,
+      "periods": 111,
+      "lower_95_pct": -0.19780517328955916
+    },
+    {
+      "id": "36439163e1956d5b",
+      "asof": "2026-09-28",
+      "training_dates": 2723,
+      "training_rows": 189985,
+      "approved": false,
+      "periods": 111,
+      "lower_95_pct": -0.19780517328955916
+    },
+    {
+      "id": "5e3b339a8ffac6f6",
+      "asof": "2026-09-25",
+      "training_dates": 2722,
+      "training_rows": 189912,
+      "approved": false,
+      "periods": 111,
+      "lower_95_pct": -0.19780517328955916
+    },
+    {
+      "id": "ba6868af88f82690",
+      "asof": "2026-09-25",
+      "training_dates": 2722,
+      "training_rows": 189912,
+      "approved": false,
+      "periods": 111,
+      "lower_95_pct": -0.19780517328955916
+    },
+    {
+      "id": "bd42638b369cf2cb",
+      "asof": "2026-09-24",
+      "training_dates": 2721,
+      "training_rows": 187116,
+      "approved": false,
+      "periods": 111,
+      "lower_95_pct": 0.1253557980855594
+    },
+    {
+      "id": "e0be85155a98fcc7",
+      "asof": "2026-09-30",
+      "training_dates": 2725,
+      "training_rows": 190130,
+      "approved": false,
+      "periods": 111,
+      "lower_95_pct": -0.19780517328955916
+    }
+  ],
+  "capsules": {
+    "hash_verified": 116,
+    "archived_code_reproduced": 0,
+    "runtimes": [
+      {
+        "PyYAML": "6.0.3",
+        "numpy": "2.5.1",
+        "pandas": "2.3.3",
+        "requests": "2.34.2"
+      }
+    ]
+  },
+  "all_ledgers": {
+    "data/advisor/accounts/paper-2026-09-25/candidates/recent-20-v1/events.jsonl": {
+      "events": 1170,
+      "hash": "f194644a977d631ce2b9e7f274d1b9432b1973e84b3a51aab056c322ffd1fb5f",
+      "books": [
+        "benchmark",
+        "strategy"
+      ],
+      "capsules": 116
+    },
+    "data/advisor/accounts/paper-2026-09-25/candidates/recent-5-v1/events.jsonl": {
+      "events": 1170,
+      "hash": "49ce409d549ed33d983d9fda2ac0c7d2013edc3624627e62ce0a87ef813f7c2d",
+      "books": [
+        "benchmark",
+        "strategy"
+      ],
+      "capsules": 116
+    },
+    "data/advisor/accounts/paper-2026-09-25/candidates/reversion-5-v1/events.jsonl": {
+      "events": 1170,
+      "hash": "d4a48e5ef2ec3b4dadac6b119c84f78b77e5762ef4640a6b004cd31d64c43ab4",
+      "books": [
+        "benchmark",
+        "strategy"
+      ],
+      "capsules": 116
+    },
+    "data/advisor/accounts/paper-2026-09-25/candidates/sma50-v1/events.jsonl": {
+      "events": 1141,
+      "hash": "ec66f196fb3ecd12836f941d262aabda684c0dd4dbccf42caad797757d68625b",
+      "books": [
+        "benchmark",
+        "strategy"
+      ],
+      "capsules": 116
+    },
+    "data/advisor/accounts/paper-2026-09-25/events.jsonl": {
+      "events": 5655,
+      "hash": "2eac4f6ae39c4710bf25c1c98dc0f5b9edeb491c23823e4aef219542fdc8c268",
+      "books": [
+        "benchmark",
+        "shadow_candidate",
+        "shadow_reference",
+        "strategy"
+      ],
+      "capsules": 116
+    },
+    "data/advisor/events.jsonl": {
+      "events": 3785,
+      "hash": "60ada1a953fdc04c0dc2eb765466d8fd3f75d6445bccd442232b8f30351588ee",
+      "books": [
+        "benchmark",
+        "shadow_candidate",
+        "shadow_reference",
+        "strategy"
+      ],
+      "capsules": 148
+    }
+  },
+  "sql_sha256": "68f5dd55d2b80e8de342e643b9f595455b532403c57c1ba45299acb207a799f0",
+  "history": {
+    "rows": 206573,
+    "last_date": "2026-09-30",
+    "live_symbols": [
+      "AKBNK",
+      "ASELS",
+      "ASTOR",
+      "BIMAS",
+      "EKGYO",
+      "ENKAI",
+      "EREGL",
+      "EUPWR",
+      "FROTO",
+      "GARAN",
+      "KCHOL",
+      "KRDMD",
+      "PETKM",
+      "SISE",
+      "TAVHL",
+      "TCELL",
+      "THYAO",
+      "TUPRS"
+    ],
+    "latest_by_live_symbol": {
+      "AKBNK": "2026-09-30",
+      "ASELS": "2026-09-30",
+      "ASTOR": "2026-09-30",
+      "BIMAS": "2026-09-30",
+      "EKGYO": "2026-09-30",
+      "ENKAI": "2026-09-30",
+      "EREGL": "2026-09-30",
+      "EUPWR": "2026-09-30",
+      "FROTO": "2026-09-30",
+      "GARAN": "2026-09-30",
+      "KCHOL": "2026-09-30",
+      "KRDMD": "2026-09-30",
+      "PETKM": "2026-09-30",
+      "SISE": "2026-09-30",
+      "TAVHL": "2026-09-30",
+      "TCELL": "2026-09-30",
+      "THYAO": "2026-09-30",
+      "TUPRS": "2026-09-30"
+    }
+  },
+  "fix_validation": {
+    "current_engine_capsules": 116,
+    "current_engine_decisions": 3713,
+    "comparison_excludes": [
+      "key",
+      "decision_key",
+      "horizon_sessions"
+    ],
+    "invalid_reference_displays_corrected": [],
+    "full_cycle_runs": 2,
+    "all_four_accounts_unchanged": true,
+    "retrained_model_parameters_and_evaluation_match": true,
+    "model_comparison_absolute_tolerance": 1e-10,
+    "model_maximum_absolute_difference": 0.0,
+    "analysis_issues_visible": {},
+    "backup_restore_all_accounts_match": true,
+    "backup_files": 809
+  }
+}

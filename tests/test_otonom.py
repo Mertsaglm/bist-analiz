@@ -39,7 +39,7 @@ def _adimlari_sahtele(monkeypatch, *, saglik_kritik=False, dusen: set | None = N
     dusen = dusen or set()
     cagrilan: list[str] = []
 
-    from src import indicators, llm_io, news, prices, resolver
+    from src import indicators, llm_io, news, prices, resolver, macro
 
     def kaydet(ad, deger):
         def f(*a, **k):
@@ -49,11 +49,15 @@ def _adimlari_sahtele(monkeypatch, *, saglik_kritik=False, dusen: set | None = N
             return deger
         return f
 
+    monkeypatch.setattr(macro, 'daily', lambda *a, **k: {})
+    monkeypatch.setattr(news, 'sync_beklenen', lambda *a, **k: {'ok':True,'yazilan':0,'ticker':0})
     monkeypatch.setattr(prices, "daily", kaydet(
         "veri", {"tickers": 70, "hayalet_silinen": 0, "yarim_bar_silinen": 0,
                  "kalite_gecmeyen": 1, "start": "2026-07-14"}))
     # ⚠ Sahtelenmezse GERÇEK `sync_indices` koşar ve test ağa çıkar; adım
     # kritik olmadığı için hata sessizce yutulur ve suite yavaşlar.
+    monkeypatch.setattr(prices, "sync_actions", kaydet(
+        "kurumsal", {"ok": True, "kayit": 5, "tickers": 70, "failed": {}}))
     monkeypatch.setattr(prices, "sync_indices", kaydet(
         "endeks", {"XU100": 250, "USDTRY": 365}))
     monkeypatch.setattr(indicators, "compute_and_store", kaydet(
@@ -236,7 +240,7 @@ class TestHataSiniflari:
         `analist` ve `haber` bilerek DIŞARIDA: ikisi de düşse o günün plan
         geometrisi ve risk çerçevesi tek başına değerlidir.
         """
-        assert otonom.KRITIK_ADIMLAR == ("veri", "gosterge", "saglik", "rapor")
+        assert otonom.KRITIK_ADIMLAR == ("veri", "kurumsal", "gosterge", "saglik", "rapor")
         assert "analist" not in otonom.KRITIK_ADIMLAR
         assert "haber" not in otonom.KRITIK_ADIMLAR
 

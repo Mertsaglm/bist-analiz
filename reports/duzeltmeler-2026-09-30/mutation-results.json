@@ -1,0 +1,32 @@
+[
+  {
+    "case": "daily_corporate",
+    "exit_code": 1,
+    "failed_as_expected": true
+  },
+  {
+    "case": "late_corporate",
+    "exit_code": 1,
+    "failed_as_expected": true
+  },
+  {
+    "case": "kap_clip",
+    "exit_code": 1,
+    "failed_as_expected": true
+  },
+  {
+    "case": "audit_accounts",
+    "exit_code": 1,
+    "failed_as_expected": true
+  },
+  {
+    "case": "midnight",
+    "exit_code": 1,
+    "failed_as_expected": true
+  },
+  {
+    "case": "catchup",
+    "exit_code": 1,
+    "failed_as_expected": true
+  }
+]

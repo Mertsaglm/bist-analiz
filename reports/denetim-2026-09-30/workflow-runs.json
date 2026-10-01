@@ -1,0 +1,1622 @@
+[
+  {
+    "id": 36731589822,
+    "name": "Sanal portfoy V2",
+    "head_sha": "9243e22178b45962a9a7c89676b66a3653ebd25b",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T14:46:01Z",
+    "updated_at": "2026-09-30T14:47:12Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36731589822"
+  },
+  {
+    "id": 36729710872,
+    "name": "Sanal portfoy V2",
+    "head_sha": "8abdee89925aaa63fcb822a5c6916488612b8c90",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T14:31:05Z",
+    "updated_at": "2026-09-30T14:32:25Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36729710872"
+  },
+  {
+    "id": 36727822325,
+    "name": "Sanal portfoy V2",
+    "head_sha": "f4b05feacf8339a5a0db8e51588927db280552c1",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T14:16:07Z",
+    "updated_at": "2026-09-30T14:17:33Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36727822325"
+  },
+  {
+    "id": 36725932453,
+    "name": "Sanal portfoy V2",
+    "head_sha": "9c73d723b0a52e6fa90c9967131e813023c6bd6e",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T14:01:14Z",
+    "updated_at": "2026-09-30T14:02:28Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36725932453"
+  },
+  {
+    "id": 36724055623,
+    "name": "Sanal portfoy V2",
+    "head_sha": "adb9508dcf84839e9735cf5c947b57792ec02129",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T13:46:05Z",
+    "updated_at": "2026-09-30T13:47:38Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36724055623"
+  },
+  {
+    "id": 36723392577,
+    "name": "Sanal portfoy V2",
+    "head_sha": "4e163d6d45e05a3cfda4f88e553af1fd20029853",
+    "event": "schedule",
+    "conclusion": "success",
+    "created_at": "2026-09-30T13:40:46Z",
+    "updated_at": "2026-09-30T13:41:56Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36723392577"
+  },
+  {
+    "id": 36723198421,
+    "name": "V2 portfoy nobetcisi",
+    "head_sha": "4e163d6d45e05a3cfda4f88e553af1fd20029853",
+    "event": "schedule",
+    "conclusion": "failure",
+    "created_at": "2026-09-30T13:39:12Z",
+    "updated_at": "2026-09-30T13:39:48Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36723198421"
+  },
+  {
+    "id": 36722195935,
+    "name": "Sanal portfoy V2",
+    "head_sha": "8336e200ff3766976e57cd2ade51b1e478c13f15",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T13:30:59Z",
+    "updated_at": "2026-09-30T13:32:25Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36722195935"
+  },
+  {
+    "id": 36720404065,
+    "name": "Sanal portfoy V2",
+    "head_sha": "ee8527b50d7a879fb7d5a4a68eeccd15dacedae7",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T13:16:04Z",
+    "updated_at": "2026-09-30T13:17:25Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36720404065"
+  },
+  {
+    "id": 36718646052,
+    "name": "Sanal portfoy V2",
+    "head_sha": "fbd4248059261d8b433a1059cd87dd04c7456081",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T13:01:11Z",
+    "updated_at": "2026-09-30T13:02:18Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36718646052"
+  },
+  {
+    "id": 36716911044,
+    "name": "Sanal portfoy V2",
+    "head_sha": "d3ce65700864c1a9c17d7ef8853bc51a84b7c0a3",
+    "event": "workflow_dispatch",
+    "conclusion": "failure",
+    "created_at": "2026-09-30T12:46:03Z",
+    "updated_at": "2026-09-30T12:48:05Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36716911044"
+  },
+  {
+    "id": 36715235313,
+    "name": "Sanal portfoy V2",
+    "head_sha": "bf7416738682b2a60136fa1be9d02c49a14c992f",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T12:31:01Z",
+    "updated_at": "2026-09-30T12:32:12Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36715235313"
+  },
+  {
+    "id": 36713698861,
+    "name": "Sanal portfoy V2",
+    "head_sha": "0c43c70bfcbf1f062c20bf101de12d6a5aa78505",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T12:16:09Z",
+    "updated_at": "2026-09-30T12:18:28Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36713698861"
+  },
+  {
+    "id": 36712114067,
+    "name": "Sanal portfoy V2",
+    "head_sha": "f351740110f2e349a3c7c0580aef56c3749f7f55",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T12:01:11Z",
+    "updated_at": "2026-09-30T12:02:11Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36712114067"
+  },
+  {
+    "id": 36710546283,
+    "name": "Sanal portfoy V2",
+    "head_sha": "f57f2ce9a4c2ccddeea81c52cc8228174c9d8162",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T11:45:58Z",
+    "updated_at": "2026-09-30T11:47:11Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36710546283"
+  },
+  {
+    "id": 36709026467,
+    "name": "Sanal portfoy V2",
+    "head_sha": "d65982ef63a24e14a769498c97eb9e43c2fa397c",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T11:31:03Z",
+    "updated_at": "2026-09-30T11:32:11Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36709026467"
+  },
+  {
+    "id": 36707474555,
+    "name": "Sanal portfoy V2",
+    "head_sha": "d002e6d69788596ab1a58c8293aa20e82633c897",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T11:16:00Z",
+    "updated_at": "2026-09-30T11:17:11Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36707474555"
+  },
+  {
+    "id": 36706393532,
+    "name": "Test",
+    "head_sha": "d002e6d69788596ab1a58c8293aa20e82633c897",
+    "event": "schedule",
+    "conclusion": "success",
+    "created_at": "2026-09-30T11:05:35Z",
+    "updated_at": "2026-09-30T11:08:14Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36706393532"
+  },
+  {
+    "id": 36705834380,
+    "name": "Sanal portfoy V2",
+    "head_sha": "31c504e61c5094f7d1e24d338aaafbda1c65e4a7",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T11:00:14Z",
+    "updated_at": "2026-09-30T11:01:31Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36705834380"
+  },
+  {
+    "id": 36704322574,
+    "name": "Sanal portfoy V2",
+    "head_sha": "694d4e11f5789e759de2f8785cc88ec742e07cd1",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T10:45:11Z",
+    "updated_at": "2026-09-30T10:46:20Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36704322574"
+  },
+  {
+    "id": 36702813439,
+    "name": "Sanal portfoy V2",
+    "head_sha": "1c47eab7e81681c4290d7916955ae06f8b6e1f89",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T10:30:12Z",
+    "updated_at": "2026-09-30T10:31:18Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36702813439"
+  },
+  {
+    "id": 36701270013,
+    "name": "Sanal portfoy V2",
+    "head_sha": "37f33584e8953afe78552030e324ce5d25959c93",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T10:15:12Z",
+    "updated_at": "2026-09-30T10:16:30Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36701270013"
+  },
+  {
+    "id": 36699681154,
+    "name": "Sanal portfoy V2",
+    "head_sha": "a82570b0489294673971b6ea7642eb8b081f7e3a",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T10:00:09Z",
+    "updated_at": "2026-09-30T10:01:17Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36699681154"
+  },
+  {
+    "id": 36698097546,
+    "name": "Sanal portfoy V2",
+    "head_sha": "6e51c240577db1c1436cb136a9edf970b0308300",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T09:45:08Z",
+    "updated_at": "2026-09-30T09:46:20Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36698097546"
+  },
+  {
+    "id": 36696515360,
+    "name": "Sanal portfoy V2",
+    "head_sha": "1fc809f9fc6cfc51394a07276fd19435c746cb87",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T09:30:09Z",
+    "updated_at": "2026-09-30T09:31:05Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36696515360"
+  },
+  {
+    "id": 36694919084,
+    "name": "Sanal portfoy V2",
+    "head_sha": "37740d44bf35dff2b2a4ff143602e4b543153c14",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T09:15:11Z",
+    "updated_at": "2026-09-30T09:16:50Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36694919084"
+  },
+  {
+    "id": 36693263920,
+    "name": "Sanal portfoy V2",
+    "head_sha": "37b1b4562944f887859590f13275a96f639ea1f2",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T09:00:10Z",
+    "updated_at": "2026-09-30T09:01:22Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36693263920"
+  },
+  {
+    "id": 36691673962,
+    "name": "Sanal portfoy V2",
+    "head_sha": "a15861f80d37340e9036c2d5ac7d6500571a6769",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T08:45:11Z",
+    "updated_at": "2026-09-30T08:46:25Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36691673962"
+  },
+  {
+    "id": 36690090939,
+    "name": "Sanal portfoy V2",
+    "head_sha": "9be995be08bb48712e66221b51719a0fedfd9db3",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T08:30:10Z",
+    "updated_at": "2026-09-30T08:31:25Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36690090939"
+  },
+  {
+    "id": 36688559135,
+    "name": "Sanal portfoy V2",
+    "head_sha": "af88bf9cba2fa65887d9ca61ae6b00ab7eab40cd",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T08:15:12Z",
+    "updated_at": "2026-09-30T08:16:16Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36688559135"
+  },
+  {
+    "id": 36687021781,
+    "name": "Sanal portfoy V2",
+    "head_sha": "edfd613ae2725b400dc2aa80b3425ee11ea1e264",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T08:00:19Z",
+    "updated_at": "2026-09-30T08:01:42Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36687021781"
+  },
+  {
+    "id": 36685520621,
+    "name": "Sanal portfoy V2",
+    "head_sha": "eb845d4f7bf18090880ae74b4c56219451172858",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T07:45:11Z",
+    "updated_at": "2026-09-30T07:46:24Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36685520621"
+  },
+  {
+    "id": 36684054465,
+    "name": "Sanal portfoy V2",
+    "head_sha": "6ed89dd1485067d397220449ecbcff343e79ae10",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T07:30:12Z",
+    "updated_at": "2026-09-30T07:31:28Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36684054465"
+  },
+  {
+    "id": 36682638292,
+    "name": "Sanal portfoy V2",
+    "head_sha": "2fd1c2cb06d334d7cab1af8c817ebf25896b3deb",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T07:15:11Z",
+    "updated_at": "2026-09-30T07:17:14Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36682638292"
+  },
+  {
+    "id": 36681245684,
+    "name": "Sanal portfoy V2",
+    "head_sha": "fbe66696caadaf4c3eb953a23e500ad8f08ab9ae",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-30T07:00:14Z",
+    "updated_at": "2026-09-30T07:00:54Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36681245684"
+  },
+  {
+    "id": 36647295586,
+    "name": "V2 yedek ve geri donus",
+    "head_sha": "fbe66696caadaf4c3eb953a23e500ad8f08ab9ae",
+    "event": "schedule",
+    "conclusion": "success",
+    "created_at": "2026-09-29T23:50:27Z",
+    "updated_at": "2026-09-29T23:51:08Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36647295586"
+  },
+  {
+    "id": 36643692990,
+    "name": "Nobetci",
+    "head_sha": "fbe66696caadaf4c3eb953a23e500ad8f08ab9ae",
+    "event": "schedule",
+    "conclusion": "failure",
+    "created_at": "2026-09-29T23:09:47Z",
+    "updated_at": "2026-09-29T23:10:28Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36643692990"
+  },
+  {
+    "id": 36630682654,
+    "name": "Sanal portfoy V2",
+    "head_sha": "42c737d7add5ef04d543c7dd2fcfd2a0cf1f784b",
+    "event": "workflow_run",
+    "conclusion": "success",
+    "created_at": "2026-09-29T21:03:26Z",
+    "updated_at": "2026-09-29T21:04:04Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36630682654"
+  },
+  {
+    "id": 36630276524,
+    "name": "Gunluk otonom kosu",
+    "head_sha": "c61506b3650ac24505c98e471c59be05e34d8c8c",
+    "event": "schedule",
+    "conclusion": "success",
+    "created_at": "2026-09-29T21:00:02Z",
+    "updated_at": "2026-09-29T21:03:24Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36630276524"
+  },
+  {
+    "id": 36619038986,
+    "name": "Sanal portfoy V2",
+    "head_sha": "62de2cdebaa34bd2d7590cdffb3b971a7506d264",
+    "event": "schedule",
+    "conclusion": "success",
+    "created_at": "2026-09-29T19:24:39Z",
+    "updated_at": "2026-09-29T19:25:19Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36619038986"
+  },
+  {
+    "id": 36618931200,
+    "name": "V2 portfoy nobetcisi",
+    "head_sha": "62de2cdebaa34bd2d7590cdffb3b971a7506d264",
+    "event": "schedule",
+    "conclusion": "failure",
+    "created_at": "2026-09-29T19:23:45Z",
+    "updated_at": "2026-09-29T19:24:17Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36618931200"
+  },
+  {
+    "id": 36585016515,
+    "name": "Sanal portfoy V2",
+    "head_sha": "443b1b83a0a1b782b0e9c43e67f2bc57bb25cdbc",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-29T14:45:10Z",
+    "updated_at": "2026-09-29T14:46:15Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36585016515"
+  },
+  {
+    "id": 36583162529,
+    "name": "Sanal portfoy V2",
+    "head_sha": "ce8895dd1e587045b7312dc4fce9ea60c166995b",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-29T14:30:20Z",
+    "updated_at": "2026-09-29T14:31:24Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36583162529"
+  },
+  {
+    "id": 36581269790,
+    "name": "Sanal portfoy V2",
+    "head_sha": "2875b1c6aaf3b96d3fe2005dee78f2ee1c59c5b5",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-29T14:15:15Z",
+    "updated_at": "2026-09-29T14:16:31Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36581269790"
+  },
+  {
+    "id": 36579758221,
+    "name": "Sanal portfoy V2",
+    "head_sha": "a2e23dc6d773ee53089e8917b2dc96c6ea7f6dcf",
+    "event": "schedule",
+    "conclusion": "success",
+    "created_at": "2026-09-29T14:03:24Z",
+    "updated_at": "2026-09-29T14:04:28Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36579758221"
+  },
+  {
+    "id": 36579620174,
+    "name": "V2 portfoy nobetcisi",
+    "head_sha": "a2e23dc6d773ee53089e8917b2dc96c6ea7f6dcf",
+    "event": "schedule",
+    "conclusion": "failure",
+    "created_at": "2026-09-29T14:02:19Z",
+    "updated_at": "2026-09-29T14:02:53Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36579620174"
+  },
+  {
+    "id": 36579336237,
+    "name": "Sanal portfoy V2",
+    "head_sha": "e7b1f46f856193b8ca8aa84de7579aa524f7e0fd",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-29T14:00:12Z",
+    "updated_at": "2026-09-29T14:01:19Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36579336237"
+  },
+  {
+    "id": 36577434127,
+    "name": "Sanal portfoy V2",
+    "head_sha": "f2511e379c18309dbd9392f4061af3e95d432995",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-29T13:45:13Z",
+    "updated_at": "2026-09-29T13:46:26Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36577434127"
+  },
+  {
+    "id": 36575561800,
+    "name": "Sanal portfoy V2",
+    "head_sha": "d88197063e4bf52c1c729f785ec692fee1215b02",
+    "event": "workflow_dispatch",
+    "conclusion": "failure",
+    "created_at": "2026-09-29T13:30:13Z",
+    "updated_at": "2026-09-29T13:31:27Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36575561800"
+  },
+  {
+    "id": 36573754557,
+    "name": "Sanal portfoy V2",
+    "head_sha": "426ecb937c5f2d42e96aed2bbe86a8b775d24035",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-29T13:15:15Z",
+    "updated_at": "2026-09-29T13:16:29Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36573754557"
+  },
+  {
+    "id": 36571958589,
+    "name": "Sanal portfoy V2",
+    "head_sha": "847c7c2d1b20ad9d6fc46348942e52767cd7fc52",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-29T13:00:12Z",
+    "updated_at": "2026-09-29T13:01:19Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36571958589"
+  },
+  {
+    "id": 36570224568,
+    "name": "Sanal portfoy V2",
+    "head_sha": "808b4c880faee648afafcd1cec8a8f04e927ad2b",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-29T12:45:11Z",
+    "updated_at": "2026-09-29T12:46:13Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36570224568"
+  },
+  {
+    "id": 36568522926,
+    "name": "Sanal portfoy V2",
+    "head_sha": "be3f98df9e62290f0057e239b7ab2cf41bf5a86c",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-29T12:30:10Z",
+    "updated_at": "2026-09-29T12:31:17Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36568522926"
+  },
+  {
+    "id": 36566880806,
+    "name": "Sanal portfoy V2",
+    "head_sha": "45a5fc3f450178150b67d6fd152df50e013302b9",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-29T12:15:10Z",
+    "updated_at": "2026-09-29T12:16:25Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36566880806"
+  },
+  {
+    "id": 36565276668,
+    "name": "Sanal portfoy V2",
+    "head_sha": "4f82339ca017bbd932e2872492b74cdfe15f9f09",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-29T12:00:20Z",
+    "updated_at": "2026-09-29T12:01:30Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36565276668"
+  },
+  {
+    "id": 36563688351,
+    "name": "Sanal portfoy V2",
+    "head_sha": "ae9247ee9770de6478057ee68b601805f83586dc",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-29T11:45:09Z",
+    "updated_at": "2026-09-29T11:46:19Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36563688351"
+  },
+  {
+    "id": 36562145054,
+    "name": "Sanal portfoy V2",
+    "head_sha": "d93e76cb8386922e52583f6f88e04a7d0bef7821",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-29T11:30:16Z",
+    "updated_at": "2026-09-29T11:31:26Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36562145054"
+  },
+  {
+    "id": 36560800190,
+    "name": "Test",
+    "head_sha": "d93e76cb8386922e52583f6f88e04a7d0bef7821",
+    "event": "schedule",
+    "conclusion": "success",
+    "created_at": "2026-09-29T11:17:18Z",
+    "updated_at": "2026-09-29T11:19:51Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36560800190"
+  },
+  {
+    "id": 36560591991,
+    "name": "Sanal portfoy V2",
+    "head_sha": "0377b8223ab5363f61cf417112e70541678aa5c0",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-29T11:15:16Z",
+    "updated_at": "2026-09-29T11:16:23Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36560591991"
+  },
+  {
+    "id": 36559041777,
+    "name": "Sanal portfoy V2",
+    "head_sha": "1745c562356260ac4e09085f2a5fa22b5dfedb12",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-29T11:00:16Z",
+    "updated_at": "2026-09-29T11:01:40Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36559041777"
+  },
+  {
+    "id": 36557499795,
+    "name": "Sanal portfoy V2",
+    "head_sha": "20a96af9be209426751739d6970c3c13ce92660e",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-29T10:45:09Z",
+    "updated_at": "2026-09-29T10:46:21Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36557499795"
+  },
+  {
+    "id": 36555961353,
+    "name": "Sanal portfoy V2",
+    "head_sha": "915a230559e5f738a78f9b36f5e42e977ccd9f7c",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-29T10:30:12Z",
+    "updated_at": "2026-09-29T10:31:19Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36555961353"
+  },
+  {
+    "id": 36554404286,
+    "name": "Sanal portfoy V2",
+    "head_sha": "732e0ad9125859b574b99960ed0195bcb31b4a70",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-29T10:15:12Z",
+    "updated_at": "2026-09-29T10:16:17Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36554404286"
+  },
+  {
+    "id": 36552784097,
+    "name": "Sanal portfoy V2",
+    "head_sha": "e4a2569df24c0e1c4fc64124da2bff2cb8e737e2",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-29T10:00:08Z",
+    "updated_at": "2026-09-29T10:01:14Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36552784097"
+  },
+  {
+    "id": 36551179875,
+    "name": "Sanal portfoy V2",
+    "head_sha": "15df8daae6845948dd00d45affcb6bca824700bd",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-29T09:45:08Z",
+    "updated_at": "2026-09-29T09:46:15Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36551179875"
+  },
+  {
+    "id": 36549578470,
+    "name": "Sanal portfoy V2",
+    "head_sha": "256c2b31900b37691df9c90e73db6f7d6dc287cd",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-29T09:30:09Z",
+    "updated_at": "2026-09-29T09:31:23Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36549578470"
+  },
+  {
+    "id": 36547947275,
+    "name": "Sanal portfoy V2",
+    "head_sha": "faa519f2f4ca33ef46d6705aba59d1f2acd500eb",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-29T09:15:08Z",
+    "updated_at": "2026-09-29T09:16:19Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36547947275"
+  },
+  {
+    "id": 36546302535,
+    "name": "Sanal portfoy V2",
+    "head_sha": "4e2016595dd3632e694e2de3edd785f885a0cf2e",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-29T09:00:09Z",
+    "updated_at": "2026-09-29T09:01:06Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36546302535"
+  },
+  {
+    "id": 36544714204,
+    "name": "Sanal portfoy V2",
+    "head_sha": "527c9aa663b5f7b9f477433b3e081e611da24954",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-29T08:45:08Z",
+    "updated_at": "2026-09-29T08:46:10Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36544714204"
+  },
+  {
+    "id": 36543119112,
+    "name": "Sanal portfoy V2",
+    "head_sha": "6afda7fac3d57fad9a4c9d2be511167dfc5ce2b7",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-29T08:30:11Z",
+    "updated_at": "2026-09-29T08:31:17Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36543119112"
+  },
+  {
+    "id": 36541558138,
+    "name": "Sanal portfoy V2",
+    "head_sha": "daba6dc8e277557e68a5e8871898e5112dcc05be",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-29T08:15:11Z",
+    "updated_at": "2026-09-29T08:16:17Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36541558138"
+  },
+  {
+    "id": 36540008159,
+    "name": "Sanal portfoy V2",
+    "head_sha": "84483648d5e3be28c782c795ce174df2fcc71102",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-29T08:00:14Z",
+    "updated_at": "2026-09-29T08:01:31Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36540008159"
+  },
+  {
+    "id": 36538503876,
+    "name": "Sanal portfoy V2",
+    "head_sha": "c9c73f423e27187c137ff7688ca38001f16b280b",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-29T07:45:09Z",
+    "updated_at": "2026-09-29T07:46:21Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36538503876"
+  },
+  {
+    "id": 36537007166,
+    "name": "Sanal portfoy V2",
+    "head_sha": "84a1b6dedeefec05063523bc6fe2573ad9f17480",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-29T07:30:13Z",
+    "updated_at": "2026-09-29T07:31:33Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36537007166"
+  },
+  {
+    "id": 36535531862,
+    "name": "Sanal portfoy V2",
+    "head_sha": "aff9763ba8c54dfee00f1beec2c0da308e499d79",
+    "event": "workflow_dispatch",
+    "conclusion": "failure",
+    "created_at": "2026-09-29T07:15:08Z",
+    "updated_at": "2026-09-29T07:17:31Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36535531862"
+  },
+  {
+    "id": 36534101556,
+    "name": "Sanal portfoy V2",
+    "head_sha": "90183abd42c4d663bfb93b2ad0bf3af148ebf3c3",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-29T07:00:17Z",
+    "updated_at": "2026-09-29T07:00:56Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36534101556"
+  },
+  {
+    "id": 36503183663,
+    "name": "V2 yedek ve geri donus",
+    "head_sha": "90183abd42c4d663bfb93b2ad0bf3af148ebf3c3",
+    "event": "schedule",
+    "conclusion": "success",
+    "created_at": "2026-09-29T00:27:26Z",
+    "updated_at": "2026-09-29T00:28:08Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36503183663"
+  },
+  {
+    "id": 36500383478,
+    "name": "Nobetci",
+    "head_sha": "90183abd42c4d663bfb93b2ad0bf3af148ebf3c3",
+    "event": "schedule",
+    "conclusion": "failure",
+    "created_at": "2026-09-28T23:54:03Z",
+    "updated_at": "2026-09-28T23:54:38Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36500383478"
+  },
+  {
+    "id": 36491524935,
+    "name": "Sanal portfoy V2",
+    "head_sha": "0ee9d81ed6c1c651372138d77151955ac07eb1e1",
+    "event": "workflow_run",
+    "conclusion": "success",
+    "created_at": "2026-09-28T22:17:44Z",
+    "updated_at": "2026-09-28T22:18:22Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36491524935"
+  },
+  {
+    "id": 36491284287,
+    "name": "Gunluk otonom kosu",
+    "head_sha": "18658b608ef85c2cd4b4a85c59e80d2a06b16c3b",
+    "event": "schedule",
+    "conclusion": "success",
+    "created_at": "2026-09-28T22:15:21Z",
+    "updated_at": "2026-09-28T22:17:42Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36491284287"
+  },
+  {
+    "id": 36485681344,
+    "name": "Sanal portfoy V2",
+    "head_sha": "a61a9de9e27060e413e1bb2a9451a2e74ad7baac",
+    "event": "schedule",
+    "conclusion": "success",
+    "created_at": "2026-09-28T21:22:41Z",
+    "updated_at": "2026-09-28T21:23:21Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36485681344"
+  },
+  {
+    "id": 36485649199,
+    "name": "V2 portfoy nobetcisi",
+    "head_sha": "a61a9de9e27060e413e1bb2a9451a2e74ad7baac",
+    "event": "schedule",
+    "conclusion": "failure",
+    "created_at": "2026-09-28T21:22:24Z",
+    "updated_at": "2026-09-28T21:22:57Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36485649199"
+  },
+  {
+    "id": 36443424442,
+    "name": "Sanal portfoy V2",
+    "head_sha": "93a1e521ff21e561ccd41243ec63090c2551d3f3",
+    "event": "schedule",
+    "conclusion": "success",
+    "created_at": "2026-09-28T15:25:08Z",
+    "updated_at": "2026-09-28T15:26:25Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36443424442"
+  },
+  {
+    "id": 36443227918,
+    "name": "V2 portfoy nobetcisi",
+    "head_sha": "93a1e521ff21e561ccd41243ec63090c2551d3f3",
+    "event": "schedule",
+    "conclusion": "success",
+    "created_at": "2026-09-28T15:23:38Z",
+    "updated_at": "2026-09-28T15:24:13Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36443227918"
+  },
+  {
+    "id": 36438339247,
+    "name": "Sanal portfoy V2",
+    "head_sha": "5d205f75ae53299cf307d217fe93068098db5b2f",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-28T14:45:12Z",
+    "updated_at": "2026-09-28T14:46:24Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36438339247"
+  },
+  {
+    "id": 36436462344,
+    "name": "Sanal portfoy V2",
+    "head_sha": "103fbff5579dd31a7d5608094d93a87eefbf1078",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-28T14:30:15Z",
+    "updated_at": "2026-09-28T14:31:29Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36436462344"
+  },
+  {
+    "id": 36434571697,
+    "name": "Sanal portfoy V2",
+    "head_sha": "c0da7e7aebd7e6748fd9f4be093211a0542ea011",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-28T14:15:11Z",
+    "updated_at": "2026-09-28T14:16:17Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36434571697"
+  },
+  {
+    "id": 36432693300,
+    "name": "Sanal portfoy V2",
+    "head_sha": "dd5a5ad448cbd092c36ae2559b0d02133187cd73",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-28T14:00:17Z",
+    "updated_at": "2026-09-28T14:01:28Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36432693300"
+  },
+  {
+    "id": 36430849315,
+    "name": "Sanal portfoy V2",
+    "head_sha": "e6af6215556a292957cb283307faee9b8203e73c",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-28T13:45:10Z",
+    "updated_at": "2026-09-28T13:46:17Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36430849315"
+  },
+  {
+    "id": 36429076724,
+    "name": "Sanal portfoy V2",
+    "head_sha": "a2d4089b7c6cd24d837f484b7cae7814532760fa",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-28T13:30:17Z",
+    "updated_at": "2026-09-28T13:31:19Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36429076724"
+  },
+  {
+    "id": 36427289903,
+    "name": "Sanal portfoy V2",
+    "head_sha": "ec43435bb8d1d83998b64d7ba6e3d7550cd6cdf9",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-28T13:15:13Z",
+    "updated_at": "2026-09-28T13:16:18Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36427289903"
+  },
+  {
+    "id": 36425540896,
+    "name": "Sanal portfoy V2",
+    "head_sha": "db10410c78646036ffd3063098371a82284507a8",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-28T13:00:20Z",
+    "updated_at": "2026-09-28T13:01:31Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36425540896"
+  },
+  {
+    "id": 36423847104,
+    "name": "Sanal portfoy V2",
+    "head_sha": "b0b7a256a6fe55d119a017e73e1e21e49b2d201b",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-28T12:45:07Z",
+    "updated_at": "2026-09-28T12:46:08Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36423847104"
+  },
+  {
+    "id": 36422238757,
+    "name": "Sanal portfoy V2",
+    "head_sha": "9a791415a7df344820f733bebb760cd5e8be5ec0",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-28T12:30:14Z",
+    "updated_at": "2026-09-28T12:31:28Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36422238757"
+  },
+  {
+    "id": 36420637806,
+    "name": "Sanal portfoy V2",
+    "head_sha": "2340b4cfe73fa2d1181e0d1466b7b5e0694d284d",
+    "event": "workflow_dispatch",
+    "conclusion": "failure",
+    "created_at": "2026-09-28T12:15:10Z",
+    "updated_at": "2026-09-28T12:16:41Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36420637806"
+  },
+  {
+    "id": 36419041296,
+    "name": "Sanal portfoy V2",
+    "head_sha": "f8235d85f4858b96df5706191b53802153787fbf",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-28T12:00:11Z",
+    "updated_at": "2026-09-28T12:01:15Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36419041296"
+  },
+  {
+    "id": 36417531462,
+    "name": "Sanal portfoy V2",
+    "head_sha": "14d660a3e3b646d7c71671c884ed66d7914af70d",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-28T11:45:12Z",
+    "updated_at": "2026-09-28T11:46:13Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36417531462"
+  },
+  {
+    "id": 36416761574,
+    "name": "Test",
+    "head_sha": "14d660a3e3b646d7c71671c884ed66d7914af70d",
+    "event": "schedule",
+    "conclusion": "success",
+    "created_at": "2026-09-28T11:37:31Z",
+    "updated_at": "2026-09-28T11:40:15Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36416761574"
+  },
+  {
+    "id": 36416031746,
+    "name": "Sanal portfoy V2",
+    "head_sha": "7c43c9599053fcb01fc2ca8531628c376754908f",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-28T11:30:14Z",
+    "updated_at": "2026-09-28T11:31:18Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36416031746"
+  },
+  {
+    "id": 36414537603,
+    "name": "Sanal portfoy V2",
+    "head_sha": "64f4a6a61645d2f679f7130523b390e04dd37f9e",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-28T11:15:08Z",
+    "updated_at": "2026-09-28T11:16:17Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36414537603"
+  },
+  {
+    "id": 36413018050,
+    "name": "Sanal portfoy V2",
+    "head_sha": "2035309738e2ff33601c22ce653feb946ea7c6a3",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-28T11:00:12Z",
+    "updated_at": "2026-09-28T11:01:34Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36413018050"
+  },
+  {
+    "id": 36411552166,
+    "name": "Sanal portfoy V2",
+    "head_sha": "473f0096e8d4570baf26097c1b90c7b7a6a2f72c",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-28T10:45:07Z",
+    "updated_at": "2026-09-28T10:46:09Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36411552166"
+  },
+  {
+    "id": 36410090066,
+    "name": "Sanal portfoy V2",
+    "head_sha": "473f0096e8d4570baf26097c1b90c7b7a6a2f72c",
+    "event": "workflow_dispatch",
+    "conclusion": "failure",
+    "created_at": "2026-09-28T10:30:15Z",
+    "updated_at": "2026-09-28T10:32:17Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36410090066"
+  },
+  {
+    "id": 36408590053,
+    "name": "Sanal portfoy V2",
+    "head_sha": "a0304826f3927e1cba9037758e1895a14e98c77b",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-28T10:15:09Z",
+    "updated_at": "2026-09-28T10:16:23Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36408590053"
+  },
+  {
+    "id": 36407031633,
+    "name": "Sanal portfoy V2",
+    "head_sha": "ec61f6510a00f639f8f9ae6e74500ae69dfbd123",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-28T10:00:19Z",
+    "updated_at": "2026-09-28T10:01:41Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36407031633"
+  },
+  {
+    "id": 36405476541,
+    "name": "Sanal portfoy V2",
+    "head_sha": "09dc2ea5342989ce826081c039771eced05b7997",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-28T09:45:06Z",
+    "updated_at": "2026-09-28T09:46:16Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36405476541"
+  },
+  {
+    "id": 36403913946,
+    "name": "Sanal portfoy V2",
+    "head_sha": "dd969cd24716a3178f554b2b92b66176ce8ec0c1",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-28T09:30:14Z",
+    "updated_at": "2026-09-28T09:31:18Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36403913946"
+  },
+  {
+    "id": 36402294235,
+    "name": "Sanal portfoy V2",
+    "head_sha": "0159be68c2a76554304fbdba2c2e49c960fabcd8",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-28T09:15:08Z",
+    "updated_at": "2026-09-28T09:16:20Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36402294235"
+  },
+  {
+    "id": 36400752784,
+    "name": "Sanal portfoy V2",
+    "head_sha": "20488d68ec820c5869c704738420d06684d7b7a6",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-28T09:00:11Z",
+    "updated_at": "2026-09-28T09:01:25Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36400752784"
+  },
+  {
+    "id": 36399240242,
+    "name": "Sanal portfoy V2",
+    "head_sha": "a785cbc9de9156fc0753b3cced65bc7ff0f2b45b",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-28T08:45:11Z",
+    "updated_at": "2026-09-28T08:46:15Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36399240242"
+  },
+  {
+    "id": 36397732643,
+    "name": "Sanal portfoy V2",
+    "head_sha": "8c845bf49634e79a2ea47773cb247769722f26a1",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-28T08:30:10Z",
+    "updated_at": "2026-09-28T08:31:22Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36397732643"
+  },
+  {
+    "id": 36396246226,
+    "name": "Sanal portfoy V2",
+    "head_sha": "355987d1ae39cc2610645f8bd2f43cfd32308b16",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-28T08:15:08Z",
+    "updated_at": "2026-09-28T08:16:26Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36396246226"
+  },
+  {
+    "id": 36394793158,
+    "name": "Sanal portfoy V2",
+    "head_sha": "34102650005abfb944ba75a14d88e275ff00f24e",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-28T08:00:19Z",
+    "updated_at": "2026-09-28T08:01:27Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36394793158"
+  },
+  {
+    "id": 36393365331,
+    "name": "Sanal portfoy V2",
+    "head_sha": "c214ccc9ba4154a358f20bfd068e76b93196fef5",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-28T07:45:08Z",
+    "updated_at": "2026-09-28T07:46:39Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36393365331"
+  },
+  {
+    "id": 36391979367,
+    "name": "Sanal portfoy V2",
+    "head_sha": "2589e95e3a0d299babef13c9e668e86d385a1c4e",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-28T07:30:09Z",
+    "updated_at": "2026-09-28T07:31:22Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36391979367"
+  },
+  {
+    "id": 36390652647,
+    "name": "Sanal portfoy V2",
+    "head_sha": "1456f8547a01b4c8dfb1ed921c623bccf2c67d28",
+    "event": "workflow_dispatch",
+    "conclusion": "failure",
+    "created_at": "2026-09-28T07:15:13Z",
+    "updated_at": "2026-09-28T07:16:25Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36390652647"
+  },
+  {
+    "id": 36389306706,
+    "name": "Sanal portfoy V2",
+    "head_sha": "9fec68fbef9f90217737ffbde7610e789bc6f86e",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-28T07:00:19Z",
+    "updated_at": "2026-09-28T07:00:48Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36389306706"
+  },
+  {
+    "id": 36346044837,
+    "name": "Haftalik degerlendirme",
+    "head_sha": "67e1ea973ac008e857fc7745abd5315e77c0d217",
+    "event": "schedule",
+    "conclusion": "success",
+    "created_at": "2026-09-27T19:54:16Z",
+    "updated_at": "2026-09-27T19:54:55Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36346044837"
+  },
+  {
+    "id": 36312725176,
+    "name": "Test",
+    "head_sha": "67e1ea973ac008e857fc7745abd5315e77c0d217",
+    "event": "schedule",
+    "conclusion": "success",
+    "created_at": "2026-09-27T10:30:03Z",
+    "updated_at": "2026-09-27T10:32:28Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36312725176"
+  },
+  {
+    "id": 36233891424,
+    "name": "Test",
+    "head_sha": "67e1ea973ac008e857fc7745abd5315e77c0d217",
+    "event": "schedule",
+    "conclusion": "success",
+    "created_at": "2026-09-26T09:48:35Z",
+    "updated_at": "2026-09-26T09:51:07Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36233891424"
+  },
+  {
+    "id": 36200740359,
+    "name": "V2 yedek ve geri donus",
+    "head_sha": "67e1ea973ac008e857fc7745abd5315e77c0d217",
+    "event": "schedule",
+    "conclusion": "success",
+    "created_at": "2026-09-25T23:22:11Z",
+    "updated_at": "2026-09-25T23:22:51Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36200740359"
+  },
+  {
+    "id": 36198243178,
+    "name": "Nobetci",
+    "head_sha": "67e1ea973ac008e857fc7745abd5315e77c0d217",
+    "event": "schedule",
+    "conclusion": "success",
+    "created_at": "2026-09-25T22:45:57Z",
+    "updated_at": "2026-09-25T22:46:38Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36198243178"
+  },
+  {
+    "id": 36184075591,
+    "name": "Sanal portfoy V2",
+    "head_sha": "53a773477aa422ba3de697113c4acc3114c14612",
+    "event": "workflow_run",
+    "conclusion": "success",
+    "created_at": "2026-09-25T20:09:47Z",
+    "updated_at": "2026-09-25T20:11:30Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36184075591"
+  },
+  {
+    "id": 36183750033,
+    "name": "Gunluk otonom kosu",
+    "head_sha": "b1657c0f868c3d350690f20d704ba073f8d9a7ae",
+    "event": "schedule",
+    "conclusion": "success",
+    "created_at": "2026-09-25T20:06:34Z",
+    "updated_at": "2026-09-25T20:09:45Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36183750033"
+  },
+  {
+    "id": 36183136717,
+    "name": "Sanal portfoy V2",
+    "head_sha": "b097ef7a88c936bb2897c0b6b50a9aee7a1670f5",
+    "event": "schedule",
+    "conclusion": "success",
+    "created_at": "2026-09-25T20:00:41Z",
+    "updated_at": "2026-09-25T20:01:14Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36183136717"
+  },
+  {
+    "id": 36183133616,
+    "name": "V2 portfoy nobetcisi",
+    "head_sha": "b097ef7a88c936bb2897c0b6b50a9aee7a1670f5",
+    "event": "schedule",
+    "conclusion": "failure",
+    "created_at": "2026-09-25T20:00:40Z",
+    "updated_at": "2026-09-25T20:02:20Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36183133616"
+  },
+  {
+    "id": 36156654668,
+    "name": "Sanal portfoy V2",
+    "head_sha": "0866b2ec1beb7971fb0704f0abcbc0776b7afb28",
+    "event": "schedule",
+    "conclusion": "success",
+    "created_at": "2026-09-25T15:48:28Z",
+    "updated_at": "2026-09-25T15:49:44Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36156654668"
+  },
+  {
+    "id": 36156625155,
+    "name": "V2 portfoy nobetcisi",
+    "head_sha": "0866b2ec1beb7971fb0704f0abcbc0776b7afb28",
+    "event": "schedule",
+    "conclusion": "failure",
+    "created_at": "2026-09-25T15:48:12Z",
+    "updated_at": "2026-09-25T15:48:45Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36156625155"
+  },
+  {
+    "id": 36149624425,
+    "name": "Sanal portfoy V2",
+    "head_sha": "ebb4d70d03dc42dcfe755b44a03a2ec56dbcbefd",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-25T14:45:31Z",
+    "updated_at": "2026-09-25T14:46:39Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36149624425"
+  },
+  {
+    "id": 36147940886,
+    "name": "Sanal portfoy V2",
+    "head_sha": "8d1ed9861c61130f546217618ce4d69e787fc818",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-25T14:30:32Z",
+    "updated_at": "2026-09-25T14:31:30Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36147940886"
+  },
+  {
+    "id": 36146271929,
+    "name": "Sanal portfoy V2",
+    "head_sha": "446f82d7e3708e23a3d215630a9e6336c1370dc3",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-25T14:15:31Z",
+    "updated_at": "2026-09-25T14:16:33Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36146271929"
+  },
+  {
+    "id": 36144621722,
+    "name": "Sanal portfoy V2",
+    "head_sha": "fcf18eef24b72cca563a7fae2caf428dfb5774f1",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-25T14:00:32Z",
+    "updated_at": "2026-09-25T14:01:39Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36144621722"
+  },
+  {
+    "id": 36143003665,
+    "name": "Sanal portfoy V2",
+    "head_sha": "fe41726130fecb0d637dbcca68fbe838edd4bf08",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-25T13:45:32Z",
+    "updated_at": "2026-09-25T13:46:33Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36143003665"
+  },
+  {
+    "id": 36141394632,
+    "name": "Sanal portfoy V2",
+    "head_sha": "3eb27bfd076a10aac789e18776170cab87f2b853",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-25T13:30:32Z",
+    "updated_at": "2026-09-25T13:32:03Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36141394632"
+  },
+  {
+    "id": 36139820458,
+    "name": "Sanal portfoy V2",
+    "head_sha": "4ef16b2fd341a41bb351a8ae3aeb7dc1921694b5",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-25T13:15:31Z",
+    "updated_at": "2026-09-25T13:16:34Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36139820458"
+  },
+  {
+    "id": 36138273394,
+    "name": "Sanal portfoy V2",
+    "head_sha": "b2f2125a8985d304ac2e549a3f412cc2ee9a82fb",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-25T13:00:32Z",
+    "updated_at": "2026-09-25T13:01:34Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36138273394"
+  },
+  {
+    "id": 36136788654,
+    "name": "Sanal portfoy V2",
+    "head_sha": "c8b73b6ae3f1ccdacb6d6d2a34f2740fa6e914ca",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-25T12:45:31Z",
+    "updated_at": "2026-09-25T12:46:46Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36136788654"
+  },
+  {
+    "id": 36135319058,
+    "name": "Sanal portfoy V2",
+    "head_sha": "33a5e72cad00d76cf628df7ce34dd96bbefb6005",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-25T12:30:31Z",
+    "updated_at": "2026-09-25T12:31:34Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36135319058"
+  },
+  {
+    "id": 36133899266,
+    "name": "Sanal portfoy V2",
+    "head_sha": "d0942d5ad366e84216905ba02a040237970a4b94",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-25T12:15:31Z",
+    "updated_at": "2026-09-25T12:16:31Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36133899266"
+  },
+  {
+    "id": 36132494144,
+    "name": "Sanal portfoy V2",
+    "head_sha": "ccc101e81f678bf62623090bc5deca3e242f03cc",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-25T12:00:31Z",
+    "updated_at": "2026-09-25T12:01:39Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36132494144"
+  },
+  {
+    "id": 36131143496,
+    "name": "Sanal portfoy V2",
+    "head_sha": "1ef3f0186abe866a98be00a0ce65fc7c9428f9a1",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-25T11:45:31Z",
+    "updated_at": "2026-09-25T11:46:37Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36131143496"
+  },
+  {
+    "id": 36129765002,
+    "name": "Sanal portfoy V2",
+    "head_sha": "278a7aafb44406fa225eb04b2114e00b64960aa8",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-25T11:30:32Z",
+    "updated_at": "2026-09-25T11:31:43Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36129765002"
+  },
+  {
+    "id": 36128404740,
+    "name": "Sanal portfoy V2",
+    "head_sha": "931a84935f0fb38f33f013a21414d0ad4b9d5cb1",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-25T11:15:31Z",
+    "updated_at": "2026-09-25T11:16:30Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36128404740"
+  },
+  {
+    "id": 36127040904,
+    "name": "Sanal portfoy V2",
+    "head_sha": "5d8805f77d558c0ae6f40482f3b5a3fcb3481b42",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-25T11:00:31Z",
+    "updated_at": "2026-09-25T11:02:04Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36127040904"
+  },
+  {
+    "id": 36126884745,
+    "name": "Test",
+    "head_sha": "5d8805f77d558c0ae6f40482f3b5a3fcb3481b42",
+    "event": "push",
+    "conclusion": "success",
+    "created_at": "2026-09-25T10:58:50Z",
+    "updated_at": "2026-09-25T11:01:20Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36126884745"
+  },
+  {
+    "id": 36125702646,
+    "name": "Sanal portfoy V2",
+    "head_sha": "f18ac2f99653117bab9b9786ed2e58aeb634d0bb",
+    "event": "workflow_dispatch",
+    "conclusion": "failure",
+    "created_at": "2026-09-25T10:45:31Z",
+    "updated_at": "2026-09-25T10:46:36Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36125702646"
+  },
+  {
+    "id": 36124356437,
+    "name": "Sanal portfoy V2",
+    "head_sha": "f5ec7e101ab746d8b6c61287f843cd027f5da12b",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-25T10:30:31Z",
+    "updated_at": "2026-09-25T10:32:05Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36124356437"
+  },
+  {
+    "id": 36122993384,
+    "name": "Sanal portfoy V2",
+    "head_sha": "efc905bff441a42ba28f9569ba3115d0704263de",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-25T10:15:31Z",
+    "updated_at": "2026-09-25T10:16:18Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36122993384"
+  },
+  {
+    "id": 36122298609,
+    "name": "Test",
+    "head_sha": "efc905bff441a42ba28f9569ba3115d0704263de",
+    "event": "schedule",
+    "conclusion": "success",
+    "created_at": "2026-09-25T10:07:59Z",
+    "updated_at": "2026-09-25T10:10:17Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36122298609"
+  },
+  {
+    "id": 36121599081,
+    "name": "Sanal portfoy V2",
+    "head_sha": "d5db81ad1e34c3d430b2e69868fa7cfe547bd86a",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-25T10:00:31Z",
+    "updated_at": "2026-09-25T10:01:21Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36121599081"
+  },
+  {
+    "id": 36120224625,
+    "name": "Sanal portfoy V2",
+    "head_sha": "ccd9d43a99c81a4d23e79fb5cb4b1b1f653824ce",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-25T09:45:31Z",
+    "updated_at": "2026-09-25T09:46:21Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36120224625"
+  },
+  {
+    "id": 36118824603,
+    "name": "Sanal portfoy V2",
+    "head_sha": "ecef4a3baeaac0a64c8f076d29714367c1c57083",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-25T09:30:31Z",
+    "updated_at": "2026-09-25T09:31:26Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36118824603"
+  },
+  {
+    "id": 36117425180,
+    "name": "Sanal portfoy V2",
+    "head_sha": "1abc7576f4f9de009fb25fcc6bc8b5dbbbb3fc64",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-25T09:15:31Z",
+    "updated_at": "2026-09-25T09:17:02Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36117425180"
+  },
+  {
+    "id": 36116022001,
+    "name": "Sanal portfoy V2",
+    "head_sha": "83c56831482ac8c80c1756a091f9a1dee94d6ee2",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-25T09:00:31Z",
+    "updated_at": "2026-09-25T09:01:23Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36116022001"
+  },
+  {
+    "id": 36114663466,
+    "name": "Sanal portfoy V2",
+    "head_sha": "1c749b1f51879ef89be9632d2fc90455402023f5",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-25T08:45:31Z",
+    "updated_at": "2026-09-25T08:46:21Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36114663466"
+  },
+  {
+    "id": 36113299494,
+    "name": "Sanal portfoy V2",
+    "head_sha": "57db9be208e2ebe901f2cd56024857733408cf98",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-25T08:30:31Z",
+    "updated_at": "2026-09-25T08:31:27Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36113299494"
+  },
+  {
+    "id": 36111944340,
+    "name": "Sanal portfoy V2",
+    "head_sha": "320502513d43f1860d113af22da78c100b4de0d2",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-25T08:15:31Z",
+    "updated_at": "2026-09-25T08:16:19Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36111944340"
+  },
+  {
+    "id": 36110582880,
+    "name": "Sanal portfoy V2",
+    "head_sha": "a407078907cbb2b2d11d9f852ff5136697d12ffa",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-25T08:00:31Z",
+    "updated_at": "2026-09-25T08:01:29Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36110582880"
+  },
+  {
+    "id": 36109283164,
+    "name": "Sanal portfoy V2",
+    "head_sha": "508f5dee00c4fb1072c9596f5ec15272dc6af709",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-25T07:45:31Z",
+    "updated_at": "2026-09-25T07:46:21Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36109283164"
+  },
+  {
+    "id": 36107989475,
+    "name": "Sanal portfoy V2",
+    "head_sha": "870aeb6d9577c83a7286930f110ff6e89aa05dba",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-25T07:30:31Z",
+    "updated_at": "2026-09-25T07:31:21Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36107989475"
+  },
+  {
+    "id": 36106734398,
+    "name": "Sanal portfoy V2",
+    "head_sha": "b3c2de58b21643a96e16508633a5c084729c8fc2",
+    "event": "workflow_dispatch",
+    "conclusion": "failure",
+    "created_at": "2026-09-25T07:15:31Z",
+    "updated_at": "2026-09-25T07:16:35Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36106734398"
+  },
+  {
+    "id": 36105500036,
+    "name": "Sanal portfoy V2",
+    "head_sha": "468dcdf38e99003b01f7a4f1386f9635ef1bb469",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "created_at": "2026-09-25T07:00:32Z",
+    "updated_at": "2026-09-25T07:01:13Z",
+    "html_url": "https://github.com/Mertsaglm/bist-analiz/actions/runs/36105500036"
+  }
+]

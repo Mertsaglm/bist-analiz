@@ -8,15 +8,16 @@ on:
   workflow_dispatch: {}
   schedule:
     # Dış 15 dk tetikleyici aksarsa ilk taraf yedeği; GitHub cron zaman garantisi vermez.
-    - cron: '17,47 7-16 * * 1-5'
+    - cron: '2,17,32,47 7-17 * * 1-5'
 
 permissions:
   contents: write
 
 # V2 defterinin tek yazarı bu workflow; V1 veri/rapor arşivi ayrı kalır.
 concurrency:
-  group: advisor-portfolio
+  group: repo-commit  # Günlük/haftalık SQL yazarıyla yarışma.
   cancel-in-progress: false
+  queue: max
 
 jobs:
   portfolio:
@@ -35,6 +36,12 @@ jobs:
         run: |
           pip install --quiet -r requirements-runtime.txt
           pip install --quiet --no-deps -e .
+      - name: Eksik kapanisi telafi et
+        id: history
+        continue-on-error: true
+        run: python scripts/refresh_market_history.py ${{ github.event_name == 'workflow_run' && '--closing-refresh' || '' }}
+      # Kaynak hâlâ eksikse cycle çalışır: mevcut pozisyon takibi ve görünür
+      # veri engeli korunur. Telafi hatası workflow sonunda ayrıca raporlanır.
       - name: Fiyat, karar ve sanal defter
         id: cycle
         run: |
@@ -44,13 +51,14 @@ jobs:
         if: always()
         run: |
           if [ -d data/advisor ]; then cp -R data/advisor /tmp/advisor-delivery; fi
+          if [ -f data/bist.sql ]; then cp data/bist.sql /tmp/advisor-delivery-bist.sql; fi
       - name: Sonucu kaydet
         if: always()
         id: persist
         run: |
           git config user.name 'birikim-advisor'
           git config user.email 'actions@github.com'
-          git add data/advisor/
+          git add data/advisor/ data/bist.sql
           if ! git diff --cached --quiet; then
             git commit -m "advisor: sanal portfoy $(date -u +%Y-%m-%dT%H:%MZ)"
             bash ops/push_retry.sh
@@ -64,7 +72,7 @@ jobs:
       - name: Bildirim makbuzunu kaydet
         if: always() && steps.persist.outcome == 'success'
         run: |
-          git add data/advisor/
+          git add data/advisor/ data/bist.sql
           if ! git diff --cached --quiet; then
             git commit -m "advisor: bildirim makbuzu"
             bash ops/push_retry.sh
@@ -76,14 +84,21 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           python -m advisor weekly --notify
-          git add data/advisor/
+          git add data/advisor/ data/bist.sql
           if ! git diff --cached --quiet; then
             git commit -m "advisor: haftalik ozet makbuzu"
             bash ops/push_retry.sh
           fi
+      - name: Veri telafisi sonucunu bildir
+        if: always() && steps.history.outcome == 'failure'
+        run: |
+          echo 'Beklenen kapanış tam alınamadı; karar/veri durumu arşivlendi.' >&2
+          exit 1
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: advisor-recovery-${{ github.run_id }}
-          path: /tmp/advisor-delivery/
+          path: |
+            /tmp/advisor-delivery/
+            /tmp/advisor-delivery-bist.sql
           retention-days: 14

@@ -357,18 +357,42 @@ def fetch_beklenen(cfg: dict) -> BeklenenSonuc:
     h = dict(_headers(cfg))
     h["Origin"] = "https://kap.org.tr"
     h["Referer"] = "https://kap.org.tr/tr/beklenen-bildirim-sorgu"
-    try:
-        r = requests.post("https://kap.org.tr" + b.get("path", ""),
-                          json=body, headers=h, timeout=TIMEOUT)
-        r.raise_for_status()
-        ham = r.json()
-    except Exception as e:                                       # noqa: BLE001
-        log.warning("KAP beklenen bildirim çekilemedi: %s", e)
-        return BeklenenSonuc([], f"{type(e).__name__}: {e}")
-    if not isinstance(ham, list):
-        return BeklenenSonuc([], f"beklenmeyen yanıt tipi: {type(ham).__name__}")
-
     tavan = int(b.get("tavan_kayit", 1950))
+    budget = int(b.get('maks_sorgu', 63))
+    requests_used = 0
+
+    def fetch_window(start, end):
+        nonlocal requests_used
+        requests_used += 1
+        if requests_used > budget:
+            raise ValueError('Beklenen bildirim sorgu bütçesi aşıldı; tamlık doğrulanamadı.')
+        query = dict(body, startDate=start.isoformat(), endDate=end.isoformat())
+        response = requests.post('https://kap.org.tr' + b.get('path', ''),
+                                 json=query, headers=h, timeout=TIMEOUT)
+        response.raise_for_status()
+        rows = response.json()
+        if not isinstance(rows, list) or any(not isinstance(row, dict) for row in rows):
+            raise ValueError('Beklenmeyen beklenen-bildirim yanıtı.')
+        if len(rows) < tavan:
+            return rows, False
+        if start == end:
+            # Tek güne kadar bölündüğünde hâlâ doluysa yokluk kanıtı üretme.
+            return [], True
+        midpoint = start + (end-start)//2
+        left, clipped = fetch_window(start, midpoint)
+        if clipped:
+            return [], True
+        right, clipped = fetch_window(midpoint + timedelta(days=1), end)
+        return ([] if clipped else left + right), clipped
+
+    try:
+        ham, kirpik = fetch_window(bugun, bugun + timedelta(days=gun))
+    except Exception as e:
+        log.warning('KAP beklenen bildirim tam alınamadı: %s', type(e).__name__)
+        return BeklenenSonuc([], type(e).__name__ + ': takvim tam alınamadı')
+    if kirpik:
+        return BeklenenSonuc([], 'Tek günlük yanıt tavanda; takvim tam alınamadı.', True, tavan)
+
     kayitlar = []
     for x in ham:
         bas, son = _bb_tarih(x.get("startDate")), _bb_tarih(x.get("endDate"))
@@ -381,9 +405,9 @@ def fetch_beklenen(cfg: dict) -> BeklenenSonuc:
             "period": (x.get("ruleTypeTerm") or "").strip() or None,
             "year": x.get("year"), "start_date": bas, "end_date": son,
         })
-    sirket = len({k_["kap_title"] for k_ in kayitlar})
-    kirpik = len(ham) >= tavan
-    if kirpik:
-        log.warning("KAP beklenen bildirim TAVANA DAYANDI (%d ≥ %d) — "
-                    "liste kırpık, SAKLANMAYACAK", len(ham), tavan)
-    return BeklenenSonuc(kayitlar, None, kirpik, len(ham), sirket)
+    # Komşu sorgularda tekrar dönen rapor aynı olaydır, iki bildirim değildir.
+    unique = {tuple(str(row[k]) for k in ('kap_title','subject','period','year','start_date','end_date')): row
+              for row in kayitlar}
+    kayitlar = [unique[key] for key in sorted(unique)]
+    sirket = len({row['kap_title'] for row in kayitlar})
+    return BeklenenSonuc(kayitlar, None, False, len(ham), sirket)

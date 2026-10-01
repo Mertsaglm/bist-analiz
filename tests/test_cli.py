@@ -210,6 +210,8 @@ class TestHaberCikisKodu:
     def test_atlanan_aralik_1(self, cli_cfg, con, monkeypatch, capsys):
         """"0 bildirim" ile "aralık atlandı" AYNI ÇIKTIYA DÜŞEMEZ."""
         from src import news
+        monkeypatch.setattr(news, "sync_beklenen", lambda *a, **k: {
+            "ok": True, "atlandi": False, "ham": 0, "yazilan": 0, "ticker": 0, "not": None})
         monkeypatch.setattr(news, "sync", lambda *a, **k: {
             "atlandi": False, "bildirim": 0, "yazilan": 0, "ticker": 0,
             "since": "x", "hata": None, "tickersiz": 0,
@@ -220,6 +222,8 @@ class TestHaberCikisKodu:
     def test_kap_hatasi_2(self, cli_cfg, con, monkeypatch, capsys):
         """KAP hatası "haber yok" DEĞİLDİR; paketteki boş listelere güvenilmez."""
         from src import news
+        monkeypatch.setattr(news, "sync_beklenen", lambda *a, **k: {
+            "ok": True, "atlandi": False, "ham": 0, "yazilan": 0, "ticker": 0, "not": None})
         monkeypatch.setattr(news, "sync", lambda *a, **k: {
             "atlandi": False, "bildirim": 0, "yazilan": 0, "ticker": 0,
             "since": "x", "hata": "ConnectionError: kap", "tickersiz": 0,

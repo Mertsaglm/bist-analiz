@@ -1,0 +1,227 @@
+[
+  {
+    "date": "2026-08-26",
+    "close": 2.3399999142,
+    "total_close": 2.3399999142,
+    "volume": 669306265.0,
+    "high": 2.3699998856,
+    "low": 2.3199999332,
+    "quality_ok": true
+  },
+  {
+    "date": "2026-08-27",
+    "close": 2.3800001144,
+    "total_close": 2.3800001144,
+    "volume": 0.0,
+    "high": 2.4200000763,
+    "low": 2.3299999237,
+    "quality_ok": false
+  },
+  {
+    "date": "2026-08-28",
+    "close": 2.3900001049,
+    "total_close": 2.3900001049,
+    "volume": 987657549.0,
+    "high": 2.4200000763,
+    "low": 2.3699998856,
+    "quality_ok": true
+  },
+  {
+    "date": "2026-08-31",
+    "close": 2.3499999046,
+    "total_close": 2.3499999046,
+    "volume": 581237650.0,
+    "high": 2.4000000954,
+    "low": 2.3299999237,
+    "quality_ok": true
+  },
+  {
+    "date": "2026-09-01",
+    "close": 2.3599998951,
+    "total_close": 2.3599998951,
+    "volume": 0.0,
+    "high": 2.3900001049,
+    "low": 2.3299999237,
+    "quality_ok": false
+  },
+  {
+    "date": "2026-09-02",
+    "close": 2.2699999809,
+    "total_close": 2.2699999809,
+    "volume": 878502846.0,
+    "high": 2.3499999046,
+    "low": 2.2699999809,
+    "quality_ok": true
+  },
+  {
+    "date": "2026-09-03",
+    "close": 2.2300000191,
+    "total_close": 2.2300000191,
+    "volume": 745917193.0,
+    "high": 2.2899999619,
+    "low": 2.2300000191,
+    "quality_ok": true
+  },
+  {
+    "date": "2026-09-04",
+    "close": 2.2899999619,
+    "total_close": 2.2899999619,
+    "volume": 949430464.0,
+    "high": 2.3199999332,
+    "low": 2.2300000191,
+    "quality_ok": true
+  },
+  {
+    "date": "2026-09-07",
+    "close": 2.5099999905,
+    "total_close": 2.5099999905,
+    "volume": 0.0,
+    "high": 2.5099999905,
+    "low": 2.2899999619,
+    "quality_ok": false
+  },
+  {
+    "date": "2026-09-08",
+    "close": 2.7599999905,
+    "total_close": 2.7599999905,
+    "volume": 0.0,
+    "high": 2.7599999905,
+    "low": 2.5799999237,
+    "quality_ok": false
+  },
+  {
+    "date": "2026-09-09",
+    "close": 2.7300000191,
+    "total_close": 2.7300000191,
+    "volume": 0.0,
+    "high": 2.9300000668,
+    "low": 2.7100000381,
+    "quality_ok": false
+  },
+  {
+    "date": "2026-09-10",
+    "close": 2.7699999809,
+    "total_close": 2.7699999809,
+    "volume": 0.0,
+    "high": 2.9100000858,
+    "low": 2.6199998856,
+    "quality_ok": false
+  },
+  {
+    "date": "2026-09-11",
+    "close": 2.8199999332,
+    "total_close": 2.8199999332,
+    "volume": 0.0,
+    "high": 2.9000000954,
+    "low": 2.6800000668,
+    "quality_ok": false
+  },
+  {
+    "date": "2026-09-14",
+    "close": 2.9400000572,
+    "total_close": 2.9400000572,
+    "volume": 0.0,
+    "high": 2.9600000381,
+    "low": 2.7699999809,
+    "quality_ok": false
+  },
+  {
+    "date": "2026-09-15",
+    "close": 2.7999999523,
+    "total_close": 2.7999999523,
+    "volume": 0.0,
+    "high": 3.0599999428,
+    "low": 2.7999999523,
+    "quality_ok": false
+  },
+  {
+    "date": "2026-09-16",
+    "close": 2.5199999809,
+    "total_close": 2.5199999809,
+    "volume": 0.0,
+    "high": 2.8199999332,
+    "low": 2.5199999809,
+    "quality_ok": false
+  },
+  {
+    "date": "2026-09-17",
+    "close": 2.4200000763,
+    "total_close": 2.4200000763,
+    "volume": 0.0,
+    "high": 2.5,
+    "low": 2.2699999809,
+    "quality_ok": false
+  },
+  {
+    "date": "2026-09-18",
+    "close": 2.3499999046,
+    "total_close": 2.3499999046,
+    "volume": 0.0,
+    "high": 2.4100000858,
+    "low": 2.2599999905,
+    "quality_ok": false
+  },
+  {
+    "date": "2026-09-21",
+    "close": 2.3099999428,
+    "total_close": 2.3099999428,
+    "volume": 0.0,
+    "high": 2.3599998951,
+    "low": 2.25,
+    "quality_ok": false
+  },
+  {
+    "date": "2026-09-22",
+    "close": 2.2899999619,
+    "total_close": 2.2899999619,
+    "volume": 969639656.0,
+    "high": 2.3599998951,
+    "low": 2.2799999714,
+    "quality_ok": true
+  },
+  {
+    "date": "2026-09-23",
+    "close": 2.2599999905,
+    "total_close": 2.2599999905,
+    "volume": 0.0,
+    "high": 2.3399999142,
+    "low": 2.2400000095,
+    "quality_ok": false
+  },
+  {
+    "date": "2026-09-24",
+    "close": 2.1099998951,
+    "total_close": 2.1099998951,
+    "volume": 0.0,
+    "high": 2.2699999809,
+    "low": 2.0899999142,
+    "quality_ok": false
+  },
+  {
+    "date": "2026-09-25",
+    "close": 2.0799999237,
+    "total_close": 2.0799999237,
+    "volume": 0.0,
+    "high": 2.1700000763,
+    "low": 2.0199999809,
+    "quality_ok": false
+  },
+  {
+    "date": "2026-09-28",
+    "close": 1.8799999952,
+    "total_close": 1.8799999952,
+    "volume": 0.0,
+    "high": 2.0499999523,
+    "low": 1.8799999952,
+    "quality_ok": false
+  },
+  {
+    "date": "2026-09-29",
+    "close": 1.8799999952,
+    "total_close": 1.8799999952,
+    "volume": 0.0,
+    "high": 1.9199999571,
+    "low": 1.7999999523,
+    "quality_ok": false
+  }
+]

@@ -227,20 +227,25 @@ def sync_actions(cfg: dict, con: sqlite3.Connection,
                  tickers: list[str] | None = None) -> dict:
     """Temettü/bölünme kayıtları.
 
-    yfinance bunları fiyata zaten uyguluyor; biz AYRICA saklıyoruz çünkü plan
-    penceresine düşen bir ex-tarih stop'u yapay tetikler → o planın sonucu
+    yfinance bunları fiyata zaten uyguluyor; biz AYRICA saklıyoruz çünkü pozisyon
+    açıkken gelen bir ex-tarih stop'u yapay tetikler → o planın sonucu
     'iptal_kurumsal' olmalı, kayıp olarak sayılmamalı.
     """
     from . import universe
 
     tickers = tickers or universe.all_tickers(con)
     toplam = 0
+    failed = {}
     for t in tickers:
-        acts = yf.fetch_actions(t, cfg)
+        try:
+            acts = yf.fetch_actions(t, cfg, strict=True)
+        except Exception as exc:
+            failed[t] = type(exc).__name__
+            continue
         rows = [(t, a["date"], a["kind"], a["value"], "yfinance") for a in acts]
         toplam += db.upsert_many(
             con, "corporate_actions", ["ticker", "date", "kind", "value", "source"], rows)
-    return {"tickers": len(tickers), "kayit": toplam}
+    return {"tickers": len(tickers), "kayit": toplam, "ok": not failed, "failed": failed}
 
 
 # ---------------------------------------------------------------- okuma

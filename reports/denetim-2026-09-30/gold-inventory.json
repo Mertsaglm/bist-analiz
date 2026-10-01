@@ -1,0 +1,477 @@
+{
+  "market": "gold",
+  "root": "/tmp/bist-audit-20260930/Mertsaglm-gold_tracking_system-d4db91e",
+  "tables": {
+    "ticks": {
+      "rows": 7066,
+      "ts_utc": "2026-09-29T19:11:50.397426+00:00"
+    },
+    "sqlite_sequence": {
+      "rows": 2
+    },
+    "ohlc_1m": {
+      "rows": 7066
+    },
+    "prim_history": {
+      "rows": 1152,
+      "ts_utc": "2026-09-29T19:11:50.397426+00:00"
+    },
+    "weekend_expectation": {
+      "rows": 410,
+      "ts_utc": "2026-09-27T19:37:37.697661+00:00"
+    },
+    "evds_daily": {
+      "rows": 7885,
+      "date": "2026-09-29"
+    },
+    "reports": {
+      "rows": 82,
+      "date": "2026-09-29",
+      "created_utc": "2026-09-29T20:12:52.141760+00:00"
+    },
+    "history_daily": {
+      "rows": 2607,
+      "date": "2026-09-29"
+    },
+    "gld_tonnage": {
+      "rows": 81,
+      "date": "2026-09-29"
+    },
+    "ohlc_daily": {
+      "rows": 5492,
+      "date": "2026-09-28"
+    },
+    "predictions": {
+      "rows": 264,
+      "created_utc": "2026-09-29T20:11:46.019716+00:00"
+    },
+    "prediction_entries": {
+      "rows": 252
+    },
+    "prediction_outcomes": {
+      "rows": 118
+    }
+  },
+  "ledgers": {
+    "data/advisor/events.jsonl": {
+      "events": 1662,
+      "hash": "0401a92c0dbc014011b4c4b22c16450b769185825de48783617eacf569b50558",
+      "kinds": {
+        "account_opened": 1,
+        "contribution": 2,
+        "model_review": 14,
+        "quote_snapshot": 259,
+        "forecast": 12,
+        "decision": 259,
+        "fill": 1,
+        "benchmark_allocation": 1,
+        "valuation": 259,
+        "notification": 31,
+        "universe_snapshot": 12,
+        "cost_policy": 1,
+        "shadow_forecast": 12,
+        "account_checkpoint": 2,
+        "shadow_books_opened": 1,
+        "shadow_valuation": 255,
+        "decision_capsule": 255,
+        "benchmark_policy_started": 1,
+        "session_check": 283,
+        "weekly_notification": 1
+      },
+      "books": {
+        "benchmark": {
+          "cash_cents": 4968,
+          "contributed_cents": 500000,
+          "realized_cents": 0,
+          "receivable_cents": 0,
+          "fee_liability_cents": 0,
+          "account_fees_cents": 0,
+          "positions": 1,
+          "fills": 1
+        },
+        "shadow_candidate": {
+          "cash_cents": 500000,
+          "contributed_cents": 500000,
+          "realized_cents": 0,
+          "receivable_cents": 0,
+          "fee_liability_cents": 0,
+          "account_fees_cents": 0,
+          "positions": 0,
+          "fills": 0
+        },
+        "shadow_reference": {
+          "cash_cents": 500000,
+          "contributed_cents": 500000,
+          "realized_cents": 0,
+          "receivable_cents": 0,
+          "fee_liability_cents": 0,
+          "account_fees_cents": 0,
+          "positions": 0,
+          "fills": 0
+        },
+        "strategy": {
+          "cash_cents": 500000,
+          "contributed_cents": 500000,
+          "realized_cents": 0,
+          "receivable_cents": 0,
+          "fee_liability_cents": 0,
+          "account_fees_cents": 0,
+          "positions": 0,
+          "fills": 0
+        }
+      },
+      "daily": {
+        "2026-09-16": {
+          "cycles": 1,
+          "first": "2026-09-16T12:36:42.251827+00:00",
+          "last": "2026-09-16T12:36:42.251827+00:00",
+          "max_gap_minutes": 0,
+          "full_quote_cycles": 1,
+          "fresh_analysis_cycles": 1,
+          "last_analysis_issues": {},
+          "last_data_blocks": 0
+        },
+        "2026-09-17": {
+          "cycles": 1,
+          "first": "2026-09-17T12:36:31.406368+00:00",
+          "last": "2026-09-17T12:36:31.406368+00:00",
+          "max_gap_minutes": 0,
+          "full_quote_cycles": 1,
+          "fresh_analysis_cycles": 1,
+          "last_analysis_issues": {},
+          "last_data_blocks": 0
+        },
+        "2026-09-18": {
+          "cycles": 1,
+          "first": "2026-09-18T12:14:30.504518+00:00",
+          "last": "2026-09-18T12:14:30.504518+00:00",
+          "max_gap_minutes": 0,
+          "full_quote_cycles": 1,
+          "fresh_analysis_cycles": 1,
+          "last_analysis_issues": {},
+          "last_data_blocks": 0
+        },
+        "2026-09-21": {
+          "cycles": 30,
+          "first": "2026-09-21T07:15:54.121125+00:00",
+          "last": "2026-09-21T14:31:07.639879+00:00",
+          "max_gap_minutes": 15.1831396,
+          "full_quote_cycles": 30,
+          "fresh_analysis_cycles": 30,
+          "last_analysis_issues": {},
+          "last_data_blocks": 0
+        },
+        "2026-09-22": {
+          "cycles": 30,
+          "first": "2026-09-22T07:16:00.933249+00:00",
+          "last": "2026-09-22T14:31:13.215394+00:00",
+          "max_gap_minutes": 15.237479866666666,
+          "full_quote_cycles": 30,
+          "fresh_analysis_cycles": 30,
+          "last_analysis_issues": {},
+          "last_data_blocks": 0
+        },
+        "2026-09-23": {
+          "cycles": 30,
+          "first": "2026-09-23T07:15:56.072684+00:00",
+          "last": "2026-09-23T14:31:10.249923+00:00",
+          "max_gap_minutes": 19.9146379,
+          "full_quote_cycles": 30,
+          "fresh_analysis_cycles": 30,
+          "last_analysis_issues": {},
+          "last_data_blocks": 0
+        },
+        "2026-09-24": {
+          "cycles": 31,
+          "first": "2026-09-24T07:16:07.571371+00:00",
+          "last": "2026-09-24T14:31:48.249420+00:00",
+          "max_gap_minutes": 15.6715083,
+          "full_quote_cycles": 31,
+          "fresh_analysis_cycles": 31,
+          "last_analysis_issues": {},
+          "last_data_blocks": 0
+        },
+        "2026-09-25": {
+          "cycles": 31,
+          "first": "2026-09-25T07:16:08.125892+00:00",
+          "last": "2026-09-25T14:31:05.080119+00:00",
+          "max_gap_minutes": 15.586386566666667,
+          "full_quote_cycles": 31,
+          "fresh_analysis_cycles": 31,
+          "last_analysis_issues": {},
+          "last_data_blocks": 0
+        },
+        "2026-09-28": {
+          "cycles": 30,
+          "first": "2026-09-28T07:15:48.377090+00:00",
+          "last": "2026-09-28T14:30:47.522097+00:00",
+          "max_gap_minutes": 16.21482205,
+          "full_quote_cycles": 30,
+          "fresh_analysis_cycles": 30,
+          "last_analysis_issues": {},
+          "last_data_blocks": 0
+        },
+        "2026-09-29": {
+          "cycles": 31,
+          "first": "2026-09-29T07:15:38.614755+00:00",
+          "last": "2026-09-29T14:31:00.541270+00:00",
+          "max_gap_minutes": 15.54980945,
+          "full_quote_cycles": 31,
+          "fresh_analysis_cycles": 31,
+          "last_analysis_issues": {},
+          "last_data_blocks": 0
+        },
+        "2026-09-30": {
+          "cycles": 31,
+          "first": "2026-09-30T07:15:41.681910+00:00",
+          "last": "2026-09-30T14:31:59.375168+00:00",
+          "max_gap_minutes": 16.14780203333333,
+          "full_quote_cycles": 31,
+          "fresh_analysis_cycles": 31,
+          "last_analysis_issues": {},
+          "last_data_blocks": 0
+        }
+      },
+      "capsules": 255,
+      "replay_samples": [
+        "/tmp/bist-audit-20260930/Mertsaglm-gold_tracking_system-d4db91e/data/advisor/capsules/68f3338d8660be2fbd62ef72c0605869726d08a381175ea63bf412ebdea60c9b.json.gz",
+        "/tmp/bist-audit-20260930/Mertsaglm-gold_tracking_system-d4db91e/data/advisor/capsules/d9fd88c930f9523860bfe4cc44d04fe3d2b05c1dabf9701b50522d62da77d63f.json.gz",
+        "/tmp/bist-audit-20260930/Mertsaglm-gold_tracking_system-d4db91e/data/advisor/capsules/8a3006fee44e68698a05abe3fb93f04b879c8011cd098de458fcb0e002147a61.json.gz"
+      ],
+      "fills": [
+        {
+          "at": "2026-09-15T11:39:02.124908+00:00",
+          "book": "benchmark",
+          "deadline": null,
+          "decision_key": "benchmark:allocation:benchmark:initial",
+          "fee_cents": 988,
+          "notional_cents": 494044,
+          "price": 6767.72,
+          "quantity": "0.73",
+          "quote": {
+            "ask": 6767.72,
+            "bid": 6586.97,
+            "kind": "bank_reference",
+            "note": "İkincil kaynak; İşCep kişisel kotasyonu değildir. Kaynak saati gün içi kabul edilir.",
+            "observed_at": "2026-09-15T11:39:02.124908+00:00",
+            "quoted_at": "2026-09-15T11:38:00+00:00",
+            "reference_legs": {
+              "GC=F": {
+                "at": "2026-09-15T07:25:00-04:00",
+                "price": 4323.7998046875
+              },
+              "TRY=X": {
+                "at": "2026-09-15T12:35:00+01:00",
+                "price": 48.63639831542969
+              }
+            },
+            "reference_note": "Geçmiş GC=F×kur serisinin gün içi karşılığı; banka makası ayrı hesaplanır.",
+            "reference_price": 6761.110691553246,
+            "source": "İş Bankası / Döviz.com",
+            "symbol": "GRAM",
+            "timestamp_kind": "time_only",
+            "url": "https://altin.doviz.com/isbankasi/gram-altin"
+          },
+          "reason": "monthly_buy_hold",
+          "side": "BUY",
+          "stop": null,
+          "symbol": "GRAM",
+          "target": null
+        }
+      ],
+      "notifications": [
+        {
+          "at": "2026-09-15T19:13:33.845857+00:00",
+          "snapshot_at": null,
+          "message_id": null,
+          "text": "ALTIN · SANAL PORTFÖY\nAnaliz: 2026-09-14\nVERİ BEKLENİYOR · GRAM\n• GRAM: İşlem penceresi dışında; uygun saat bekleniyor.\nYeni sanal işlem yok. 1 varlık değerlendirildi.\nGündem: 2026-09-16 · Fed faiz kararı / FOMC toplantısının son günü\nPortföy 5,000.00 TL · K/Z +0.00 TL · nakit 5,000.00 TL"
+        },
+        {
+          "at": "2026-09-16T12:36:52.343965+00:00",
+          "snapshot_at": null,
+          "message_id": null,
+          "text": "ALTIN · SANAL PORTFÖY\nAnaliz: 2026-09-14\nBEKLE · GRAM\n• GRAM: Masraf sonrası beklenti %-1.0; alım için en az %1.0 gerekiyor.\nYeni sanal işlem yok. 1 varlık değerlendirildi.\nGündem: 2026-09-16 · Fed faiz kararı / FOMC toplantısının son günü\nPortföy 5,000.00 TL · K/Z +0.00 TL · nakit 5,000.00 TL"
+        },
+        {
+          "at": "2026-09-16T17:38:20.384754+00:00",
+          "snapshot_at": null,
+          "message_id": null,
+          "text": "ALTIN · SANAL PORTFÖY\nAnaliz: 2026-09-14\nVERİ BEKLENİYOR · GRAM\n• GRAM: İşlem penceresi dışında; uygun saat bekleniyor.\nYeni sanal işlem yok. 1 varlık değerlendirildi.\nGündem: 2026-09-16 · Fed faiz kararı / FOMC toplantısının son günü\nPortföy 5,000.00 TL · K/Z +0.00 TL · nakit 5,000.00 TL"
+        },
+        {
+          "at": "2026-09-17T12:36:41.263687+00:00",
+          "snapshot_at": null,
+          "message_id": null,
+          "text": "ALTIN · SANAL PORTFÖY\nAnaliz: 2026-09-15\nBEKLE · GRAM\n• GRAM: Masraf sonrası beklenti %-2.1; alım için en az %1.0 gerekiyor.\nYeni sanal işlem yok. 1 varlık değerlendirildi.\nPortföy 5,000.00 TL · K/Z +0.00 TL · nakit 5,000.00 TL"
+        },
+        {
+          "at": "2026-09-17T17:38:40.902282+00:00",
+          "snapshot_at": null,
+          "message_id": null,
+          "text": "ALTIN · SANAL PORTFÖY\nAnaliz: 2026-09-15\nVERİ BEKLENİYOR · GRAM\n• GRAM: İşlem penceresi dışında; uygun saat bekleniyor.\nYeni sanal işlem yok. 1 varlık değerlendirildi.\nPortföy 5,000.00 TL · K/Z +0.00 TL · nakit 5,000.00 TL"
+        },
+        {
+          "at": "2026-09-18T12:14:39.210389+00:00",
+          "snapshot_at": null,
+          "message_id": null,
+          "text": "ALTIN · SANAL PORTFÖY\nAnaliz: 2026-09-16\nBEKLE · GRAM\n• GRAM: Masraf sonrası beklenti %-0.5; alım için en az %1.0 gerekiyor.\nYeni sanal işlem yok. 1 varlık değerlendirildi.\nPortföy 5,000.00 TL · K/Z +0.00 TL · nakit 5,000.00 TL"
+        },
+        {
+          "at": "2026-09-18T16:27:29.404654+00:00",
+          "snapshot_at": null,
+          "message_id": null,
+          "text": "ALTIN · SANAL PORTFÖY\nAnaliz: 2026-09-16\nVERİ BEKLENİYOR · GRAM\n• GRAM: İşlem penceresi dışında; uygun saat bekleniyor.\nYeni sanal işlem yok. 1 varlık değerlendirildi.\nPortföy 5,000.00 TL · K/Z +0.00 TL · nakit 5,000.00 TL"
+        },
+        {
+          "at": "2026-09-19T09:08:43.892926+00:00",
+          "snapshot_at": null,
+          "message_id": null,
+          "text": "ALTIN · SANAL PORTFÖY\nAnaliz: 2026-09-17\nVERİ BEKLENİYOR · GRAM\n• GRAM: Piyasa tatilinde yeni sanal işlem yapılmaz.\nYeni sanal işlem yok. 1 varlık değerlendirildi.\nPortföy 5,000.00 TL · K/Z +0.00 TL · nakit 5,000.00 TL"
+        },
+        {
+          "at": "2026-09-21T07:16:07.559078+00:00",
+          "snapshot_at": null,
+          "message_id": null,
+          "text": "ALTIN · SANAL PORTFÖY\nAnaliz: 2026-09-18\nBEKLE · GRAM\n• GRAM: Olası kazanç riske göre düşük: 1 TL risk için 0.27 TL beklenti; en az 1.50 TL gerekiyor.\nYeni sanal işlem yok. 1 varlık değerlendirildi.\nPortföy 5,000.00 TL · K/Z +0.00 TL · nakit 5,000.00 TL"
+        },
+        {
+          "at": "2026-09-21T08:46:10.535814+00:00",
+          "snapshot_at": null,
+          "message_id": null,
+          "text": "ALTIN · SANAL PORTFÖY\nAnaliz: 2026-09-18\nBEKLE · GRAM\n• GRAM: Masraf sonrası beklenti %1.0; alım için en az %1.0 gerekiyor.\nYeni sanal işlem yok. 1 varlık değerlendirildi.\nPortföy 5,000.00 TL · K/Z +0.00 TL · nakit 5,000.00 TL"
+        },
+        {
+          "at": "2026-09-21T09:46:05.301435+00:00",
+          "snapshot_at": null,
+          "message_id": null,
+          "text": "ALTIN · SANAL PORTFÖY\nAnaliz: 2026-09-18\nVERİ BEKLENİYOR · GRAM\n• GRAM: Gün içi ons/kur referansı doğrulanamadı; yeni alım bekliyor.\nYeni sanal işlem yok. 1 varlık değerlendirildi.\nPortföy 5,000.00 TL · K/Z +0.00 TL · nakit 5,000.00 TL"
+        },
+        {
+          "at": "2026-09-22T07:16:11.152160+00:00",
+          "snapshot_at": null,
+          "message_id": null,
+          "text": "ALTIN · SANAL PORTFÖY\nAnaliz: 2026-09-18\nBEKLE · GRAM\n• GRAM: Olası kazanç riske göre düşük: 1 TL risk için 0.51 TL beklenti; en az 1.50 TL gerekiyor.\nYeni sanal işlem yok. 1 varlık değerlendirildi.\nPortföy 5,000.00 TL · K/Z +0.00 TL · nakit 5,000.00 TL"
+        },
+        {
+          "at": "2026-09-23T07:16:19.862105+00:00",
+          "snapshot_at": null,
+          "message_id": null,
+          "text": "ALTIN · SANAL PORTFÖY\nAnaliz: 2026-09-21\nBEKLE · GRAM\n• GRAM: Masraf sonrası beklenti %0.7; alım için en az %1.0 gerekiyor.\nYeni sanal işlem yok. 1 varlık değerlendirildi.\nPortföy 5,000.00 TL · K/Z +0.00 TL · nakit 5,000.00 TL"
+        },
+        {
+          "at": "2026-09-23T09:31:08.736442+00:00",
+          "snapshot_at": null,
+          "message_id": null,
+          "text": "ALTIN · SANAL PORTFÖY\nAnaliz: 2026-09-21\nBEKLE · GRAM\n• GRAM: Olası kazanç riske göre düşük: 1 TL risk için 0.30 TL beklenti; en az 1.50 TL gerekiyor.\nYeni sanal işlem yok. 1 varlık değerlendirildi.\nPortföy 5,000.00 TL · K/Z +0.00 TL · nakit 5,000.00 TL"
+        },
+        {
+          "at": "2026-09-24T07:16:18.269576+00:00",
+          "snapshot_at": "2026-09-24T07:16:07.571371+00:00",
+          "message_id": 299,
+          "text": "ALTIN · SANAL PORTFÖY\nAnaliz: 2026-09-23\nBEKLE · GRAM\n• GRAM: Masraf sonrası beklenti %0.5; alım için en az %1.0 gerekiyor.\nYeni sanal işlem yok. 1 varlık değerlendirildi.\nPortföy 5,000.00 TL · K/Z +0.00 TL · nakit 5,000.00 TL\nhttps://birikim-paneli.vercel.app/"
+        },
+        {
+          "at": "2026-09-24T09:01:21.077506+00:00",
+          "snapshot_at": "2026-09-24T09:01:08.532511+00:00",
+          "message_id": 300,
+          "text": "ALTIN · SANAL PORTFÖY\nAnaliz: 2026-09-23\nBEKLE · GRAM\n• GRAM: Olası kazanç riske göre düşük: 1 TL risk için 0.33 TL beklenti; en az 1.50 TL gerekiyor.\nYeni sanal işlem yok. 1 varlık değerlendirildi.\nPortföy 5,000.00 TL · K/Z +0.00 TL · nakit 5,000.00 TL\nhttps://birikim-paneli.vercel.app/"
+        },
+        {
+          "at": "2026-09-24T09:31:14.252002+00:00",
+          "snapshot_at": "2026-09-24T09:31:04.553895+00:00",
+          "message_id": 301,
+          "text": "ALTIN · SANAL PORTFÖY\nAnaliz: 2026-09-23\nBEKLE · GRAM\n• GRAM: Masraf sonrası beklenti %1.0; alım için en az %1.0 gerekiyor.\nYeni sanal işlem yok. 1 varlık değerlendirildi.\nPortföy 5,000.00 TL · K/Z +0.00 TL · nakit 5,000.00 TL\nhttps://birikim-paneli.vercel.app/"
+        },
+        {
+          "at": "2026-09-24T09:46:17.628703+00:00",
+          "snapshot_at": "2026-09-24T09:46:06.669465+00:00",
+          "message_id": 302,
+          "text": "ALTIN · SANAL PORTFÖY\nAnaliz: 2026-09-23\nBEKLE · GRAM\n• GRAM: Olası kazanç riske göre düşük: 1 TL risk için 0.33 TL beklenti; en az 1.50 TL gerekiyor.\nYeni sanal işlem yok. 1 varlık değerlendirildi.\nPortföy 5,000.00 TL · K/Z +0.00 TL · nakit 5,000.00 TL\nhttps://birikim-paneli.vercel.app/"
+        },
+        {
+          "at": "2026-09-24T11:31:22.859507+00:00",
+          "snapshot_at": "2026-09-24T11:31:11.499607+00:00",
+          "message_id": 303,
+          "text": "ALTIN · SANAL PORTFÖY\nAnaliz: 2026-09-23\nBEKLE · GRAM\n• GRAM: Masraf sonrası beklenti %0.9; alım için en az %1.0 gerekiyor.\nYeni sanal işlem yok. 1 varlık değerlendirildi.\nPortföy 5,000.00 TL · K/Z +0.00 TL · nakit 5,000.00 TL\nhttps://birikim-paneli.vercel.app/"
+        },
+        {
+          "at": "2026-09-24T11:46:11.797404+00:00",
+          "snapshot_at": "2026-09-24T11:46:01.654899+00:00",
+          "message_id": 304,
+          "text": "ALTIN · SANAL PORTFÖY\nAnaliz: 2026-09-23\nBEKLE · GRAM\n• GRAM: Olası kazanç riske göre düşük: 1 TL risk için 0.30 TL beklenti; en az 1.50 TL gerekiyor.\nYeni sanal işlem yok. 1 varlık değerlendirildi.\nPortföy 5,000.00 TL · K/Z +0.00 TL · nakit 5,000.00 TL\nhttps://birikim-paneli.vercel.app/"
+        },
+        {
+          "at": "2026-09-24T12:31:21.373669+00:00",
+          "snapshot_at": "2026-09-24T12:31:06.918279+00:00",
+          "message_id": 305,
+          "text": "ALTIN · SANAL PORTFÖY\nAnaliz: 2026-09-23\nBEKLE · GRAM\n• GRAM: Masraf sonrası beklenti %0.9; alım için en az %1.0 gerekiyor.\nYeni sanal işlem yok. 1 varlık değerlendirildi.\nPortföy 5,000.00 TL · K/Z +0.00 TL · nakit 5,000.00 TL\nhttps://birikim-paneli.vercel.app/"
+        },
+        {
+          "at": "2026-09-24T12:46:12.798425+00:00",
+          "snapshot_at": "2026-09-24T12:46:02.457446+00:00",
+          "message_id": 306,
+          "text": "ALTIN · SANAL PORTFÖY\nAnaliz: 2026-09-23\nBEKLE · GRAM\n• GRAM: Olası kazanç riske göre düşük: 1 TL risk için 0.33 TL beklenti; en az 1.50 TL gerekiyor.\nYeni sanal işlem yok. 1 varlık değerlendirildi.\nPortföy 5,000.00 TL · K/Z +0.00 TL · nakit 5,000.00 TL\nhttps://birikim-paneli.vercel.app/"
+        },
+        {
+          "at": "2026-09-24T12:47:01.303739+00:00",
+          "snapshot_at": "2026-09-24T12:46:50.381944+00:00",
+          "message_id": 307,
+          "text": "ALTIN · SANAL PORTFÖY\nAnaliz: 2026-09-23\nBEKLE · GRAM\n• GRAM: Masraf sonrası beklenti %0.9; alım için en az %1.0 gerekiyor.\nYeni sanal işlem yok. 1 varlık değerlendirildi.\nPortföy 5,000.00 TL · K/Z +0.00 TL · nakit 5,000.00 TL\nhttps://birikim-paneli.vercel.app/"
+        },
+        {
+          "at": "2026-09-25T07:16:19.672340+00:00",
+          "snapshot_at": "2026-09-25T07:16:08.125892+00:00",
+          "message_id": 308,
+          "text": "ALTIN · SANAL PORTFÖY\nAnaliz: 2026-09-24\nBEKLE · GRAM\n• GRAM: Masraf sonrası beklenti %-0.4; alım için en az %1.0 gerekiyor.\nYeni sanal işlem yok. 1 varlık değerlendirildi.\nPortföy 5,000.00 TL · K/Z +0.00 TL · nakit 5,000.00 TL\nhttps://birikim-paneli.vercel.app/"
+        },
+        {
+          "at": "2026-09-25T08:16:45.795513+00:00",
+          "snapshot_at": "2026-09-25T08:16:36.914647+00:00",
+          "message_id": 309,
+          "text": "ALTIN · SANAL PORTFÖY\nAnaliz: 2026-09-24\nVERİ BEKLENİYOR · GRAM\n• GRAM: Gün içi ons/kur referansı doğrulanamadı; yeni alım bekliyor.\nYeni sanal işlem yok. 1 varlık değerlendirildi.\nPortföy 5,000.00 TL · K/Z +0.00 TL · nakit 5,000.00 TL\nhttps://birikim-paneli.vercel.app/"
+        },
+        {
+          "at": "2026-09-25T08:31:17.650729+00:00",
+          "snapshot_at": "2026-09-25T08:31:07.511026+00:00",
+          "message_id": 310,
+          "text": "ALTIN · SANAL PORTFÖY\nAnaliz: 2026-09-24\nBEKLE · GRAM\n• GRAM: Masraf sonrası beklenti %-0.4; alım için en az %1.0 gerekiyor.\nYeni sanal işlem yok. 1 varlık değerlendirildi.\nPortföy 5,000.00 TL · K/Z +0.00 TL · nakit 5,000.00 TL\nhttps://birikim-paneli.vercel.app/"
+        },
+        {
+          "at": "2026-09-28T07:15:59.376514+00:00",
+          "snapshot_at": "2026-09-28T07:15:48.377090+00:00",
+          "message_id": 314,
+          "text": "ALTIN · SANAL PORTFÖY\nAnaliz: 2026-09-25\nBEKLE · GRAM\n• GRAM: Olası kazanç riske göre düşük: 1 TL risk için 0.98 TL beklenti; en az 1.50 TL gerekiyor.\nYeni sanal işlem yok. 1 varlık değerlendirildi.\nPortföy 5,000.00 TL · K/Z +0.00 TL · nakit 5,000.00 TL\nhttps://birikim-paneli.vercel.app/"
+        },
+        {
+          "at": "2026-09-28T11:45:55.045541+00:00",
+          "snapshot_at": "2026-09-28T11:45:43.680949+00:00",
+          "message_id": 315,
+          "text": "ALTIN · SANAL PORTFÖY\nAnaliz: 2026-09-25\nVERİ BEKLENİYOR · GRAM\n• GRAM: Gün içi ons/kur referansı doğrulanamadı; yeni alım bekliyor.\nYeni sanal işlem yok. 1 varlık değerlendirildi.\nPortföy 5,000.00 TL · K/Z +0.00 TL · nakit 5,000.00 TL\nhttps://birikim-paneli.vercel.app/"
+        },
+        {
+          "at": "2026-09-28T12:00:59.327507+00:00",
+          "snapshot_at": "2026-09-28T12:00:48.152181+00:00",
+          "message_id": 316,
+          "text": "ALTIN · SANAL PORTFÖY\nAnaliz: 2026-09-25\nBEKLE · GRAM\n• GRAM: Olası kazanç riske göre düşük: 1 TL risk için 1.08 TL beklenti; en az 1.50 TL gerekiyor.\nYeni sanal işlem yok. 1 varlık değerlendirildi.\nPortföy 5,000.00 TL · K/Z +0.00 TL · nakit 5,000.00 TL\nhttps://birikim-paneli.vercel.app/"
+        },
+        {
+          "at": "2026-09-29T07:15:47.832940+00:00",
+          "snapshot_at": "2026-09-29T07:15:38.614755+00:00",
+          "message_id": 317,
+          "text": "ALTIN · SANAL PORTFÖY\nAnaliz: 2026-09-28\nBEKLE · GRAM\n• GRAM: Masraf sonrası beklenti %-0.2; alım için en az %1.0 gerekiyor.\nYeni sanal işlem yok. 1 varlık değerlendirildi.\nPortföy 5,000.00 TL · K/Z +0.00 TL · nakit 5,000.00 TL\nhttps://birikim-paneli.vercel.app/"
+        },
+        {
+          "at": "2026-09-30T07:15:51.871375+00:00",
+          "snapshot_at": "2026-09-30T07:15:41.681910+00:00",
+          "message_id": 318,
+          "text": "ALTIN · SANAL PORTFÖY\nAnaliz: 2026-09-29\nBEKLE · GRAM\n• GRAM: Masraf sonrası beklenti %-0.5; alım için en az %1.0 gerekiyor.\nYeni sanal işlem yok. 1 varlık değerlendirildi.\nPortföy 5,000.00 TL · K/Z +0.00 TL · nakit 5,000.00 TL\nhttps://birikim-paneli.vercel.app/"
+        }
+      ],
+      "snapshot_at": "2026-09-30T14:31:59.375168+00:00",
+      "snapshot_discrepancies": [],
+      "notification_matches": true
+    }
+  },
+  "integrity": "ok",
+  "foreign_key_violations": []
+}

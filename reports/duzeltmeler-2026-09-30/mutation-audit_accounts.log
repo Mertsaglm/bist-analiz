@@ -1,0 +1,22 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____________ test_auditor_finds_every_account_and_handles_fee_debt _____________
+
+tmp_path = PosixPath('/private/var/folders/7c/cbt7d09n267_43kyv3j222_h0000gn/T/pytest-of-mert/pytest-18/test_auditor_finds_every_accou0')
+
+    def test_auditor_finds_every_account_and_handles_fee_debt(tmp_path):
+        audit=script('audit_production')
+        for rel in ['events.jsonl','accounts/new/events.jsonl','accounts/new/candidates/sma/events.jsonl']:
+            ledger=Ledger(tmp_path/'data/advisor'/rel)
+            ledger.add('contribution','initial','2026-09-30T08:00:00+00:00',book='strategy',amount_cents=100)
+            ledger.add('account_fee','fee','2026-09-30T08:01:00+00:00',book='strategy',amount_cents=150)
+            ledger.add('contribution','next','2026-10-01T08:00:00+00:00',book='strategy',amount_cents=100)
+            ledger.save()
+            calculated=audit.independent(ledger.events,'strategy')
+>           assert calculated['cash_cents']==50 and calculated['fee_liability_cents']==0 and calculated['account_fees_cents']==150
+E           assert (200 == 50)
+
+tests/test_production_repairs.py:158: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_production_repairs.py::test_auditor_finds_every_account_and_handles_fee_debt
+1 failed in 0.64s

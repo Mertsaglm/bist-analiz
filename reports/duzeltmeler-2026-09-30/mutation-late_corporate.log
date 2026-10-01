@@ -1,0 +1,24 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__________ test_corporate_after_closed_trade_cannot_erase_its_result ___________
+
+cfg = {'denetim': {'ek_izinli_sayilar': [0, 1, 2, 3, 5, 10, ...], 'ondalik_tolerans_basamak': 2, 'sayisal_beyaz_liste_tamsay...gostergeler': {'adx_length': 14, 'atr_length': 14, 'bollinger': {'length': 20, 'std': 2.0}, 'ema': [12, 26], ...}, ...}
+con = <sqlite3.Connection object at 0x10a72c5e0>
+
+    def test_corporate_after_closed_trade_cannot_erase_its_result(cfg,con):
+        # Gerçek TAVHL: 1 Eylül'de kapanan işlem 22 Eylül temettüsüyle iptal edilmemeli.
+        rows=[('2024-01-02',100,101,99,100,1e6,100),('2024-01-03',100,101,99,100,1e6,100),
+              ('2024-01-04',100,101,90,91,1e6,91),('2024-01-19',91,93,90,92,1e6,92)]
+        pid=ResolverFixture()._kur(cfg,con,rows,stop=95,t1=110,e_low=99,e_high=100)
+        resolver.resolve_open(cfg,con)
+        plan=corporate_repair.plan(cfg,con,[{'ticker':'TEST','date':'2024-01-19','kind':'temettu','value':2.5}])
+>       assert plan['changes']==[]
+E       AssertionError: assert [{'after': {'... 100.0, ...}}] == []
+E
+E         Left contains one more item: {'after': {'alpha_vs_ew': None, 'alpha_vs_xu100': None, 'entry_date': '2024-01-03', 'entry_price': 100.0, ...}, 'before': {'alpha_vs_ew': None, 'alpha_vs_xu100': -5.3, 'entry_date': '2024-01-03', 'entry_price': 100.0, ...}}
+E         Use -v to get more diff
+
+tests/test_production_repairs.py:186: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_production_repairs.py::test_corporate_after_closed_trade_cannot_erase_its_result
+1 failed in 0.64s

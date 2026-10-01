@@ -17,6 +17,15 @@ IST = ZoneInfo("Europe/Istanbul")
 
 def configuration(root):
     cfg = json.loads((root / "advisor/config.json").read_text(encoding="utf-8"))
+    if cfg.get('experiment_start_date') is not None:
+        from datetime import date
+        try:
+            launch = date.fromisoformat(cfg['experiment_start_date'])
+            original = date.fromisoformat(cfg['start_date'])
+        except (TypeError, ValueError) as exc:
+            raise ValueError('Yeni sanal sınav T0 tarihi YYYY-MM-DD olmalı.') from exc
+        if launch < original:
+            raise ValueError('Yeni sanal sınav eski ana hesaptan önce başlayamaz.')
     if type(cfg['horizon_sessions']) is not int or cfg['horizon_sessions'] < 1:
         raise ValueError('Tahmin vadesi pozitif tam sayı olmalı.')
     if cfg["market"] not in {"bist", "gold"} or cfg["initial_try"] <= 0 or cfg["monthly_try"] < 0:
@@ -91,12 +100,14 @@ def cycle(root, *, database=None, now=None, quotes=None, offline=False, notify=F
     from .calendar import session_block, phase, monitoring_snapshot
     current_phase = phase(now, cfg) if 'observation_window' in cfg else ('closed' if session_block(now, cfg) else 'entry')
     if closing_refresh and cfg['market']=='bist':
-        from .calendar import trading_day, window
-        local = now.astimezone(IST)
-        _, end = window(local.date(), cfg)
-        cal = cfg.get('calendar', {})
-        calendar_ok = not cal or (cal.get('available') and str(local.year) in cal.get('years', []))
-        current_phase = 'valuation' if calendar_ok and trading_day(local.date(), cfg) and local >= end else 'closed'
+        from .calendar import last_closed_session
+        # Günlük iş gece yarısından sonra bitebilir. İşlem yetkisi açmadan
+        # tamamlanmış son seansı değerle; yarınki kapanışı bekleme (D-04).
+        try:
+            last_closed_session(now, cfg)
+            current_phase = 'valuation'
+        except ValueError:
+            current_phase = 'closed'
     cfg['execution_phase'] = current_phase
     blocked = (session_block(now, cfg) or 'Gözlem penceresi dışında.') if current_phase == 'closed' else None
     state = state_path(root, cfg)
@@ -184,6 +195,9 @@ def cycle(root, *, database=None, now=None, quotes=None, offline=False, notify=F
             if cfg.get('candidates_enabled'):
                 from .candidates import owned as candidate_owned
                 owned |= candidate_owned(state)
+            if cfg.get('experiment_start_date'):
+                from .portfolio_candidates import owned as portfolio_owned
+                owned |= portfolio_owned(state)
             current = features[features.symbol.isin(set(symbols) | owned)].groupby('symbol').tail(1).copy()
             symbols = sorted(set(symbols) | owned)
             missing = set(symbols) - set(current.symbol)
@@ -194,6 +208,7 @@ def cycle(root, *, database=None, now=None, quotes=None, offline=False, notify=F
                 current = pd.concat([current, placeholders], ignore_index=True)
             legacy = history.legacy_summary(con, cfg["market"])
             agenda = news.collect(con, cfg["market"], now, fetch_external=not offline)
+            news.attach_first_seen(ledger, agenda, now)
             # Kurumsal işlem bilgisi yoksa risk, sayıya eklenen hayali temettüyle örtülmez.
             corporate = []
             if cfg["market"] == "bist":
@@ -265,8 +280,10 @@ def cycle(root, *, database=None, now=None, quotes=None, offline=False, notify=F
                            for r in records if not r.get('quality_ok') or r['date'] < expected_close.isoformat()}
         event_note = 'Fed kararı yaklaşıyor; yeni sanal işlem tutarı yarıya indirildi.' if imminent else None
         shadow_books = shadow.portfolios(ledger, reference_model, current, forecasts, model, cfg, quotes, now, event_note)
+        cfg['raw_forecasts'] = raw_forecasts
         context = capsule.inputs(ledger, records, forecasts, model, cfg, quotes, now, event_note)
-        decisions, fills = engine.run(ledger, records, forecasts, model, cfg, quotes, now, event_note)
+        decisions, fills = engine.run(ledger, records, forecasts, model, cfg, quotes, now, event_note,
+                                      raw_forecasts=raw_forecasts)
         receipt = capsule.save(state, context, decisions)
         ledger.add('decision_capsule', 'capsule:' + receipt['id'], now.isoformat(), **receipt)
         previous_snapshot = json.loads((state / 'latest.json').read_text()) if (state / 'latest.json').exists() else {}
@@ -319,6 +336,8 @@ def cycle(root, *, database=None, now=None, quotes=None, offline=False, notify=F
                     'account_id': cfg.get('account_id', 'legacy'), 'monitoring': dict(monitoring_snapshot(now, cfg), phase=current_phase, closing_refresh=closing_refresh),
                     'risk_control': risk_control, 'custody': custody, 'risk_factors': cfg.get('risk_factors', {}),
                     "budget": budget_signature, 'cost_notes': cfg.get('cost_notes', []), "costs": {k: cfg[k] for k in ("commission_rate", "commission_min_try", "commission_bsmv_rate", "exchange_fee_rate", "gold_buy_tax_rate", "slippage_bps")}}
+        from .filter_diagnostics import summarize as summarize_filters
+        snapshot['filter_diagnostics'] = summarize_filters(decisions)
         if cfg.get('candidates_enabled'):
             from .candidates import cycle as candidate_cycle
             try:
@@ -330,6 +349,19 @@ def cycle(root, *, database=None, now=None, quotes=None, offline=False, notify=F
                 errors.append('Aday sınavı tamamlanamadı: ' + type(exc).__name__)
             ledger.add('candidate_check', 'candidate-check:' + now.isoformat(), now.isoformat(),
                        completed=len(snapshot['candidates']), ok=bool(snapshot['candidates']))
+        from .portfolio_candidates import cycle as portfolio_cycle
+        try:
+            specialized_model = None
+            if cfg.get('experiment_start_date') and local_day >= cfg['experiment_start_date']:
+                from .specialized import current as specialized_current
+                specialized_model = specialized_current(state, features, cfg, forecasts, fresh_current)
+            snapshot['portfolio_experiments'] = portfolio_cycle(
+                state, frame, cfg, quotes, now, universe_module.read(root),
+                {row['symbol']: row for row in records}, forecasts, model,
+                specialized=specialized_model, actions=corporate)
+        except Exception as exc:
+            snapshot['portfolio_experiments'] = {'status': 'hata', 'accounts': [], 'error': type(exc).__name__}
+            errors.append('Çekirdek/taktik sınavı tamamlanamadı: ' + type(exc).__name__)
         snapshot['health']['ledger_hash'] = ledger.root_hash
         ledger.save()
         atomic_json(state / "latest.json", snapshot)

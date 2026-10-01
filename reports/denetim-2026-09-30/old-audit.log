@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/Users/mert/Desktop/mert/projeler/BIST tahmin/scripts/audit_production.py", line 227, in <module>
+    result=audit(a.root,a.replay)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/mert/Desktop/mert/projeler/BIST tahmin/scripts/audit_production.py", line 159, in audit
+    index = next(i for i,e in enumerate(events) if e['hash']==snapshot['health']['ledger_hash'])
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+StopIteration
