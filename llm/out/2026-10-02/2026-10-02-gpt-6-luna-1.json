@@ -1,0 +1,294 @@
+{
+  "schema_version": "bist_llm_v1",
+  "asof": "2026-10-02",
+  "bundle_sha": "f3f215446a14877f7265efcb941e4983e63d10c5b73568e4bc5ee36e14e93703",
+  "tool": "gpt-6-luna",
+  "market_view": {
+    "regime_agreement": "katiliyorum",
+    "regime_note": "Risk-off görünümü, zayıf piyasa genişliği ve endeksin uzun vadeli ortalamanın altında olmasıyla uyumlu. Ölçülmüş kenar bulunmadığından, plan seviyelerini yön sinyali saymıyor ve nakit ağırlığını koruyorum.",
+    "portfolio_action": "risk_azalt"
+  },
+  "stocks": [
+    {
+      "ticker": "AKBNK",
+      "signal": "avoid",
+      "action": "islem_yok",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "dusuk",
+      "thesis": "Açık tahminlerin çoğunun olumsuz olması ve kapanışın kısa, orta ve uzun vadeli ortalamaların altında kalması, temkinli duruşu destekliyor. Bu değerlendirme yön tahmini değil, yalnız mevcut koşulların özetidir.",
+      "counter_scenario": "Faiz içeren tahvil itfası ve yeni yurtdışı tahvil ihracı finansman yönetiminin parçası olabilir; başlıklar tek başına bilanço baskısı ya da olumlu katalizör kanıtlamıyor. Fiyatın toparlanması bu temkinli görünümü değiştirebilir.",
+      "key_risk": "Banka tahvil işlemlerinin vade, maliyet ve kullanım ayrıntıları bu pakette yer almıyor. Bu nedenle başlıklardan kârlılık sonucu çıkarmak yanıltıcı olabilir; piyasanın zayıf genel görünümü de hisseye ek baskı yaratabilir.",
+      "falsifier": "Önümüzdeki işlem günlerinde kapanışın kısa vadeli ortalamanın üzerine çıkıp orada kalması, zayıf görünüm değerlendirmesini gözden geçirmeyi gerektirecek gözlemlenebilir olaydır.",
+      "news_refs": [
+        "kap-1671376",
+        "kap-1671375",
+        "kap-1670857",
+        "kap-1670856"
+      ],
+      "news_reading": "Tahvil itfası, ihracı ve kupon ödemesi başlıkları finansman faaliyetini gösteriyor; tutar ve koşul bilgisi olmadan bunlara yön tayin ettirici anlam yüklemiyorum."
+    },
+    {
+      "ticker": "ASELS",
+      "signal": "hold",
+      "action": "izle",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "dusuk",
+      "thesis": "Açık tahminler ağırlıkla bekle yönünde ve kapanış kısa vadeli ortalamaların altında, uzun vadeli ortalamanın üzerindedir. Bu karışık görünümde plan geometrisi yön iddiasına dönüştürülmemeli.",
+      "counter_scenario": "Yeni iş ilişkisi bildirimleri faaliyet görünümünü destekleyebilir; ancak başlıklarda sözleşme kapsamı ve ekonomik katkı bilgisi bulunmadığından etkinin büyüklüğü belirsizdir. Fiyatın kısa vadeli ortalamaları aşması dengeyi değiştirebilir.",
+      "key_risk": "Bilanço penceresi açıktır; finansal rapor ve ilgili bildirimlerin açıklanması plan ufkunda oynaklık yaratabilir. Yeni iş ilişkilerinin koşulları bilinmediğinden olumlu başlıklar kesinleşmiş kazanç gibi değerlendirilmemelidir.",
+      "falsifier": "Önümüzdeki işlem günlerinde kapanışın kısa ve orta vadeli ortalamaların üzerinde görülmesi, mevcut karışık teknik görünümün yeniden değerlendirilmesini gerektirecek somut gözlemdir.",
+      "news_refs": [
+        "kap-1671098",
+        "kap-1670614"
+      ],
+      "news_reading": "Yeni iş ilişkisi bildirimleri faaliyet açısından destekleyici olabilir, fakat sözleşme ayrıntıları verilmediği için başlıklardan gelir veya değer etkisi çıkarmıyorum."
+    },
+    {
+      "ticker": "ASTOR",
+      "signal": "avoid",
+      "action": "islem_yok",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "dusuk",
+      "thesis": "Açık tahminler ağırlıkla olumsuz, fiyat ortalamaların altında ve günlük hareket marj sınırına yaklaşmış durumda. Süresi dolmamış rejim uyumsuzluğu vetosu da temkinli duruşu destekliyor.",
+      "counter_scenario": "Yeni iş ilişkisi başlığı ticari faaliyet için olumlu bir gelişme olabilir; ancak kapsam ve ekonomik koşullar açıklanmamış. Güçlü bir tepki hareketi, mevcut zayıf teknik görünümün kısa vadede değiştiğini gösterebilir.",
+      "key_risk": "Bilanço penceresi açıktır ve fiyat marj sınırına yakın hareket etmiştir; bu iki unsur plan ufkunda ani oynaklık riskini artırır. Başlık ayrıntıları sınırlı, ölçülmüş kenar yok ve aktif veto sürmektedir.",
+      "falsifier": "Önümüzdeki işlem günlerinde kapanışın kısa vadeli ortalamanın üzerine çıkıp marj sınırına yakın günlük hareketlerin tekrarlanmaması, bu kaçınma değerlendirmesini yeniden inceletir.",
+      "news_refs": [
+        "kap-1671442"
+      ],
+      "news_reading": "Yeni iş ilişkisi duyurusu tek başına ticari katkıyı ölçmeye yetmiyor; sert günlük hareket ve açık bilanço penceresi nedeniyle başlığı alım gerekçesi saymıyorum."
+    },
+    {
+      "ticker": "BIMAS",
+      "signal": "hold",
+      "action": "izle",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "dusuk",
+      "thesis": "Açık tahminlerde bekle görüşü baskın; kapanış orta ve uzun vadeli ortalamaların üzerinde olsa da kısa vadeli ortalamanın altındadır. Süresi devam eden zayıf tez vetosunu sessizce kaldırmıyorum.",
+      "counter_scenario": "Fiyatın kısa vadeli ortalamayı yeniden aşması ve orada tutunması, mevcut karışık teknik görünümü iyileştirebilir. Ancak böyle bir hareket ölçülmüş kenar oluşturmaz ve tek başına plan seçimini haklı çıkarmaz.",
+      "key_risk": "Bilanço penceresi açıktır; rapor açıklaması plan ufkunda oynaklık yaratabilir. Ayrıca önceki koşudan kalan tez zayıf vetosu yürürlüktedir ve yeni bir plan geometrisi sunulmamıştır.",
+      "falsifier": "Önümüzdeki işlem günlerinde kapanışın kısa vadeli ortalamanın üzerine çıkıp sonraki kapanışlarda da bu seviyeyi koruması, mevcut izleme kararını yeniden değerlendirecek gözlemdir.",
+      "news_refs": [],
+      "news_reading": null
+    },
+    {
+      "ticker": "EKGYO",
+      "signal": "avoid",
+      "action": "islem_yok",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "dusuk",
+      "thesis": "Açık tahminlerin çoğu olumsuz, kapanış ise kısa, orta ve uzun vadeli ortalamaların altındadır. Değerleme ve varlık edinimi başlıkları bu zayıf görünümde tek başına plan seçmeye yeterli değil.",
+      "counter_scenario": "Gayrimenkul değerleme raporları, arsa alımı ve bağlı ortaklığın veri merkezi paylarını devralmasına ilişkin sözleşme stratejik varlık hareketlerine işaret edebilir. Bu işlemlerin hisse değerine etkisi mevcut bilgilerle belirlenemiyor.",
+      "key_risk": "Bilanço penceresi açıktır; rapor açıklaması ile varlık edinimi ve ihale gelişmeleri aynı plan ufkunda belirsizlik yaratabilir. Başlıkların ekonomik koşulları ve finansman etkisi pakette açıklanmamıştır.",
+      "falsifier": "Önümüzdeki işlem günlerinde kapanışın kısa ve orta vadeli ortalamaların üzerine çıkması, zayıf teknik görünüm değerlendirmesini yeniden ele aldıracak gözlemlenebilir olaydır.",
+      "news_refs": [
+        "kap-1671664",
+        "kap-1671663",
+        "kap-1671662",
+        "kap-1671661",
+        "kap-1671659",
+        "kap-1671593",
+        "kap-1671591"
+      ],
+      "news_reading": "Değerleme raporları, arsa alımı ve veri merkezi paylarının edinimi varlık gündemini gösteriyor; bedel ve finansman ayrıntısı olmadan net olumlu etki varsaymıyorum."
+    },
+    {
+      "ticker": "ENKAI",
+      "signal": "hold",
+      "action": "izle",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "dusuk",
+      "thesis": "Açık tahminler büyük ölçüde bekle yönünde; kapanış kısa, orta ve uzun vadeli ortalamaların altında. Bu tablo izlemeyi destekliyor, fakat ölçülmüş kenar veya kullanılabilir plan geometrisi sağlamıyor.",
+      "counter_scenario": "Kısa vadeli ortalamanın üzerine dönüş, zayıf fiyat görünümünün değiştiğine dair gözlemlenebilir bir işaret olabilir. Bununla birlikte pakette yeni bir haber katalizörü bulunmadığından bu olasılık varsayım düzeyindedir.",
+      "key_risk": "Bilanço penceresi açıktır ve finansal raporun açıklanması plan ufkunda fiyat oynaklığı yaratabilir. Tahminlerin çoğunlukla bekle olması yönlü kanaati sınırlıyor; genel risk-off görünümü de korunuyor.",
+      "falsifier": "Önümüzdeki işlem günlerinde kapanışın kısa vadeli ortalamayı aşamayıp altında kalması, mevcut izleme yaklaşımını teyit edecek; üzerine çıkıp tutunması ise tezi yeniden açacaktır.",
+      "news_refs": [],
+      "news_reading": null
+    },
+    {
+      "ticker": "EREGL",
+      "signal": "hold",
+      "action": "izle",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "dusuk",
+      "thesis": "Açık tahminler karışık olmakla birlikte bekle görüşü öne çıkıyor. Kapanış kısa ve orta vadeli ortalamaların altında, uzun vadeli ortalamanın üzerindedir; yönlü iddia için yeterli dayanak yoktur.",
+      "counter_scenario": "Uzun vadeli ortalamanın üzerinde kalması ve kısa vadeli ortalamaları geri alması, mevcut temkinli görünümün iyileşebileceğini düşündürür. Pakette bu olasılığı doğrulayacak yeni bir haber veya plan yer almıyor.",
+      "key_risk": "Bilanço penceresi açıktır; finansal rapor plan ufkunda yeni bilgi ve oynaklık yaratabilir. Çelik hisselerinde genel piyasa zayıflığına ek olarak mevcut karışık ortalama görünümü belirsizliği artırıyor.",
+      "falsifier": "Önümüzdeki işlem günlerinde kapanışın kısa vadeli ortalamanın üzerine çıkması ya da uzun vadeli ortalamanın altına gerilemesi, mevcut denge değerlendirmesini değiştirecek somut gözlemdir.",
+      "news_refs": [],
+      "news_reading": null
+    },
+    {
+      "ticker": "EUPWR",
+      "signal": "hold",
+      "action": "plan_reddet",
+      "selected_plan_id": null,
+      "veto_code": "likidite_zayif",
+      "confidence": "dusuk",
+      "thesis": "Teknik görünüm zayıf ve oynaklık yüksek; mevcut plan geometrisi bulunsa da süresi devam eden likidite vetosu nedeniyle planı reddediyorum. Ürün test bildirimi bu vetoyu geçersiz kılacak bilgi sağlamıyor.",
+      "counter_scenario": "Yüksek gerilim ayırıcı ürünlerinin kısa devre dayanım testlerine ilişkin bildirim, ürün doğrulama sürecinde ilerlemeye işaret edebilir. Bu gelişme ticari sonuç veya likidite koşullarının iyileştiğini tek başına kanıtlamaz.",
+      "key_risk": "Bilanço penceresi açıktır ve fiyatın ortalamaların altında kalmasıyla birlikte yüksek oynaklık riski vardır. Önceki koşudan kalan likidite zayıf vetosu yürürlükte olduğundan plan geometrisi uygulanabilir kabul edilmiyor.",
+      "falsifier": "Önümüzdeki işlem günlerinde kapanışın kısa vadeli ortalamanın üzerine çıkması, ürün testi bildiriminin devamında yeni ve somut bir ticari açıklama gelmesiyle birlikte veto değerlendirmesini gözden geçirmeyi gerektirir.",
+      "news_refs": [
+        "kap-1671104"
+      ],
+      "news_reading": "Test bildirimi ürün doğrulaması açısından ilgili olsa da satış, sözleşme veya finansal katkı açıklamıyor; yürürlükteki likidite vetosunu kaldırmıyorum."
+    },
+    {
+      "ticker": "FROTO",
+      "signal": "avoid",
+      "action": "islem_yok",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "dusuk",
+      "thesis": "Açık tahminlerin büyük bölümü olumsuz ve kapanış kısa, orta ve uzun vadeli ortalamaların altındadır. Plan geometrisi oluşturulmadığından zayıf görünümde işlem açmayı uygun bulmuyorum.",
+      "counter_scenario": "Fiyatın kısa vadeli ortalamayı geri alması, düşüş baskısının hafiflediğine dair gözlemlenebilir bir işaret olabilir. Pakette bu toparlanmayı destekleyen yeni bir haber bulunmadığından karşı senaryo ihtiyatla ele alınmalıdır.",
+      "key_risk": "Bilanço penceresi açıktır; finansal rapor açıklaması plan ufkunda oynaklık yaratabilir. Fiyatın uzun vadeli ortalamanın da altında olması, genel risk-off ortamında aşağı yönlü baskının sürmesi riskini artırıyor.",
+      "falsifier": "Önümüzdeki işlem günlerinde kapanışın kısa vadeli ortalamanın üzerine çıkıp orada kalması, mevcut kaçınma değerlendirmesini yeniden ele aldıracak somut fiyat olayıdır.",
+      "news_refs": [],
+      "news_reading": null
+    },
+    {
+      "ticker": "GARAN",
+      "signal": "avoid",
+      "action": "islem_yok",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "dusuk",
+      "thesis": "Açık tahminlerde olumsuz görüş baskın; kapanış kısa, orta ve uzun vadeli ortalamaların altında. Yeni bir plan bulunmadığı ve ölçülmüş kenar olmadığı için işlem açmaktan kaçınıyorum.",
+      "counter_scenario": "Kısa vadeli ortalamanın üzerine bir kapanış ve devamında bu seviyenin korunması, mevcut zayıf fiyat görünümünün değişebileceğini gösterir. Böyle bir gelişme oluşmadan olumlu senaryo için dayanak sınırlıdır.",
+      "key_risk": "Banka hisselerindeki zayıf görünüm, risk-off piyasa rejimiyle birleşerek toparlanma girişimlerini kırılgan kılabilir. Pakette yeni bir şirket haberi bulunmadığından temel katalizör değerlendirmesi de yapılamıyor.",
+      "falsifier": "Önümüzdeki işlem günlerinde kapanışın kısa vadeli ortalamanın üzerine geçip sonraki kapanışta da üstünde kalması, kaçınma kararını yeniden değerlendirmem için gözlenebilir olaydır.",
+      "news_refs": [],
+      "news_reading": null
+    },
+    {
+      "ticker": "KCHOL",
+      "signal": "hold",
+      "action": "plan_reddet",
+      "selected_plan_id": null,
+      "veto_code": "rejim_uyumsuz",
+      "confidence": "dusuk",
+      "thesis": "Mevcut plan geometrisi teknik olarak listelenmiş olsa da risk-off rejimi ve kapanışın kısa, orta vadeli ortalamaların altında bulunması nedeniyle planı reddediyorum. Uzun vadeli ortalamanın üzerindeki fiyat tek başına yeterli değil.",
+      "counter_scenario": "Uzun vadeli ortalamanın üzerinde kalması ve kısa vadeli ortalamaları geri alması, fiyat görünümünü iyileştirebilir. Ancak bilanço penceresi ve genel piyasa zayıflığı varken bu olasılığı işlem gerekçesi saymıyorum.",
+      "key_risk": "Bilanço penceresi açıktır ve açıklanacak finansal rapor plan ufkunda oynaklık yaratabilir. Sektörel ve piyasa rejimi riski, listelenmiş plan geometrisinin olası kullanımını temkinli kılmaktadır.",
+      "falsifier": "Önümüzdeki işlem günlerinde kapanışın kısa ve orta vadeli ortalamaların üzerine çıkması ve endeksin risk-off görünümünden çıkması, rejim uyumsuzluğu vetosunu yeniden değerlendirmeyi gerektirir.",
+      "news_refs": [],
+      "news_reading": null
+    },
+    {
+      "ticker": "KRDMD",
+      "signal": "hold",
+      "action": "izle",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "dusuk",
+      "thesis": "Açık tahminlerde sınırlı al görüşlerine karşın bekle görüşü belirgin biçimde ağır basıyor. Kapanış kısa ve orta vadeli ortalamaların altında, uzun vadeli ortalamanın üzerindedir; işlem için yeterli netlik yoktur.",
+      "counter_scenario": "GES yatırımlarına ilişkin bildirim ve uzun vadeli ortalamanın üzerindeki fiyat, görünümün iyileşmesi için olası desteklerdir. Bununla birlikte yatırımın kapsamı ve finansal katkısı açıklanmadığından etki kesin değildir.",
+      "key_risk": "Bilanço penceresi açıktır; finansal rapor plan ufkunda oynaklık yaratabilir. Kısa ve orta vadeli ortalamaların altında kalınması, GES başlığının fiyat görünümünü hemen değiştirdiğini varsaymayı sakıncalı kılıyor.",
+      "falsifier": "Önümüzdeki işlem günlerinde kapanışın kısa ve orta vadeli ortalamaların üzerine çıkması veya uzun vadeli ortalamanın altına inmesi, mevcut izleme tezini değiştirecek gözlemlenebilir fiyat hareketidir.",
+      "news_refs": [
+        "kap-1670761"
+      ],
+      "news_reading": "GES yatırımı enerji giderleri açısından anlamlı olabilir; ancak bildirimde yatırımın büyüklüğü ve finansal etkisi açıklanmadığından bunu kesin katalizör saymıyorum."
+    },
+    {
+      "ticker": "PETKM",
+      "signal": "hold",
+      "action": "izle",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "dusuk",
+      "thesis": "Açık tahminlerde bekle görüşü baskın. Kapanış kısa, orta ve uzun vadeli ortalamaların altında olduğundan teknik görünüm zayıf; buna rağmen mevcut bilgi kaçınma dışında güçlü bir yön kararı da desteklemiyor.",
+      "counter_scenario": "Fiyatın kısa vadeli ortalamayı aşması, düşüş baskısının hafifleyebileceğine işaret edebilir. Pakette yeni bir haber bulunmadığı için bu senaryo yalnız fiyat davranışıyla doğrulanmalıdır.",
+      "key_risk": "Bilanço penceresi açıktır ve hisse fiyatındaki oynaklık genel piyasa zayıflığıyla birleşebilir. Finansal rapor açıklaması plan ufkunda yeni bilgi getirebileceğinden güveni yükseltmek için dayanak yoktur.",
+      "falsifier": "Önümüzdeki işlem günlerinde kapanışın kısa vadeli ortalamanın üzerine çıkması ya da uzun vadeli ortalamanın altına sarkması, mevcut izleme kararını değiştirecek somut gözlem olacaktır.",
+      "news_refs": [],
+      "news_reading": null
+    },
+    {
+      "ticker": "SISE",
+      "signal": "hold",
+      "action": "izle",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "dusuk",
+      "thesis": "Açık tahminler ağırlıkla bekle yönünde, fiyat ise bütün gösterilen ortalamaların altında. Süresi devam eden veri şüpheli vetosu nedeniyle mevcut teknik veriye dayanarak daha iddialı karar vermiyorum.",
+      "counter_scenario": "Fiyatın kısa vadeli ortalamaya dönmesi, zayıf görünümün değişmeye başladığını gösterebilir. Bununla birlikte aktif veri vetosu açıklığa kavuşmadan böyle bir hareketin kalıcı olduğu varsayılmamalıdır.",
+      "key_risk": "Bilanço penceresi açıktır; finansal rapor açıklaması plan ufkunda oynaklık yaratabilir. Ayrıca önceki koşudan kalan veri şüpheli vetosu yürürlüktedir ve bu nedenle mevcut fiyat sinyallerine güven sınırlıdır.",
+      "falsifier": "Önümüzdeki işlem günlerinde veri şüpheli vetosuna yol açan durumun açıklığa kavuşması ve kapanışın kısa vadeli ortalamanın üzerine geçmesi, izleme tezini yeniden değerlendirmek için gözlenebilir gelişmelerdir.",
+      "news_refs": [],
+      "news_reading": null
+    },
+    {
+      "ticker": "TAVHL",
+      "signal": "hold",
+      "action": "izle",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "dusuk",
+      "thesis": "Açık tahminlerde bekle görüşü öne çıkıyor; kapanış kısa, orta ve uzun vadeli ortalamaların altında. Finansal takvim bildirimi bilgi zamanlaması sağlıyor, fakat yön veya işlem gerekçesi oluşturmuyor.",
+      "counter_scenario": "Kısa vadeli ortalamanın üzerine dönüş, teknik görünümde iyileşme işareti olabilir. Ancak bu hareketin sürdürülebilirliğini destekleyecek yeni bir operasyonel haber pakette yer almıyor.",
+      "key_risk": "Bilanço penceresi açıktır ve şirketin finansal takvimi plan ufkunda rapor açıklaması beklentisini görünür kılıyor. Açıklama çevresindeki oynaklık ve ortalamaların altındaki fiyat, temkin gerektiriyor.",
+      "falsifier": "Önümüzdeki işlem günlerinde kapanışın kısa vadeli ortalamayı aşması ya da bu ortalamadan yeniden aşağı dönmesi, mevcut izleme değerlendirmesini güncelleyecek somut gözlemdir.",
+      "news_refs": [
+        "kap-1670746"
+      ],
+      "news_reading": "Finansal takvim bildirimi rapor zamanlamasına ilişkindir; şirket performansı hakkında yeni veri sunmadığından katalizör veya yön sinyali olarak değerlendirmiyorum."
+    },
+    {
+      "ticker": "TCELL",
+      "signal": "hold",
+      "action": "izle",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "dusuk",
+      "thesis": "Açık tahminlerin çoğu bekle veya olumsuz yönde; kapanış kısa, orta ve uzun vadeli ortalamaların altındadır. Yeni bir plan bulunmadığından temkinli izleme dışına çıkmak için dayanak yoktur.",
+      "counter_scenario": "Kısa vadeli ortalamanın yeniden kazanılması, zayıf teknik görünümde iyileşme işareti olabilir. Pakette bunu destekleyen haber bulunmadığından fiyat teyidi olmadan olumlu senaryo öne çıkarılmamalıdır.",
+      "key_risk": "Bilanço penceresi açıktır; finansal rapor plan ufkunda yeni bilgi ve oynaklık yaratabilir. Piyasanın risk-off duruşu ve fiyatın tüm gösterilen ortalamaların altında bulunması belirsizliği artırıyor.",
+      "falsifier": "Önümüzdeki işlem günlerinde kapanışın kısa vadeli ortalamanın üzerine çıkması veya uzun vadeli ortalamanın altına gerilemesi, mevcut izleme tezini değiştirecek gözlenebilir olaydır.",
+      "news_refs": [],
+      "news_reading": null
+    },
+    {
+      "ticker": "THYAO",
+      "signal": "hold",
+      "action": "izle",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "dusuk",
+      "thesis": "Açık tahminlerin çoğu bekle yönünde; kapanış kısa vadeli ortalamaya yakın olsa da orta ve uzun vadeli ortalamaların altındadır. Plan bulunmaması ve ölçülmüş kenar olmaması işlem kararını desteklemiyor.",
+      "counter_scenario": "Kapanışın orta vadeli ortalamayı aşması, mevcut zayıf görünümün hafifleyebileceğini gösterebilir. Bu senaryo için pakette yeni bir haber katalizörü bulunmadığından yalnız fiyat teyidi önem taşır.",
+      "key_risk": "Bilanço penceresi açıktır; finansal raporun açıklanması plan ufkunda oynaklık yaratabilir. Orta ve uzun vadeli ortalamaların altında kalınması, kısa vadeli denge görünümüne fazla anlam yüklemeyi riskli kılıyor.",
+      "falsifier": "Önümüzdeki işlem günlerinde kapanışın orta vadeli ortalamanın üzerine çıkması veya kısa vadeli ortalamanın altına gerilemesi, mevcut denge değerlendirmesini yeniden ele aldıracaktır.",
+      "news_refs": [],
+      "news_reading": null
+    },
+    {
+      "ticker": "TUPRS",
+      "signal": "hold",
+      "action": "izle",
+      "selected_plan_id": null,
+      "veto_code": null,
+      "confidence": "dusuk",
+      "thesis": "Açık tahminlerin çoğu bekle yönündedir. Kapanış orta ve uzun vadeli ortalamaların üzerinde, ancak kısa vadeli ortalamanın altındadır; karışık teknik görünüm yönlü karar için yeterli değildir.",
+      "counter_scenario": "Orta ve uzun vadeli ortalamaların üzerinde kalması, kısa vadeli zayıflığın geçici olabileceği senaryosunu destekler. Borçlanma başvurusu ve derecelendirme bildirimi bu olasılığı tek başına doğrulamıyor.",
+      "key_risk": "Bilanço penceresi açıktır ve finansal rapor plan ufkunda oynaklık yaratabilir. Yurtiçi borçlanma aracı başvurusu finansman koşulları açıklanmadan yorumlanamaz; günlük zayıflık da kısa vadeli riski artırıyor.",
+      "falsifier": "Önümüzdeki işlem günlerinde kapanışın kısa vadeli ortalamayı geri alması veya orta vadeli ortalamanın altına inmesi, mevcut karışık görünüm değerlendirmesini değiştirecek gözlenebilir olaydır.",
+      "news_refs": [
+        "kap-1671554",
+        "kap-1671102"
+      ],
+      "news_reading": "Borçlanma aracı ihracı için başvuru finansman gündemini, kurumsal yönetim derecelendirmesi ise yönetişim bilgisini gösteriyor; başlıklar tek başına fiyat yönü belirlemiyor."
+    }
+  ],
+  "not_covered": [],
+  "analyst_notes": "Evrenin tamamı değerlendirilmiştir. Ölçülmüş kenar yoktur; plan seviyeleri yön tahmini değildir. Risk-off ortamında plan geometrisi tek başına işlem gerekçesi sayılmamıştır."
+}

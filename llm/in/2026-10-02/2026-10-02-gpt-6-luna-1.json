@@ -1,0 +1,6606 @@
+{
+  "bundle_version": "bist_bundle_v1",
+  "asof": "2026-10-02",
+  "karar_gunu": "2026-11-02",
+  "generated_utc": "2026-10-02T21:00:00+00:00",
+  "uyari": "Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir.",
+  "takvim": {
+    "son_kapali_seans": "2026-10-02",
+    "zaman_bariyeri_tarihi": "2026-11-02",
+    "islem_gunu_sayisi": 20
+  },
+  "kesit": {
+    "istenen": 67,
+    "skorlanan": 67,
+    "uygun": 15,
+    "not": "`yuzdelik` YALNIZ 'uygun' sütunundaki isimler arasında hesaplanır; 'istenen' ile 'skorlanan' arasındaki fark, göstergesi hesaplanmamış isimlerdir (`bist gosterge`)."
+  },
+  "haber_taramasi": {
+    "ok": true,
+    "son_bildirim": "2026-10-02T20:08:54+00:00",
+    "gecikme_gun": 0,
+    "not": null
+  },
+  "rejim": {
+    "etiket": "risk-off",
+    "tetikleyici": "XU100 SMA200'ün %9.64 ALTINDA (≤ %-3.0) · genişlik %14.9 ≤ %35.0",
+    "xu100_sma200_farki_pct": -9.641718719294712,
+    "genislik_sma50_ustu_pct": 14.925373134328357,
+    "genislik_n": 67,
+    "genislik_istenen_n": 67,
+    "xu100_vol_yillik_21g": 32.83944566020089,
+    "makro": {
+      "politika_faizi": 37.0,
+      "tufe_bayat_tarih": "2025-12-01",
+      "enf_bek_12ay": 23.7,
+      "mevduat_1yil_brut": 43.35,
+      "mevduat_1yil_net": 36.847500000000004,
+      "usdtry": 49.0348,
+      "reel_net_mevduat": 10.62853678253839
+    },
+    "pozisyon_politikasi": {
+      "nakit_pct": 80.0,
+      "maks_pozisyon": 2,
+      "sektor_basi_maks": 2
+    }
+  },
+  "evren": [
+    {
+      "ticker": "AKBNK",
+      "sektor": "banka",
+      "fiyat": {
+        "kapanis": 67.1,
+        "onceki_kapanis": 67.55,
+        "gunluk_degisim_pct": -0.67,
+        "yuksek_52h": 93.5,
+        "dusuk_52h": 53.0499992371
+      },
+      "gostergeler": {
+        "rsi14": 40.522445038022404,
+        "macd_hist": -0.5842466815858027,
+        "atr14": 2.632135768612483,
+        "atr_pct": 3.9227061527097296,
+        "adx14": 22.437811017995948,
+        "sma20": 70.84999961852711,
+        "sma50": 69.60299995422484,
+        "sma200": 73.95024984359522,
+        "bb_pctb": 0.11944112827304891
+      },
+      "faktorler": {
+        "skor": 0.1266,
+        "sira": null,
+        "yuzdelik": null,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": 8.4091,
+        "mom_12_1": 14.9311,
+        "zirve_yakinlik": -28.2353,
+        "kapilar": {
+          "uygun": false,
+          "nedenler": [
+            "sma200_alti"
+          ]
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 10396058400.08171
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "limit_durumu": {
+        "durum": "serbest",
+        "getiri_pct": -0.67,
+        "yon": null,
+        "intraday_dokunma": false,
+        "band": [
+          60.795,
+          74.305
+        ],
+        "aciklama": "getiri %-0.67 — marjdan uzak."
+      },
+      "bilanco_penceresi": {
+        "durum": "kapali",
+        "bildirimler": [],
+        "not": "takvimde yok; 2026-07-28 tarihli finansal rapor bildirimi var (66 gün önce) → dönemin raporunu AÇIKLAMIŞ"
+      },
+      "aktif_vetolar": [],
+      "plan_menusu": [],
+      "plan_yok_nedeni": "2 giriş bandı denendi; brüt R:R hiçbir kombinasyonda ≥1.5 olmadı (stop bandı geçti)",
+      "plan_yok_sinifi": "geometri",
+      "plan_yok_detay": "rr_yetersiz",
+      "plan_yok_elenen": [
+        "dogrudan/atr_2x: R:R 0.9 < 1.5",
+        "dogrudan/atr_2.5x: R:R 0.72 < 1.5",
+        "dogrudan/atr_3x: R:R 0.6 < 1.5",
+        "dogrudan/swing_low: 0.53×ATR ∉ [1.5,4.0]",
+        "destek_retest/atr_2x: R:R 0.91 < 1.5",
+        "destek_retest/atr_2.5x: R:R 0.73 < 1.5",
+        "destek_retest/atr_3x: R:R 0.61 < 1.5"
+      ],
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-AKBNK-1",
+          "asof": "2026-07-29",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-07-30-AKBNK-1",
+          "asof": "2026-07-30",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-03-AKBNK-1",
+          "asof": "2026-08-03",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-04-AKBNK-1",
+          "asof": "2026-08-04",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-05-AKBNK-1",
+          "asof": "2026-08-05",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-10-AKBNK-1",
+          "asof": "2026-08-10",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-11-AKBNK-1",
+          "asof": "2026-08-11",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-12-AKBNK-1",
+          "asof": "2026-08-12",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-13-AKBNK-1",
+          "asof": "2026-08-13",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-14-AKBNK-1",
+          "asof": "2026-08-14",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-17-AKBNK-1",
+          "asof": "2026-08-17",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-18-AKBNK-1",
+          "asof": "2026-08-18",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-19-AKBNK-1",
+          "asof": "2026-08-19",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-20-AKBNK-1",
+          "asof": "2026-08-20",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-21-AKBNK-1",
+          "asof": "2026-08-21",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-24-AKBNK-1",
+          "asof": "2026-08-24",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-25-AKBNK-1",
+          "asof": "2026-08-25",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-AKBNK-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-AKBNK-2",
+          "asof": "2026-08-26",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-28-AKBNK-1",
+          "asof": "2026-08-28",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-01-AKBNK-1",
+          "asof": "2026-09-01",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-02-AKBNK-1",
+          "asof": "2026-09-02",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-03-AKBNK-1",
+          "asof": "2026-09-03",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-04-AKBNK-1",
+          "asof": "2026-09-04",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-07-AKBNK-1",
+          "asof": "2026-09-07",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-08-AKBNK-1",
+          "asof": "2026-09-08",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-09-AKBNK-1",
+          "asof": "2026-09-09",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-10-AKBNK-1",
+          "asof": "2026-09-10",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-11-AKBNK-1",
+          "asof": "2026-09-11",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-14-AKBNK-1",
+          "asof": "2026-09-14",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-15-AKBNK-1",
+          "asof": "2026-09-15",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-16-AKBNK-1",
+          "asof": "2026-09-16",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-17-AKBNK-1",
+          "asof": "2026-09-17",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-18-AKBNK-1",
+          "asof": "2026-09-18",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-21-AKBNK-1",
+          "asof": "2026-09-21",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-22-AKBNK-1",
+          "asof": "2026-09-22",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-23-AKBNK-1",
+          "asof": "2026-09-23",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-24-AKBNK-1",
+          "asof": "2026-09-24",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-25-AKBNK-1",
+          "asof": "2026-09-25",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-28-AKBNK-1",
+          "asof": "2026-09-28",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-AKBNK-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
+        }
+      ],
+      "haberler": [
+        {
+          "id": "kap-1671376",
+          "tarih": "2026-10-02 13:18",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "XS3101989278 ISIN Kodlu Tahvilin İtfası",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1671376"
+        },
+        {
+          "id": "kap-1671375",
+          "tarih": "2026-10-02 13:18",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "Yurtdışı Piyasalara Tahvil İhracı",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1671375"
+        },
+        {
+          "id": "kap-1670857",
+          "tarih": "2026-10-01 13:55",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "XS3096174951 ISIN Kodlu Tahvilin İtfası",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1670857"
+        },
+        {
+          "id": "kap-1670856",
+          "tarih": "2026-10-01 13:55",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "XS3195081479 ISIN Kodlu Yurtdışı Piyasalara İhraç Edilen Tahvilin Kupon Ödemesi",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1670856"
+        }
+      ],
+      "haber_tarama_baslangici": "2026-09-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "ASELS",
+      "sektor": "savunma",
+      "fiyat": {
+        "kapanis": 362.75,
+        "onceki_kapanis": 370.0,
+        "gunluk_degisim_pct": -1.96,
+        "yuksek_52h": 450.0,
+        "dusuk_52h": 171.5
+      },
+      "gostergeler": {
+        "rsi14": 46.384824798470476,
+        "macd_hist": -2.1413616997781775,
+        "atr14": 17.229114788715858,
+        "atr_pct": 4.7495836771098165,
+        "adx14": 27.13369783268221,
+        "sma20": 374.4,
+        "sma50": 375.495,
+        "sma200": 349.6784999847405,
+        "bb_pctb": 0.32586007540742457
+      },
+      "faktorler": {
+        "skor": 0.9734,
+        "sira": 7.0,
+        "yuzdelik": 57.1429,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": 18.7354,
+        "mom_12_1": 74.5688,
+        "zirve_yakinlik": -19.3889,
+        "kapilar": {
+          "uygun": true,
+          "nedenler": []
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 12789983078.75
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "limit_durumu": {
+        "durum": "serbest",
+        "getiri_pct": -1.96,
+        "yon": null,
+        "intraday_dokunma": false,
+        "band": [
+          333.0,
+          407.0
+        ],
+        "aciklama": "getiri %-1.96 — marjdan uzak."
+      },
+      "bilanco_penceresi": {
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "3 bekleyen bildirim plan penceresine (2026-10-02 … 2026-11-02) düşüyor"
+      },
+      "aktif_vetolar": [],
+      "plan_menusu": [],
+      "plan_yok_nedeni": "2 giriş bandı denendi; brüt R:R hiçbir kombinasyonda ≥1.5 olmadı (stop bandı geçti)",
+      "plan_yok_sinifi": "geometri",
+      "plan_yok_detay": "rr_yetersiz",
+      "plan_yok_elenen": [
+        "dogrudan/atr_2x: R:R 0.77 < 1.5",
+        "dogrudan/atr_2.5x: R:R 0.61 < 1.5",
+        "dogrudan/atr_3x: R:R 0.51 < 1.5",
+        "dogrudan/swing_low: 0.45×ATR ∉ [1.5,4.0]",
+        "destek_retest/atr_2x: R:R 0.78 < 1.5",
+        "destek_retest/atr_2.5x: R:R 0.62 < 1.5",
+        "destek_retest/atr_3x: R:R 0.52 < 1.5"
+      ],
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-ASELS-1",
+          "asof": "2026-07-29",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-07-30-ASELS-1",
+          "asof": "2026-07-30",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-03-ASELS-1",
+          "asof": "2026-08-03",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-04-ASELS-1",
+          "asof": "2026-08-04",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-05-ASELS-1",
+          "asof": "2026-08-05",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-10-ASELS-1",
+          "asof": "2026-08-10",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-11-ASELS-1",
+          "asof": "2026-08-11",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-12-ASELS-1",
+          "asof": "2026-08-12",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-13-ASELS-1",
+          "asof": "2026-08-13",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-14-ASELS-1",
+          "asof": "2026-08-14",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-18-ASELS-1",
+          "asof": "2026-08-18",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-19-ASELS-1",
+          "asof": "2026-08-19",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-20-ASELS-1",
+          "asof": "2026-08-20",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-21-ASELS-1",
+          "asof": "2026-08-21",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-24-ASELS-1",
+          "asof": "2026-08-24",
+          "signal": "accumulate",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-ASELS-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-01-ASELS-1",
+          "asof": "2026-09-01",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-02-ASELS-1",
+          "asof": "2026-09-02",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-03-ASELS-1",
+          "asof": "2026-09-03",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-04-ASELS-1",
+          "asof": "2026-09-04",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-07-ASELS-1",
+          "asof": "2026-09-07",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-08-ASELS-1",
+          "asof": "2026-09-08",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-09-ASELS-1",
+          "asof": "2026-09-09",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-10-ASELS-1",
+          "asof": "2026-09-10",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-11-ASELS-1",
+          "asof": "2026-09-11",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-14-ASELS-1",
+          "asof": "2026-09-14",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-15-ASELS-1",
+          "asof": "2026-09-15",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-16-ASELS-1",
+          "asof": "2026-09-16",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-17-ASELS-1",
+          "asof": "2026-09-17",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-18-ASELS-1",
+          "asof": "2026-09-18",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-21-ASELS-1",
+          "asof": "2026-09-21",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-22-ASELS-1",
+          "asof": "2026-09-22",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-23-ASELS-1",
+          "asof": "2026-09-23",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-24-ASELS-1",
+          "asof": "2026-09-24",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-25-ASELS-1",
+          "asof": "2026-09-25",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-28-ASELS-1",
+          "asof": "2026-09-28",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-ASELS-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
+        }
+      ],
+      "haberler": [
+        {
+          "id": "kap-1671098",
+          "tarih": "2026-10-02 06:15",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Yeni İş İlişkisi",
+          "ozet": "Sözleşme İmzalanması",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1671098"
+        },
+        {
+          "id": "kap-1670614",
+          "tarih": "2026-10-01 06:20",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Yeni İş İlişkisi",
+          "ozet": "Sözleşme İmzalanması",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1670614"
+        }
+      ],
+      "haber_tarama_baslangici": "2026-09-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "ASTOR",
+      "sektor": "elektrik_ekipman",
+      "fiyat": {
+        "kapanis": 220.0,
+        "onceki_kapanis": 209.6,
+        "gunluk_degisim_pct": 4.96,
+        "yuksek_52h": 385.75,
+        "dusuk_52h": 88.1999969482
+      },
+      "gostergeler": {
+        "rsi14": 36.10474551536066,
+        "macd_hist": -4.676008374550072,
+        "atr14": 18.948620496331557,
+        "atr_pct": 8.613009316514345,
+        "adx14": 38.06499466146155,
+        "sma20": 257.9675003051758,
+        "sma50": 293.3120001220703,
+        "sma200": 240.65374980926407,
+        "bb_pctb": 0.19688413553192888
+      },
+      "faktorler": {
+        "skor": null,
+        "sira": null,
+        "yuzdelik": null,
+        "weights_hash": "4a547ff26723",
+        "kapilar": {
+          "uygun": false,
+          "nedenler": [
+            "skorlanmadı"
+          ]
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 8779721855.0
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "limit_durumu": {
+        "durum": "limite_yakin",
+        "getiri_pct": 4.96,
+        "yon": null,
+        "intraday_dokunma": true,
+        "band": [
+          188.64,
+          230.56
+        ],
+        "aciklama": "getiri %+4.96, gün içinde limite değdi — ±%10 marjına yakın."
+      },
+      "bilanco_penceresi": {
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "3 bekleyen bildirim plan penceresine (2026-10-02 … 2026-11-02) düşüyor"
+      },
+      "aktif_vetolar": [
+        {
+          "veto_code": "rejim_uyumsuz",
+          "konuldu": "2026-09-25",
+          "bitis": "2026-10-02",
+          "kalan_islem_gunu": 0,
+          "arac": "gpt-6-luna",
+          "gerekce": "Yüksek fiyat dalgalanması, aşağı yönlü teknik görünüm ve olumsuz piyasa rejimi birlikte zarar riskini artırıyor. Geçerli veto kaldırılmadan planı uygulamak temkinli portföy duruşuyla çelişir.",
+          "tekrar": 1
+        }
+      ],
+      "plan_menusu": [],
+      "plan_yok_nedeni": "2 giriş bandı denendi; brüt R:R hiçbir kombinasyonda ≥1.5 olmadı (stop bandı geçti)",
+      "plan_yok_sinifi": "geometri",
+      "plan_yok_detay": "rr_yetersiz",
+      "plan_yok_elenen": [
+        "dogrudan/atr_2x: R:R 1.23 < 1.5",
+        "dogrudan/atr_2.5x: R:R 0.99 < 1.5",
+        "dogrudan/atr_3x: R:R 0.82 < 1.5",
+        "dogrudan/swing_low: 0.34×ATR ∉ [1.5,4.0]",
+        "destek_retest/atr_2x: R:R 1.29 < 1.5",
+        "destek_retest/atr_2.5x: R:R 1.03 < 1.5",
+        "destek_retest/atr_3x: R:R 0.86 < 1.5"
+      ],
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-ASTOR-1",
+          "asof": "2026-07-29",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-07-30-ASTOR-1",
+          "asof": "2026-07-30",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-03-ASTOR-1",
+          "asof": "2026-08-03",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-04-ASTOR-1",
+          "asof": "2026-08-04",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-05-ASTOR-1",
+          "asof": "2026-08-05",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-10-ASTOR-1",
+          "asof": "2026-08-10",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-11-ASTOR-1",
+          "asof": "2026-08-11",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-12-ASTOR-1",
+          "asof": "2026-08-12",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-13-ASTOR-1",
+          "asof": "2026-08-13",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-14-ASTOR-1",
+          "asof": "2026-08-14",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-17-ASTOR-1",
+          "asof": "2026-08-17",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-18-ASTOR-1",
+          "asof": "2026-08-18",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-19-ASTOR-1",
+          "asof": "2026-08-19",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-20-ASTOR-1",
+          "asof": "2026-08-20",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-21-ASTOR-1",
+          "asof": "2026-08-21",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-24-ASTOR-1",
+          "asof": "2026-08-24",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-25-ASTOR-1",
+          "asof": "2026-08-25",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-ASTOR-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-ASTOR-2",
+          "asof": "2026-08-26",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-28-ASTOR-1",
+          "asof": "2026-08-28",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-01-ASTOR-1",
+          "asof": "2026-09-01",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-02-ASTOR-1",
+          "asof": "2026-09-02",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-03-ASTOR-1",
+          "asof": "2026-09-03",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-04-ASTOR-1",
+          "asof": "2026-09-04",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-07-ASTOR-1",
+          "asof": "2026-09-07",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-08-ASTOR-1",
+          "asof": "2026-09-08",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-09-ASTOR-1",
+          "asof": "2026-09-09",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-10-ASTOR-1",
+          "asof": "2026-09-10",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-11-ASTOR-1",
+          "asof": "2026-09-11",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-14-ASTOR-1",
+          "asof": "2026-09-14",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-15-ASTOR-1",
+          "asof": "2026-09-15",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-16-ASTOR-1",
+          "asof": "2026-09-16",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-17-ASTOR-1",
+          "asof": "2026-09-17",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-18-ASTOR-1",
+          "asof": "2026-09-18",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-21-ASTOR-1",
+          "asof": "2026-09-21",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-22-ASTOR-1",
+          "asof": "2026-09-22",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-23-ASTOR-1",
+          "asof": "2026-09-23",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-24-ASTOR-1",
+          "asof": "2026-09-24",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-25-ASTOR-1",
+          "asof": "2026-09-25",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-28-ASTOR-1",
+          "asof": "2026-09-28",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-ASTOR-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
+        }
+      ],
+      "haberler": [
+        {
+          "id": "kap-1671442",
+          "tarih": "2026-10-02 13:41",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Yeni İş İlişkisi",
+          "ozet": "Yeni iş iliskisi",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1671442"
+        }
+      ],
+      "haber_tarama_baslangici": "2026-09-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "BIMAS",
+      "sektor": "perakende",
+      "fiyat": {
+        "kapanis": 414.0,
+        "onceki_kapanis": 408.0,
+        "gunluk_degisim_pct": 1.47,
+        "yuksek_52h": 443.25,
+        "dusuk_52h": 256.0
+      },
+      "gostergeler": {
+        "rsi14": 48.32352617194831,
+        "macd_hist": -2.470648468421536,
+        "atr14": 12.396956005197179,
+        "atr_pct": 2.994433817680478,
+        "adx14": 16.81834711119851,
+        "sma20": 422.6375,
+        "sma50": 407.075,
+        "sma200": 364.0425,
+        "bb_pctb": 0.23083245884275239
+      },
+      "faktorler": {
+        "skor": 0.858,
+        "sira": 10.0,
+        "yuzdelik": 35.7143,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": 20.7628,
+        "mom_12_1": 46.6351,
+        "zirve_yakinlik": -6.599,
+        "kapilar": {
+          "uygun": true,
+          "nedenler": []
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 3624034587.5
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "limit_durumu": {
+        "durum": "serbest",
+        "getiri_pct": 1.47,
+        "yon": null,
+        "intraday_dokunma": false,
+        "band": [
+          367.2,
+          448.8
+        ],
+        "aciklama": "getiri %+1.47 — marjdan uzak."
+      },
+      "bilanco_penceresi": {
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "3 bekleyen bildirim plan penceresine (2026-10-02 … 2026-11-02) düşüyor"
+      },
+      "aktif_vetolar": [
+        {
+          "veto_code": "tez_zayif",
+          "konuldu": "2026-09-30",
+          "bitis": "2026-10-07",
+          "kalan_islem_gunu": 3,
+          "arac": "gpt-6-luna",
+          "gerekce": "Planın giriş bölgesine yaklaşması, gerçekleşme olasılığı veya ölçülmüş avantaj kanıtı değildir; genel piyasa baskısı destek alanının çalışmaması riskini taşır.",
+          "tekrar": 1
+        }
+      ],
+      "plan_menusu": [],
+      "plan_yok_nedeni": "2 giriş bandı denendi; brüt R:R hiçbir kombinasyonda ≥1.5 olmadı (stop bandı geçti)",
+      "plan_yok_sinifi": "geometri",
+      "plan_yok_detay": "rr_yetersiz",
+      "plan_yok_elenen": [
+        "dogrudan/atr_2x: R:R 1.06 < 1.5",
+        "dogrudan/atr_2.5x: R:R 0.85 < 1.5",
+        "dogrudan/atr_3x: R:R 0.71 < 1.5",
+        "dogrudan/swing_low: 1.47×ATR ∉ [1.5,4.0]",
+        "dogrudan/sma_break_buffer: 1.07×ATR ∉ [1.5,4.0]",
+        "destek_retest/atr_2x: R:R 1.47 < 1.5",
+        "destek_retest/atr_2.5x: R:R 1.19 < 1.5",
+        "destek_retest/atr_3x: R:R 0.99 < 1.5"
+      ],
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-30-BIMAS-1",
+          "asof": "2026-07-30",
+          "signal": "buy",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-03-BIMAS-1",
+          "asof": "2026-08-03",
+          "signal": "buy",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-05-BIMAS-1",
+          "asof": "2026-08-05",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-10-BIMAS-1",
+          "asof": "2026-08-10",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-11-BIMAS-1",
+          "asof": "2026-08-11",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-12-BIMAS-1",
+          "asof": "2026-08-12",
+          "signal": "buy",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-13-BIMAS-1",
+          "asof": "2026-08-13",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-14-BIMAS-1",
+          "asof": "2026-08-14",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-18-BIMAS-1",
+          "asof": "2026-08-18",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-19-BIMAS-1",
+          "asof": "2026-08-19",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-20-BIMAS-1",
+          "asof": "2026-08-20",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-21-BIMAS-1",
+          "asof": "2026-08-21",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-24-BIMAS-1",
+          "asof": "2026-08-24",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-25-BIMAS-1",
+          "asof": "2026-08-25",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-BIMAS-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-BIMAS-2",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-28-BIMAS-1",
+          "asof": "2026-08-28",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-01-BIMAS-1",
+          "asof": "2026-09-01",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-02-BIMAS-1",
+          "asof": "2026-09-02",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-03-BIMAS-1",
+          "asof": "2026-09-03",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-04-BIMAS-1",
+          "asof": "2026-09-04",
+          "signal": "buy",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-07-BIMAS-1",
+          "asof": "2026-09-07",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-08-BIMAS-1",
+          "asof": "2026-09-08",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-09-BIMAS-1",
+          "asof": "2026-09-09",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-10-BIMAS-1",
+          "asof": "2026-09-10",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-11-BIMAS-1",
+          "asof": "2026-09-11",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-14-BIMAS-1",
+          "asof": "2026-09-14",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-16-BIMAS-1",
+          "asof": "2026-09-16",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-17-BIMAS-1",
+          "asof": "2026-09-17",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-18-BIMAS-1",
+          "asof": "2026-09-18",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-21-BIMAS-1",
+          "asof": "2026-09-21",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-22-BIMAS-1",
+          "asof": "2026-09-22",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-23-BIMAS-1",
+          "asof": "2026-09-23",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-24-BIMAS-1",
+          "asof": "2026-09-24",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-25-BIMAS-1",
+          "asof": "2026-09-25",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-28-BIMAS-1",
+          "asof": "2026-09-28",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-BIMAS-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
+        }
+      ],
+      "haberler": [],
+      "haber_tarama_baslangici": "2026-09-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "EKGYO",
+      "sektor": "gyo",
+      "fiyat": {
+        "kapanis": 19.07,
+        "onceki_kapanis": 19.03,
+        "gunluk_degisim_pct": 0.21,
+        "yuksek_52h": 27.1200008392,
+        "dusuk_52h": 17.4699993134
+      },
+      "gostergeler": {
+        "rsi14": 46.99159885243215,
+        "macd_hist": -0.09876348109522423,
+        "atr14": 0.7758141234885569,
+        "atr_pct": 4.068244026763778,
+        "adx14": 19.167046439708447,
+        "sma20": 19.653999996188947,
+        "sma50": 19.252600097657577,
+        "sma200": 20.838100070955893,
+        "bb_pctb": 0.35090956649226523
+      },
+      "faktorler": {
+        "skor": -0.1673,
+        "sira": null,
+        "yuzdelik": null,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": 4.4718,
+        "mom_12_1": -2.8605,
+        "zirve_yakinlik": -29.6829,
+        "kapilar": {
+          "uygun": false,
+          "nedenler": [
+            "sma200_alti"
+          ]
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 2586580356.5
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "limit_durumu": {
+        "durum": "serbest",
+        "getiri_pct": 0.21,
+        "yon": null,
+        "intraday_dokunma": false,
+        "band": [
+          17.127,
+          20.933
+        ],
+        "aciklama": "getiri %+0.21 — marjdan uzak."
+      },
+      "bilanco_penceresi": {
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Portföy Sınırlamalarına Uyumun Kontrolü",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "4 bekleyen bildirim plan penceresine (2026-10-02 … 2026-11-02) düşüyor"
+      },
+      "aktif_vetolar": [],
+      "plan_menusu": [],
+      "plan_yok_nedeni": "2 giriş bandı denendi; brüt R:R hiçbir kombinasyonda ≥1.5 olmadı (stop bandı geçti)",
+      "plan_yok_sinifi": "geometri",
+      "plan_yok_detay": "rr_yetersiz",
+      "plan_yok_elenen": [
+        "dogrudan/atr_2x: R:R 1.04 < 1.5",
+        "dogrudan/atr_2.5x: R:R 0.84 < 1.5",
+        "dogrudan/atr_3x: R:R 0.7 < 1.5",
+        "dogrudan/swing_low: 0.52×ATR ∉ [1.5,4.0]",
+        "destek_retest/atr_2x: R:R 1.06 < 1.5",
+        "destek_retest/atr_2.5x: R:R 0.85 < 1.5",
+        "destek_retest/atr_3x: R:R 0.71 < 1.5"
+      ],
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-EKGYO-1",
+          "asof": "2026-07-29",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-07-30-EKGYO-1",
+          "asof": "2026-07-30",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-03-EKGYO-1",
+          "asof": "2026-08-03",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-04-EKGYO-1",
+          "asof": "2026-08-04",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-05-EKGYO-1",
+          "asof": "2026-08-05",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-10-EKGYO-1",
+          "asof": "2026-08-10",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-11-EKGYO-1",
+          "asof": "2026-08-11",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-12-EKGYO-1",
+          "asof": "2026-08-12",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-13-EKGYO-1",
+          "asof": "2026-08-13",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-14-EKGYO-1",
+          "asof": "2026-08-14",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-17-EKGYO-1",
+          "asof": "2026-08-17",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-18-EKGYO-1",
+          "asof": "2026-08-18",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-19-EKGYO-1",
+          "asof": "2026-08-19",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-20-EKGYO-1",
+          "asof": "2026-08-20",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-21-EKGYO-1",
+          "asof": "2026-08-21",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-24-EKGYO-1",
+          "asof": "2026-08-24",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-25-EKGYO-1",
+          "asof": "2026-08-25",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-EKGYO-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-EKGYO-2",
+          "asof": "2026-08-26",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-28-EKGYO-1",
+          "asof": "2026-08-28",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-01-EKGYO-1",
+          "asof": "2026-09-01",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-02-EKGYO-1",
+          "asof": "2026-09-02",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-03-EKGYO-1",
+          "asof": "2026-09-03",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-04-EKGYO-1",
+          "asof": "2026-09-04",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-07-EKGYO-1",
+          "asof": "2026-09-07",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-08-EKGYO-1",
+          "asof": "2026-09-08",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-09-EKGYO-1",
+          "asof": "2026-09-09",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-10-EKGYO-1",
+          "asof": "2026-09-10",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-11-EKGYO-1",
+          "asof": "2026-09-11",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-14-EKGYO-1",
+          "asof": "2026-09-14",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-15-EKGYO-1",
+          "asof": "2026-09-15",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-16-EKGYO-1",
+          "asof": "2026-09-16",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-17-EKGYO-1",
+          "asof": "2026-09-17",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-18-EKGYO-1",
+          "asof": "2026-09-18",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-21-EKGYO-1",
+          "asof": "2026-09-21",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-22-EKGYO-1",
+          "asof": "2026-09-22",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-23-EKGYO-1",
+          "asof": "2026-09-23",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-24-EKGYO-1",
+          "asof": "2026-09-24",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-25-EKGYO-1",
+          "asof": "2026-09-25",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-28-EKGYO-1",
+          "asof": "2026-09-28",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-EKGYO-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
+        }
+      ],
+      "haberler": [
+        {
+          "id": "kap-1671664",
+          "tarih": "2026-10-02 20:08",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Değerleme Raporu",
+          "ozet": "İstanbul Pendik Kurtdoğmuş Parseli Gayrimenkul Değerleme Raporu",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1671664"
+        },
+        {
+          "id": "kap-1671663",
+          "tarih": "2026-10-02 20:08",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Değerleme Raporu",
+          "ozet": "Muğla Bodrum Turgutreis Parselleri Gayrimenkul Değerleme Raporu",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1671663"
+        },
+        {
+          "id": "kap-1671662",
+          "tarih": "2026-10-02 20:08",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Değerleme Raporu",
+          "ozet": "İstanbul Kağıthane Merkez Parseli Gayrimenkul Değerleme Raporu",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1671662"
+        },
+        {
+          "id": "kap-1671661",
+          "tarih": "2026-10-02 20:08",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Değerleme Raporu",
+          "ozet": "İstanbul Eyüpsultan 5. Levent Parseli Gayrimenkul Değerleme Raporu",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1671661"
+        },
+        {
+          "id": "kap-1671659",
+          "tarih": "2026-10-02 19:33",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Arsa Alımı",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1671659"
+        },
+        {
+          "id": "kap-1671593",
+          "tarih": "2026-10-02 15:42",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Finansal Duran Varlık Edinimi",
+          "ozet": "Bağlı Ortaklığımız Tarafından Veri Merkezi Şirketi Paylarının Devralınmasına İlişkin Sözleşme İmzalanması Hakkında",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1671593"
+        },
+        {
+          "id": "kap-1671591",
+          "tarih": "2026-10-02 15:42",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "İstanbul Ümraniye Inkılap 2. Etap İhalesi 2. Oturum Sonucu",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1671591"
+        }
+      ],
+      "haber_tarama_baslangici": "2026-09-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "ENKAI",
+      "sektor": "insaat",
+      "fiyat": {
+        "kapanis": 84.0,
+        "onceki_kapanis": 82.65,
+        "gunluk_degisim_pct": 1.63,
+        "yuksek_52h": 114.3000030518,
+        "dusuk_52h": 67.75
+      },
+      "gostergeler": {
+        "rsi14": 44.296378658762094,
+        "macd_hist": -0.4139375582843299,
+        "atr14": 2.6482775897867086,
+        "atr_pct": 3.1527114164127483,
+        "adx14": 27.336786396976972,
+        "sma20": 86.58750000000211,
+        "sma50": 86.25399993896484,
+        "sma200": 91.71924987792822,
+        "bb_pctb": 0.2559825714626469
+      },
+      "faktorler": {
+        "skor": -0.2071,
+        "sira": null,
+        "yuzdelik": null,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": -4.8655,
+        "mom_12_1": 27.5148,
+        "zirve_yakinlik": -26.5092,
+        "kapilar": {
+          "uygun": false,
+          "nedenler": [
+            "sma200_alti"
+          ]
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 1020048264.0
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "limit_durumu": {
+        "durum": "serbest",
+        "getiri_pct": 1.63,
+        "yon": null,
+        "intraday_dokunma": false,
+        "band": [
+          74.385,
+          90.915
+        ],
+        "aciklama": "getiri %+1.63 — marjdan uzak."
+      },
+      "bilanco_penceresi": {
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "3 bekleyen bildirim plan penceresine (2026-10-02 … 2026-11-02) düşüyor"
+      },
+      "aktif_vetolar": [],
+      "plan_menusu": [],
+      "plan_yok_nedeni": "2 giriş bandı denendi; brüt R:R hiçbir kombinasyonda ≥1.5 olmadı (stop bandı geçti)",
+      "plan_yok_sinifi": "geometri",
+      "plan_yok_detay": "rr_yetersiz",
+      "plan_yok_elenen": [
+        "dogrudan/atr_2x: R:R 0.94 < 1.5",
+        "dogrudan/atr_2.5x: R:R 0.75 < 1.5",
+        "dogrudan/atr_3x: R:R 0.63 < 1.5",
+        "dogrudan/swing_low: 0.98×ATR ∉ [1.5,4.0]",
+        "destek_retest/atr_2x: R:R 1.11 < 1.5",
+        "destek_retest/atr_2.5x: R:R 0.89 < 1.5",
+        "destek_retest/atr_3x: R:R 0.74 < 1.5"
+      ],
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-ENKAI-1",
+          "asof": "2026-07-29",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-07-30-ENKAI-1",
+          "asof": "2026-07-30",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-03-ENKAI-1",
+          "asof": "2026-08-03",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-04-ENKAI-1",
+          "asof": "2026-08-04",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-05-ENKAI-1",
+          "asof": "2026-08-05",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-10-ENKAI-1",
+          "asof": "2026-08-10",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-11-ENKAI-1",
+          "asof": "2026-08-11",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-12-ENKAI-1",
+          "asof": "2026-08-12",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-13-ENKAI-1",
+          "asof": "2026-08-13",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-14-ENKAI-1",
+          "asof": "2026-08-14",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-17-ENKAI-1",
+          "asof": "2026-08-17",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-18-ENKAI-1",
+          "asof": "2026-08-18",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-19-ENKAI-1",
+          "asof": "2026-08-19",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-20-ENKAI-1",
+          "asof": "2026-08-20",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-21-ENKAI-1",
+          "asof": "2026-08-21",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-24-ENKAI-1",
+          "asof": "2026-08-24",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-25-ENKAI-1",
+          "asof": "2026-08-25",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-ENKAI-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-ENKAI-2",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-28-ENKAI-1",
+          "asof": "2026-08-28",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-01-ENKAI-1",
+          "asof": "2026-09-01",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-02-ENKAI-1",
+          "asof": "2026-09-02",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-03-ENKAI-1",
+          "asof": "2026-09-03",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-04-ENKAI-1",
+          "asof": "2026-09-04",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-07-ENKAI-1",
+          "asof": "2026-09-07",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-08-ENKAI-1",
+          "asof": "2026-09-08",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-09-ENKAI-1",
+          "asof": "2026-09-09",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-10-ENKAI-1",
+          "asof": "2026-09-10",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-11-ENKAI-1",
+          "asof": "2026-09-11",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-14-ENKAI-1",
+          "asof": "2026-09-14",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-15-ENKAI-1",
+          "asof": "2026-09-15",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-16-ENKAI-1",
+          "asof": "2026-09-16",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-17-ENKAI-1",
+          "asof": "2026-09-17",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-18-ENKAI-1",
+          "asof": "2026-09-18",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-21-ENKAI-1",
+          "asof": "2026-09-21",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-22-ENKAI-1",
+          "asof": "2026-09-22",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-23-ENKAI-1",
+          "asof": "2026-09-23",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-24-ENKAI-1",
+          "asof": "2026-09-24",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-25-ENKAI-1",
+          "asof": "2026-09-25",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-28-ENKAI-1",
+          "asof": "2026-09-28",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-ENKAI-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
+        }
+      ],
+      "haberler": [],
+      "haber_tarama_baslangici": "2026-09-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "EREGL",
+      "sektor": "demir_celik",
+      "fiyat": {
+        "kapanis": 37.02,
+        "onceki_kapanis": 36.62,
+        "gunluk_degisim_pct": 1.09,
+        "yuksek_52h": 45.0999984741,
+        "dusuk_52h": 23.4599990845
+      },
+      "gostergeler": {
+        "rsi14": 46.28652415371105,
+        "macd_hist": -0.032728307330170736,
+        "atr14": 1.3397148355779152,
+        "atr_pct": 3.6188947028955427,
+        "adx14": 14.537102021447838,
+        "sma20": 37.66999969482317,
+        "sma50": 38.60559997558326,
+        "sma200": 34.17369996070432,
+        "bb_pctb": 0.3725741004694122
+      },
+      "faktorler": {
+        "skor": 0.9559,
+        "sira": 8.0,
+        "yuzdelik": 50.0,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": 31.3869,
+        "mom_12_1": 24.0046,
+        "zirve_yakinlik": -17.9157,
+        "kapilar": {
+          "uygun": true,
+          "nedenler": []
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 4944970528.724056
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "limit_durumu": {
+        "durum": "serbest",
+        "getiri_pct": 1.09,
+        "yon": null,
+        "intraday_dokunma": false,
+        "band": [
+          32.958,
+          40.282
+        ],
+        "aciklama": "getiri %+1.09 — marjdan uzak."
+      },
+      "bilanco_penceresi": {
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "3 bekleyen bildirim plan penceresine (2026-10-02 … 2026-11-02) düşüyor"
+      },
+      "aktif_vetolar": [],
+      "plan_menusu": [],
+      "plan_yok_nedeni": "2 giriş bandı denendi; brüt R:R hiçbir kombinasyonda ≥1.5 olmadı (stop bandı geçti)",
+      "plan_yok_sinifi": "geometri",
+      "plan_yok_detay": "rr_yetersiz",
+      "plan_yok_elenen": [
+        "dogrudan/atr_2x: R:R 0.8 < 1.5",
+        "dogrudan/atr_2.5x: R:R 0.64 < 1.5",
+        "dogrudan/atr_3x: R:R 0.53 < 1.5",
+        "dogrudan/swing_low: 0.72×ATR ∉ [1.5,4.0]",
+        "destek_retest/atr_2x: R:R 0.87 < 1.5",
+        "destek_retest/atr_2.5x: R:R 0.7 < 1.5",
+        "destek_retest/atr_3x: R:R 0.58 < 1.5"
+      ],
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-EREGL-1",
+          "asof": "2026-07-29",
+          "signal": "accumulate",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-07-30-EREGL-1",
+          "asof": "2026-07-30",
+          "signal": "accumulate",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-03-EREGL-1",
+          "asof": "2026-08-03",
+          "signal": "accumulate",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-04-EREGL-1",
+          "asof": "2026-08-04",
+          "signal": "accumulate",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-05-EREGL-1",
+          "asof": "2026-08-05",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-14-EREGL-1",
+          "asof": "2026-08-14",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-17-EREGL-1",
+          "asof": "2026-08-17",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-18-EREGL-1",
+          "asof": "2026-08-18",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-19-EREGL-1",
+          "asof": "2026-08-19",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-20-EREGL-1",
+          "asof": "2026-08-20",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-21-EREGL-1",
+          "asof": "2026-08-21",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-24-EREGL-1",
+          "asof": "2026-08-24",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-25-EREGL-1",
+          "asof": "2026-08-25",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-EREGL-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-EREGL-2",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-28-EREGL-1",
+          "asof": "2026-08-28",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-01-EREGL-1",
+          "asof": "2026-09-01",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-02-EREGL-1",
+          "asof": "2026-09-02",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-03-EREGL-1",
+          "asof": "2026-09-03",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-04-EREGL-1",
+          "asof": "2026-09-04",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-07-EREGL-1",
+          "asof": "2026-09-07",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-08-EREGL-1",
+          "asof": "2026-09-08",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-09-EREGL-1",
+          "asof": "2026-09-09",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-10-EREGL-1",
+          "asof": "2026-09-10",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-11-EREGL-1",
+          "asof": "2026-09-11",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-14-EREGL-1",
+          "asof": "2026-09-14",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-15-EREGL-1",
+          "asof": "2026-09-15",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-16-EREGL-1",
+          "asof": "2026-09-16",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-17-EREGL-1",
+          "asof": "2026-09-17",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-18-EREGL-1",
+          "asof": "2026-09-18",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-21-EREGL-1",
+          "asof": "2026-09-21",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-22-EREGL-1",
+          "asof": "2026-09-22",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-23-EREGL-1",
+          "asof": "2026-09-23",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-24-EREGL-1",
+          "asof": "2026-09-24",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-25-EREGL-1",
+          "asof": "2026-09-25",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-28-EREGL-1",
+          "asof": "2026-09-28",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-EREGL-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
+        }
+      ],
+      "haberler": [],
+      "haber_tarama_baslangici": "2026-09-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "EUPWR",
+      "sektor": "elektrik_ekipman",
+      "fiyat": {
+        "kapanis": 55.3,
+        "onceki_kapanis": 54.35,
+        "gunluk_degisim_pct": 1.75,
+        "yuksek_52h": 109.3000030518,
+        "dusuk_52h": 25.5
+      },
+      "gostergeler": {
+        "rsi14": 36.50750457095843,
+        "macd_hist": -0.3790131502490546,
+        "atr14": 6.322392100822418,
+        "atr_pct": 11.43289726591049,
+        "adx14": 39.76904750309443,
+        "sma20": 63.86499977111514,
+        "sma50": 80.50599929808605,
+        "sma200": 60.919249820707506,
+        "bb_pctb": 0.211505976417213
+      },
+      "faktorler": {
+        "skor": null,
+        "sira": null,
+        "yuzdelik": null,
+        "weights_hash": "4a547ff26723",
+        "kapilar": {
+          "uygun": false,
+          "nedenler": [
+            "skorlanmadı"
+          ]
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 1308787625.4809647
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "limit_durumu": {
+        "durum": "serbest",
+        "getiri_pct": 1.75,
+        "yon": null,
+        "intraday_dokunma": false,
+        "band": [
+          48.915,
+          59.785
+        ],
+        "aciklama": "getiri %+1.75 — marjdan uzak."
+      },
+      "bilanco_penceresi": {
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "3 bekleyen bildirim plan penceresine (2026-10-02 … 2026-11-02) düşüyor"
+      },
+      "aktif_vetolar": [
+        {
+          "veto_code": "likidite_zayif",
+          "konuldu": "2026-09-25",
+          "bitis": "2026-10-23",
+          "kalan_islem_gunu": 15,
+          "arac": "gpt-6-luna",
+          "gerekce": "Likidite zayıflığı vetosu devam ediyor; yüksek dalgalanma, olumsuz kısa vadeli eğilimde pozisyon yönetimini zorlaştırabilir. Hazır plan seviyeleri yön iddiası veya ölçülmüş avantaj olarak yorumlanmamalı.",
+          "tekrar": 6
+        }
+      ],
+      "plan_menusu": [
+        {
+          "plan_id": "EUPWR-2026-10-02-A",
+          "ticker": "EUPWR",
+          "asof": "2026-10-02",
+          "kind": "dogrudan",
+          "entry_low": 55.0,
+          "entry_high": 55.3,
+          "entry_trigger": "direct",
+          "stop_price": 42.64,
+          "stop_method": "atr_2x",
+          "stop_atr_multiple": 2.0,
+          "targets": [
+            {
+              "price": 84.35,
+              "rr": 2.29,
+              "rr_net": 2.25,
+              "atr_distance": 4.59,
+              "basis": "pivot@2026-07-29 (2 dokunuş)"
+            },
+            {
+              "price": 88.1,
+              "rr": 2.59,
+              "rr_net": 2.54,
+              "atr_distance": 5.19,
+              "basis": "pivot@2026-08-12 (2 dokunuş)"
+            },
+            {
+              "price": 108.4,
+              "rr": 4.19,
+              "rr_net": 4.13,
+              "atr_distance": 8.4,
+              "basis": "pivot@2026-08-31 (3 dokunuş)"
+            }
+          ],
+          "rr_at_t1": 2.29,
+          "rr_at_t1_net": 2.25,
+          "maliyet_pct": 0.3,
+          "time_barrier_days": 20,
+          "time_barrier_date": "2026-11-02",
+          "position_size_pct": 0.87,
+          "max_loss_pct_of_portfolio": 0.199,
+          "entry_zone_status": "in_zone",
+          "daily_limit_note": "stop girişten %22.9 uzakta; girildikten sonra tek günde tetiklenemez — ±%10 marj dışında (ölçülen istisna: barların %0.14'ünde marj aşılmış — olağanüstü piyasa günleri)",
+          "ex_date_in_window": null,
+          "limit_durumu": "serbest",
+          "invalidations": [
+            "SMA50 (80.51) altına günlük kapanış",
+            "44.33 desteğinin altına kapanış",
+            "hacim 20 günlük ortalamanın %50 altına inerse tez zayıflar"
+          ],
+          "notes": [
+            "3 direnç, 3 destek seviyesi kullanıldı"
+          ],
+          "rr_secim": "1. giriş bandı (dogrudan), stop atr_2x",
+          "elenen_adaylar": [],
+          "uyari": "Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir."
+        },
+        {
+          "plan_id": "EUPWR-2026-10-02-B",
+          "ticker": "EUPWR",
+          "asof": "2026-10-02",
+          "kind": "destek_retest",
+          "entry_low": 44.1,
+          "entry_high": 45.0,
+          "entry_trigger": "support_retest",
+          "stop_price": 32.34,
+          "stop_method": "atr_2x",
+          "stop_atr_multiple": 2.0,
+          "targets": [
+            {
+              "price": 84.35,
+              "rr": 3.11,
+              "rr_net": 3.06,
+              "atr_distance": 6.22,
+              "basis": "pivot@2026-07-29 (2 dokunuş)"
+            },
+            {
+              "price": 88.1,
+              "rr": 3.4,
+              "rr_net": 3.36,
+              "atr_distance": 6.82,
+              "basis": "pivot@2026-08-12 (2 dokunuş)"
+            },
+            {
+              "price": 108.4,
+              "rr": 5.01,
+              "rr_net": 4.94,
+              "atr_distance": 10.03,
+              "basis": "pivot@2026-08-31 (3 dokunuş)"
+            }
+          ],
+          "rr_at_t1": 3.11,
+          "rr_at_t1_net": 3.06,
+          "maliyet_pct": 0.3,
+          "time_barrier_days": 20,
+          "time_barrier_date": "2026-11-02",
+          "position_size_pct": 0.71,
+          "max_loss_pct_of_portfolio": 0.2,
+          "entry_zone_status": "above_zone",
+          "daily_limit_note": "stop girişten %28.1 uzakta; girildikten sonra tek günde tetiklenemez — ±%10 marj dışında (ölçülen istisna: barların %0.14'ünde marj aşılmış — olağanüstü piyasa günleri)",
+          "ex_date_in_window": null,
+          "limit_durumu": "serbest",
+          "invalidations": [
+            "SMA50 (80.51) altına günlük kapanış",
+            "44.33 desteğinin altına kapanış",
+            "hacim 20 günlük ortalamanın %50 altına inerse tez zayıflar"
+          ],
+          "notes": [
+            "3 direnç, 3 destek seviyesi kullanıldı"
+          ],
+          "rr_secim": "2. giriş bandı (destek_retest), stop atr_2x",
+          "elenen_adaylar": [],
+          "uyari": "Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir."
+        }
+      ],
+      "plan_yok_nedeni": null,
+      "plan_yok_sinifi": null,
+      "plan_yok_detay": null,
+      "plan_yok_elenen": [],
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-EUPWR-1",
+          "asof": "2026-07-29",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-07-30-EUPWR-1",
+          "asof": "2026-07-30",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-03-EUPWR-1",
+          "asof": "2026-08-03",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-04-EUPWR-1",
+          "asof": "2026-08-04",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-05-EUPWR-1",
+          "asof": "2026-08-05",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-10-EUPWR-1",
+          "asof": "2026-08-10",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-11-EUPWR-1",
+          "asof": "2026-08-11",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-12-EUPWR-1",
+          "asof": "2026-08-12",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-13-EUPWR-1",
+          "asof": "2026-08-13",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-14-EUPWR-1",
+          "asof": "2026-08-14",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-17-EUPWR-1",
+          "asof": "2026-08-17",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-18-EUPWR-1",
+          "asof": "2026-08-18",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-19-EUPWR-1",
+          "asof": "2026-08-19",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-20-EUPWR-1",
+          "asof": "2026-08-20",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-21-EUPWR-1",
+          "asof": "2026-08-21",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-24-EUPWR-1",
+          "asof": "2026-08-24",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-25-EUPWR-1",
+          "asof": "2026-08-25",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-EUPWR-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-EUPWR-2",
+          "asof": "2026-08-26",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-28-EUPWR-1",
+          "asof": "2026-08-28",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-01-EUPWR-1",
+          "asof": "2026-09-01",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-02-EUPWR-1",
+          "asof": "2026-09-02",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-03-EUPWR-1",
+          "asof": "2026-09-03",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-04-EUPWR-1",
+          "asof": "2026-09-04",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-07-EUPWR-1",
+          "asof": "2026-09-07",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-08-EUPWR-1",
+          "asof": "2026-09-08",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-09-EUPWR-1",
+          "asof": "2026-09-09",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-10-EUPWR-1",
+          "asof": "2026-09-10",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-11-EUPWR-1",
+          "asof": "2026-09-11",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-14-EUPWR-1",
+          "asof": "2026-09-14",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-15-EUPWR-1",
+          "asof": "2026-09-15",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-16-EUPWR-1",
+          "asof": "2026-09-16",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-17-EUPWR-1",
+          "asof": "2026-09-17",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-18-EUPWR-1",
+          "asof": "2026-09-18",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-21-EUPWR-1",
+          "asof": "2026-09-21",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-22-EUPWR-1",
+          "asof": "2026-09-22",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-23-EUPWR-1",
+          "asof": "2026-09-23",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-24-EUPWR-1",
+          "asof": "2026-09-24",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-25-EUPWR-1",
+          "asof": "2026-09-25",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-28-EUPWR-1",
+          "asof": "2026-09-28",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-EUPWR-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
+        }
+      ],
+      "haberler": [
+        {
+          "id": "kap-1671104",
+          "tarih": "2026-10-02 06:26",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Yüksek Gerilim Ayırıcı Ürünlerimizin Kısa Devre Dayanım Testleri Hakkında",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1671104"
+        }
+      ],
+      "haber_tarama_baslangici": "2026-09-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "FROTO",
+      "sektor": "otomotiv",
+      "fiyat": {
+        "kapanis": 74.15,
+        "onceki_kapanis": 75.45,
+        "gunluk_degisim_pct": -1.72,
+        "yuksek_52h": 135.3999938965,
+        "dusuk_52h": 72.0500030518
+      },
+      "gostergeler": {
+        "rsi14": 40.8689005456967,
+        "macd_hist": -0.4010081876272429,
+        "atr14": 2.512730174305589,
+        "atr_pct": 3.3887122354658716,
+        "adx14": 25.823101787049875,
+        "sma20": 78.08250007629711,
+        "sma50": 78.34699966430284,
+        "sma200": 94.22674983978071,
+        "bb_pctb": 0.18628137221166038
+      },
+      "faktorler": {
+        "skor": -1.2493,
+        "sira": null,
+        "yuzdelik": null,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": -25.1731,
+        "mom_12_1": -16.8659,
+        "zirve_yakinlik": -45.2363,
+        "kapilar": {
+          "uygun": false,
+          "nedenler": [
+            "sma200_alti"
+          ]
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 1704638677.0209274
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "limit_durumu": {
+        "durum": "serbest",
+        "getiri_pct": -1.72,
+        "yon": null,
+        "intraday_dokunma": false,
+        "band": [
+          67.905,
+          82.995
+        ],
+        "aciklama": "getiri %-1.72 — marjdan uzak."
+      },
+      "bilanco_penceresi": {
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "3 bekleyen bildirim plan penceresine (2026-10-02 … 2026-11-02) düşüyor"
+      },
+      "aktif_vetolar": [],
+      "plan_menusu": [],
+      "plan_yok_nedeni": "1 giriş bandı denendi; brüt R:R hiçbir kombinasyonda ≥1.5 olmadı (stop bandı geçti)",
+      "plan_yok_sinifi": "geometri",
+      "plan_yok_detay": "rr_yetersiz",
+      "plan_yok_elenen": [
+        "dogrudan/atr_2x: R:R 1.05 < 1.5",
+        "dogrudan/atr_2.5x: R:R 0.84 < 1.5",
+        "dogrudan/atr_3x: R:R 0.7 < 1.5"
+      ],
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-FROTO-1",
+          "asof": "2026-07-29",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-07-30-FROTO-1",
+          "asof": "2026-07-30",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-03-FROTO-1",
+          "asof": "2026-08-03",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-04-FROTO-1",
+          "asof": "2026-08-04",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-05-FROTO-1",
+          "asof": "2026-08-05",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-10-FROTO-1",
+          "asof": "2026-08-10",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-11-FROTO-1",
+          "asof": "2026-08-11",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-12-FROTO-1",
+          "asof": "2026-08-12",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-13-FROTO-1",
+          "asof": "2026-08-13",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-14-FROTO-1",
+          "asof": "2026-08-14",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-17-FROTO-1",
+          "asof": "2026-08-17",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-18-FROTO-1",
+          "asof": "2026-08-18",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-19-FROTO-1",
+          "asof": "2026-08-19",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-20-FROTO-1",
+          "asof": "2026-08-20",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-21-FROTO-1",
+          "asof": "2026-08-21",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-24-FROTO-1",
+          "asof": "2026-08-24",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-25-FROTO-1",
+          "asof": "2026-08-25",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-FROTO-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-FROTO-2",
+          "asof": "2026-08-26",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-28-FROTO-1",
+          "asof": "2026-08-28",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-01-FROTO-1",
+          "asof": "2026-09-01",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-02-FROTO-1",
+          "asof": "2026-09-02",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-03-FROTO-1",
+          "asof": "2026-09-03",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-04-FROTO-1",
+          "asof": "2026-09-04",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-07-FROTO-1",
+          "asof": "2026-09-07",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-08-FROTO-1",
+          "asof": "2026-09-08",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-09-FROTO-1",
+          "asof": "2026-09-09",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-10-FROTO-1",
+          "asof": "2026-09-10",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-11-FROTO-1",
+          "asof": "2026-09-11",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-14-FROTO-1",
+          "asof": "2026-09-14",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-15-FROTO-1",
+          "asof": "2026-09-15",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-16-FROTO-1",
+          "asof": "2026-09-16",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-17-FROTO-1",
+          "asof": "2026-09-17",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-18-FROTO-1",
+          "asof": "2026-09-18",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-21-FROTO-1",
+          "asof": "2026-09-21",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-22-FROTO-1",
+          "asof": "2026-09-22",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-23-FROTO-1",
+          "asof": "2026-09-23",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-24-FROTO-1",
+          "asof": "2026-09-24",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-25-FROTO-1",
+          "asof": "2026-09-25",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-28-FROTO-1",
+          "asof": "2026-09-28",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-FROTO-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
+        }
+      ],
+      "haberler": [],
+      "haber_tarama_baslangici": "2026-09-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "GARAN",
+      "sektor": "banka",
+      "fiyat": {
+        "kapanis": 125.9,
+        "onceki_kapanis": 126.2,
+        "gunluk_degisim_pct": -0.24,
+        "yuksek_52h": 169.6999969482,
+        "dusuk_52h": 115.4000015259
+      },
+      "gostergeler": {
+        "rsi14": 43.5919091705761,
+        "macd_hist": -0.7378445726924345,
+        "atr14": 4.207292438453398,
+        "atr_pct": 3.3417731433375586,
+        "adx14": 23.720730898285503,
+        "sma20": 130.49499931335922,
+        "sma50": 129.96999984741967,
+        "sma200": 137.3620000457794,
+        "bb_pctb": 0.21399416804915053
+      },
+      "faktorler": {
+        "skor": -0.0692,
+        "sira": null,
+        "yuzdelik": null,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": 8.0711,
+        "mom_12_1": -6.363,
+        "zirve_yakinlik": -25.8103,
+        "kapilar": {
+          "uygun": false,
+          "nedenler": [
+            "sma200_alti"
+          ]
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 3891440961.0
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "limit_durumu": {
+        "durum": "serbest",
+        "getiri_pct": -0.24,
+        "yon": null,
+        "intraday_dokunma": false,
+        "band": [
+          113.58,
+          138.82
+        ],
+        "aciklama": "getiri %-0.24 — marjdan uzak."
+      },
+      "bilanco_penceresi": {
+        "durum": "kapali",
+        "bildirimler": [],
+        "not": "takvimde yok; 2026-07-30 tarihli finansal rapor bildirimi var (64 gün önce) → dönemin raporunu AÇIKLAMIŞ"
+      },
+      "aktif_vetolar": [],
+      "plan_menusu": [],
+      "plan_yok_nedeni": "2 giriş bandı denendi; brüt R:R hiçbir kombinasyonda ≥1.5 olmadı (stop bandı geçti)",
+      "plan_yok_sinifi": "geometri",
+      "plan_yok_detay": "rr_yetersiz",
+      "plan_yok_elenen": [
+        "dogrudan/atr_2x: R:R 0.76 < 1.5",
+        "dogrudan/atr_2.5x: R:R 0.61 < 1.5",
+        "dogrudan/atr_3x: R:R 0.51 < 1.5",
+        "dogrudan/swing_low: 0.67×ATR ∉ [1.5,4.0]",
+        "destek_retest/atr_2x: R:R 0.79 < 1.5",
+        "destek_retest/atr_2.5x: R:R 0.63 < 1.5",
+        "destek_retest/atr_3x: R:R 0.53 < 1.5"
+      ],
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-GARAN-1",
+          "asof": "2026-07-29",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-07-30-GARAN-1",
+          "asof": "2026-07-30",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-03-GARAN-1",
+          "asof": "2026-08-03",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-04-GARAN-1",
+          "asof": "2026-08-04",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-05-GARAN-1",
+          "asof": "2026-08-05",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-10-GARAN-1",
+          "asof": "2026-08-10",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-11-GARAN-1",
+          "asof": "2026-08-11",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-12-GARAN-1",
+          "asof": "2026-08-12",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-13-GARAN-1",
+          "asof": "2026-08-13",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-14-GARAN-1",
+          "asof": "2026-08-14",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-17-GARAN-1",
+          "asof": "2026-08-17",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-18-GARAN-1",
+          "asof": "2026-08-18",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-19-GARAN-1",
+          "asof": "2026-08-19",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-20-GARAN-1",
+          "asof": "2026-08-20",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-21-GARAN-1",
+          "asof": "2026-08-21",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-24-GARAN-1",
+          "asof": "2026-08-24",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-25-GARAN-1",
+          "asof": "2026-08-25",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-GARAN-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-GARAN-2",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-28-GARAN-1",
+          "asof": "2026-08-28",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-01-GARAN-1",
+          "asof": "2026-09-01",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-02-GARAN-1",
+          "asof": "2026-09-02",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-03-GARAN-1",
+          "asof": "2026-09-03",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-04-GARAN-1",
+          "asof": "2026-09-04",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-07-GARAN-1",
+          "asof": "2026-09-07",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-10-GARAN-1",
+          "asof": "2026-09-10",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-14-GARAN-1",
+          "asof": "2026-09-14",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-15-GARAN-1",
+          "asof": "2026-09-15",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-16-GARAN-1",
+          "asof": "2026-09-16",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-17-GARAN-1",
+          "asof": "2026-09-17",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-18-GARAN-1",
+          "asof": "2026-09-18",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-21-GARAN-1",
+          "asof": "2026-09-21",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-22-GARAN-1",
+          "asof": "2026-09-22",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-23-GARAN-1",
+          "asof": "2026-09-23",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-24-GARAN-1",
+          "asof": "2026-09-24",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-25-GARAN-1",
+          "asof": "2026-09-25",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-28-GARAN-1",
+          "asof": "2026-09-28",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-GARAN-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
+        }
+      ],
+      "haberler": [],
+      "haber_tarama_baslangici": "2026-09-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "KCHOL",
+      "sektor": "holding",
+      "fiyat": {
+        "kapanis": 206.8,
+        "onceki_kapanis": 209.9,
+        "gunluk_degisim_pct": -1.48,
+        "yuksek_52h": 232.5,
+        "dusuk_52h": 146.0
+      },
+      "gostergeler": {
+        "rsi14": 41.18345267210296,
+        "macd_hist": -1.8603611416049974,
+        "atr14": 6.962753288002971,
+        "atr_pct": 3.366901927105067,
+        "adx14": 26.642639330505283,
+        "sma20": 217.6200004577658,
+        "sma50": 211.2519992065423,
+        "sma200": 199.4440000152601,
+        "bb_pctb": 0.05335681505386982
+      },
+      "faktorler": {
+        "skor": 0.3391,
+        "sira": 13.0,
+        "yuzdelik": 14.2857,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": 11.0883,
+        "mom_12_1": 27.5518,
+        "zirve_yakinlik": -11.0538,
+        "kapilar": {
+          "uygun": true,
+          "nedenler": []
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 5368453906.731201
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "limit_durumu": {
+        "durum": "serbest",
+        "getiri_pct": -1.48,
+        "yon": null,
+        "intraday_dokunma": false,
+        "band": [
+          188.91,
+          230.89
+        ],
+        "aciklama": "getiri %-1.48 — marjdan uzak."
+      },
+      "bilanco_penceresi": {
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "3 bekleyen bildirim plan penceresine (2026-10-02 … 2026-11-02) düşüyor"
+      },
+      "aktif_vetolar": [],
+      "plan_menusu": [
+        {
+          "plan_id": "KCHOL-2026-10-02-A",
+          "ticker": "KCHOL",
+          "asof": "2026-10-02",
+          "kind": "dogrudan",
+          "entry_low": 205.7,
+          "entry_high": 206.9,
+          "entry_trigger": "direct",
+          "stop_price": 192.9,
+          "stop_method": "atr_2x",
+          "stop_atr_multiple": 2.01,
+          "targets": [
+            {
+              "price": 228.0,
+              "rr": 1.51,
+              "rr_net": 1.4,
+              "atr_distance": 3.03,
+              "basis": "pivot@2026-08-24 (2 dokunuş)"
+            },
+            {
+              "price": 232.5,
+              "rr": 1.83,
+              "rr_net": 1.71,
+              "atr_distance": 3.68,
+              "basis": "52 hafta zirvesi"
+            }
+          ],
+          "rr_at_t1": 1.51,
+          "rr_at_t1_net": 1.4,
+          "maliyet_pct": 0.3,
+          "time_barrier_days": 20,
+          "time_barrier_date": "2026-11-02",
+          "position_size_pct": 5.91,
+          "max_loss_pct_of_portfolio": 0.4,
+          "entry_zone_status": "in_zone",
+          "daily_limit_note": "stop girişten %6.8 uzakta; girildikten sonra tek günde tetiklenebilir (boşluk riski var)",
+          "ex_date_in_window": null,
+          "limit_durumu": "serbest",
+          "invalidations": [
+            "SMA50 (211.25) altına günlük kapanış",
+            "201.90 desteğinin altına kapanış",
+            "hacim 20 günlük ortalamanın %50 altına inerse tez zayıflar"
+          ],
+          "notes": [
+            "3 direnç, 3 destek seviyesi kullanıldı"
+          ],
+          "rr_secim": "1. giriş bandı (dogrudan), stop atr_2x",
+          "elenen_adaylar": [],
+          "uyari": "Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir."
+        },
+        {
+          "plan_id": "KCHOL-2026-10-02-B",
+          "ticker": "KCHOL",
+          "asof": "2026-10-02",
+          "kind": "destek_retest",
+          "entry_low": 200.8,
+          "entry_high": 205.0,
+          "entry_trigger": "support_retest",
+          "stop_price": 191.0,
+          "stop_method": "atr_2x",
+          "stop_atr_multiple": 2.01,
+          "targets": [
+            {
+              "price": 228.0,
+              "rr": 1.64,
+              "rr_net": 1.53,
+              "atr_distance": 3.3,
+              "basis": "pivot@2026-08-24 (2 dokunuş)"
+            },
+            {
+              "price": 232.5,
+              "rr": 1.96,
+              "rr_net": 1.84,
+              "atr_distance": 3.95,
+              "basis": "52 hafta zirvesi"
+            }
+          ],
+          "rr_at_t1": 1.64,
+          "rr_at_t1_net": 1.53,
+          "maliyet_pct": 0.3,
+          "time_barrier_days": 20,
+          "time_barrier_date": "2026-11-02",
+          "position_size_pct": 5.86,
+          "max_loss_pct_of_portfolio": 0.4,
+          "entry_zone_status": "above_zone",
+          "daily_limit_note": "stop girişten %6.8 uzakta; girildikten sonra tek günde tetiklenebilir (boşluk riski var)",
+          "ex_date_in_window": null,
+          "limit_durumu": "serbest",
+          "invalidations": [
+            "SMA50 (211.25) altına günlük kapanış",
+            "201.90 desteğinin altına kapanış",
+            "hacim 20 günlük ortalamanın %50 altına inerse tez zayıflar"
+          ],
+          "notes": [
+            "3 direnç, 3 destek seviyesi kullanıldı"
+          ],
+          "rr_secim": "2. giriş bandı (destek_retest), stop atr_2x",
+          "elenen_adaylar": [],
+          "uyari": "Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir."
+        }
+      ],
+      "plan_yok_nedeni": null,
+      "plan_yok_sinifi": null,
+      "plan_yok_detay": null,
+      "plan_yok_elenen": [],
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-KCHOL-1",
+          "asof": "2026-07-29",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-07-30-KCHOL-1",
+          "asof": "2026-07-30",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-03-KCHOL-1",
+          "asof": "2026-08-03",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-04-KCHOL-1",
+          "asof": "2026-08-04",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-05-KCHOL-1",
+          "asof": "2026-08-05",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-10-KCHOL-1",
+          "asof": "2026-08-10",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-11-KCHOL-1",
+          "asof": "2026-08-11",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-12-KCHOL-1",
+          "asof": "2026-08-12",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-13-KCHOL-1",
+          "asof": "2026-08-13",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-14-KCHOL-1",
+          "asof": "2026-08-14",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-17-KCHOL-1",
+          "asof": "2026-08-17",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-18-KCHOL-1",
+          "asof": "2026-08-18",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-19-KCHOL-1",
+          "asof": "2026-08-19",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-20-KCHOL-1",
+          "asof": "2026-08-20",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-21-KCHOL-1",
+          "asof": "2026-08-21",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-24-KCHOL-1",
+          "asof": "2026-08-24",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-25-KCHOL-1",
+          "asof": "2026-08-25",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-KCHOL-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-KCHOL-2",
+          "asof": "2026-08-26",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-28-KCHOL-1",
+          "asof": "2026-08-28",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-01-KCHOL-1",
+          "asof": "2026-09-01",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-02-KCHOL-1",
+          "asof": "2026-09-02",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-03-KCHOL-1",
+          "asof": "2026-09-03",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-04-KCHOL-1",
+          "asof": "2026-09-04",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-07-KCHOL-1",
+          "asof": "2026-09-07",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-08-KCHOL-1",
+          "asof": "2026-09-08",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-09-KCHOL-1",
+          "asof": "2026-09-09",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-10-KCHOL-1",
+          "asof": "2026-09-10",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-11-KCHOL-1",
+          "asof": "2026-09-11",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-14-KCHOL-1",
+          "asof": "2026-09-14",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-15-KCHOL-1",
+          "asof": "2026-09-15",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-16-KCHOL-1",
+          "asof": "2026-09-16",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-17-KCHOL-1",
+          "asof": "2026-09-17",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-18-KCHOL-1",
+          "asof": "2026-09-18",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-21-KCHOL-1",
+          "asof": "2026-09-21",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-22-KCHOL-1",
+          "asof": "2026-09-22",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-23-KCHOL-1",
+          "asof": "2026-09-23",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-24-KCHOL-1",
+          "asof": "2026-09-24",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-25-KCHOL-1",
+          "asof": "2026-09-25",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-28-KCHOL-1",
+          "asof": "2026-09-28",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-KCHOL-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
+        }
+      ],
+      "haberler": [],
+      "haber_tarama_baslangici": "2026-09-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "KRDMD",
+      "sektor": "demir_celik",
+      "fiyat": {
+        "kapanis": 43.28,
+        "onceki_kapanis": 43.0,
+        "gunluk_degisim_pct": 0.65,
+        "yuksek_52h": 48.4399986267,
+        "dusuk_52h": 23.5
+      },
+      "gostergeler": {
+        "rsi14": 44.425063943446254,
+        "macd_hist": -0.33580077078786663,
+        "atr14": 2.0112282052524693,
+        "atr_pct": 4.647015392741985,
+        "adx14": 15.960645021431706,
+        "sma20": 45.17300014495334,
+        "sma50": 43.98800003051334,
+        "sma200": 36.64830004691933,
+        "bb_pctb": 0.1870739777710539
+      },
+      "faktorler": {
+        "skor": 1.4051,
+        "sira": 5.0,
+        "yuzdelik": 71.4286,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": 39.0939,
+        "mom_12_1": 49.7561,
+        "zirve_yakinlik": -10.6524,
+        "kapilar": {
+          "uygun": true,
+          "nedenler": []
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 2260665732.054268
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "limit_durumu": {
+        "durum": "serbest",
+        "getiri_pct": 0.65,
+        "yon": null,
+        "intraday_dokunma": false,
+        "band": [
+          38.7,
+          47.3
+        ],
+        "aciklama": "getiri %+0.65 — marjdan uzak."
+      },
+      "bilanco_penceresi": {
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "3 bekleyen bildirim plan penceresine (2026-10-02 … 2026-11-02) düşüyor"
+      },
+      "aktif_vetolar": [],
+      "plan_menusu": [],
+      "plan_yok_nedeni": "2 giriş bandı denendi; brüt R:R hiçbir kombinasyonda ≥1.5 olmadı (stop bandı geçti)",
+      "plan_yok_sinifi": "geometri",
+      "plan_yok_detay": "rr_yetersiz",
+      "plan_yok_elenen": [
+        "dogrudan/atr_2x: R:R 1.07 < 1.5",
+        "dogrudan/atr_2.5x: R:R 0.86 < 1.5",
+        "dogrudan/atr_3x: R:R 0.72 < 1.5",
+        "dogrudan/swing_low: 0.53×ATR ∉ [1.5,4.0]",
+        "destek_retest/atr_2x: R:R 1.12 < 1.5",
+        "destek_retest/atr_2.5x: R:R 0.9 < 1.5",
+        "destek_retest/atr_3x: R:R 0.75 < 1.5"
+      ],
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-08-13-KRDMD-1",
+          "asof": "2026-08-13",
+          "signal": "buy",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-14-KRDMD-1",
+          "asof": "2026-08-14",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-17-KRDMD-1",
+          "asof": "2026-08-17",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-18-KRDMD-1",
+          "asof": "2026-08-18",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-19-KRDMD-1",
+          "asof": "2026-08-19",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-20-KRDMD-1",
+          "asof": "2026-08-20",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-21-KRDMD-1",
+          "asof": "2026-08-21",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-24-KRDMD-1",
+          "asof": "2026-08-24",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-25-KRDMD-1",
+          "asof": "2026-08-25",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-KRDMD-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-KRDMD-2",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-28-KRDMD-1",
+          "asof": "2026-08-28",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-01-KRDMD-1",
+          "asof": "2026-09-01",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-02-KRDMD-1",
+          "asof": "2026-09-02",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-03-KRDMD-1",
+          "asof": "2026-09-03",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-04-KRDMD-1",
+          "asof": "2026-09-04",
+          "signal": "buy",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-07-KRDMD-1",
+          "asof": "2026-09-07",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-08-KRDMD-1",
+          "asof": "2026-09-08",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-09-KRDMD-1",
+          "asof": "2026-09-09",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-10-KRDMD-1",
+          "asof": "2026-09-10",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-11-KRDMD-1",
+          "asof": "2026-09-11",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-14-KRDMD-1",
+          "asof": "2026-09-14",
+          "signal": "buy",
+          "bariyer": "2026-10-12"
+        },
+        {
+          "prediction_id": "2026-09-15-KRDMD-1",
+          "asof": "2026-09-15",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-16-KRDMD-1",
+          "asof": "2026-09-16",
+          "signal": "hold",
+          "bariyer": "2026-10-14"
+        },
+        {
+          "prediction_id": "2026-09-17-KRDMD-1",
+          "asof": "2026-09-17",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-18-KRDMD-1",
+          "asof": "2026-09-18",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-21-KRDMD-1",
+          "asof": "2026-09-21",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-22-KRDMD-1",
+          "asof": "2026-09-22",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-23-KRDMD-1",
+          "asof": "2026-09-23",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-24-KRDMD-1",
+          "asof": "2026-09-24",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-25-KRDMD-1",
+          "asof": "2026-09-25",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-28-KRDMD-1",
+          "asof": "2026-09-28",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-KRDMD-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
+        }
+      ],
+      "haberler": [
+        {
+          "id": "kap-1670761",
+          "tarih": "2026-10-01 09:31",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "GES yatırımları hk.",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1670761"
+        }
+      ],
+      "haber_tarama_baslangici": "2026-09-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "PETKM",
+      "sektor": "kimya",
+      "fiyat": {
+        "kapanis": 19.55,
+        "onceki_kapanis": 19.25,
+        "gunluk_degisim_pct": 1.56,
+        "yuksek_52h": 28.0599994659,
+        "dusuk_52h": 16.1200008392
+      },
+      "gostergeler": {
+        "rsi14": 42.57817331033931,
+        "macd_hist": -0.4180535054338619,
+        "atr14": 1.2570529750197448,
+        "atr_pct": 6.42993874207818,
+        "adx14": 16.547333473088226,
+        "sma20": 21.89049997329258,
+        "sma50": 20.565600013727032,
+        "sma200": 20.06699994087276,
+        "bb_pctb": 0.20251513008149777
+      },
+      "faktorler": {
+        "skor": -0.3418,
+        "sira": null,
+        "yuzdelik": null,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": -4.7125,
+        "mom_12_1": 10.0109,
+        "zirve_yakinlik": -30.3279,
+        "kapilar": {
+          "uygun": false,
+          "nedenler": [
+            "sma200_alti"
+          ]
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 1750875524.1811295
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "limit_durumu": {
+        "durum": "serbest",
+        "getiri_pct": 1.56,
+        "yon": null,
+        "intraday_dokunma": false,
+        "band": [
+          17.325,
+          21.175
+        ],
+        "aciklama": "getiri %+1.56 — marjdan uzak."
+      },
+      "bilanco_penceresi": {
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "3 bekleyen bildirim plan penceresine (2026-10-02 … 2026-11-02) düşüyor"
+      },
+      "aktif_vetolar": [],
+      "plan_menusu": [],
+      "plan_yok_nedeni": "2 giriş bandı denendi; brüt R:R hiçbir kombinasyonda ≥1.5 olmadı (stop bandı geçti)",
+      "plan_yok_sinifi": "geometri",
+      "plan_yok_detay": "rr_yetersiz",
+      "plan_yok_elenen": [
+        "dogrudan/atr_2x: R:R 0.89 < 1.5",
+        "dogrudan/atr_2.5x: R:R 0.71 < 1.5",
+        "dogrudan/atr_3x: R:R 0.6 < 1.5",
+        "dogrudan/swing_low: 0.68×ATR ∉ [1.5,4.0]",
+        "destek_retest/atr_2x: R:R 1.08 < 1.5",
+        "destek_retest/atr_2.5x: R:R 0.86 < 1.5",
+        "destek_retest/atr_3x: R:R 0.72 < 1.5"
+      ],
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-PETKM-1",
+          "asof": "2026-07-29",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-07-30-PETKM-1",
+          "asof": "2026-07-30",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-03-PETKM-1",
+          "asof": "2026-08-03",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-04-PETKM-1",
+          "asof": "2026-08-04",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-05-PETKM-1",
+          "asof": "2026-08-05",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-10-PETKM-1",
+          "asof": "2026-08-10",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-11-PETKM-1",
+          "asof": "2026-08-11",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-12-PETKM-1",
+          "asof": "2026-08-12",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-13-PETKM-1",
+          "asof": "2026-08-13",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-14-PETKM-1",
+          "asof": "2026-08-14",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-17-PETKM-1",
+          "asof": "2026-08-17",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-18-PETKM-1",
+          "asof": "2026-08-18",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-19-PETKM-1",
+          "asof": "2026-08-19",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-20-PETKM-1",
+          "asof": "2026-08-20",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-21-PETKM-1",
+          "asof": "2026-08-21",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-24-PETKM-1",
+          "asof": "2026-08-24",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-25-PETKM-1",
+          "asof": "2026-08-25",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-PETKM-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-PETKM-2",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-28-PETKM-1",
+          "asof": "2026-08-28",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-01-PETKM-1",
+          "asof": "2026-09-01",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-02-PETKM-1",
+          "asof": "2026-09-02",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-03-PETKM-1",
+          "asof": "2026-09-03",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-04-PETKM-1",
+          "asof": "2026-09-04",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-07-PETKM-1",
+          "asof": "2026-09-07",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-08-PETKM-1",
+          "asof": "2026-09-08",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-09-PETKM-1",
+          "asof": "2026-09-09",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-10-PETKM-1",
+          "asof": "2026-09-10",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-11-PETKM-1",
+          "asof": "2026-09-11",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-14-PETKM-1",
+          "asof": "2026-09-14",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-15-PETKM-1",
+          "asof": "2026-09-15",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-16-PETKM-1",
+          "asof": "2026-09-16",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-17-PETKM-1",
+          "asof": "2026-09-17",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-18-PETKM-1",
+          "asof": "2026-09-18",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-21-PETKM-1",
+          "asof": "2026-09-21",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-22-PETKM-1",
+          "asof": "2026-09-22",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-23-PETKM-1",
+          "asof": "2026-09-23",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-24-PETKM-1",
+          "asof": "2026-09-24",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-25-PETKM-1",
+          "asof": "2026-09-25",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-28-PETKM-1",
+          "asof": "2026-09-28",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-PETKM-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
+        }
+      ],
+      "haberler": [],
+      "haber_tarama_baslangici": "2026-09-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "SISE",
+      "sektor": "cam_sanayi",
+      "fiyat": {
+        "kapanis": 37.22,
+        "onceki_kapanis": 37.34,
+        "gunluk_degisim_pct": -0.32,
+        "yuksek_52h": 54.0999984741,
+        "dusuk_52h": 32.4399986267
+      },
+      "gostergeler": {
+        "rsi14": 38.284988773107685,
+        "macd_hist": -0.3998605057756873,
+        "atr14": 1.4794993299838886,
+        "atr_pct": 3.9750115031187505,
+        "adx14": 22.933568479662505,
+        "sma20": 40.62900047302442,
+        "sma50": 40.61880027771176,
+        "sma200": 43.40490005493294,
+        "bb_pctb": 0.1869979929912822
+      },
+      "faktorler": {
+        "skor": -0.5994,
+        "sira": null,
+        "yuzdelik": null,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": -10.9079,
+        "mom_12_1": 4.543,
+        "zirve_yakinlik": -31.2015,
+        "kapilar": {
+          "uygun": false,
+          "nedenler": [
+            "sma200_alti"
+          ]
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 1910594368.5831757
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "limit_durumu": {
+        "durum": "serbest",
+        "getiri_pct": -0.32,
+        "yon": null,
+        "intraday_dokunma": false,
+        "band": [
+          33.606,
+          41.074
+        ],
+        "aciklama": "getiri %-0.32 — marjdan uzak."
+      },
+      "bilanco_penceresi": {
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "3 bekleyen bildirim plan penceresine (2026-10-02 … 2026-11-02) düşüyor"
+      },
+      "aktif_vetolar": [
+        {
+          "veto_code": "veri_supheli",
+          "konuldu": "2026-09-24",
+          "bitis": "2026-10-08",
+          "kalan_islem_gunu": 4,
+          "arac": "gpt-5.6-luna",
+          "gerekce": "Veri kalitesine ilişkin aktif veto, teknik görünümden bağımsız olarak karar riskini artırıyor. Riskten kaçış rejimi ve ortalamaların altında seyir birleştiğinde plan yokluğu daha ihtiyatlı davranmayı zorunlu kılıyor.",
+          "tekrar": 3
+        }
+      ],
+      "plan_menusu": [],
+      "plan_yok_nedeni": "2 giriş bandı denendi; brüt R:R hiçbir kombinasyonda ≥1.5 olmadı (stop bandı geçti)",
+      "plan_yok_sinifi": "geometri",
+      "plan_yok_detay": "rr_yetersiz",
+      "plan_yok_elenen": [
+        "dogrudan/atr_2x: R:R 1.07 < 1.5",
+        "dogrudan/atr_2.5x: R:R 0.86 < 1.5",
+        "dogrudan/atr_3x: R:R 0.72 < 1.5",
+        "dogrudan/swing_low: 0.7×ATR ∉ [1.5,4.0]",
+        "destek_retest/atr_2x: R:R 1.18 < 1.5",
+        "destek_retest/atr_2.5x: R:R 0.94 < 1.5",
+        "destek_retest/atr_3x: R:R 0.78 < 1.5"
+      ],
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-SISE-1",
+          "asof": "2026-07-29",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-07-30-SISE-1",
+          "asof": "2026-07-30",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-03-SISE-1",
+          "asof": "2026-08-03",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-04-SISE-1",
+          "asof": "2026-08-04",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-05-SISE-1",
+          "asof": "2026-08-05",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-10-SISE-1",
+          "asof": "2026-08-10",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-11-SISE-1",
+          "asof": "2026-08-11",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-12-SISE-1",
+          "asof": "2026-08-12",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-13-SISE-1",
+          "asof": "2026-08-13",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-14-SISE-1",
+          "asof": "2026-08-14",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-17-SISE-1",
+          "asof": "2026-08-17",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-18-SISE-1",
+          "asof": "2026-08-18",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-19-SISE-1",
+          "asof": "2026-08-19",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-20-SISE-1",
+          "asof": "2026-08-20",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-21-SISE-1",
+          "asof": "2026-08-21",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-24-SISE-1",
+          "asof": "2026-08-24",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-25-SISE-1",
+          "asof": "2026-08-25",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-SISE-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-SISE-2",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-28-SISE-1",
+          "asof": "2026-08-28",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-01-SISE-1",
+          "asof": "2026-09-01",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-02-SISE-1",
+          "asof": "2026-09-02",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-03-SISE-1",
+          "asof": "2026-09-03",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-04-SISE-1",
+          "asof": "2026-09-04",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-07-SISE-1",
+          "asof": "2026-09-07",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-08-SISE-1",
+          "asof": "2026-09-08",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-09-SISE-1",
+          "asof": "2026-09-09",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-10-SISE-1",
+          "asof": "2026-09-10",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-11-SISE-1",
+          "asof": "2026-09-11",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-14-SISE-1",
+          "asof": "2026-09-14",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-15-SISE-1",
+          "asof": "2026-09-15",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-16-SISE-1",
+          "asof": "2026-09-16",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-17-SISE-1",
+          "asof": "2026-09-17",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-18-SISE-1",
+          "asof": "2026-09-18",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-21-SISE-1",
+          "asof": "2026-09-21",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-22-SISE-1",
+          "asof": "2026-09-22",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-23-SISE-1",
+          "asof": "2026-09-23",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-24-SISE-1",
+          "asof": "2026-09-24",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-25-SISE-1",
+          "asof": "2026-09-25",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-28-SISE-1",
+          "asof": "2026-09-28",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-SISE-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
+        }
+      ],
+      "haberler": [],
+      "haber_tarama_baslangici": "2026-09-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "TAVHL",
+      "sektor": "ulasim",
+      "fiyat": {
+        "kapanis": 266.25,
+        "onceki_kapanis": 262.0,
+        "gunluk_degisim_pct": 1.62,
+        "yuksek_52h": 369.0,
+        "dusuk_52h": 217.6000061035
+      },
+      "gostergeler": {
+        "rsi14": 46.77319515953237,
+        "macd_hist": -0.6737795585713569,
+        "atr14": 9.636845606175159,
+        "atr_pct": 3.6194725281409044,
+        "adx14": 16.603028667253188,
+        "sma20": 270.1625,
+        "sma50": 272.98,
+        "sma200": 293.717750015259,
+        "bb_pctb": 0.37151933344778565
+      },
+      "faktorler": {
+        "skor": -0.6222,
+        "sira": null,
+        "yuzdelik": null,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": -12.9081,
+        "mom_12_1": 10.8001,
+        "zirve_yakinlik": -27.8455,
+        "kapilar": {
+          "uygun": false,
+          "nedenler": [
+            "sma200_alti"
+          ]
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 871253988.0
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "limit_durumu": {
+        "durum": "serbest",
+        "getiri_pct": 1.62,
+        "yon": null,
+        "intraday_dokunma": false,
+        "band": [
+          235.8,
+          288.2
+        ],
+        "aciklama": "getiri %+1.62 — marjdan uzak."
+      },
+      "bilanco_penceresi": {
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "3 bekleyen bildirim plan penceresine (2026-10-02 … 2026-11-02) düşüyor"
+      },
+      "aktif_vetolar": [],
+      "plan_menusu": [],
+      "plan_yok_nedeni": "2 giriş bandı denendi; brüt R:R hiçbir kombinasyonda ≥1.5 olmadı (stop bandı geçti)",
+      "plan_yok_sinifi": "geometri",
+      "plan_yok_detay": "rr_yetersiz",
+      "plan_yok_elenen": [
+        "dogrudan/atr_2x: R:R 0.8 < 1.5",
+        "dogrudan/atr_2.5x: R:R 0.64 < 1.5",
+        "dogrudan/atr_3x: R:R 0.54 < 1.5",
+        "dogrudan/swing_low: 0.23×ATR ∉ [1.5,4.0]",
+        "destek_retest/atr_2x: R:R 0.8 < 1.5",
+        "destek_retest/atr_2.5x: R:R 0.64 < 1.5",
+        "destek_retest/atr_3x: R:R 0.54 < 1.5"
+      ],
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-TAVHL-1",
+          "asof": "2026-07-29",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-07-30-TAVHL-1",
+          "asof": "2026-07-30",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-03-TAVHL-1",
+          "asof": "2026-08-03",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-04-TAVHL-1",
+          "asof": "2026-08-04",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-05-TAVHL-1",
+          "asof": "2026-08-05",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-10-TAVHL-1",
+          "asof": "2026-08-10",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-11-TAVHL-1",
+          "asof": "2026-08-11",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-12-TAVHL-1",
+          "asof": "2026-08-12",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-13-TAVHL-1",
+          "asof": "2026-08-13",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-14-TAVHL-1",
+          "asof": "2026-08-14",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-17-TAVHL-1",
+          "asof": "2026-08-17",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-18-TAVHL-1",
+          "asof": "2026-08-18",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-19-TAVHL-1",
+          "asof": "2026-08-19",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-20-TAVHL-1",
+          "asof": "2026-08-20",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-21-TAVHL-1",
+          "asof": "2026-08-21",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-24-TAVHL-1",
+          "asof": "2026-08-24",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-25-TAVHL-1",
+          "asof": "2026-08-25",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-TAVHL-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-28-TAVHL-1",
+          "asof": "2026-08-28",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-01-TAVHL-1",
+          "asof": "2026-09-01",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-02-TAVHL-1",
+          "asof": "2026-09-02",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-03-TAVHL-1",
+          "asof": "2026-09-03",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-04-TAVHL-1",
+          "asof": "2026-09-04",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-07-TAVHL-1",
+          "asof": "2026-09-07",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-08-TAVHL-1",
+          "asof": "2026-09-08",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-09-TAVHL-1",
+          "asof": "2026-09-09",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-10-TAVHL-1",
+          "asof": "2026-09-10",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-11-TAVHL-1",
+          "asof": "2026-09-11",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-14-TAVHL-1",
+          "asof": "2026-09-14",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-15-TAVHL-1",
+          "asof": "2026-09-15",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-16-TAVHL-1",
+          "asof": "2026-09-16",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-17-TAVHL-1",
+          "asof": "2026-09-17",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-18-TAVHL-1",
+          "asof": "2026-09-18",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-21-TAVHL-1",
+          "asof": "2026-09-21",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-22-TAVHL-1",
+          "asof": "2026-09-22",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-23-TAVHL-1",
+          "asof": "2026-09-23",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-24-TAVHL-1",
+          "asof": "2026-09-24",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-25-TAVHL-1",
+          "asof": "2026-09-25",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-28-TAVHL-1",
+          "asof": "2026-09-28",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-TAVHL-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
+        }
+      ],
+      "haberler": [
+        {
+          "id": "kap-1670746",
+          "tarih": "2026-10-01 08:40",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Finansal Takvim",
+          "ozet": "2026 Üçüncü Çeyrek Finansal Takvimi",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1670746"
+        }
+      ],
+      "haber_tarama_baslangici": "2026-09-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "TCELL",
+      "sektor": "telekom",
+      "fiyat": {
+        "kapanis": 97.8,
+        "onceki_kapanis": 97.7,
+        "gunluk_degisim_pct": 0.1,
+        "yuksek_52h": 129.6000061035,
+        "dusuk_52h": 90.0
+      },
+      "gostergeler": {
+        "rsi14": 44.864757124231886,
+        "macd_hist": -0.07217764881948907,
+        "atr14": 3.0950766341806264,
+        "atr_pct": 3.164699936198005,
+        "adx14": 27.7184864488349,
+        "sma20": 99.51250000000212,
+        "sma50": 101.22100006103685,
+        "sma200": 107.88150005340671,
+        "bb_pctb": 0.28998675395888707
+      },
+      "faktorler": {
+        "skor": -0.5966,
+        "sira": null,
+        "yuzdelik": null,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": -8.7819,
+        "mom_12_1": -1.0916,
+        "zirve_yakinlik": -24.537,
+        "kapilar": {
+          "uygun": false,
+          "nedenler": [
+            "sma200_alti"
+          ]
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 2669428044.4924927
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "limit_durumu": {
+        "durum": "serbest",
+        "getiri_pct": 0.1,
+        "yon": null,
+        "intraday_dokunma": false,
+        "band": [
+          87.93,
+          107.47
+        ],
+        "aciklama": "getiri %+0.10 — marjdan uzak."
+      },
+      "bilanco_penceresi": {
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "3 bekleyen bildirim plan penceresine (2026-10-02 … 2026-11-02) düşüyor"
+      },
+      "aktif_vetolar": [],
+      "plan_menusu": [],
+      "plan_yok_nedeni": "2 giriş bandı denendi; brüt R:R hiçbir kombinasyonda ≥1.5 olmadı (stop bandı geçti)",
+      "plan_yok_sinifi": "geometri",
+      "plan_yok_detay": "rr_yetersiz",
+      "plan_yok_elenen": [
+        "dogrudan/atr_2x: R:R 0.8 < 1.5",
+        "dogrudan/atr_2.5x: R:R 0.64 < 1.5",
+        "dogrudan/atr_3x: R:R 0.53 < 1.5",
+        "dogrudan/swing_low: 0.61×ATR ∉ [1.5,4.0]",
+        "destek_retest/atr_2x: R:R 0.8 < 1.5",
+        "destek_retest/atr_2.5x: R:R 0.64 < 1.5",
+        "destek_retest/atr_3x: R:R 0.53 < 1.5"
+      ],
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-TCELL-1",
+          "asof": "2026-07-29",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-07-30-TCELL-1",
+          "asof": "2026-07-30",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-03-TCELL-1",
+          "asof": "2026-08-03",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-04-TCELL-1",
+          "asof": "2026-08-04",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-05-TCELL-1",
+          "asof": "2026-08-05",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-10-TCELL-1",
+          "asof": "2026-08-10",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-11-TCELL-1",
+          "asof": "2026-08-11",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-12-TCELL-1",
+          "asof": "2026-08-12",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-13-TCELL-1",
+          "asof": "2026-08-13",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-14-TCELL-1",
+          "asof": "2026-08-14",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-17-TCELL-1",
+          "asof": "2026-08-17",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-18-TCELL-1",
+          "asof": "2026-08-18",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-19-TCELL-1",
+          "asof": "2026-08-19",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-20-TCELL-1",
+          "asof": "2026-08-20",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-21-TCELL-1",
+          "asof": "2026-08-21",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-24-TCELL-1",
+          "asof": "2026-08-24",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-25-TCELL-1",
+          "asof": "2026-08-25",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-TCELL-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-TCELL-2",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-28-TCELL-1",
+          "asof": "2026-08-28",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-01-TCELL-1",
+          "asof": "2026-09-01",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-02-TCELL-1",
+          "asof": "2026-09-02",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-03-TCELL-1",
+          "asof": "2026-09-03",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-04-TCELL-1",
+          "asof": "2026-09-04",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-07-TCELL-1",
+          "asof": "2026-09-07",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-08-TCELL-1",
+          "asof": "2026-09-08",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-09-TCELL-1",
+          "asof": "2026-09-09",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-10-TCELL-1",
+          "asof": "2026-09-10",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-11-TCELL-1",
+          "asof": "2026-09-11",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-14-TCELL-1",
+          "asof": "2026-09-14",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-15-TCELL-1",
+          "asof": "2026-09-15",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-16-TCELL-1",
+          "asof": "2026-09-16",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-17-TCELL-1",
+          "asof": "2026-09-17",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-18-TCELL-1",
+          "asof": "2026-09-18",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-21-TCELL-1",
+          "asof": "2026-09-21",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-22-TCELL-1",
+          "asof": "2026-09-22",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-23-TCELL-1",
+          "asof": "2026-09-23",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-24-TCELL-1",
+          "asof": "2026-09-24",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-25-TCELL-1",
+          "asof": "2026-09-25",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-28-TCELL-1",
+          "asof": "2026-09-28",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-TCELL-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
+        }
+      ],
+      "haberler": [],
+      "haber_tarama_baslangici": "2026-09-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "THYAO",
+      "sektor": "ulasim",
+      "fiyat": {
+        "kapanis": 292.0,
+        "onceki_kapanis": 286.5,
+        "gunluk_degisim_pct": 1.92,
+        "yuksek_52h": 355.5,
+        "dusuk_52h": 258.25
+      },
+      "gostergeler": {
+        "rsi14": 48.49200479475874,
+        "macd_hist": 0.39186701040196414,
+        "atr14": 8.921245189719304,
+        "atr_pct": 3.0552209553833234,
+        "adx14": 28.436112619619873,
+        "sma20": 292.0125,
+        "sma50": 300.5,
+        "sma200": 304.54625,
+        "bb_pctb": 0.4995763435949506
+      },
+      "faktorler": {
+        "skor": -0.3871,
+        "sira": null,
+        "yuzdelik": null,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": -0.9346,
+        "mom_12_1": -7.6801,
+        "zirve_yakinlik": -17.8622,
+        "kapilar": {
+          "uygun": false,
+          "nedenler": [
+            "sma200_alti"
+          ]
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 13525682121.0
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "limit_durumu": {
+        "durum": "serbest",
+        "getiri_pct": 1.92,
+        "yon": null,
+        "intraday_dokunma": false,
+        "band": [
+          257.85,
+          315.15
+        ],
+        "aciklama": "getiri %+1.92 — marjdan uzak."
+      },
+      "bilanco_penceresi": {
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "3 bekleyen bildirim plan penceresine (2026-10-02 … 2026-11-02) düşüyor"
+      },
+      "aktif_vetolar": [],
+      "plan_menusu": [],
+      "plan_yok_nedeni": "2 giriş bandı denendi; brüt R:R hiçbir kombinasyonda ≥1.5 olmadı (stop bandı geçti)",
+      "plan_yok_sinifi": "geometri",
+      "plan_yok_detay": "rr_yetersiz",
+      "plan_yok_elenen": [
+        "dogrudan/atr_2x: R:R 0.89 < 1.5",
+        "dogrudan/atr_2.5x: R:R 0.71 < 1.5",
+        "dogrudan/atr_3x: R:R 0.59 < 1.5",
+        "dogrudan/swing_low: 0.76×ATR ∉ [1.5,4.0]",
+        "destek_retest/atr_2x: R:R 0.93 < 1.5",
+        "destek_retest/atr_2.5x: R:R 0.74 < 1.5",
+        "destek_retest/atr_3x: R:R 0.62 < 1.5"
+      ],
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-THYAO-1",
+          "asof": "2026-07-29",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-07-30-THYAO-1",
+          "asof": "2026-07-30",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-03-THYAO-1",
+          "asof": "2026-08-03",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-04-THYAO-1",
+          "asof": "2026-08-04",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-05-THYAO-1",
+          "asof": "2026-08-05",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-10-THYAO-1",
+          "asof": "2026-08-10",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-11-THYAO-1",
+          "asof": "2026-08-11",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-12-THYAO-1",
+          "asof": "2026-08-12",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-13-THYAO-1",
+          "asof": "2026-08-13",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-14-THYAO-1",
+          "asof": "2026-08-14",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-17-THYAO-1",
+          "asof": "2026-08-17",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-18-THYAO-1",
+          "asof": "2026-08-18",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-19-THYAO-1",
+          "asof": "2026-08-19",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-21-THYAO-1",
+          "asof": "2026-08-21",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-24-THYAO-1",
+          "asof": "2026-08-24",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-25-THYAO-1",
+          "asof": "2026-08-25",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-THYAO-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-THYAO-2",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-28-THYAO-1",
+          "asof": "2026-08-28",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-01-THYAO-1",
+          "asof": "2026-09-01",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-02-THYAO-1",
+          "asof": "2026-09-02",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-03-THYAO-1",
+          "asof": "2026-09-03",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-04-THYAO-1",
+          "asof": "2026-09-04",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-07-THYAO-1",
+          "asof": "2026-09-07",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-08-THYAO-1",
+          "asof": "2026-09-08",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-09-THYAO-1",
+          "asof": "2026-09-09",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-10-THYAO-1",
+          "asof": "2026-09-10",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-11-THYAO-1",
+          "asof": "2026-09-11",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-14-THYAO-1",
+          "asof": "2026-09-14",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-15-THYAO-1",
+          "asof": "2026-09-15",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-16-THYAO-1",
+          "asof": "2026-09-16",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-17-THYAO-1",
+          "asof": "2026-09-17",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-18-THYAO-1",
+          "asof": "2026-09-18",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-21-THYAO-1",
+          "asof": "2026-09-21",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-22-THYAO-1",
+          "asof": "2026-09-22",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-23-THYAO-1",
+          "asof": "2026-09-23",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-24-THYAO-1",
+          "asof": "2026-09-24",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-25-THYAO-1",
+          "asof": "2026-09-25",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-28-THYAO-1",
+          "asof": "2026-09-28",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-THYAO-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
+        }
+      ],
+      "haberler": [],
+      "haber_tarama_baslangici": "2026-09-30T20:59:59+00:00"
+    },
+    {
+      "ticker": "TUPRS",
+      "sektor": "rafineri",
+      "fiyat": {
+        "kapanis": 377.0,
+        "onceki_kapanis": 387.0,
+        "gunluk_degisim_pct": -2.58,
+        "yuksek_52h": 424.25,
+        "dusuk_52h": 170.8000030518
+      },
+      "gostergeler": {
+        "rsi14": 44.81256834393081,
+        "macd_hist": -5.5818424296134665,
+        "atr14": 16.683678671717725,
+        "atr_pct": 4.425378958015312,
+        "adx14": 29.57173585971978,
+        "sma20": 402.6875,
+        "sma50": 372.63,
+        "sma200": 271.9897499084475,
+        "bb_pctb": 0.013052862404534363
+      },
+      "faktorler": {
+        "skor": 2.0201,
+        "sira": 1.0,
+        "yuzdelik": 100.0,
+        "weights_hash": "4a547ff26723",
+        "mom_6_1": 51.4037,
+        "mom_12_1": 112.5504,
+        "zirve_yakinlik": -11.1373,
+        "kapilar": {
+          "uygun": true,
+          "nedenler": []
+        }
+      },
+      "likidite": {
+        "medyan_gunluk_tl": 9167921400.0
+      },
+      "veri_kalitesi": {
+        "ok": true,
+        "uyarilar": [],
+        "degerlendirildi": true,
+        "yas_gun": 0
+      },
+      "limit_durumu": {
+        "durum": "serbest",
+        "getiri_pct": -2.58,
+        "yon": null,
+        "intraday_dokunma": false,
+        "band": [
+          348.3,
+          425.7
+        ],
+        "aciklama": "getiri %-2.58 — marjdan uzak."
+      },
+      "bilanco_penceresi": {
+        "durum": "acik",
+        "bildirimler": [
+          {
+            "subject": "Faaliyet Raporu (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Finansal Rapor",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          },
+          {
+            "subject": "Sorumluluk Beyanı (Konsolide)",
+            "period": "9 Aylık",
+            "year": 2026,
+            "start_date": "2026-10-01",
+            "end_date": "2026-11-09"
+          }
+        ],
+        "not": "3 bekleyen bildirim plan penceresine (2026-10-02 … 2026-11-02) düşüyor"
+      },
+      "aktif_vetolar": [],
+      "plan_menusu": [],
+      "plan_yok_nedeni": "1 giriş bandı denendi; brüt R:R hiçbir kombinasyonda ≥1.5 olmadı (stop bandı geçti)",
+      "plan_yok_sinifi": "geometri",
+      "plan_yok_detay": "rr_yetersiz",
+      "plan_yok_elenen": [
+        "dogrudan/atr_2x: R:R 1.35 < 1.5",
+        "dogrudan/atr_2.5x: R:R 1.08 < 1.5",
+        "dogrudan/atr_3x: R:R 0.9 < 1.5",
+        "dogrudan/swing_low: 6.07×ATR ∉ [1.5,4.0]",
+        "dogrudan/sma_break_buffer: 0.6×ATR ∉ [1.5,4.0]"
+      ],
+      "acik_tahminler": [
+        {
+          "prediction_id": "2026-07-29-TUPRS-1",
+          "asof": "2026-07-29",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-04-TUPRS-1",
+          "asof": "2026-08-04",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-05-TUPRS-1",
+          "asof": "2026-08-05",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-10-TUPRS-1",
+          "asof": "2026-08-10",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-11-TUPRS-1",
+          "asof": "2026-08-11",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-12-TUPRS-1",
+          "asof": "2026-08-12",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-13-TUPRS-1",
+          "asof": "2026-08-13",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-14-TUPRS-1",
+          "asof": "2026-08-14",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-17-TUPRS-1",
+          "asof": "2026-08-17",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-18-TUPRS-1",
+          "asof": "2026-08-18",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-19-TUPRS-1",
+          "asof": "2026-08-19",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-20-TUPRS-1",
+          "asof": "2026-08-20",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-21-TUPRS-1",
+          "asof": "2026-08-21",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-24-TUPRS-1",
+          "asof": "2026-08-24",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-25-TUPRS-1",
+          "asof": "2026-08-25",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-TUPRS-1",
+          "asof": "2026-08-26",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-26-TUPRS-2",
+          "asof": "2026-08-26",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-08-28-TUPRS-1",
+          "asof": "2026-08-28",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-01-TUPRS-1",
+          "asof": "2026-09-01",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-02-TUPRS-1",
+          "asof": "2026-09-02",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-03-TUPRS-1",
+          "asof": "2026-09-03",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-04-TUPRS-1",
+          "asof": "2026-09-04",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-07-TUPRS-1",
+          "asof": "2026-09-07",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-08-TUPRS-1",
+          "asof": "2026-09-08",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-09-TUPRS-1",
+          "asof": "2026-09-09",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-10-TUPRS-1",
+          "asof": "2026-09-10",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-11-TUPRS-1",
+          "asof": "2026-09-11",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-14-TUPRS-1",
+          "asof": "2026-09-14",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-15-TUPRS-1",
+          "asof": "2026-09-15",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-16-TUPRS-1",
+          "asof": "2026-09-16",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-17-TUPRS-1",
+          "asof": "2026-09-17",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-18-TUPRS-1",
+          "asof": "2026-09-18",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-21-TUPRS-1",
+          "asof": "2026-09-21",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-22-TUPRS-1",
+          "asof": "2026-09-22",
+          "signal": "avoid",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-23-TUPRS-1",
+          "asof": "2026-09-23",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-24-TUPRS-1",
+          "asof": "2026-09-24",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-25-TUPRS-1",
+          "asof": "2026-09-25",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-28-TUPRS-1",
+          "asof": "2026-09-28",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-09-30-TUPRS-1",
+          "asof": "2026-09-30",
+          "signal": "hold",
+          "bariyer": null
+        }
+      ],
+      "haberler": [
+        {
+          "id": "kap-1671554",
+          "tarih": "2026-10-02 15:24",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "İhraç Tavanına İlişkin Bildirim",
+          "ozet": "Yurtiçinde Borçlanma Aracı İhraç Edilmesi için SPK Başvurusu",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1671554"
+        },
+        {
+          "id": "kap-1671102",
+          "tarih": "2026-10-02 06:24",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Kurumsal Yönetim İlkelerine Uyum Derecelendirmesi",
+          "ozet": "Kurumsal Yönetim Derecelendirme Notu",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1671102"
+        }
+      ],
+      "haber_tarama_baslangici": "2026-09-30T20:59:59+00:00"
+    }
+  ],
+  "portfoy": {
+    "pozisyonlar": []
+  },
+  "izin_verilen_degerler": {
+    "signal": [
+      "strong_buy",
+      "buy",
+      "accumulate",
+      "hold",
+      "reduce",
+      "sell",
+      "avoid"
+    ],
+    "action": [
+      "plan_sec",
+      "plan_reddet",
+      "izle",
+      "islem_yok"
+    ],
+    "confidence": [
+      "yuksek",
+      "orta",
+      "dusuk"
+    ],
+    "veto_code": [
+      "haber_riski",
+      "kurumsal_islem",
+      "likidite_zayif",
+      "sektor_yogunlugu",
+      "tez_zayif",
+      "veri_supheli",
+      "rejim_uyumsuz"
+    ],
+    "regime_agreement": [
+      "katiliyorum",
+      "katilmiyorum"
+    ],
+    "portfolio_action": [
+      "risk_azalt",
+      "koru",
+      "risk_artir"
+    ],
+    "tool": [
+      "claude-code",
+      "codex",
+      "antigravity",
+      "kiro",
+      "diger",
+      "gemini-3.5-flash",
+      "gemini-3.6-flash",
+      "gemini-2.5-pro",
+      "gemini-3.1-pro-preview",
+      "gpt-5.6-luna",
+      "gpt-5-mini",
+      "gemini-3.8-flash",
+      "gemini-3.7-flash",
+      "gpt-6-luna"
+    ],
+    "plan_ids": {
+      "AKBNK": [],
+      "ASELS": [],
+      "ASTOR": [],
+      "BIMAS": [],
+      "EKGYO": [],
+      "ENKAI": [],
+      "EREGL": [],
+      "EUPWR": [
+        "EUPWR-2026-10-02-A",
+        "EUPWR-2026-10-02-B"
+      ],
+      "FROTO": [],
+      "GARAN": [],
+      "KCHOL": [
+        "KCHOL-2026-10-02-A",
+        "KCHOL-2026-10-02-B"
+      ],
+      "KRDMD": [],
+      "PETKM": [],
+      "SISE": [],
+      "TAVHL": [],
+      "TCELL": [],
+      "THYAO": [],
+      "TUPRS": []
+    }
+  },
+  "kurallar_ozeti": [
+    "Hiçbir sayı ÜRETME. Prose içinde kullandığın her sayı bu paketten BİREBİR gelmeli; paket dışı sayı denetimde reddedilir (HF-17).",
+    "Fiyat / stop / hedef / pozisyon boyutu YAZMA — `selected_plan_id` seç, sayılar plandan okunur.",
+    "Güveni yüzde olarak verme; `yuksek|orta|dusuk` enum'u kullan.",
+    "Evrendeki HER hisse ya `stocks[]` içinde ya `not_covered` içinde olmalı.",
+    "`falsifier`: 5 işlem günü içinde GÖZLEMLENEBİLİR bir olay yaz. Jenerik cümle yazma; şablon tespiti var (HF-27).",
+    "Haber yorumu yapıyorsan `news_refs`'e paketteki haber id'lerini koy. Pakette olmayan id uydurma (HF-28).",
+    "Bir planı beğenmiyorsan `plan_reddet` + `veto_code` kullan — bu gerçek bir karardır ve performansı ölçülür.",
+    "Bu sistemde ÖLÇÜLEN KENAR YOKTUR (ADR #008). Seviyeler planlama geometrisidir; yön iddiası üretme."
+  ],
+  "bundle_sha": "f3f215446a14877f7265efcb941e4983e63d10c5b73568e4bc5ee36e14e93703"
+}
