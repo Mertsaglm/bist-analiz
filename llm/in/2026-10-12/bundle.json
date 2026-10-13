@@ -2,7 +2,7 @@
   "bundle_version": "bist_bundle_v1",
   "asof": "2026-10-12",
   "karar_gunu": "2026-11-10",
-  "generated_utc": "2026-10-12T23:15:10+00:00",
+  "generated_utc": "2026-10-13T21:34:09+00:00",
   "uyari": "Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir.",
   "takvim": {
     "son_kapali_seans": "2026-10-12",
@@ -17,18 +17,18 @@
   },
   "haber_taramasi": {
     "ok": true,
-    "son_bildirim": "2026-10-12T17:00:40+00:00",
-    "gecikme_gun": 0,
+    "son_bildirim": "2026-10-13T16:20:00+00:00",
+    "gecikme_gun": -1,
     "not": null
   },
   "rejim": {
     "etiket": "risk-off",
     "tetikleyici": "XU100 SMA200'ün %10.70 ALTINDA (≤ %-3.0) · genişlik %20.9 ≤ %35.0",
-    "xu100_sma200_farki_pct": -10.702350224125079,
+    "xu100_sma200_farki_pct": -10.70212873208548,
     "genislik_sma50_ustu_pct": 20.8955223880597,
     "genislik_n": 67,
     "genislik_istenen_n": 67,
-    "xu100_vol_yillik_21g": 31.969121589258858,
+    "xu100_vol_yillik_21g": 31.969110435225858,
     "makro": {
       "politika_faizi": 37.0,
       "tufe_bayat_tarih": "2025-12-01",
@@ -56,15 +56,15 @@
         "dusuk_52h": 53.0499992371
       },
       "gostergeler": {
-        "rsi14": 45.321254039578335,
-        "macd_hist": -0.18749880659636364,
-        "atr14": 2.237006359966835,
-        "atr_pct": 3.2728696560461636,
+        "rsi14": 45.32125403965499,
+        "macd_hist": -0.18749880659501073,
+        "atr14": 2.2370063599623147,
+        "atr_pct": 3.272869656038541,
         "adx14": 26.03419306813716,
-        "sma20": 69.53749961852606,
-        "sma50": 70.11299987792842,
-        "sma200": 73.86149980544761,
-        "bb_pctb": 0.3547234744632549
+        "sma20": 69.53749961852711,
+        "sma50": 70.11299987792886,
+        "sma200": 73.8614998054477,
+        "bb_pctb": 0.35472347446566227
       },
       "faktorler": {
         "skor": -0.2329,
@@ -418,9 +418,69 @@
           "asof": "2026-10-08",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-10-12-AKBNK-1",
+          "asof": "2026-10-12",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [
+        {
+          "id": "kap-1680485",
+          "tarih": "2026-10-13 13:30",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "İhraç Belgesi",
+          "ozet": "Yurt İçi Borçlanma Aracı SPK Onaylı İhraç Belgesi",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1680485"
+        },
+        {
+          "id": "kap-1680471",
+          "tarih": "2026-10-13 13:30",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "İhraç Belgesi",
+          "ozet": "Yurt İçi Borçlanma Aracı SPK Onaylı İhraç Belgesi",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1680471"
+        },
+        {
+          "id": "kap-1680470",
+          "tarih": "2026-10-13 13:30",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Yeşil veya Sürdürülebilir Temalı Sermaye Piyasası Aracına İlişkin Bildirim",
+          "ozet": "Yurt Dışında Yeşil/Sürdürülebilir Temalı Borçlanma Aracı Senelik İzin Yenilemesine İlişkin SPK İzni",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1680470"
+        },
+        {
+          "id": "kap-1680469",
+          "tarih": "2026-10-13 13:29",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "İhraç Belgesi",
+          "ozet": "Yurt Dışında Yeşil/Sürdürülebilir Temalı Borçlanma Aracı Senelik İzin Yenilemesine İlişkin SPK Onaylı İhraç Belgesi.",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1680469"
+        },
+        {
+          "id": "kap-1680467",
+          "tarih": "2026-10-13 13:29",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "Yurtdışı Piyasalara Tahvil İhracı",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1680467"
+        },
+        {
+          "id": "kap-1680078",
+          "tarih": "2026-10-13 08:03",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Finansal Takvim",
+          "ozet": "Finansal Takvim (2026 3.Çeyrek)",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1680078"
+        },
         {
           "id": "kap-1679679",
           "tarih": "2026-10-12 15:16",
@@ -438,15 +498,6 @@
           "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
           "ozet": "Nitelikli Yatırımcılara Yapılan Tahvil İhracı",
           "url": "https://www.kap.org.tr/tr/Bildirim/1678932"
-        },
-        {
-          "id": "kap-1678463",
-          "tarih": "2026-10-09 11:20",
-          "kaynak": "KAP (resmî beyan)",
-          "onem": "orta",
-          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
-          "ozet": "XS2968582697 ISIN Kodlu Yeşil/Sürdürülebilir Temalı Tahvilin İtfası",
-          "url": "https://www.kap.org.tr/tr/Bildirim/1678463"
         }
       ],
       "haber_tarama_baslangici": "2026-10-08T20:59:59+00:00"
@@ -800,9 +851,25 @@
           "asof": "2026-10-08",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-10-12-ASELS-1",
+          "asof": "2026-10-12",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
-      "haberler": [],
+      "haberler": [
+        {
+          "id": "kap-1680236",
+          "tarih": "2026-10-13 11:05",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Finansal Takvim",
+          "ozet": "Finansal Takvim",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1680236"
+        }
+      ],
       "haber_tarama_baslangici": "2026-10-08T20:59:59+00:00"
     },
     {
@@ -818,8 +885,8 @@
       "gostergeler": {
         "rsi14": 35.684536478347425,
         "macd_hist": -0.9813694425779822,
-        "atr14": 18.415152268945587,
-        "atr_pct": 9.32412773111169,
+        "atr14": 18.41515226894782,
+        "atr_pct": 9.32412773111282,
         "adx14": 36.09099393069716,
         "sma20": 228.65,
         "sma50": 282.47,
@@ -888,12 +955,12 @@
       "aktif_vetolar": [
         {
           "veto_code": "tez_zayif",
-          "konuldu": "2026-10-08",
-          "bitis": "2026-10-15",
-          "kalan_islem_gunu": 3,
+          "konuldu": "2026-10-12",
+          "bitis": "2026-10-19",
+          "kalan_islem_gunu": 5,
           "arac": "gpt-6-luna",
-          "gerekce": "Finansal raporlama penceresi açık ve hisse oynaklığı yüksek; haber veya sonuç akışı hızlı fiyat boşlukları yaratabilir. Mevcut aktif veto, plan geometrisinin cazibesinden önce gelir.",
-          "tekrar": 2
+          "gerekce": "Finansal raporlama penceresi açıktır ve açıklamalar plan ufkunda sert hareket yaratabilir. Yüksek fiyat oynaklığı, zayıf teknik görünüm ve süresi devam eden tez zayıflığı vetosu birlikte planın uygulanmasını sakıncalı kılıyor.",
+          "tekrar": 3
         }
       ],
       "plan_menusu": [
@@ -1292,6 +1359,12 @@
           "asof": "2026-10-08",
           "signal": "avoid",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-10-12-ASTOR-1",
+          "asof": "2026-10-12",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -1654,6 +1727,12 @@
           "asof": "2026-10-08",
           "signal": "avoid",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-10-12-BIMAS-1",
+          "asof": "2026-10-12",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -1670,15 +1749,15 @@
         "dusuk_52h": 17.4699993134
       },
       "gostergeler": {
-        "rsi14": 52.00889575002234,
-        "macd_hist": 0.07063924350599032,
-        "atr14": 0.6889488577960702,
-        "atr_pct": 3.4918848138972067,
+        "rsi14": 52.008895750385,
+        "macd_hist": 0.07063924350830954,
+        "atr14": 0.6889488578014832,
+        "atr_pct": 3.4918848139182126,
         "adx14": 13.588297457873924,
-        "sma20": 19.317500114434402,
-        "sma50": 19.44300010681176,
-        "sma200": 20.82035007476994,
-        "bb_pctb": 0.7157969195709074
+        "sma20": 19.31750011443622,
+        "sma50": 19.443000106812487,
+        "sma200": 20.820350074770122,
+        "bb_pctb": 0.7157969195882515
       },
       "faktorler": {
         "skor": -0.1513,
@@ -2047,6 +2126,12 @@
           "asof": "2026-10-08",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-10-12-EKGYO-1",
+          "asof": "2026-10-12",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -2063,15 +2148,15 @@
         "dusuk_52h": 68.1500015259
       },
       "gostergeler": {
-        "rsi14": 41.07021406404831,
-        "macd_hist": -0.33830889775824957,
-        "atr14": 2.6491686776030474,
-        "atr_pct": 3.2725988603782827,
-        "adx14": 30.97918741413177,
-        "sma20": 84.29999961852606,
-        "sma50": 85.62799972533843,
-        "sma200": 91.81449985503961,
-        "bb_pctb": 0.1168359622195692
+        "rsi14": 41.070214064126404,
+        "macd_hist": -0.3383088977555553,
+        "atr14": 2.6491686776000347,
+        "atr_pct": 3.272598860372855,
+        "adx14": 30.979187414126088,
+        "sma20": 84.29999961852816,
+        "sma50": 85.62799972533927,
+        "sma200": 91.81449985503981,
+        "bb_pctb": 0.1168359622235877
       },
       "faktorler": {
         "skor": -0.1658,
@@ -2425,6 +2510,12 @@
           "asof": "2026-10-08",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-10-12-ENKAI-1",
+          "asof": "2026-10-12",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -2441,15 +2532,15 @@
         "dusuk_52h": 23.4599990845
       },
       "gostergeler": {
-        "rsi14": 50.68350616341751,
-        "macd_hist": 0.09104859760871731,
-        "atr14": 1.2110961068885007,
-        "atr_pct": 3.2210004149940055,
-        "adx14": 11.481170422887008,
-        "sma20": 37.07999954222696,
-        "sma50": 37.94239990233878,
-        "sma200": 34.5536999511672,
-        "bb_pctb": 0.650569133117395
+        "rsi14": 50.68350616353911,
+        "macd_hist": 0.09104859761006445,
+        "atr14": 1.2110961068919603,
+        "atr_pct": 3.2210004150013996,
+        "adx14": 11.481170422928988,
+        "sma20": 37.07999954222801,
+        "sma50": 37.942399902339204,
+        "sma200": 34.5536999511673,
+        "bb_pctb": 0.6505691331230881
       },
       "faktorler": {
         "skor": 1.1679,
@@ -2783,6 +2874,12 @@
           "asof": "2026-10-08",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-10-12-EREGL-1",
+          "asof": "2026-10-12",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -2799,15 +2896,15 @@
         "dusuk_52h": 25.5
       },
       "gostergeler": {
-        "rsi14": 32.8237660700197,
-        "macd_hist": 0.1431332828546248,
-        "atr14": 5.26372862886073,
-        "atr_pct": 10.751079916844091,
+        "rsi14": 32.823766069996864,
+        "macd_hist": 0.14313328285287952,
+        "atr14": 5.263728628862683,
+        "atr_pct": 10.751079916854083,
         "adx14": 44.013370888237276,
-        "sma20": 57.142499732971636,
-        "sma50": 75.88099937438265,
-        "sma200": 61.50244979858267,
-        "bb_pctb": 0.1851071838220034
+        "sma20": 57.14249973297027,
+        "sma50": 75.88099937438211,
+        "sma200": 61.50244979858253,
+        "bb_pctb": 0.18510718382108715
       },
       "faktorler": {
         "skor": null,
@@ -2871,12 +2968,12 @@
       "aktif_vetolar": [
         {
           "veto_code": "likidite_zayif",
-          "konuldu": "2026-10-08",
-          "bitis": "2026-11-06",
-          "kalan_islem_gunu": 18,
+          "konuldu": "2026-10-12",
+          "bitis": "2026-11-10",
+          "kalan_islem_gunu": 20,
           "arac": "gpt-6-luna",
-          "gerekce": "Finansal raporlama penceresi açık; sonuç akışı yüksek oynaklıkla birleşerek likidite ve fiyat boşluğu riskini artırabilir. Aktif likidite vetosu kararın temel unsurudur.",
-          "tekrar": 11
+          "gerekce": "Finansal raporlama penceresi açıktır; açıklamalar plan ufkunda oynaklığı artırabilir. Yüksek fiyat oynaklığı, ortalamaların altındaki seyir ve süresi devam eden likidite vetosu birlikte önemli uygulama riski oluşturuyor.",
+          "tekrar": 12
         }
       ],
       "plan_menusu": [
@@ -3275,6 +3372,12 @@
           "asof": "2026-10-08",
           "signal": "avoid",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-10-12-EUPWR-1",
+          "asof": "2026-10-12",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -3291,15 +3394,15 @@
         "dusuk_52h": 72.0500030518
       },
       "gostergeler": {
-        "rsi14": 41.07502809880545,
-        "macd_hist": -0.09099498310926823,
-        "atr14": 2.0995454888973617,
-        "atr_pct": 2.842986502746774,
-        "adx14": 26.74456926047833,
-        "sma20": 75.7325000762929,
-        "sma50": 77.90999969481916,
-        "sma200": 93.58124984740978,
-        "bb_pctb": 0.23237087986403585
+        "rsi14": 41.075028098863825,
+        "macd_hist": -0.09099498310791532,
+        "atr14": 2.106688237048868,
+        "atr_pct": 2.85265847065265,
+        "adx14": 26.78322415862227,
+        "sma20": 75.73250007629395,
+        "sma50": 77.90999969481958,
+        "sma200": 93.5812498474099,
+        "bb_pctb": 0.23237087986671365
       },
       "faktorler": {
         "skor": -1.0657,
@@ -3365,13 +3468,17 @@
       },
       "aktif_vetolar": [],
       "plan_menusu": [],
-      "plan_yok_nedeni": "1 giriş bandı denendi; brüt R:R hiçbir kombinasyonda ≥1.5 olmadı (stop bandı geçti)",
+      "plan_yok_nedeni": "2 giriş bandı denendi; brüt R:R hiçbir kombinasyonda ≥1.5 olmadı (stop bandı geçti)",
       "plan_yok_sinifi": "geometri",
       "plan_yok_detay": "rr_yetersiz",
       "plan_yok_elenen": [
-        "dogrudan/atr_2x: R:R 1.27 < 1.5",
-        "dogrudan/atr_2.5x: R:R 1.02 < 1.5",
-        "dogrudan/atr_3x: R:R 0.85 < 1.5"
+        "dogrudan/atr_2x: R:R 1.26 < 1.5",
+        "dogrudan/atr_2.5x: R:R 1.01 < 1.5",
+        "dogrudan/atr_3x: R:R 0.84 < 1.5",
+        "dogrudan/swing_low: 0.78×ATR ∉ [1.5,4.0]",
+        "destek_retest/atr_2x: R:R 1.29 < 1.5",
+        "destek_retest/atr_2.5x: R:R 1.04 < 1.5",
+        "destek_retest/atr_3x: R:R 0.87 < 1.5"
       ],
       "acik_tahminler": [
         {
@@ -3649,6 +3756,12 @@
           "asof": "2026-10-08",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-10-12-FROTO-1",
+          "asof": "2026-10-12",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -3665,15 +3778,15 @@
         "dusuk_52h": 115.4000015259
       },
       "gostergeler": {
-        "rsi14": 50.02289430794552,
-        "macd_hist": 0.1078141126583001,
-        "atr14": 3.684911059459094,
-        "atr_pct": 2.8389144628822054,
-        "adx14": 23.604030117031645,
-        "sma20": 129.18499946595347,
-        "sma50": 130.4479995727634,
-        "sma200": 136.99849998474537,
-        "bb_pctb": 0.5477329109803736
+        "rsi14": 50.02289430787058,
+        "macd_hist": 0.10781411265559437,
+        "atr14": 3.684911059462107,
+        "atr_pct": 2.838914462885449,
+        "adx14": 23.60403011701502,
+        "sma20": 129.18499946595134,
+        "sma50": 130.44799957276254,
+        "sma200": 136.99849998474514,
+        "bb_pctb": 0.5477329109772708
       },
       "faktorler": {
         "skor": -0.4019,
@@ -4015,9 +4128,25 @@
           "asof": "2026-10-08",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-10-12-GARAN-1",
+          "asof": "2026-10-12",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
-      "haberler": [],
+      "haberler": [
+        {
+          "id": "kap-1680986",
+          "tarih": "2026-10-13 15:10",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Pay Dışında Sermaye Piyasası Aracı İşlemlerine İlişkin Bildirim (Faiz İçeren)",
+          "ozet": "MTN ihracı itfası",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1680986"
+        }
+      ],
       "haber_tarama_baslangici": "2026-10-08T20:59:59+00:00"
     },
     {
@@ -4031,15 +4160,15 @@
         "dusuk_52h": 146.0
       },
       "gostergeler": {
-        "rsi14": 43.009269367949045,
-        "macd_hist": -1.036429030033468,
-        "atr14": 6.627588632266768,
-        "atr_pct": 3.2032812120729997,
+        "rsi14": 43.009269367934714,
+        "macd_hist": -1.0364290300344912,
+        "atr14": 6.627588632263755,
+        "atr_pct": 3.203281212071786,
         "adx14": 28.487048597864174,
-        "sma20": 213.71500015258712,
-        "sma50": 213.15199920654283,
-        "sma200": 200.58899993896475,
-        "bb_pctb": 0.15562354017815447
+        "sma20": 213.71500015258636,
+        "sma50": 213.15199920654254,
+        "sma200": 200.58899993896463,
+        "bb_pctb": 0.15562354017747754
       },
       "faktorler": {
         "skor": 0.3975,
@@ -4101,7 +4230,17 @@
         ],
         "not": "3 bekleyen bildirim plan penceresine (2026-10-12 … 2026-11-10) düşüyor"
       },
-      "aktif_vetolar": [],
+      "aktif_vetolar": [
+        {
+          "veto_code": "rejim_uyumsuz",
+          "konuldu": "2026-10-12",
+          "bitis": "2026-10-19",
+          "kalan_islem_gunu": 5,
+          "arac": "gpt-6-luna",
+          "gerekce": "Finansal raporlama penceresi açıktır ve açıklamalar plan ufkunda oynaklık yaratabilir. Risk-off rejiminde sermaye koruma önceliği, planın geometrik olarak geçerli olmasından daha ağır basıyor.",
+          "tekrar": 1
+        }
+      ],
       "plan_menusu": [
         {
           "plan_id": "KCHOL-2026-10-12-A",
@@ -4484,6 +4623,12 @@
           "asof": "2026-10-08",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-10-12-KCHOL-1",
+          "asof": "2026-10-12",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -4500,15 +4645,15 @@
         "dusuk_52h": 23.5
       },
       "gostergeler": {
-        "rsi14": 48.77988806822878,
-        "macd_hist": -0.23673455489697842,
-        "atr14": 1.8717551344217438,
-        "atr_pct": 4.2481958149824575,
-        "adx14": 13.4296052736801,
-        "sma20": 44.46700019837287,
-        "sma50": 44.26119995117115,
-        "sma200": 37.12900005340478,
-        "bb_pctb": 0.4306351944786059
+        "rsi14": 48.779888068192896,
+        "macd_hist": -0.23673455489754686,
+        "atr14": 1.871755134424562,
+        "atr_pct": 4.24819581498972,
+        "adx14": 13.429605273653795,
+        "sma20": 44.46700019837242,
+        "sma50": 44.261199951170966,
+        "sma200": 37.12900005340474,
+        "bb_pctb": 0.4306351944771586
       },
       "faktorler": {
         "skor": 1.3908,
@@ -4712,12 +4857,6 @@
           "bariyer": null
         },
         {
-          "prediction_id": "2026-09-14-KRDMD-1",
-          "asof": "2026-09-14",
-          "signal": "buy",
-          "bariyer": "2026-10-12"
-        },
-        {
           "prediction_id": "2026-09-15-KRDMD-1",
           "asof": "2026-09-15",
           "signal": "hold",
@@ -4812,9 +4951,25 @@
           "asof": "2026-10-08",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-10-12-KRDMD-1",
+          "asof": "2026-10-12",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
-      "haberler": [],
+      "haberler": [
+        {
+          "id": "kap-1681196",
+          "tarih": "2026-10-13 16:20",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Payların Geri Alınmasına İlişkin Bildirim",
+          "ozet": "13.10.2026 Tarihli Pay Geri Alım İşlemleri",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1681196"
+        }
+      ],
       "haber_tarama_baslangici": "2026-10-08T20:59:59+00:00"
     },
     {
@@ -4828,15 +4983,15 @@
         "dusuk_52h": 16.1200008392
       },
       "gostergeler": {
-        "rsi14": 47.283101278101334,
-        "macd_hist": -0.039888697872142054,
-        "atr14": 1.0258442213946315,
-        "atr_pct": 5.058403287296028,
-        "adx14": 11.70456826409539,
-        "sma20": 20.686500072477276,
-        "sma50": 20.64319999694291,
-        "sma200": 20.16904994010973,
-        "bb_pctb": 0.4052323945626147
+        "rsi14": 47.28310127836749,
+        "macd_hist": -0.03988869786923738,
+        "atr14": 1.0258442213941992,
+        "atr_pct": 5.0584032872825455,
+        "adx14": 11.704568264102008,
+        "sma20": 20.68650007247955,
+        "sma50": 20.64319999694382,
+        "sma200": 20.169049940109957,
+        "bb_pctb": 0.40523239457261734
       },
       "faktorler": {
         "skor": 0.4449,
@@ -5187,6 +5342,12 @@
           "asof": "2026-10-08",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-10-12-PETKM-1",
+          "asof": "2026-10-12",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -5203,15 +5364,15 @@
         "dusuk_52h": 32.4399986267
       },
       "gostergeler": {
-        "rsi14": 41.48567283739434,
-        "macd_hist": -0.035647597712833434,
-        "atr14": 1.2176141639303137,
-        "atr_pct": 3.238335673787441,
-        "adx14": 24.010247725569204,
-        "sma20": 38.740000343325626,
-        "sma50": 40.11040023803825,
-        "sma200": 43.368300056458565,
-        "bb_pctb": 0.2944042876632913
+        "rsi14": 41.48567283748541,
+        "macd_hist": -0.03564759771148629,
+        "atr14": 1.2176141639352798,
+        "atr_pct": 3.238335673798832,
+        "adx14": 24.01024772560077,
+        "sma20": 38.740000343326685,
+        "sma50": 40.11040023803867,
+        "sma200": 43.368300056458665,
+        "bb_pctb": 0.2944042876667764
       },
       "faktorler": {
         "skor": -0.1834,
@@ -5563,6 +5724,12 @@
         {
           "prediction_id": "2026-10-08-SISE-1",
           "asof": "2026-10-08",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-10-12-SISE-1",
+          "asof": "2026-10-12",
           "signal": "hold",
           "bariyer": null
         }
@@ -5937,9 +6104,25 @@
           "asof": "2026-10-08",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-10-12-TAVHL-1",
+          "asof": "2026-10-12",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
-      "haberler": [],
+      "haberler": [
+        {
+          "id": "kap-1679950",
+          "tarih": "2026-10-13 07:35",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Yatırımcı Bülteni (Eylül 2026)",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1679950"
+        }
+      ],
       "haber_tarama_baslangici": "2026-10-08T20:59:59+00:00"
     },
     {
@@ -5955,9 +6138,9 @@
       "gostergeler": {
         "rsi14": 43.5853931847898,
         "macd_hist": 0.08174556065655847,
-        "atr14": 2.849860804660396,
-        "atr_pct": 2.9304481281854975,
-        "adx14": 25.057731399951027,
+        "atr14": 2.849860804657382,
+        "atr_pct": 2.930448128182398,
+        "adx14": 25.05773139993728,
         "sma20": 98.83499984741316,
         "sma50": 100.92600006103727,
         "sma200": 107.83950004577731,
@@ -6313,6 +6496,12 @@
         {
           "prediction_id": "2026-10-08-TCELL-1",
           "asof": "2026-10-08",
+          "signal": "hold",
+          "bariyer": null
+        },
+        {
+          "prediction_id": "2026-10-12-TCELL-1",
+          "asof": "2026-10-12",
           "signal": "hold",
           "bariyer": null
         }
@@ -6697,6 +6886,12 @@
           "asof": "2026-10-08",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-10-12-THYAO-1",
+          "asof": "2026-10-12",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -6786,12 +6981,12 @@
       "aktif_vetolar": [
         {
           "veto_code": "rejim_uyumsuz",
-          "konuldu": "2026-10-08",
-          "bitis": "2026-10-15",
-          "kalan_islem_gunu": 3,
+          "konuldu": "2026-10-12",
+          "bitis": "2026-10-19",
+          "kalan_islem_gunu": 5,
           "arac": "gpt-6-luna",
-          "gerekce": "Finansal raporlama penceresi açık; sonuç açıklaması fiyat oynaklığını artırabilir. Hazır planın maliyetler sonrası cazibesi zayıflıyor ve riskten kaçınan piyasa koşulları ek bir uyumsuzluk oluşturuyor.",
-          "tekrar": 1
+          "gerekce": "Finansal raporlama penceresi açıktır ve açıklamalar plan ufkunda oynaklık yaratabilir. Risk-off rejimi ile süresi devam eden rejim uyumsuzluğu vetosu, mevcut planı uygulamaya karşı belirleyici temkin nedenleridir.",
+          "tekrar": 2
         }
       ],
       "plan_menusu": [
@@ -7113,6 +7308,12 @@
           "asof": "2026-10-08",
           "signal": "hold",
           "bariyer": null
+        },
+        {
+          "prediction_id": "2026-10-12-TUPRS-1",
+          "asof": "2026-10-12",
+          "signal": "hold",
+          "bariyer": null
         }
       ],
       "haberler": [],
@@ -7219,5 +7420,5 @@
     "Bir planı beğenmiyorsan `plan_reddet` + `veto_code` kullan — bu gerçek bir karardır ve performansı ölçülür.",
     "Bu sistemde ÖLÇÜLEN KENAR YOKTUR (ADR #008). Seviyeler planlama geometrisidir; yön iddiası üretme."
   ],
-  "bundle_sha": "04d486b007f99f10bd81ad43cd7038b583016aad5da188ca33218a930b43e3bc"
+  "bundle_sha": "2c7116652b4f185079b6d1e22b62db10e2e877b780d1cd4cd19cc94caa8335e6"
 }

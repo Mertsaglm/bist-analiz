@@ -68,7 +68,7 @@ Bir plan geometrik olarak geçerli olabilir ama yine de kötü bir fikir olabili
 {
   "schema_version": "bist_llm_v1",
   "asof": "2026-10-12",
-  "bundle_sha": "04d486b007f99f10bd81ad43cd7038b583016aad5da188ca33218a930b43e3bc",
+  "bundle_sha": "2c7116652b4f185079b6d1e22b62db10e2e877b780d1cd4cd19cc94caa8335e6",
   "tool": "<araç>",
   "market_view": {
     "regime_agreement": "katiliyorum|katilmiyorum",
