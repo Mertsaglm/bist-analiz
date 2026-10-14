@@ -1,1 +1,1 @@
-{"approved":false,"evaluation":{"method":"Sabit SMA50 kuralı; getiri tahmini üretmez."},"features":["trend50","volatility20"],"fingerprint":"8dc18349bd281e4e783af809cebcf45bc984051da4800599abc9cf33264af48f","horizon_sessions":20,"id":"sma50-v1","kind":"sma50","ready":true}
+{"approved":false,"evaluation":{"method":"Sabit SMA50 kuralı; getiri tahmini üretmez."},"features":["trend50","volatility20"],"fingerprint":"5815b3caa5c561980cdc088456b3073c9c00ed1e42f778c751e05cf26638946d","horizon_sessions":20,"id":"sma50-v1","kind":"sma50","ready":true}
