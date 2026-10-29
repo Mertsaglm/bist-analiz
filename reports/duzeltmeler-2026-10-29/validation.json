@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-29",
+  "local_full_suite": {
+    "passed": 1503,
+    "skipped": 0,
+    "command": ".venv/bin/python -m pytest -q",
+    "seconds": 61.63
+  },
+  "after_failure_rescue_change": {
+    "passed": 55,
+    "skipped": 0,
+    "command": ".venv/bin/python -m pytest tests/test_advisor_free_operations.py tests/test_advisor_contracts.py tests/test_dokuman.py -q"
+  },
+  "shared_modules_equal": 37,
+  "diff_check": "passed",
+  "production_acceptance": false,
+  "production_data_note": "BIST pinned production TMSN OHLC failure retained; see private BIST report",
+  "dashboard": {
+    "passed": 12,
+    "build_syntax": "passed"
+  },
+  "ohlc_subset_and_recovery_regression": {
+    "passed": 61,
+    "command": ".venv/bin/python -m pytest tests/test_revision_prices.py tests/test_production_repairs.py tests/test_prices.py -q"
+  }
+}

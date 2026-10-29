@@ -11,6 +11,7 @@ verisi kullanılabilir mi?". Kapı bunu her ticker için ayrı cevaplar.
 from __future__ import annotations
 
 import logging
+import math
 import sqlite3
 from datetime import date, timedelta
 
@@ -30,6 +31,7 @@ BAR_COLS = ["ticker", "date", "o", "h", "l", "c", "v", "c_tr",
 def _store_bars(con: sqlite3.Connection, ticker: str, df: pd.DataFrame) -> int:
     if df.empty:
         return 0
+    _validate_ohlc(df, ticker)
     now = util.utc_now_iso()
     rows = [
         (ticker, r.date, _f(r.o), _f(r.h), _f(r.l), _f(r.c), _f(r.v), _f(r.c_tr),
@@ -46,6 +48,19 @@ def _store_bars(con: sqlite3.Connection, ticker: str, df: pd.DataFrame) -> int:
     con.executemany(sql, rows)
     con.commit()
     return con.total_changes - before
+
+
+class InvalidOHLCError(ValueError):
+    """Kaynak batch'i reddedildi; başka sembollerin çekimi devam edebilir."""
+
+
+def _validate_ohlc(frame, symbol):
+    """Yanlış kaydı uydurarak düzeltme; eski geçerli satırı da ezme."""
+    for row in frame.itertuples(index=False):
+        values = [_f(getattr(row, key)) for key in ('o','h','l','c')]
+        if (any(v is None or not math.isfinite(v) or v <= 0 for v in values)
+                or not values[2] <= min(values[0],values[3]) <= max(values[0],values[3]) <= values[1]):
+            raise InvalidOHLCError(f'Geçersiz OHLC: {symbol} {row.date}; kaynak satırı yazılmadı.')
 
 
 def _f(x) -> float | None:
@@ -170,7 +185,7 @@ def backfill(cfg: dict, con: sqlite3.Connection,
 
 
 def daily(cfg: dict, con: sqlite3.Connection,
-          tickers: list[str] | None = None, gun: int = 15) -> dict:
+          tickers: list[str] | None = None, gun: int = 15, *, simdi=None) -> dict:
     """Son N takvim gününü çeker ve üzerine yazar.
 
     Neden sadece "son bar" değil: yfinance geçmiş barları düzeltebilir (temettü
@@ -180,21 +195,28 @@ def daily(cfg: dict, con: sqlite3.Connection,
     from . import universe
 
     tickers = tickers or universe.all_tickers(con)
-    start = (date.today() - timedelta(days=gun)).isoformat()
+    start = ((simdi.date() if simdi else date.today()) - timedelta(days=gun)).isoformat()
     sonuc: dict[str, int] = {}
+    rejected = []
     for t in tickers:
         exists = con.execute('SELECT 1 FROM bars_daily WHERE ticker=? LIMIT 1', (t,)).fetchone()
         fetch_start = start if exists else cfg['sources']['yf']['backfill_start']
-        sonuc[t] = _store_bars(con, t, yf.fetch_bars(t, cfg, start=fetch_start))
+        frame = yf.fetch_bars(t, cfg, start=fetch_start)
+        try:
+            sonuc[t] = _store_bars(con, t, frame)
+        except InvalidOHLCError as exc:
+            rejected.append(str(exc))
     temiz = purge_phantom_bars(cfg, con)
     # ⚠ SIRA ÖNEMLİ: yarım bar ayıklaması kalite kapısından ÖNCE. Aksi halde
     # kapı kapanmamış bir seansın barını değerlendirir ve "temiz" der.
-    yarim = purge_incomplete_bars(cfg, con)
+    yarim = purge_incomplete_bars(cfg, con, simdi=simdi)
     # Kalite kapısı boru hattının PARÇASI — elle çalıştırılan adım bırakılmaz.
     # LESSONS L-002: "bir kere elle çalıştırdım, gerisi otomatik" varsayımı
     # yanlıştır; bağlı olmayan script donar ve hiçbir hata fırlatmaz. Burada
     # donması, kalite kapısının sessizce kapanması demekti (bkz. quality_map).
     kalite = assess_quality(cfg, con, tickers=tickers)
+    if rejected:
+        raise InvalidOHLCError('; '.join(rejected))
     return {"tickers": len(tickers), "bars": sonuc, "start": start,
             "hayalet_silinen": temiz["silinen"],
             "yarim_bar_silinen": yarim["silinen_bar"] + yarim["silinen_endeks"],
@@ -202,15 +224,21 @@ def daily(cfg: dict, con: sqlite3.Connection,
             "kalite_gecmeyen": sum(1 for r in kalite if not r["ok"])}
 
 
-def sync_indices(cfg: dict, con: sqlite3.Connection, start: str | None = None) -> dict:
+def sync_indices(cfg: dict, con: sqlite3.Connection, start: str | None = None, *, simdi=None) -> dict:
     """Endeks ve kur barları. XU100 ayrıca İŞLEM TAKVİMİNİN kaynağıdır."""
     from . import universe
 
     start = start or cfg["sources"]["yf"]["backfill_start"]
     now = util.utc_now_iso()
     sonuc: dict[str, int] = {}
+    rejected = []
     for ad, sym in universe.index_symbols(cfg).items():
         df = yf.fetch_index(sym, cfg, start=start)
+        try:
+            _validate_ohlc(df, ad)
+        except InvalidOHLCError as exc:
+            rejected.append(str(exc))
+            continue
         rows = [(ad, r.date, _f(r.o), _f(r.h), _f(r.l), _f(r.c), now)
                 for r in df.itertuples(index=False)]
         sonuc[ad] = db.upsert_many(
@@ -219,7 +247,9 @@ def sync_indices(cfg: dict, con: sqlite3.Connection, start: str | None = None) -
     # Endeks tarafı da yarım bar alabilir ve buradaki zararı daha büyüktür:
     # XU100 hem işlem takviminin hem rejim genişliğinin kaynağıdır (L-008,
     # "aynı savunma başka nerede olmalıydı?").
-    purge_incomplete_bars(cfg, con)
+    purge_incomplete_bars(cfg, con, simdi=simdi)
+    if rejected:
+        raise InvalidOHLCError('; '.join(rejected))
     return sonuc
 
 

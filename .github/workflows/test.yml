@@ -14,7 +14,7 @@ on:
   # yani gunlerce kod degismezse suite hic kosmaz. Son kosu 2026-08-07'ydi.
   # Bagimlilik/API kirilmasi boylece yalnizca gunluk is dustugunde gorunurdu.
   schedule:
-    - cron: "10 5 * * *"
+    - cron: "10 5 * * 1-5"
   workflow_dispatch: {}
 
 jobs:

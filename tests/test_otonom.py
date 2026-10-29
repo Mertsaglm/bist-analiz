@@ -516,6 +516,33 @@ class TestNobetci:
         assert not n["sessiz"] and not n["analizsiz"] and n["satirlar"] == []
 
 
+    def test_llm_kapaliyken_analiz_yoklugu_alarm_degil(self, cfg, con, monkeypatch):
+        self._kur(con, cfg, ["2026-08-28"], kosu_gunu="2026-08-28")
+        self._takvim(monkeypatch, "2026-08-28")
+        n = otonom.nobetci(cfg, con, analist_bekleniyor=False)
+        assert n["son_analiz"] is None
+        assert n["beklenen_hisse"] == 1
+        assert not n["analizsiz"] and not n["verisiz"] and not n["sessiz"]
+        assert n["satirlar"] == [] and "LLM kapalı" in n["not"]
+
+    def test_llm_kapaliyken_tek_taze_hisse_eksik_evreni_gizlemez(self, cfg, con, monkeypatch):
+        from tests.conftest import add_universe, add_bars
+        self._kur(con, cfg, ["2026-08-28"], kosu_gunu="2026-08-28")
+        add_universe(con, "BBB")
+        add_bars(con, "BBB", [("2026-08-27", 10., 11., 9., 10., 1000., 10.)])
+        self._takvim(monkeypatch, "2026-08-28")
+        n = otonom.nobetci(cfg, con, analist_bekleniyor=False)
+        assert n["son_bar"] == n["beklenen_seans"]
+        assert n["verisiz"] and n["eksik_hisseler"] == ["BBB"]
+        assert "1/2" in n["satirlar"][0]
+
+    def test_llm_kapaliyken_bos_evren_ve_baslamayan_kosu_alarm(self, cfg, con, monkeypatch):
+        self._takvim(monkeypatch, "2026-08-28")
+        n = otonom.nobetci(cfg, con, analist_bekleniyor=False)
+        assert n["verisiz"] and n["sessiz"]
+        assert any("evren boş" in s for s in n["satirlar"])
+
+
 # ============================================================ haftalık IC
 class TestHaftalikIC:
     """YAPI EŞLİĞİ (AGENTS §12.2): üreticinin anahtarları ile tüketicininki.

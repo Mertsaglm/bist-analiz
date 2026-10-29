@@ -45,21 +45,33 @@ def refresh(root, now=None, closing_refresh=False):
                 dates = dict(con.execute('SELECT ticker,max(date) FROM bars_daily GROUP BY ticker'))
                 return [t for t in tickers if dates.get(t, '') < expected]
             before = missing()
+            from src.calendar_bist import BistCalendar
+            cutoff_before = BistCalendar(legacy, con).last_closed_session(now).isoformat()
             indices = universe.index_symbols(legacy)
             index_dates = dict(con.execute('SELECT symbol,max(date) FROM index_daily GROUP BY symbol'))
             stale_indices = [s for s in indices if index_dates.get(s, '') < expected]
             if not before and not stale_indices:
                 return {'ok': True, 'expected': expected, 'skipped': 'already_current', 'missing': []}
             # Eksik kapanış için sonraki koşu tekrar dener; kalite kapısı gevşemez.
+            errors = {}
             if before:
-                prices.daily(legacy, con, tickers=before)
+                try:
+                    prices.daily(legacy, con, tickers=before, simdi=now)
+                except prices.InvalidOHLCError as exc:
+                    errors['stocks'] = str(exc)
             if stale_indices:
-                prices.sync_indices(legacy, con, start=(now.date()-timedelta(days=400)).isoformat())
+                try:
+                    prices.sync_indices(legacy, con, start=(now.date()-timedelta(days=400)).isoformat(), simdi=now)
+                except prices.InvalidOHLCError as exc:
+                    errors['indices'] = str(exc)
             after = missing()
             index_dates = dict(con.execute('SELECT symbol,max(date) FROM index_daily GROUP BY symbol'))
             stale_indices = [s for s in indices if index_dates.get(s, '') < expected]
-            result = {'ok': not after and not stale_indices, 'expected': expected,
+            result = {'ok': not after and not stale_indices and not errors, 'expected': expected,
+                      'errors': errors,
                       'missing_before': before, 'missing': after, 'missing_indices': stale_indices,
+                      'legacy_cutoff_before': cutoff_before,
+                      'legacy_cutoff_after': BistCalendar(legacy, con).last_closed_session(now).isoformat(),
                       'attempted_at': now.isoformat()}
             # Başarılı alt küme kaybolmaz; eksik isimler başarılı diye sunulmaz.
             dbdump.dump(legacy, output)

@@ -174,7 +174,7 @@ def test_sql_writers_share_non_replacing_queue_and_checkout_current_main():
     assert refresh<cycle and steps[refresh]['continue-on-error'] is True
     assert any('git add data/advisor/ data/bist.sql' in s.get('run','') for s in steps)
     schedule=writers[-1].get('on',writers[-1].get(True))['schedule'][0]['cron']
-    assert schedule=='2,17,32,47 7-17 * * 1-5'
+    assert schedule=='17 7-16 * * 1-5'
 
 
 def test_corporate_after_closed_trade_cannot_erase_its_result(cfg,con):
@@ -198,3 +198,28 @@ def test_http_and_curl_network_bans_cannot_be_swallowed_as_source_failures():
     with pytest.raises(pytest.fail.Exception,match='curl_cffi taşıyıcısı'):
         try:Session().get('https://example.com')
         except Exception:pass
+
+
+def test_refresh_preserves_valid_subset_and_error_diagnosis_after_invalid_ohlc(cfg,con,tmp_path,monkeypatch):
+    module=script('refresh_market_history')
+    (tmp_path/'advisor').mkdir();(tmp_path/'data').mkdir()
+    for name in ('advisor/config.json','holidays_tr.yaml'):
+        (tmp_path/name).write_text((ROOT/name).read_text())
+    (tmp_path/'config.yaml').write_text(yaml.safe_dump(cfg))
+    for symbol in ('BAD','GOOD'):
+        add_universe(con,symbol);add_bars(con,symbol,[('2026-09-28',100,101,99,100,1000,100)])
+    dbdump.dump(cfg,tmp_path/'data/bist.sql')
+    def partial(c,conn,**kwargs):
+        add_bars(conn,'GOOD',[('2026-09-29',100,101,99,100,1000,100)])
+        raise prices.InvalidOHLCError('Geçersiz OHLC: BAD 2026-09-29')
+    monkeypatch.setattr(module.prices,'daily',partial)
+    monkeypatch.setattr(module.prices,'sync_indices',lambda *a,**k:{})
+    result=module.refresh(tmp_path,datetime(2026,9,30,8,tzinfo=timezone.utc))
+    assert not result['ok'] and result['missing']==['BAD']
+    assert 'BAD' in result['errors']['stocks']
+    from src import db, migrations
+    restored=sqlite3.connect(':memory:')
+    restored.executescript(db.SCHEMA);migrations.apply(restored)
+    restored.executescript((tmp_path/'data/bist.sql').read_text())
+    assert restored.execute("SELECT max(date) FROM bars_daily WHERE ticker='GOOD'").fetchone()[0]=='2026-09-29'
+    assert json.loads((tmp_path/'data/advisor/history_refresh.json').read_text())==result

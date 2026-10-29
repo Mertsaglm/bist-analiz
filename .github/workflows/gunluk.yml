@@ -13,12 +13,7 @@ name: Gunluk otonom kosu
 on:
   schedule:
     - cron: "35 16 * * 1-5"
-  workflow_dispatch:
-    inputs:
-      analistsiz:
-        description: "LLM zincirini atla (yalniz deterministik katman)"
-        type: boolean
-        default: false
+  workflow_dispatch: {}
 
 permissions:
   contents: write
@@ -58,15 +53,12 @@ jobs:
 
       - name: Otonom kosu
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ADVISOR_V2: '1'
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           EVDS_API_KEY: ${{ secrets.EVDS_API_KEY }}
         run: |
-          python -m src.cli otonom gunluk \
-            ${{ inputs.analistsiz && '--analistsiz' || '' }}
+          python -m src.cli otonom gunluk --analistsiz
 
       # ⚠ `if: always()` KRITIK. Kosu KRITIK adimda dustuyse (cikis 1) bile o
       # ana kadar cekilen veri ve yazilan rapor commit'lenmeli — aksi halde

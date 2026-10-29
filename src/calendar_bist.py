@@ -183,7 +183,7 @@ class BistCalendar:
         if not self.is_trading_day(ts.date()):
             return "kapali"
         t = ts.time()
-        s = self._seans
+        s = self._session_times(ts.date())
         if t < self._t(s["acilis_muzayede_baslangic"]):
             return "kapali"
         if t < self._t(s["surekli_islem_baslangic"]):
@@ -202,7 +202,7 @@ class BistCalendar:
         ve o karşılaştırma için seansın kapanış ANI lazım — takvim günü değil.
         """
         d = self._as_date(d)
-        t = self._t(self._seans["kapanis_muzayede_bitis"])
+        t = self._t(self._session_times(d)["kapanis_muzayede_bitis"])
         return datetime.combine(d, t, tzinfo=self.tz).astimezone(timezone.utc)
 
     def last_closed_session(self, ts_utc: datetime | None = None) -> date:
@@ -211,13 +211,21 @@ class BistCalendar:
         Analiz daima kapanmış seans üzerinden yapılır — açık seansın barı henüz
         değişebilir ve onu kullanmak look-ahead'in en sinsi biçimidir.
         """
-        ts = (ts_utc or util.utc_now()).astimezone(self.tz)
+        instant = ts_utc or util.utc_now()
+        ts = instant.astimezone(self.tz)
         d = ts.date()
-        if self.is_trading_day(d) and self.session_state(ts_utc) == "sonrasi":
+        if self.is_trading_day(d) and self.session_state(instant) == "sonrasi":
             return d
         return self.prev_trading_day(d)
 
     # ------------------------------------------------------------ iç
+    def _session_times(self, day):
+        result = dict(self._seans)
+        if self.is_half_day(day):
+            result['surekli_islem_bitis'] = self._seans.get('yarim_gun_surekli_islem_bitis','12:30')
+            result['kapanis_muzayede_bitis'] = self._seans.get('yarim_gun_kapanis_muzayede_bitis','12:40')
+        return result
+
     @staticmethod
     def _as_date(d: date | str) -> date:
         if isinstance(d, datetime):

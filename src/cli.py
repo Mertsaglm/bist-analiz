@@ -735,7 +735,7 @@ def cmd_otonom(args) -> int:
     con = db.connect(cfg)
     if args.alt == "nobetci":
         # Gözcü: hiçbir şey düzeltmez, yalnız söyler. Çıkış 1 = sessizlik var.
-        n = otonom.nobetci(cfg, con)
+        n = otonom.nobetci(cfg, con, analist_bekleniyor=not args.analistsiz)
         con.close()
         if n.get("not"):
             print(n["not"])
@@ -757,7 +757,7 @@ def cmd_otonom(args) -> int:
         # yapıyordu; "seans analizsiz kaldı" bulgusu Telegram'a düşüp Actions'ta
         # YEŞİL kalıyordu, yani GitHub'ın kendi bildirim kanalı hiç çalışmıyordu.
         # İki kanal tek olay: gözcünün bulduğu her arıza GÖRÜNÜR olmalı.
-        return 1 if (n["sessiz"] or n.get("analizsiz")) else 0
+        return 1 if (n["sessiz"] or n.get("analizsiz") or n.get("verisiz")) else 0
 
     if args.alt == "gunluk":
         # İzleme listesine eklenen isim yalnız YAML'da kalmasın; fiyat hattının

@@ -1,0 +1,132 @@
+[
+  {
+    "id": 11258375197,
+    "name": "advisor-backup-37079691526",
+    "file": "latest-artifact.zip",
+    "bytes": 336038973,
+    "sha256": "4f8cb766487ee2ace455190ba32e3ecbbf0ba83199ec341cb09f076f9032af05",
+    "matches_github_digest": true,
+    "zip_crc_ok": true,
+    "remote_deleted": false
+  },
+  {
+    "id": 11201526318,
+    "name": "advisor-backup-36943667042",
+    "file": "11201526318.zip",
+    "bytes": 255813903,
+    "sha256": "528ebae58399bf75fb901c704b9cc8230d45af651c247136ee7ac6302ebd7611",
+    "matches_github_digest": true,
+    "zip_crc_ok": true,
+    "remote_deleted": false
+  },
+  {
+    "id": 11132543531,
+    "name": "advisor-backup-36793997229",
+    "file": "11132543531.zip",
+    "bytes": 191756950,
+    "sha256": "9d0a6ca18cb947d812b7f6c8341a9acb2cbce6098060b3a8c3d3299edac2758e",
+    "matches_github_digest": true,
+    "zip_crc_ok": true,
+    "remote_deleted": false
+  },
+  {
+    "id": 11069280799,
+    "name": "advisor-backup-36647295586",
+    "file": "11069280799.zip",
+    "bytes": 142653818,
+    "sha256": "a0aa3b6fc93bf6d17956b1959138cc9b3996b3e3f787bc6493bbb4a6065778f6",
+    "matches_github_digest": true,
+    "zip_crc_ok": true,
+    "remote_deleted": false
+  },
+  {
+    "id": 11005339175,
+    "name": "advisor-backup-36503183663",
+    "file": "11005339175.zip",
+    "bytes": 103996798,
+    "sha256": "f4a095108997652de16a76c2d8a9201ce1ed9c97c3fa108691ff1661a7639855",
+    "matches_github_digest": true,
+    "zip_crc_ok": true,
+    "remote_deleted": false
+  },
+  {
+    "id": 10892365089,
+    "name": "advisor-backup-36200740359",
+    "file": "10892365089.zip",
+    "bytes": 76642081,
+    "sha256": "8f6588240c65ef4cb2a71c7cfc5b0906f0ce3d4288ea6d1425a8a3f721077811",
+    "matches_github_digest": true,
+    "zip_crc_ok": true,
+    "remote_deleted": false
+  },
+  {
+    "id": 10838277793,
+    "name": "advisor-backup-36071914089",
+    "file": "10838277793.zip",
+    "bytes": 56172767,
+    "sha256": "00ca3289f5a5ee922c7f2a7544f66f55c826c4de495e33c5bff74df0beb38ad0",
+    "matches_github_digest": true,
+    "zip_crc_ok": true,
+    "remote_deleted": false
+  },
+  {
+    "id": 10781645105,
+    "name": "advisor-backup-35931445736",
+    "file": "10781645105.zip",
+    "bytes": 39156101,
+    "sha256": "538a088616b3f4d2b993925381e80f12f927906284906d885ecfc6cdbc896e72",
+    "matches_github_digest": true,
+    "zip_crc_ok": true,
+    "remote_deleted": false
+  },
+  {
+    "id": 10723793986,
+    "name": "advisor-backup-35795725677",
+    "file": "10723793986.zip",
+    "bytes": 26004017,
+    "sha256": "91b7847d568b19fe96db71529dfeb199665772403addf82bf8aefd8016420db3",
+    "matches_github_digest": true,
+    "zip_crc_ok": true,
+    "remote_deleted": false
+  },
+  {
+    "id": 10670005286,
+    "name": "advisor-backup-35667554198",
+    "file": "10670005286.zip",
+    "bytes": 15896261,
+    "sha256": "0b917232bb982640f915988c7d40ca66dd94c10f57e22b6efb59008558678c5f",
+    "matches_github_digest": true,
+    "zip_crc_ok": true,
+    "remote_deleted": false
+  },
+  {
+    "id": 10570538738,
+    "name": "advisor-backup-35402687191",
+    "file": "10570538738.zip",
+    "bytes": 9052375,
+    "sha256": "3bdb6e9145eee9aa67797e8a44d092b2a66af32d6f6d0b861cd90e8b5f802f96",
+    "matches_github_digest": true,
+    "zip_crc_ok": true,
+    "remote_deleted": false
+  },
+  {
+    "id": 10522974470,
+    "name": "advisor-backup-35284531253",
+    "file": "10522974470.zip",
+    "bytes": 8581420,
+    "sha256": "a52ea37f68bd69bc1aebd4e1d3445e2a22889ed824bb858fa904eb52be979c8d",
+    "matches_github_digest": true,
+    "zip_crc_ok": true,
+    "remote_deleted": false
+  },
+  {
+    "id": 10473146240,
+    "name": "advisor-backup-35160696733",
+    "file": "10473146240.zip",
+    "bytes": 8180265,
+    "sha256": "5def6e74ac4a10bf87bb07f2e9583c4d8b6fe3d1c1ca72ab89490c49553afd0d",
+    "matches_github_digest": true,
+    "zip_crc_ok": true,
+    "remote_deleted": false
+  }
+]

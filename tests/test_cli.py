@@ -46,6 +46,19 @@ def _kos(*argv: str) -> int:
     return cli.main(list(argv))
 
 
+def test_nobetci_analistsiz_veri_alarmiyla_bir_doner(cli_cfg, monkeypatch):
+    from src import otonom, telegram_bist
+    calls=[]
+    def observer(cfg, con, *, analist_bekleniyor):
+        calls.append(analist_bekleniyor)
+        return {'sessiz':False,'analizsiz':False,'verisiz':True,
+                'beklenen_seans':'2026-08-28','satirlar':['BBB kapanışı eksik']}
+    monkeypatch.setattr(otonom,'nobetci',observer)
+    monkeypatch.setattr(telegram_bist,'bildir',lambda *a:None)
+    assert _kos('otonom','nobetci','--analistsiz') == 1
+    assert calls == [False]
+
+
 # ============================================================ komut yüzeyi
 BEKLENEN_KOMUTLAR = {
     "veri": ["backfill", "gunluk", "kalite", "temizle"],

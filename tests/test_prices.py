@@ -440,7 +440,7 @@ def test_daily_bootstraps_only_missing_symbol_history(cfg, con, monkeypatch):
     monkeypatch.setattr(prices.yf, 'fetch_bars', fetch)
     monkeypatch.setattr(prices, '_store_bars', lambda *a:0)
     monkeypatch.setattr(prices, 'purge_phantom_bars', lambda *a:{'silinen':0})
-    monkeypatch.setattr(prices, 'purge_incomplete_bars', lambda *a:{'silinen_bar':0,'silinen_endeks':0})
+    monkeypatch.setattr(prices, 'purge_incomplete_bars', lambda *a,**k:{'silinen_bar':0,'silinen_endeks':0})
     monkeypatch.setattr(prices, 'assess_quality', lambda *a,**k:[])
     result=prices.daily(cfg,con,tickers=['AAA','BBB'])
     assert calls['AAA']==result['start']

@@ -1,0 +1,17 @@
+{
+  "status": "known_failure_on_pinned_production_data",
+  "test": "tests/test_prices.py::TestGercekVerideOhlc::test_hisse_barlari_TAMAMEN_tutarli",
+  "message": "1 hisse barı kendi içinde tutarsız — yfinance regresyonu?",
+  "rows": [
+    {
+      "ticker": "TMSN",
+      "date": "2026-10-22",
+      "o": 51.2999992371,
+      "h": 53.5499992371,
+      "l": 50.0999984741,
+      "c": 50.0499992371,
+      "source": "yfinance"
+    }
+  ],
+  "production_mutated": false
+}

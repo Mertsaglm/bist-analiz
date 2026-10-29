@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "ledger_hash": "3e62151ce3b4977efefd706a6d7037558b55c823cc138666f3b29b6f3ad47706",
+  "files": 1130,
+  "cash_cents": {
+    "strategy": 5500000,
+    "benchmark": 232716,
+    "shadow_reference": 5500000,
+    "shadow_candidate": 5500000
+  }
+}

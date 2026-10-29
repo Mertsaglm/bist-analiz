@@ -5,10 +5,15 @@ on:
     workflows: ['Gunluk otonom kosu']
     types: [completed]
     branches: [main]
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      manual_run:
+        description: 'Ücretsiz bütçeden ek koşu çalıştır (eski dış tetiklemeler kapalı)'
+        type: boolean
+        default: false
   schedule:
-    # Dış 15 dk tetikleyici aksarsa ilk taraf yedeği; GitHub cron zaman garantisi vermez.
-    - cron: '2,17,32,47 7-17 * * 1-5'
+    # Ücretsiz private repo bütçesi: saatlik gözlem; kesin zaman garantisi yok.
+    - cron: '17 7-16 * * 1-5'
 
 permissions:
   contents: write
@@ -21,7 +26,7 @@ concurrency:
 
 jobs:
   portfolio:
-    if: github.event_name != 'workflow_run' || github.event.workflow_run.head_branch == 'main'
+    if: (github.event_name != 'workflow_dispatch' || inputs.manual_run) && (github.event_name != 'workflow_run' || github.event.workflow_run.head_branch == 'main')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -50,7 +55,7 @@ jobs:
       - name: Arşivi koru
         if: always()
         run: |
-          if [ -d data/advisor ]; then cp -R data/advisor /tmp/advisor-delivery; fi
+          if [ -d data/advisor ]; then python -c "import shutil; shutil.copytree('data/advisor', '/tmp/advisor-delivery', ignore=shutil.ignore_patterns('capsules'))"; fi
           if [ -f data/bist.sql ]; then cp data/bist.sql /tmp/advisor-delivery-bist.sql; fi
       - name: Sonucu kaydet
         if: always()
@@ -101,4 +106,4 @@ jobs:
           path: |
             /tmp/advisor-delivery/
             /tmp/advisor-delivery-bist.sql
-          retention-days: 14
+          retention-days: 3

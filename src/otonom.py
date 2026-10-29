@@ -587,7 +587,8 @@ def haftalik(cfg: dict, con: sqlite3.Connection) -> dict:
 # ---------------------------------------------------------------- nöbetçi
 def nobetci(cfg: dict, con: sqlite3.Connection, *,
             bugun_tr: str | None = None,
-            simdi: datetime | None = None) -> dict:
+            simdi: datetime | None = None,
+            analist_bekleniyor: bool = True) -> dict:
     """DIŞARIDAN bakan gözcü — "bugün koşu oldu mu?" sorusunu sorar.
 
     ═══════════════════════════════════════════════════════════════════════
@@ -640,7 +641,8 @@ def nobetci(cfg: dict, con: sqlite3.Connection, *,
     kapanis = util.to_utc_iso(cal.session_close_utc(beklenen))
     out: dict = {"tarih": bugun_tr, "beklenen_seans": beklenen.isoformat(),
                  "seans_kapanis_utc": kapanis,
-                 "sessiz": False, "analizsiz": False, "satirlar": []}
+                 "sessiz": False, "analizsiz": False, "verisiz": False,
+                 "analist_bekleniyor": analist_bekleniyor, "satirlar": []}
 
     kosu = journal.son_kosu_zamana_gore(con, tur="gunluk")
     son_bar = db.scalar(con, "SELECT MAX(date) FROM bars_daily")
@@ -667,6 +669,25 @@ def nobetci(cfg: dict, con: sqlite3.Connection, *,
     elif kosu["durum"] == "durduruldu":
         out["satirlar"].append(
             f"Son koşu DURDURULDU: {kosu.get('hatalar') or '—'}")
+
+    if not analist_bekleniyor:
+        # Ücretsiz V2 işletiminde V1 LLM bilinçli kapalıdır. Bunun yerine
+        # takvimden gelen seans için evrenin TAMAMININ kapanışını sor.
+        # MAX(date) tek taze hisseyle eksik kalan isimleri gizleyemez.
+        beklenenler = [r[0] for r in con.execute(
+            "SELECT ticker FROM universe WHERE in_live = 1 ORDER BY ticker")]
+        mevcut = {r[0] for r in con.execute(
+            "SELECT ticker FROM bars_daily WHERE date = ?", (beklenen.isoformat(),))}
+        eksik = [s for s in beklenenler if s not in mevcut]
+        out.update(beklenen_hisse=len(beklenenler), eksik_hisseler=eksik)
+        out["not"] = "V1 LLM kapalı; günlük koşu ve kapanış verisi izleniyor."
+        if not beklenenler or eksik:
+            out["verisiz"] = True
+            out["satirlar"].append(
+                f"Kapanmış son seans {beklenen.isoformat()}: "
+                f"{len(eksik)}/{len(beklenenler)} hisse kapanışı eksik"
+                + (": " + ", ".join(eksik) if eksik else " (evren boş)") + ".")
+        return out
 
     # İkinci soru, ayrı: koşu oldu ama analiz üretti mi? (L-003: iki olgu,
     # iki satır — tek satıra sıkıştırılırsa hangisinin bozuk olduğu görünmez.)

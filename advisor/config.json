@@ -133,5 +133,7 @@
       "factor": "gold_related",
       "label": "Altın üreticisi; gram altınla eşdeğer değildir."
     }
-  }
+  },
+  "cycle_interval_minutes": 60,
+  "watchdog_max_gap_minutes": 90
 }

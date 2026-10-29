@@ -1,0 +1,55 @@
+{
+  "bist": {
+    "old_replay": {
+      "ok": true,
+      "id": "44c5645bb5b8fae5ba00c1b2e15883841462637e5227b18184f05ddd57396677",
+      "decisions": 33,
+      "code_hash": "9ccd585960a9bba8fa828046031c4bdb50d7ce5870a169d65ec32e9f965103ce"
+    },
+    "production_decisions": 33,
+    "new_fills": 0,
+    "differences": [],
+    "five_full_capsules_bytes": 33791826,
+    "five_shared_capsules_bytes": 6997193,
+    "input_sha256_unchanged": true
+  },
+  "gold": {
+    "old_replay": {
+      "ok": true,
+      "id": "8310d269399613d6cad04b48aca01aa9c4a0be8a68ba0d39ce6172b96141e086",
+      "decisions": 1,
+      "code_hash": "9ccd585960a9bba8fa828046031c4bdb50d7ce5870a169d65ec32e9f965103ce"
+    },
+    "production_decisions": 1,
+    "new_fills": 0,
+    "differences": [
+      {
+        "symbol": "GRAM",
+        "old_action": "VERİ BEKLENİYOR",
+        "old_code": "data_block",
+        "new_action": "BEKLE",
+        "new_code": "spread_limit"
+      }
+    ],
+    "five_full_capsules_bytes": 3188194,
+    "five_shared_capsules_bytes": 700672,
+    "input_sha256_unchanged": true
+  },
+  "operational_backup": {
+    "files": 48,
+    "archive": "/var/folders/7c/cbt7d09n267_43kyv3j222_h0000gn/T/advisor-operational-drill-ja107tdx/operational.zip",
+    "scope": "operational",
+    "bytes": 15802901
+  },
+  "operational_drill": {
+    "ok": true,
+    "ledger_hash": "c33534e805e4146b90df10862b54f8d4d74ca4978abe9ead127859b8638101ec",
+    "files": 48,
+    "cash_cents": {
+      "strategy": 5500000,
+      "benchmark": 148658,
+      "shadow_reference": 5500000,
+      "shadow_candidate": 5500000
+    }
+  }
+}

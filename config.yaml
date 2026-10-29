@@ -189,6 +189,8 @@ takvim:
     surekli_islem_baslangic:   "10:00"
     surekli_islem_bitis:       "18:00"
     kapanis_muzayede_bitis:    "18:10"
+    yarim_gun_surekli_islem_bitis: "12:30"
+    yarim_gun_kapanis_muzayede_bitis: "12:40"
 
 # ----------------------------------------------------------------------------
 # Evren ve veri kalitesi kapıları
