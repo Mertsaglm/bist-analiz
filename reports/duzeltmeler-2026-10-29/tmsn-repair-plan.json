@@ -1,0 +1,47 @@
+{
+  "date": "2026-10-29",
+  "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/TMSN.IS",
+  "source_parameters": {
+    "period1": 1792530000,
+    "period2": 1792789200,
+    "interval": "1d",
+    "events": "div,splits"
+  },
+  "source_sha256": "ac885e06b5c8fcb327a856ab62f57220a73ff3545aaf2fe418018edb82c419ab",
+  "source_row": {
+    "open": 51.29999923706055,
+    "high": 53.54999923706055,
+    "low": 50.0,
+    "close": 50.04999923706055,
+    "volume": 683845,
+    "adjclose": 50.04999923706055
+  },
+  "ticker": "TMSN",
+  "bar_date": "2026-10-22",
+  "changes": {
+    "l": {
+      "before": 50.0999984741,
+      "after": 50.0
+    },
+    "ingested_utc": {
+      "before": "2026-10-22T20:18:18+00:00",
+      "after": "2026-10-29T14:50:12+00:00"
+    }
+  },
+  "original_blob_sha": "c16257bef2fc0f348bdaca1684bdc147b26abef7",
+  "new_blob_sha": "2020d090cea7f907650bbde699259ee090a8dd49",
+  "original_sql_sha256": "d93e5184a6e5dd1fe9184f0cf5d621ac45b78c1e792a94e738396c41f6160588",
+  "new_sql_sha256": "bb9bb218d6a5df40a637bdfd807a7c81d9af70da07c9c7f8199da5963fc99543",
+  "volume_revision_not_applied": {
+    "stored": 683827.0,
+    "source": 683845,
+    "reason": "Unrelated upstream volume revision; normal refresh can ingest it."
+  },
+  "modified_sql_lines": 1,
+  "other_sql_bytes_preserved": true,
+  "existing_ohlc_data_tests_passed": 4,
+  "historical_decisions_and_ledgers_changed": false,
+  "cached_indicators_note": "No cached indicator or frozen decision was rewritten; the next normal data pipeline recomputes indicators.",
+  "stage": "validated_before_publication",
+  "user_authorization": "Specific production-repair question answered: sen tercih et"
+}
