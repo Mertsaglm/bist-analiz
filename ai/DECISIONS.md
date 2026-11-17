@@ -6,6 +6,58 @@
 
 ---
 
+## #036 — 2026-11-17 — Tarihsel kaynak reddini güncel kapsamdan ayır
+
+**Karar:** Endeks/kur batch'inde geçersiz OHLC satırı yazılmaz; sağlam tarihler
+ilerler. Tarihsel retler makbuzda kalır; beklenen kapanış eksik veya güncel
+kaynak satırı bozuksa koşu başarısızdır. Eski kayıt kaynak doğrulanmadan onarılmaz.
+**Neden:** USDTRY'nin tek eski hatası bütün güncel seriyi 22 Ekim'de dondurdu.
+**Tekrar gözden geçir:** Retler gereken model penceresini eksiltiyorsa kaynak
+ve model girdisi kapsamı ayrıca engellenmeli; retleri sessizce yok saymak yok.
+Model adayları yalnız offline ölçülür; canlı terfi için net portföy kanıtı gerekir.
+Ayrıntı: `docs/DENETIM-2026-11-17.md`.
+
+---
+
+## #035 — 2026-10-29 — Sıfır ek ödeme ile kontrollü işletim
+
+**Bağlam:** Ücretsiz Actions dakika/depolama hakkı tükenmiş; Mert ek ödeme
+yapamayacağını açıkça belirtti. Geçerli geniş makas da yanlış veri alarmı üretiyordu.
+**Karar:** Ücretli LLM/servis veya limit artışı yok. BIST nominal saatlik,
+girdisiz dış dispatch kapalı; V1 LLM kapalı, veri nöbeti açık. Gold ritmi korunur.
+Geniş makas ayrı BEKLE kodudur; %3 alım eşiği ve stop çıkışı korunur.
+Yeni kapsüllerde mühürlü ortak nesneler kullanılır; eski kanıtlar değiştirilmez.
+Harici operasyon yedeği haftada üç kez, artifact saklama 3 gündür; kapsüller
+Git'te kalır. Varsayılan tam yedek seçeneği korunur.
+**Neden:** Aynı geçmişi her çevrim ve yedekte tekrar saklamak büyümeyi katlıyor.
+Saatlik gözlem ücretsiz bütçeyi azaltır ama stop tepkisi de daha seyrektir.
+**Tekrar gözden geçir:** Üretim dakika/depolama ölçümü kotaya yaklaşırsa,
+veri gecikmesi kabul edilemezse veya bağımsız tam geçmiş yedeği gerekirse.
+Yerel kanıt üretim kabulü değildir; ayrıntı `docs/DUZELTMELER-2026-10-29.md`.
+
+---
+
+## #034 — 2026-10-01 — AI talimatlarında bağlam ve kritik sınırlar
+
+**Bağlam:** Mert genel öğütler, katı workflow tarifleri ve tekrarların kaldırılmasını;
+projeye özgü bilgi, tercih ve hata kayıtlarının korunmasını istedi.
+**Karar:** AGENTS ortak kısa talimat kaynağı kalır; araç köprüleri farklı öncelik
+veya kural seti tanımlamaz. Güncel kapsam PROJECT'te, işletim STATE'te;
+V1 kapsamının tam kaydı arşivdedir. ADR/ders olayları silinmez, konuya göre okunur.
+Dış AI danışma belgesinin bağımsız teknik bağlamı korunur; öneri şablonu kısaltılır.
+**Neden:** Tekrarlı talimat yükünü azaltır; V1/V2 veya tarihsel/canlı kanıtı karıştırmaz.
+**Tekrar gözden geçir:** Kısaltma yüzünden projeye özgü bir sınır tekrar ihlal edilirse,
+yalnız eksik bağlam veya sınır geri eklenir.
+
+**2026-10-02 devamı:** Genel açıklama/görev boyutu yönergeleri ve tekrarlanan
+hafıza/köprü/danışma ifadeleri ayıklandı; her mimari/araç seçiminde alternatif
+sunma tarifi yerine yalnız önemli kararın gerekçesi ve yeniden değerlendirme
+koşulu kaldı. Arşive erişim, geçmiş hakkında özel soru şartından ilgili işin
+ihtiyacına bağlandı. Denetim, test izolasyonu ve yaşanmış hata sınırları korundu;
+tarihsel karar/ders, mühürlü ön kayıt ve üretim dosyaları değiştirilmedi.
+
+---
+
 ## #033 — 2026-10-01 — Ayrı %80 çekirdek/%20 taktik ileri sanal sınav
 
 **Bağlam:** Ana hesaplar nakitte kalıyor; mevcut fırsat filtresi düzenli birikim

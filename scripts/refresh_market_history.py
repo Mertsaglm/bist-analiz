@@ -54,6 +54,7 @@ def refresh(root, now=None, closing_refresh=False):
                 return {'ok': True, 'expected': expected, 'skipped': 'already_current', 'missing': []}
             # Eksik kapanış için sonraki koşu tekrar dener; kalite kapısı gevşemez.
             errors = {}
+            rejected_indices = []
             if before:
                 try:
                     prices.daily(legacy, con, tickers=before, simdi=now)
@@ -61,14 +62,17 @@ def refresh(root, now=None, closing_refresh=False):
                     errors['stocks'] = str(exc)
             if stale_indices:
                 try:
-                    prices.sync_indices(legacy, con, start=(now.date()-timedelta(days=400)).isoformat(), simdi=now)
+                    prices.sync_indices(legacy, con, start=(now.date()-timedelta(days=400)).isoformat(), simdi=now, rejected_records=rejected_indices)
                 except prices.InvalidOHLCError as exc:
                     errors['indices'] = str(exc)
+            current_rejections = [r for r in rejected_indices if r['date'] >= expected]
+            if current_rejections:
+                errors['indices'] = '; '.join(r['reason'] for r in current_rejections)
             after = missing()
             index_dates = dict(con.execute('SELECT symbol,max(date) FROM index_daily GROUP BY symbol'))
             stale_indices = [s for s in indices if index_dates.get(s, '') < expected]
             result = {'ok': not after and not stale_indices and not errors, 'expected': expected,
-                      'errors': errors,
+                      'errors': errors, 'rejected_indices': rejected_indices,
                       'missing_before': before, 'missing': after, 'missing_indices': stale_indices,
                       'legacy_cutoff_before': cutoff_before,
                       'legacy_cutoff_after': BistCalendar(legacy, con).last_closed_session(now).isoformat(),

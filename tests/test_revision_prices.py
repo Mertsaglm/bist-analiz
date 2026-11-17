@@ -67,3 +67,22 @@ def test_half_day_completed_stock_and_index_bars_survive_together(cfg,con,stamp,
     assert con.execute("SELECT count(*) FROM bars_daily WHERE date='2026-10-28'").fetchone()[0]==left
     assert con.execute("SELECT count(*) FROM index_daily WHERE date='2026-10-28'").fetchone()[0]==left
     assert con.execute("SELECT count(*) FROM bars_daily WHERE date='2026-10-27'").fetchone()[0]==1
+
+
+def test_index_bad_history_does_not_freeze_valid_recent_rows(cfg, con, monkeypatch):
+    from src import universe
+    add_index(con, 'USDTRY', ['2025-11-24'], close=40.)
+    old = tuple(con.execute("SELECT * FROM index_daily WHERE symbol='USDTRY'").fetchone())
+    frame = pd.DataFrame([
+        dict(date='2025-11-24', o=40., h=39., l=38., c=40.),
+        dict(date='2026-11-16', o=44., h=45., l=43., c=44.),
+    ])
+    monkeypatch.setattr(universe, 'index_symbols', lambda cfg: {'USDTRY': 'TRY=X'})
+    monkeypatch.setattr(prices.yf, 'fetch_index', lambda *a, **k: frame)
+    rejected = []
+    result = prices.sync_indices(cfg, con, simdi=datetime.fromisoformat('2026-11-17T08:00:00+00:00'),
+                                 rejected_records=rejected)
+    assert result['USDTRY'] == 1
+    assert tuple(con.execute("SELECT * FROM index_daily WHERE date='2025-11-24'").fetchone()) == old
+    assert con.execute("SELECT c FROM index_daily WHERE date='2026-11-16'").fetchone()[0] == 44.
+    assert [(r['symbol'], r['date']) for r in rejected] == [('USDTRY', '2025-11-24')]

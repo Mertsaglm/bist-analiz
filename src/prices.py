@@ -224,7 +224,7 @@ def daily(cfg: dict, con: sqlite3.Connection,
             "kalite_gecmeyen": sum(1 for r in kalite if not r["ok"])}
 
 
-def sync_indices(cfg: dict, con: sqlite3.Connection, start: str | None = None, *, simdi=None) -> dict:
+def sync_indices(cfg: dict, con: sqlite3.Connection, start: str | None = None, *, simdi=None, rejected_records=None) -> dict:
     """Endeks ve kur barları. XU100 ayrıca İŞLEM TAKVİMİNİN kaynağıdır."""
     from . import universe
 
@@ -234,11 +234,18 @@ def sync_indices(cfg: dict, con: sqlite3.Connection, start: str | None = None, *
     rejected = []
     for ad, sym in universe.index_symbols(cfg).items():
         df = yf.fetch_index(sym, cfg, start=start)
-        try:
-            _validate_ohlc(df, ad)
-        except InvalidOHLCError as exc:
-            rejected.append(str(exc))
-            continue
+        # Tek bozuk tarih, aynı kaynağın sağlam günlerini dondurmamalı.
+        valid = []
+        for i in range(len(df)):
+            try:
+                _validate_ohlc(df.iloc[i:i + 1], ad)
+                valid.append(i)
+            except InvalidOHLCError as exc:
+                rejected.append(str(exc))
+                if rejected_records is not None:
+                    rejected_records.append({'symbol': ad, 'date': str(df.iloc[i]['date']),
+                                             'reason': str(exc)})
+        df = df.iloc[valid]
         rows = [(ad, r.date, _f(r.o), _f(r.h), _f(r.l), _f(r.c), now)
                 for r in df.itertuples(index=False)]
         sonuc[ad] = db.upsert_many(
@@ -248,7 +255,7 @@ def sync_indices(cfg: dict, con: sqlite3.Connection, start: str | None = None, *
     # XU100 hem işlem takviminin hem rejim genişliğinin kaynağıdır (L-008,
     # "aynı savunma başka nerede olmalıydı?").
     purge_incomplete_bars(cfg, con, simdi=simdi)
-    if rejected:
+    if rejected and rejected_records is None:
         raise InvalidOHLCError('; '.join(rejected))
     return sonuc
 

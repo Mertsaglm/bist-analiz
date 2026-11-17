@@ -223,3 +223,28 @@ def test_refresh_preserves_valid_subset_and_error_diagnosis_after_invalid_ohlc(c
     restored.executescript((tmp_path/'data/bist.sql').read_text())
     assert restored.execute("SELECT max(date) FROM bars_daily WHERE ticker='GOOD'").fetchone()[0]=='2026-09-29'
     assert json.loads((tmp_path/'data/advisor/history_refresh.json').read_text())==result
+
+
+@pytest.mark.parametrize('rejected_date,ok', [('2025-11-24', True), ('2026-09-29', False)])
+def test_refresh_distinguishes_historical_rejection_from_current_failure(cfg, con, tmp_path, monkeypatch, rejected_date, ok):
+    module = script('refresh_market_history')
+    (tmp_path/'advisor').mkdir(); (tmp_path/'data').mkdir()
+    (tmp_path/'advisor/config.json').write_text((ROOT/'advisor/config.json').read_text())
+    (tmp_path/'holidays_tr.yaml').write_text((ROOT/'holidays_tr.yaml').read_text())
+    (tmp_path/'config.yaml').write_text(yaml.safe_dump(cfg))
+    add_universe(con, 'AAA')
+    add_bars(con, 'AAA', [('2026-09-29', 100, 101, 99, 100, 1000, 100)])
+    dbdump.dump(cfg, tmp_path/'data/bist.sql')
+    def indices(c, conn, **kwargs):
+        from src.universe import index_symbols
+        from tests.conftest import add_index
+        for symbol in index_symbols(c):
+            add_index(conn, symbol, ['2026-09-29'])
+        kwargs['rejected_records'].append({'symbol':'USDTRY', 'date':rejected_date, 'reason':'invalid OHLC'})
+    monkeypatch.setattr(module.prices, 'sync_indices', indices)
+    result = module.refresh(tmp_path, datetime(2026, 9, 30, 8, tzinfo=timezone.utc))
+    assert result['ok'] is ok
+    assert result['missing_indices'] == []
+    assert result['rejected_indices'][0]['date'] == rejected_date
+    assert bool(result['errors']) is (not ok)
+    assert json.loads((tmp_path/'data/advisor/history_refresh.json').read_text()) == result

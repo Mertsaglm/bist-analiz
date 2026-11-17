@@ -1,0 +1,228 @@
+{
+  "bist": {
+    "events": 35575,
+    "last_event": "2026-11-17T17:00:34.776869+00:00",
+    "ledger_hash": "5f521bde4f3ecfa49f37029b1c80516c217401c57e4397310e550156c756fcdb",
+    "accounts": {
+      "strategy": {
+        "cash_cents": 6000000,
+        "contributed_cents": 6000000,
+        "realized_cents": 0,
+        "receivable_cents": 0,
+        "fee_liability_cents": 0,
+        "account_fees_cents": 0,
+        "positions": {}
+      },
+      "benchmark": {
+        "cash_cents": 648658,
+        "contributed_cents": 6000000,
+        "realized_cents": 0,
+        "receivable_cents": 8395,
+        "fee_liability_cents": 0,
+        "account_fees_cents": 12075,
+        "positions": {
+          "AEFES": {
+            "quantity": "91",
+            "cost_cents": 170495
+          },
+          "AKBNK": {
+            "quantity": "24",
+            "cost_cents": 170129
+          },
+          "ASELS": {
+            "quantity": "4",
+            "cost_cents": 148991
+          },
+          "ASTOR": {
+            "quantity": "7",
+            "cost_cents": 171810
+          },
+          "BIMAS": {
+            "quantity": "4",
+            "cost_cents": 171590
+          },
+          "CCOLA": {
+            "quantity": "22",
+            "cost_cents": 169887
+          },
+          "CIMSA": {
+            "quantity": "40",
+            "cost_cents": 171279
+          },
+          "DSTKF": {
+            "quantity": "1",
+            "cost_cents": 117709
+          },
+          "EKGYO": {
+            "quantity": "89",
+            "cost_cents": 171829
+          },
+          "ENKAI": {
+            "quantity": "19",
+            "cost_cents": 165033
+          },
+          "EREGL": {
+            "quantity": "45",
+            "cost_cents": 170675
+          },
+          "FROTO": {
+            "quantity": "22",
+            "cost_cents": 170832
+          },
+          "GARAN": {
+            "quantity": "13",
+            "cost_cents": 168880
+          },
+          "GUBRF": {
+            "quantity": "4",
+            "cost_cents": 171829
+          },
+          "ISCTR": {
+            "quantity": "131",
+            "cost_cents": 171534
+          },
+          "KCHOL": {
+            "quantity": "7",
+            "cost_cents": 152580
+          },
+          "KRDMD": {
+            "quantity": "36",
+            "cost_cents": 168916
+          },
+          "MGROS": {
+            "quantity": "3",
+            "cost_cents": 157964
+          },
+          "PETKM": {
+            "quantity": "82",
+            "cost_cents": 171659
+          },
+          "PGSUS": {
+            "quantity": "11",
+            "cost_cents": 161318
+          },
+          "SAHOL": {
+            "quantity": "19",
+            "cost_cents": 168426
+          },
+          "SASA": {
+            "quantity": "839",
+            "cost_cents": 171780
+          },
+          "SISE": {
+            "quantity": "44",
+            "cost_cents": 171842
+          },
+          "TAVHL": {
+            "quantity": "6",
+            "cost_cents": 162952
+          },
+          "TCELL": {
+            "quantity": "17",
+            "cost_cents": 169515
+          },
+          "THYAO": {
+            "quantity": "6",
+            "cost_cents": 171678
+          },
+          "TOASO": {
+            "quantity": "6",
+            "cost_cents": 171827
+          },
+          "TRALT": {
+            "quantity": "35",
+            "cost_cents": 171849
+          },
+          "TTKOM": {
+            "quantity": "31",
+            "cost_cents": 169346
+          },
+          "TUPRS": {
+            "quantity": "4",
+            "cost_cents": 160421
+          },
+          "VAKBN": {
+            "quantity": "50",
+            "cost_cents": 169594
+          },
+          "YKBNK": {
+            "quantity": "48",
+            "cost_cents": 171856
+          },
+          "TRMET": {
+            "quantity": "1",
+            "cost_cents": 13242
+          }
+        }
+      }
+    },
+    "recent_session_checks": 30,
+    "recent_checks_per_day": {
+      "2026-11-02": 2,
+      "2026-11-03": 2,
+      "2026-11-04": 3,
+      "2026-11-05": 3,
+      "2026-11-06": 3,
+      "2026-11-09": 1,
+      "2026-11-10": 4,
+      "2026-11-11": 3,
+      "2026-11-12": 3,
+      "2026-11-13": 3,
+      "2026-11-16": 1,
+      "2026-11-17": 2
+    }
+  },
+  "gold": {
+    "events": 8151,
+    "last_event": "2026-11-17T15:58:48.136134+00:00",
+    "ledger_hash": "8417ef9666f298d4b30b0150060ad8cec9fd815cc82ac0c71a759b5e1861b13d",
+    "accounts": {
+      "strategy": {
+        "cash_cents": 6000000,
+        "contributed_cents": 6000000,
+        "realized_cents": 0,
+        "receivable_cents": 0,
+        "fee_liability_cents": 0,
+        "account_fees_cents": 0,
+        "positions": {}
+      },
+      "benchmark": {
+        "cash_cents": 503923,
+        "contributed_cents": 6000000,
+        "realized_cents": 0,
+        "receivable_cents": 0,
+        "fee_liability_cents": 0,
+        "account_fees_cents": 0,
+        "positions": {
+          "GRAM": {
+            "quantity": "8.22",
+            "cost_cents": 5496077
+          }
+        }
+      }
+    },
+    "recent_session_checks": 511,
+    "recent_checks_per_day": {
+      "2026-10-29": 38,
+      "2026-10-30": 37,
+      "2026-10-31": 1,
+      "2026-11-01": 1,
+      "2026-11-02": 35,
+      "2026-11-03": 36,
+      "2026-11-04": 35,
+      "2026-11-05": 36,
+      "2026-11-06": 36,
+      "2026-11-07": 2,
+      "2026-11-08": 1,
+      "2026-11-09": 34,
+      "2026-11-10": 37,
+      "2026-11-11": 36,
+      "2026-11-12": 37,
+      "2026-11-13": 36,
+      "2026-11-14": 2,
+      "2026-11-15": 1,
+      "2026-11-16": 35,
+      "2026-11-17": 35
+    }
+  }
+}

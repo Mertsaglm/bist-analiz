@@ -6,6 +6,54 @@
 
 ---
 
+## L-037 — 2026-11-17 — Batch reddi sağlam günleri de dondurur
+
+**Olay:** Tek USDTRY OHLC hatası bütün seri güncellemesini durdurdu. İlk hata
+mesajı diğer 17 bozuk kaynak tarihini gizliyordu.
+**Ders:** Satır doğrulaması, geçerli alt kümenin kaydı ve güncel kapsam kapısı
+ayrı ölçülmeli. Tarihsel ret raporlanır; son kapanış hatası başarıya çevrilmez.
+**Kilit:** `tests/test_revision_prices.py`, `tests/test_production_repairs.py`.
+Valuation tanısı da karar motoruyla aynı fiyat/zaman kuralını kullanmalı;
+`tests/test_advisor_trace_regression.py` bu simetriyi korur.
+
+## L-036 — 2026-10-29 — Bozuk fiyatı sıkıştırarak düzeltme; kaynağı doğrula
+
+TMSN 22 Ekim düşük fiyatı kapanıştan yüksekken 29 Ekim aynı kaynak 50,00
+verdi; kapanış 50,05'ti. `min(low,close)` ile sıkıştırmak başka ve yanlış bir
+düşük fiyat üretirdi. Tarih/enstrüman ve diğer OHLC alanlarını karşılaştır;
+önce/sonra hash'li tek satır planıyla onar. Kaynağın ayrı hacim revizyonunu
+aynı işe sessizce katma. İlk bozulmanın kaynakta mı dönüştürmede mi olduğu
+DOĞRULANMADI. Eski mühürlü kararlar korunur; dört veri testi ve uzak blob eşliği
+onarımın kanıtıdır, taze üretim çevriminin kanıtı değildir.
+
+## L-035 — 2026-10-29 — Aynı seansın iki takvimi veri silebilir
+
+**Olay:** V2 28 Ekim yarım gününü 12:40'ta kapatırken V1 18:10 sayıyordu.
+Telafiyle alınan geçerli hisse/endeks kapanışları V1 yarım bar temizliğinde
+silinebiliyordu. Bu koşul yerelde tekrarlandı; erken Ekim kesintilerinin tamamı
+bu nedenle açıklanamaz.
+**Kilit:** İki takvim yarım gün kapanışında eşit; hisse ve endeks temizliği
+aynı enjekte edilmiş saati kullanır. Önce/sonra ve normal gün regresyonları
+`tests/test_revision_prices.py` içindedir. Bilerek kapatılan V1 LLM'nin
+nöbetçisi de analiz yerine tüm canlı evrenin takvim kapanışını sorar;
+tek taze hisse eksik kalan evreni gizleyemez (`tests/test_otonom.py`).
+OHLC reddi de sembol bazında kalır: diğer hisse/endeksler yenilenir;
+telafi geçerli alt kümeyi saklar ve hata tanısıyla başarısız sonuç verir.
+
+## L-034 — 2026-10-28 — İşlem engeli, veri arızası ve runner yokluğu ayrı nedenlerdir
+
+**Olay:** Actions/mail incelemesinde BIST job'larının ödeme/harcama engeliyle
+hiç başlamadığı, harici yedeklerin artifact kotasına takıldığı görüldü. Altında
+geçerli kotasyonun geniş makası `data_blocked_symbols` üzerinden veri arızası
+oluyordu. 2026-10-28 kanıtı: 28 Ekim denetim notu.
+
+**Ders:** Önce job'un başlayıp başlamadığını ve başarısız adımı doğrula.
+Geniş makas gibi normal işlem kapılarını eksik/bayat veriden sınıf koduyla ayır;
+oranın paydasını ve ölçüm tarihini belirt. Eski düzeltilmiş maili güncel arızaya
+kanıt sayma. 2026-10-29 yerel düzeltmeler sınandı; yayın ve canlı kabul sınırları STATE'te.
+
+---
+
 ## L-033 — 2026-10-01 — Okunma saati yeni kotasyon değildir
 
 **Anti-pattern:** Sağlayıcı aynı fiyatın `quoted_at` damgasını koruyup yalnız

@@ -173,8 +173,17 @@ def gunluk(cfg: dict, con: sqlite3.Connection, *, bugun: date | None = None,
         # Referans `gun` — koşunun İstanbul TAKVİM günü, `date.today()` değil
         # (AGENTS §11/6: zaman kaynağı açık ve enjekte edilebilir olmalı).
         # `replace(year=...)` bilerek kullanılmadı: 29 Şubat'ta ValueError atar.
+        rejected_indices = []
         r = prices.sync_indices(cfg, con,
-                                start=(gun - timedelta(days=400)).isoformat())
+                                start=(gun - timedelta(days=400)).isoformat(),
+                                rejected_records=rejected_indices)
+        sonuc['reddedilen_endeks_satirlari'] = rejected_indices
+        if rejected_indices:
+            log.warning('Endeks kaynağında %d geçersiz satır ayrı tutuldu: %s',
+                        len(rejected_indices), rejected_indices)
+            current = [r['reason'] for r in rejected_indices if r['date'] >= gun.isoformat()]
+            if current:
+                raise prices.InvalidOHLCError('; '.join(current))
         sonuc["adimlar"]["endeks"] = " · ".join(f"{ad} {n}" for ad, n in sorted(r.items()))
     except Exception as e:                                  # noqa: BLE001
         _hata(sonuc, "endeks", e)
