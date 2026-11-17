@@ -2,7 +2,7 @@
   "bundle_version": "bist_bundle_v1",
   "asof": "2026-11-13",
   "karar_gunu": "2026-12-11",
-  "generated_utc": "2026-11-13T22:11:35+00:00",
+  "generated_utc": "2026-11-17T00:30:57+00:00",
   "uyari": "Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir.",
   "takvim": {
     "son_kapali_seans": "2026-11-13",
@@ -17,25 +17,25 @@
   },
   "haber_taramasi": {
     "ok": true,
-    "son_bildirim": "2026-11-13T19:01:40+00:00",
-    "gecikme_gun": 0,
+    "son_bildirim": "2026-11-16T16:25:32+00:00",
+    "gecikme_gun": -3,
     "not": null
   },
   "rejim": {
     "etiket": "risk-off",
     "tetikleyici": "XU100 SMA200'ün %12.51 ALTINDA (≤ %-3.0) · genişlik %23.9 ≤ %35.0",
-    "xu100_sma200_farki_pct": -12.513673255451286,
+    "xu100_sma200_farki_pct": -12.51382408987739,
     "genislik_sma50_ustu_pct": 23.88059701492537,
     "genislik_n": 67,
     "genislik_istenen_n": 67,
-    "xu100_vol_yillik_21g": 32.151261348839675,
+    "xu100_vol_yillik_21g": 32.15123577969382,
     "makro": {
       "politika_faizi": 36.0,
       "tufe_bayat_tarih": "2025-12-01",
       "enf_bek_12ay": 23.89,
       "mevduat_1yil_brut": 42.04,
       "mevduat_1yil_net": 35.734,
-      "usdtry": 50.2282,
+      "usdtry": 50.2595,
       "reel_net_mevduat": 9.56009363144723
     },
     "pozisyon_politikasi": {
@@ -56,15 +56,15 @@
         "dusuk_52h": 57.7999992371
       },
       "gostergeler": {
-        "rsi14": 57.075211067758765,
-        "macd_hist": 0.8277877765535387,
-        "atr14": 2.356675967362906,
-        "atr_pct": 3.3690865906800433,
-        "adx14": 26.386501089756564,
-        "sma20": 66.5374994277933,
-        "sma50": 68.70999946593733,
-        "sma200": 73.03299968719082,
-        "bb_pctb": 0.7822044279391339
+        "rsi14": 57.07521106790875,
+        "macd_hist": 0.8277877765559353,
+        "atr14": 2.3566759673621878,
+        "atr_pct": 3.369086590676985,
+        "adx14": 26.386501089763406,
+        "sma20": 66.53749942779646,
+        "sma50": 68.7099994659386,
+        "sma200": 73.03299968719114,
+        "bb_pctb": 0.7822044279423237
       },
       "faktorler": {
         "skor": 0.3707,
@@ -876,6 +876,15 @@
       ],
       "haberler": [
         {
+          "id": "kap-1698328",
+          "tarih": "2026-11-16 08:35",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Yeni İş İlişkisi",
+          "ozet": "Sözleşme İmzalanması",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1698328"
+        },
+        {
           "id": "kap-1691350",
           "tarih": "2026-11-03 07:07",
           "kaynak": "KAP (resmî beyan)",
@@ -952,15 +961,15 @@
         "dusuk_52h": 89.75
       },
       "gostergeler": {
-        "rsi14": 45.089730181221604,
-        "macd_hist": 4.736212965963865,
-        "atr14": 15.538239707672773,
-        "atr_pct": 9.486104650900996,
-        "adx14": 25.434415806093636,
-        "sma20": 160.22500076294367,
-        "sma50": 208.1590002441395,
-        "sma200": 246.67024993896385,
-        "bb_pctb": 0.604166425825804
+        "rsi14": 45.08973018120738,
+        "macd_hist": 4.736212965960959,
+        "atr14": 15.538239707670346,
+        "atr_pct": 9.486104650901957,
+        "adx14": 25.434415806092606,
+        "sma20": 160.22500076294233,
+        "sma50": 208.15900024413895,
+        "sma200": 246.67024993896376,
+        "bb_pctb": 0.6041664258246261
       },
       "faktorler": {
         "skor": null,
@@ -1948,15 +1957,15 @@
         "dusuk_52h": 15.739999771118164
       },
       "gostergeler": {
-        "rsi14": 53.49094880298229,
-        "macd_hist": 0.23660083874376336,
-        "atr14": 0.7127622787109616,
-        "atr_pct": 3.840314112187928,
-        "adx14": 23.318076509378532,
-        "sma20": 17.757000064844092,
-        "sma50": 18.902000045777637,
-        "sma200": 20.40430006981141,
-        "bb_pctb": 0.7361810459778948
+        "rsi14": 53.49094880342553,
+        "macd_hist": 0.23660083874587984,
+        "atr14": 0.7127622787054063,
+        "atr_pct": 3.840314112149226,
+        "adx14": 23.318076509372126,
+        "sma20": 17.75700006484833,
+        "sma50": 18.90200004577933,
+        "sma200": 20.404300069811836,
+        "bb_pctb": 0.7361810459896458
       },
       "faktorler": {
         "skor": 0.5347,
@@ -2390,6 +2399,24 @@
       ],
       "haberler": [
         {
+          "id": "kap-1698563",
+          "tarih": "2026-11-16 14:59",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Değerleme Raporu",
+          "ozet": "Aydın Didim Efeler Parselleri Gayrimenkul Değerleme Raporu",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1698563"
+        },
+        {
+          "id": "kap-1698562",
+          "tarih": "2026-11-16 14:58",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Arsa Alımı",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1698562"
+        },
+        {
           "id": "kap-1696930",
           "tarih": "2026-11-11 10:50",
           "kaynak": "KAP (resmî beyan)",
@@ -2442,24 +2469,6 @@
           "baslik": "Finansal Rapor",
           "ozet": null,
           "url": "https://www.kap.org.tr/tr/Bildirim/1694500"
-        },
-        {
-          "id": "kap-1694499",
-          "tarih": "2026-11-06 22:00",
-          "kaynak": "KAP (resmî beyan)",
-          "onem": "yuksek",
-          "baslik": "Finansal Rapor",
-          "ozet": null,
-          "url": "https://www.kap.org.tr/tr/Bildirim/1694499"
-        },
-        {
-          "id": "kap-1694498",
-          "tarih": "2026-11-06 22:00",
-          "kaynak": "KAP (resmî beyan)",
-          "onem": "orta",
-          "baslik": "Sorumluluk Beyanı (Konsolide)",
-          "ozet": "30 Eylül 2026 tarihli Finansal Tablolarla İlgili Sorumluluk Beyanı",
-          "url": "https://www.kap.org.tr/tr/Bildirim/1694498"
         }
       ],
       "haber_tarama_baslangici": "2026-10-22T20:59:59+00:00"
@@ -2475,15 +2484,15 @@
         "dusuk_52h": 71.0500030518
       },
       "gostergeler": {
-        "rsi14": 59.72329993151195,
-        "macd_hist": 0.7948171365033917,
-        "atr14": 2.554786472747318,
-        "atr_pct": 3.06329307674404,
-        "adx14": 22.021652538272377,
+        "rsi14": 59.723299931468276,
+        "macd_hist": 0.7948171365017592,
+        "atr14": 2.5547864727488947,
+        "atr_pct": 3.063293076746705,
+        "adx14": 22.021652538248585,
         "sma20": 78.64749984741317,
         "sma50": 82.47399993896526,
         "sma200": 91.5699998855578,
-        "bb_pctb": 0.9236052875310972
+        "bb_pctb": 0.9236052875296006
       },
       "faktorler": {
         "skor": -0.3006,
@@ -2976,15 +2985,15 @@
         "dusuk_52h": 23.4599990845
       },
       "gostergeler": {
-        "rsi14": 46.85507371576692,
-        "macd_hist": 0.2659258637606716,
-        "atr14": 1.3339858327290484,
-        "atr_pct": 4.0794672832012004,
-        "adx14": 20.832333215363835,
-        "sma20": 32.58399982453061,
-        "sma50": 35.53599975585624,
-        "sma200": 35.48169993400156,
-        "bb_pctb": 0.5130895115039873
+        "rsi14": 46.85507371595608,
+        "macd_hist": 0.2659258637633506,
+        "atr14": 1.3339858327346499,
+        "atr_pct": 4.0794672832134085,
+        "adx14": 20.832333215344626,
+        "sma20": 32.58399982453197,
+        "sma50": 35.535999755856785,
+        "sma200": 35.481699934001696,
+        "bb_pctb": 0.51308951150828
       },
       "faktorler": {
         "skor": 0.7124,
@@ -3430,15 +3439,15 @@
         "dusuk_52h": 27.0599994659
       },
       "gostergeler": {
-        "rsi14": 44.41758822181649,
-        "macd_hist": 0.8673636725903595,
-        "atr14": 3.9455396676618593,
-        "atr_pct": 9.627964157488236,
-        "adx14": 36.81596528571825,
-        "sma20": 40.429999542236644,
-        "sma50": 51.96359970092665,
-        "sma200": 62.09494974136116,
-        "bb_pctb": 0.5537439941228061
+        "rsi14": 44.41758822187805,
+        "macd_hist": 0.8673636725928082,
+        "atr14": 3.9455396676631116,
+        "atr_pct": 9.627964157482758,
+        "adx14": 36.81596528570795,
+        "sma20": 40.42999954223801,
+        "sma50": 51.9635997009272,
+        "sma200": 62.0949497413613,
+        "bb_pctb": 0.5537439941262104
       },
       "faktorler": {
         "skor": null,
@@ -3873,15 +3882,15 @@
         "dusuk_52h": 62.2999992371
       },
       "gostergeler": {
-        "rsi14": 55.38368584479146,
-        "macd_hist": 1.0159887428541614,
-        "atr14": 2.8107616780762292,
-        "atr_pct": 3.8112022753575987,
-        "adx14": 27.628025243552422,
-        "sma20": 69.44249992370817,
-        "sma50": 73.77699996948326,
-        "sma200": 90.18699981689231,
-        "bb_pctb": 0.8309654066185905
+        "rsi14": 55.38368584478458,
+        "macd_hist": 1.015988742854746,
+        "atr14": 2.8250477193403736,
+        "atr_pct": 3.830573178766608,
+        "adx14": 27.628025243559218,
+        "sma20": 69.44249992370605,
+        "sma50": 73.77699996948242,
+        "sma200": 90.18699981689211,
+        "bb_pctb": 0.8309654066184894
       },
       "faktorler": {
         "skor": -0.5905,
@@ -3933,38 +3942,38 @@
           "entry_low": 68.7,
           "entry_high": 70.15,
           "entry_trigger": "pullback_to_sma20",
-          "stop_price": 64.5,
+          "stop_price": 64.45,
           "stop_method": "atr_2x",
-          "stop_atr_multiple": 2.01,
+          "stop_atr_multiple": 2.02,
           "targets": [
             {
               "price": 79.5,
-              "rr": 1.65,
-              "rr_net": 1.56,
-              "atr_distance": 3.33,
+              "rr": 1.64,
+              "rr_net": 1.55,
+              "atr_distance": 3.31,
               "basis": "pivot@2026-07-14 (3 dokunuş)"
             },
             {
               "price": 81.6,
-              "rr": 2.03,
-              "rr_net": 1.92,
-              "atr_distance": 4.07,
+              "rr": 2.01,
+              "rr_net": 1.9,
+              "atr_distance": 4.05,
               "basis": "pivot@2026-08-24 (3 dokunuş)"
             },
             {
               "price": 85.35,
-              "rr": 2.69,
-              "rr_net": 2.56,
-              "atr_distance": 5.41,
+              "rr": 2.67,
+              "rr_net": 2.54,
+              "atr_distance": 5.38,
               "basis": "pivot@2026-09-09 (3 dokunuş)"
             }
           ],
-          "rr_at_t1": 1.65,
-          "rr_at_t1_net": 1.56,
+          "rr_at_t1": 1.64,
+          "rr_at_t1_net": 1.55,
           "maliyet_pct": 0.3,
           "time_barrier_days": 20,
           "time_barrier_date": "2026-12-11",
-          "position_size_pct": 4.97,
+          "position_size_pct": 4.92,
           "max_loss_pct_of_portfolio": 0.4,
           "entry_zone_status": "above_zone",
           "daily_limit_note": "stop girişten %8.1 uzakta; girildikten sonra tek günde tetiklenebilir (boşluk riski var)",
@@ -3980,10 +3989,10 @@
           ],
           "rr_secim": "2. giriş bandı (sma20_geri_cekilme), stop atr_2x",
           "elenen_adaylar": [
-            "dogrudan/atr_2x: R:R 1.02 < 1.5",
-            "dogrudan/atr_2.5x: R:R 0.82 < 1.5",
+            "dogrudan/atr_2x: R:R 1.01 < 1.5",
+            "dogrudan/atr_2.5x: R:R 0.81 < 1.5",
             "dogrudan/atr_3x: R:R 0.68 < 1.5",
-            "dogrudan/swing_low: 0.93×ATR ∉ [1.5,4.0]",
+            "dogrudan/swing_low: 0.92×ATR ∉ [1.5,4.0]",
             "dogrudan/sma_break_buffer: R:R 1.07 < 1.5"
           ],
           "uyari": "Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir."
@@ -4400,15 +4409,15 @@
         "dusuk_52h": 116.9000015259
       },
       "gostergeler": {
-        "rsi14": 66.7297333891484,
-        "macd_hist": 2.2907285512556195,
-        "atr14": 4.944368735292997,
-        "atr_pct": 3.289666423751801,
-        "adx14": 32.32928061008068,
-        "sma20": 137.11500167846947,
-        "sma50": 133.16800003052577,
-        "sma200": 135.88950012207445,
-        "bb_pctb": 0.813968067296281
+        "rsi14": 66.7297333890585,
+        "macd_hist": 2.2907285512535385,
+        "atr14": 4.944368735293318,
+        "atr_pct": 3.2896664237529376,
+        "adx14": 32.329280610050155,
+        "sma20": 137.11500167846526,
+        "sma50": 133.1680000305241,
+        "sma200": 135.88950012207403,
+        "bb_pctb": 0.8139680672953844
       },
       "faktorler": {
         "skor": 0.4444,
@@ -4873,6 +4882,15 @@
       ],
       "haberler": [
         {
+          "id": "kap-1698657",
+          "tarih": "2026-11-16 16:04",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "yuksek",
+          "baslik": "Payların Geri Alınmasına İlişkin Bildirim",
+          "ozet": "Günlük Pay Geri Alım İşlemleri",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1698657"
+        },
+        {
           "id": "kap-1695764",
           "tarih": "2026-11-09 16:17",
           "kaynak": "KAP (resmî beyan)",
@@ -4934,15 +4952,6 @@
           "baslik": "Finansal Duran Varlık Satışı",
           "ozet": "İştirak satışının tamamlanması",
           "url": "https://www.kap.org.tr/tr/Bildirim/1691278"
-        },
-        {
-          "id": "kap-1690121",
-          "tarih": "2026-10-30 15:59",
-          "kaynak": "KAP (resmî beyan)",
-          "onem": "orta",
-          "baslik": "Yatırım Kuruluşu Varant - Sertifika - Senetlerine İlişkin Bildirim",
-          "ozet": "Yatırım Kuruluşu Varantları İtfa Fiyatları",
-          "url": "https://www.kap.org.tr/tr/Bildirim/1690121"
         }
       ],
       "haber_tarama_baslangici": "2026-10-22T20:59:59+00:00"
@@ -4958,15 +4967,15 @@
         "dusuk_52h": 161.8999938965
       },
       "gostergeler": {
-        "rsi14": 52.36644260038701,
-        "macd_hist": 1.36497270994041,
-        "atr14": 6.732303063405263,
-        "atr_pct": 3.244483404050729,
-        "adx14": 30.344869369665368,
-        "sma20": 202.24000015258997,
-        "sma50": 210.246000061036,
-        "sma200": 202.769999923705,
-        "bb_pctb": 0.7628980853911311
+        "rsi14": 52.36644260038745,
+        "macd_hist": 1.3649727099398024,
+        "atr14": 6.732303063401667,
+        "atr_pct": 3.2444834040489963,
+        "adx14": 30.344869369668427,
+        "sma20": 202.2400001525921,
+        "sma50": 210.24600006103682,
+        "sma200": 202.76999992370523,
+        "bb_pctb": 0.7628980853912337
       },
       "faktorler": {
         "skor": 0.8741,
@@ -5543,15 +5552,15 @@
         "dusuk_52h": 23.5
       },
       "gostergeler": {
-        "rsi14": 47.29801799066102,
-        "macd_hist": 0.2685357639412833,
-        "atr14": 1.7886503889053806,
-        "atr_pct": 4.598072798826189,
-        "adx14": 18.025736744890978,
-        "sma20": 38.68199996948045,
-        "sma50": 42.26360008240018,
-        "sma200": 38.49680005073455,
-        "bb_pctb": 0.5279285972971488
+        "rsi14": 47.29801799059107,
+        "macd_hist": 0.2685357639400956,
+        "atr14": 1.788650388909335,
+        "atr_pct": 4.598072798838849,
+        "adx14": 18.025736745059962,
+        "sma20": 38.68199996947879,
+        "sma50": 42.26360008239951,
+        "sma200": 38.49680005073438,
+        "bb_pctb": 0.5279285972946499
       },
       "faktorler": {
         "skor": 1.2643,
@@ -5873,6 +5882,15 @@
       ],
       "haberler": [
         {
+          "id": "kap-1698231",
+          "tarih": "2026-11-15 13:32",
+          "kaynak": "KAP (resmî beyan)",
+          "onem": "orta",
+          "baslik": "Özel Durum Açıklaması (Genel)",
+          "ozet": "Bilgilendirme",
+          "url": "https://www.kap.org.tr/tr/Bildirim/1698231"
+        },
+        {
           "id": "kap-1692703",
           "tarih": "2026-11-04 15:41",
           "kaynak": "KAP (resmî beyan)",
@@ -5949,15 +5967,15 @@
         "dusuk_52h": 15.40999984741211
       },
       "gostergeler": {
-        "rsi14": 37.93082532584174,
-        "macd_hist": 0.03069283862684513,
-        "atr14": 0.7920880025288776,
-        "atr_pct": 4.754429830637079,
-        "adx14": 24.7315589128645,
-        "sma20": 17.548499870307882,
-        "sma50": 19.845999946593153,
-        "sma200": 20.283849954605788,
-        "bb_pctb": 0.2979238745749625
+        "rsi14": 37.93082532596179,
+        "macd_hist": 0.03069283862787331,
+        "atr14": 0.7920880025299283,
+        "atr_pct": 4.754429830639931,
+        "adx14": 24.73155891286474,
+        "sma20": 17.548499870307577,
+        "sma50": 19.845999946593032,
+        "sma200": 20.283849954605756,
+        "bb_pctb": 0.29792387457789415
       },
       "faktorler": {
         "skor": -0.0454,
@@ -6393,15 +6411,15 @@
         "dusuk_52h": 31.6200008392334
       },
       "gostergeler": {
-        "rsi14": 50.19598625899056,
-        "macd_hist": 0.3735388101747963,
-        "atr14": 1.2774357684830087,
-        "atr_pct": 3.562285964135011,
-        "adx14": 29.80302076348559,
-        "sma20": 34.83400020599742,
-        "sma50": 37.760400238036965,
-        "sma200": 42.89350006103675,
-        "bb_pctb": 0.738627578876114
+        "rsi14": 50.19598625875335,
+        "macd_hist": 0.3735388101720801,
+        "atr14": 1.2774357684835205,
+        "atr_pct": 3.5622859641412505,
+        "adx14": 29.80302076348399,
+        "sma20": 34.83400020599363,
+        "sma50": 37.76040023803545,
+        "sma200": 42.89350006103636,
+        "bb_pctb": 0.7386275788654563
       },
       "faktorler": {
         "skor": -0.3866,
@@ -6863,9 +6881,9 @@
       "gostergeler": {
         "rsi14": 65.99185593023026,
         "macd_hist": 3.628908280943132,
-        "atr14": 10.850611265033072,
-        "atr_pct": 3.589945827967931,
-        "adx14": 23.052921801572374,
+        "atr14": 10.85061126503254,
+        "atr_pct": 3.5899458279677554,
+        "adx14": 23.05292180157764,
         "sma20": 279.3625,
         "sma50": 274.23,
         "sma200": 288.705250015259,
@@ -7395,15 +7413,15 @@
         "dusuk_52h": 84.8499984741
       },
       "gostergeler": {
-        "rsi14": 54.51865554412813,
-        "macd_hist": 0.7946202861810405,
-        "atr14": 3.076582193950626,
-        "atr_pct": 3.1717342205676555,
-        "adx14": 29.243247147475874,
-        "sma20": 93.59500007629711,
-        "sma50": 97.05000000000085,
-        "sma200": 107.02825000762972,
-        "bb_pctb": 0.8177118577145881
+        "rsi14": 54.51865554412573,
+        "macd_hist": 0.7946202861813436,
+        "atr14": 3.0765821939491187,
+        "atr_pct": 3.1717342205661017,
+        "adx14": 29.243247147483352,
+        "sma20": 93.59500007629606,
+        "sma50": 97.05000000000044,
+        "sma200": 107.02825000762961,
+        "bb_pctb": 0.8177118577145228
       },
       "faktorler": {
         "skor": -0.0596,
@@ -7869,18 +7887,18 @@
         "onceki_kapanis": 319.0,
         "gunluk_degisim_pct": 0.39,
         "yuksek_52h": 355.5,
-        "dusuk_52h": 242.1999969482422
+        "dusuk_52h": 242.1999969482
       },
       "gostergeler": {
-        "rsi14": 71.32270752687262,
-        "macd_hist": 6.950355558027867,
-        "atr14": 10.31673951127251,
-        "atr_pct": 3.2214643282662014,
-        "adx14": 38.25857902512579,
-        "sma20": 279.6099998474121,
-        "sma50": 285.94399993896485,
-        "sma200": 304.3884999847412,
-        "bb_pctb": 0.905195553196961
+        "rsi14": 71.3227075268624,
+        "macd_hist": 6.950355558028482,
+        "atr14": 10.316739511275493,
+        "atr_pct": 3.221464328267133,
+        "adx14": 38.258579025112866,
+        "sma20": 279.60999984741,
+        "sma50": 285.943999938964,
+        "sma200": 304.38849998474103,
+        "bb_pctb": 0.9051955531969315
       },
       "faktorler": {
         "skor": 0.166,
@@ -8944,5 +8962,5 @@
     "Bir planı beğenmiyorsan `plan_reddet` + `veto_code` kullan — bu gerçek bir karardır ve performansı ölçülür.",
     "Bu sistemde ÖLÇÜLEN KENAR YOKTUR (ADR #008). Seviyeler planlama geometrisidir; yön iddiası üretme."
   ],
-  "bundle_sha": "e9a6b55ffe8f7b90984c99e2c49bf6ce064ebf3674825db908ac344809fa517a"
+  "bundle_sha": "a89cf6b7efdc3620cff759a4ff656d2a76990f3d3670b5e2ed91ab117368596f"
 }
