@@ -12,7 +12,7 @@ Altının akşam veri boşluğundan sonra taze banka fiyatı doğrulandı.
 - Altın: 18.34 nöbetçisi 45 dakikayı aşan arayı bildirdi. 21.41 telafi çevrimi
   taze GRAM fiyatı ve BEKLE kararı üretti. İki FRED serisinde zaman aşımı var.
 - Kapanışın eksik seansı gizlemesini önleyen ortak nöbetçi kontrolü ve
-  regresyon testleri eklendi. BIST zamanlamasının kalıcı çözümü açık.
+  regresyon testleri eklendi. Girdisiz dış çağrılar için saatlik telafi hazır; ilk seans kabulü bekleniyor.
 
 
 - BIST USDTRY 2026-10-22'de donmuştu: tarihsel tek bozuk satır tüm batch'i
