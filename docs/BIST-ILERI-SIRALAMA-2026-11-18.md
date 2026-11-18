@@ -23,3 +23,21 @@ Yeni bir tahmin kaydı için araştırma ortamında LightGBM gereklidir. Komut, 
 ```sh
 python -m scripts.bist_forward_trial freeze --trial reports/bist-forward-YENI-TARIH.json
 ```
+
+## Masraflı tarihsel portföy karşılaştırması
+
+25 Eylül–17 Kasım 2026 arasında 37 işlem seansı için üç sanal hesap aynı günlerde toplam 60.000 TL katkı aldı. İki adayda katkının %80'i ortak çekirdek sepete, %20'si taktik stratejiye ayrıldı. Pasif hesap iki payda da çekirdek sepet kuralını izledi. Günlük fiyat aralığıyla simüle edilen stoplar ve işlem masrafları portföy değerine yansıtıldı.
+
+| Yöntem | Son net değer | Katkı etkisinden arındırılmış getiri | En büyük kapanış düşüşü | Alış ve satış sayısı |
+|---|---:|---:|---:|---:|
+| Pasif sepet | 55.322,11 TL | −%10,08 | −%18,71 | 212 |
+| Ridge | 54.638,47 TL | −%11,11 | −%18,31 | 181 |
+| LightGBM | 54.385,57 TL | −%11,54 | −%18,49 | 181 |
+
+LightGBM bu kesitte pasif sepetin 936,54 TL gerisinde kaldı. Kesit önceki sıralama araştırmasında kullanılan arşivle örtüşüyor. Günlük barlardan çıkarılan stop fiyatları ve kullanılan maliyet tarifesi gerçekleşmiş banka işlemlerini yaklaşıklar. Aday araştırmada kalıyor.
+
+```sh
+python -m scripts.bist_rank_replay --asof 2026-11-17 --output /tmp/bist-replay.json
+```
+
+Ayrıntılar ve günlük değerler `reports/bist-rank-replay-2026-11-17.json` dosyasındadır.

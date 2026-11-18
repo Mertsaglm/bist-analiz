@@ -19,6 +19,12 @@ Sıfır ek ödeme, eski defter korunumu ve ortak T0 kapısı geçerli.
 - 26 fold/126 tarih offline sınav: BIST LightGBM rank IC 0,1213, Ridge -0,0120;
   altın ons/kur ek özellikleri MAE'yi artırdı. Canlı terfi yapılmadı.
 
+- 18 Kasım açılışından önce 17 Kasım kesitinden 32 hisse için LightGBM ve Ridge
+  tahminleri saklandı. İlk ileri sıralama vadesi 15 Aralık 2026 kapanışı.
+  37 seanslık tarihsel portföyde 60.000 TL katkıyla LightGBM 54.385,57 TL,
+  Ridge 54.638,47 TL ve pasif sepet 55.322,11 TL. Aday araştırmada.
+  Komut ve ölçüm sözleşmesi: `docs/BIST-ILERI-SIRALAMA-2026-11-18.md`.
+
 ## Açık bulgular ve kanıt sınırı
 
 - İlk canlı çevrimde USDTRY ve kapanış değerlemesi doğrulanacak.
@@ -41,9 +47,9 @@ Sıfır ek ödeme, eski defter korunumu ve ortak T0 kapısı geçerli.
 2. Dış scheduler ve kaynak kesintisini bağımsız izle; arşiv büyümesini çöz.
    DoD: tetikleyici saatleri ile runner saatleri ayrılmış, kaynak hata sınıfı
    doğrulanmış; saklama değişikliğinde eski kanıtın geri dönüşü korunmuş.
-3. BIST LightGBM adayını aynı maliyetli tam portföy/stop sınavında değerlendir.
-   DoD: zaman sıralı bağımsız sınav, pasif kıyas, düşüş ve işlem sayısı;
-   ardından iki piyasa kabulüyle ortak ileri T0 ayrı değerlendirilir.
+3. 15 Aralık 2026 kapanışında kaydedilmiş ileri tahminleri değerlendir.
+   DoD: 32 hissenin tamamında aynı vade verisi, Ridge ve LightGBM sıralama
+   korelasyonları; sonraki bağımsız dönemlerde net portföy ve düşüş kıyası.
 
 ## TAKVİM
 
