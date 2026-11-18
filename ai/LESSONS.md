@@ -1191,3 +1191,10 @@ yollarında da uygulanmalı. `test_benchmark_pocket_half_cent_reconciles_with_in
 ve `test_legacy_mark_rounds_lot_times_price_before_cents` bu simetriyi korur.
 Temettü alacağı da lot × tutar × net oranı `Decimal` ile hesaplar;
 `test_dividend_receivable_rounds_fractional_lot_value_once` bu yolu kilitler.
+
+## 2026-11-18 · Kapanış ve seans içi gözlem
+
+18 Kasım BIST defterinde tek çevrim 19.32'deki kapanış değerlemesiydi.
+Eski nöbetçi 21.36 kesitinde aynı defter için sağlıklı sonucu verdi.
+İşlem penceresi tamamlandığında o pencerenin içinde gerçekleşmiş en az bir
+çevrimi ayrıca ara. Saatlik eksikleri ayrıca GitHub ve defter zamanlarından say.
