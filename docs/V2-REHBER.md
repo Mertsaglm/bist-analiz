@@ -132,8 +132,8 @@ kurulumdaki varsayımı değiştirirken eski hesabı silmeden arşivle.
 ## Otomatik çalışma
 
 BIST `portfolio.yml` hafta içi nominal saatlik (10:17–19:17 TR), günlük veri
-workflow'u bitince ve `manual_run=true` ile elle çalışır. Sahibi doğrulanmamış
-eski girdisiz dış dispatch runner başlamadan elenir. Altın nominal 30 dakika
+workflow'u bitince ve `manual_run=true` ile elle çalışır. Girdisiz dış çağrı saatlik çevrimi denetler; güncel ve tam fiyatlı çevrim
+varsa portföy işini atlar. Altın nominal 30 dakika
 yedek zamanlamasını ve mevcut dispatch hattını korur. Bu yerel yapılandırma
 2026-10-29 düzeltme paketindedir; üretime uygulanma durumu STATE'tedir.
 GitHub cron kesin zaman veya kesintisiz fiyat akışı sağlamaz; stop da
