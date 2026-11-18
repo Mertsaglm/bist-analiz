@@ -36,6 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
+          ref: main
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             /scripts/bist_cycle_due.py
