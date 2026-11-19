@@ -46,18 +46,17 @@ def _metrics(rows, market):
             'rank_ic_dates': len(by_date)}
 
 
-def evaluate(frame, market, asof, max_test_dates=126):
-    horizon = 20
+def evaluate(frame, market, asof, max_test_dates=126, *, horizon=20):
     f = learning.features(frame[frame.date <= asof], horizon)
+    mature = f[(f.label_end <= asof) & f.quality_ok]
     if market == 'bist':
-        target, names = specialized.prepared(f, market, horizon)
+        target, names = specialized.prepared(mature, market, horizon)
         catalog = ('relative-ridge', 'relative-lightgbm')
     else:
-        target = f.copy()
+        target = mature
         names = learning.FEATURES + specialized.GOLD_LEGS
         catalog = ('gram-ridge-base', 'gram-ridge-legs')
     valid = target.dropna(subset=names + ['forward_pct', 'label_end'])
-    valid = valid[(valid.label_end <= asof) & valid.quality_ok]
     dates = sorted(valid.date.unique())
     if len(dates) < 504 + horizon + 5:
         return {'status': 'yetersiz veri', 'training_dates': len(dates), 'catalog': catalog}
@@ -74,7 +73,11 @@ def evaluate(frame, market, asof, max_test_dates=126):
         block = evaluation_dates[start_index:start_index + 5]
         begin = block[0]
         # Eğitim için etiketi testin İLK günü öncesinde sonuçlanmış olmalı.
-        training = valid[valid.label_end < begin]
+        if market == 'bist':
+            training, _ = specialized.prepared(mature[mature.label_end < begin], market, horizon)
+            training = training.dropna(subset=names + ['forward_pct'])
+        else:
+            training = valid[valid.label_end < begin]
         testing = valid[valid.date.isin(block)]
         if training.date.nunique() < 504 or testing.empty:
             failures.append({'test_start': str(begin), 'reason': 'eğitim veya test verisi eksik'})
@@ -101,7 +104,9 @@ def evaluate(frame, market, asof, max_test_dates=126):
     metrics = {name: _metrics(pd.concat(chunks, ignore_index=True) if chunks else pd.DataFrame(), market)
                for name, chunks in predictions.items()}
     return {'status': 'offline araştırma', 'market': market, 'asof': asof,
-            'target': 'seçilmiş evrende göreli 20 seans getiri' if market == 'bist' else 'sentetik gram 20 seans getirisi',
+            'target': (f'seçilmiş evrende göreli {horizon} seans getiri' if market == 'bist'
+                       else f'sentetik gram {horizon} seans getirisi'),
+            'horizon_sessions': horizon,
             'source_limit': ('Güncel seçilmiş evren geçmiş BIST30 üyeliği değildir.' if market == 'bist' else
                              'GC=F vadeli ons ve USD/TRY; banka gerçekleşmiş getirisi değildir.'),
             'catalog': catalog, 'attempts': {name: {'parameters': LIGHTGBM if name == 'relative-lightgbm' else
@@ -119,8 +124,11 @@ def main():
     parser.add_argument('--market', required=True, choices=('bist', 'gold'))
     parser.add_argument('--database', type=Path)
     parser.add_argument('--asof', type=str)
+    parser.add_argument('--horizon-sessions', type=int, choices=(5, 10, 20), default=20)
     parser.add_argument('--output', type=Path)
     args = parser.parse_args()
+    if args.market == 'bist' and args.horizon_sessions != 20:
+        parser.error('BIST göreli hedefi için 20 seans gerekli.')
     with history.connection(ROOT, args.market, args.database) as con:
         available = con.execute('SELECT max(date) FROM ' + ('bars_daily' if args.market == 'bist' else 'history_daily')).fetchone()[0]
         asof = min(available, args.asof) if args.asof else available
@@ -131,14 +139,15 @@ def main():
         selection_day = max(asof, max(r['known_at'] for r in membership))
         selected = universe.members(membership, selection_day)
         frame = frame[frame.symbol.isin(selected)].copy()
-    report = evaluate(frame, args.market, asof)
+    report = evaluate(frame, args.market, asof, horizon=args.horizon_sessions)
     report['selection_known_at'] = selection_day
     if selection_day and selection_day > asof:
         report['selection_warning'] = 'Evren seçimi son arşiv tarihinden sonra bilindi; bu sınav o tarihte uygulanabilir işlem sinyali değildir.'
     report['frame_id'] = digest({'market': args.market, 'asof': asof,
                                   'rows': len(frame), 'symbols': sorted(frame.symbol.unique().tolist()),
                                   'values': str(pd.util.hash_pandas_object(frame, index=False).sum())})
-    output = args.output or ROOT / 'reports' / ('portfolio-model-research-' + args.market + '-' + asof + '.json')
+    suffix = '' if args.horizon_sessions == 20 else f'-{args.horizon_sessions}s'
+    output = args.output or ROOT / 'reports' / (f'portfolio-model-research-{args.market}-{asof}{suffix}.json')
     atomic_json(output, report)
     print(json.dumps({'output': str(output), 'status': report['status'],
                       'attempts': {k: v['status'] for k, v in report.get('attempts', {}).items()}}, ensure_ascii=False))

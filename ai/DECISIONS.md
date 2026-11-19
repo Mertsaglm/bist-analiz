@@ -6,6 +6,19 @@
 
 ---
 
+## #037 — 2026-11-19 — Pozisyonu yeni bilgiyle yeniden değerlendir
+
+**Karar:** Piyasalar ayrı sanal hesaplardır. Pasif kıyas otomatik işler,
+taktik adaylar ayrı defterde sınanır. Tahmin ölçümü ve pozisyonun çıkış
+kuralı ayrıdır. Gün sonu Telegram raporu, gün içi durum mesajından bağımsız
+makbuz alır ve gerçekleşmeleri olay defterinden sayar.
+**Neden:** Güncel tahmin, gerçekleşmiş işlem ve mesaj makbuzu farklı
+kanıtlardır. Eldeki fiyat yeniden değerlendirme gerektirebilir.
+**Tekrar gözden geçir:** Zaman sıralı ekonomik kıyas, maliyet sonrası servet
+ve düşüş sınavı ve düzenli otomatik işletim birlikte kanıtlandığında.
+
+---
+
 ## #036 — 2026-11-17 — Tarihsel kaynak reddini güncel kapsamdan ayır
 
 **Karar:** Endeks/kur batch'inde geçersiz OHLC satırı yazılmaz; sağlam tarihler

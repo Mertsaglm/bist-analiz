@@ -6,6 +6,13 @@
 
 ---
 
+## L-038 — 2026-11-19 — Karar makbuzu kapanış raporu değildir
+
+Gün içi BEKLE değişmediyse durum mesajını bastırmak yararlıdır. Aynı kural
+gün sonu raporunu sessizce eleyebilir. Kapanışa İstanbul işlem günü
+kimliği ver, gerçekleşmeleri defterden say ve eksik kapanış toparlanırsa
+güncel raporu ilet. Çevrim başarı durumu Telegram teslimini kanıtlamaz.
+
 ## L-037 — 2026-11-17 — Batch reddi sağlam günleri de dondurur
 
 **Olay:** Tek USDTRY OHLC hatası bütün seri güncellemesini durdurdu. İlk hata
