@@ -2,7 +2,7 @@
 
 > ⚠ Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir.
 
-**bundle_sha:** `4d491f9ae9c854d05b94acc88e704ba4ef7369a9c278472d669aa570635b2fe1` — çıktına BİREBİR kopyala.
+**bundle_sha:** `9e8deb13f818be24f57efd854de4038a3b134cd1e787d51865b1f95367bd3886` — çıktına BİREBİR kopyala.
 
 ## Piyasa rejimi: **risk-off**
 
