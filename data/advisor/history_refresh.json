@@ -1,1 +1,1 @@
-{"attempted_at":"2026-11-20T22:53:27.990511+00:00","errors":{},"expected":"2026-11-20","legacy_cutoff_after":"2026-11-20","legacy_cutoff_before":"2026-11-20","missing":["AGHOL"],"missing_before":["AGHOL"],"missing_indices":[],"ok":false,"rejected_indices":[]}
+{"attempted_at":"2026-11-23T07:17:01.910381+00:00","errors":{},"expected":"2026-11-20","legacy_cutoff_after":"2026-11-20","legacy_cutoff_before":"2026-11-20","missing":[],"missing_before":["AGHOL"],"missing_indices":[],"ok":true,"rejected_indices":[]}
