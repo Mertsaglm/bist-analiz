@@ -1,5 +1,9 @@
 # Yerel denetim eki: getiri farkları ve sanal alım/satış kolları — 2026-09-25
 
+> **Tarihsel kesit:** Bu belgedeki ölçüm ve yayın durumu yazıldığı tarihin kesitidir.
+> Güncel üretim ve açık işler için [ai/STATE.md](../ai/STATE.md) ile
+> [2026-10-01 deney durumuna](PORTFOY-DENEYI-2026-10-01.md) bakın.
+
 Bu ek `docs/YEREL-DENETIM-2026-09-25.md` içindeki iki açık kanıt boşluğunu
 inceler. İşlemler yereldir; banka/borsa bağlantısı, commit, push ve deploy yoktur.
 Tarihsel getiriler yatırım üstünlüğü kanıtı değildir.

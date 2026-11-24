@@ -60,7 +60,9 @@ def _validate_ohlc(frame, symbol):
         values = [_f(getattr(row, key)) for key in ('o','h','l','c')]
         if (any(v is None or not math.isfinite(v) or v <= 0 for v in values)
                 or not values[2] <= min(values[0],values[3]) <= max(values[0],values[3]) <= values[1]):
-            raise InvalidOHLCError(f'Geçersiz OHLC: {symbol} {row.date}; kaynak satırı yazılmadı.')
+            o, h, l, c = values
+            raise InvalidOHLCError(f'Geçersiz OHLC: {symbol} {row.date}; kaynak satırı yazılmadı. '
+                                   f'O={o!r} H={h!r} L={l!r} C={c!r}')
 
 
 def _f(x) -> float | None:

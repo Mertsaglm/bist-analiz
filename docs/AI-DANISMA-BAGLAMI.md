@@ -1,16 +1,23 @@
 # Birikim sistemi — dış yapay zekâ için teknik bağlam
 
-**Kesit tarihi:** 2026-09-24. **Amaç:** Bu belgeyi okuyan, depolara erişimi olmayan
-bir yapay zekâ sistemin hangi problemi çözdüğünü, hangi parçanın gerçekten çalıştığını,
-hangi sonucun ölçüldüğünü ve önerisinin nereye oturacağını anlayabilsin. Bu bir
-uygulama talimatı veya canlı yatırım sinyali değildir. Tarihli kanıt ile güncel durum
-ayrı verilir; güncel işletim kaydı `ai/STATE.md` dosyasıdır.
+> **Tarihsel kesit:** Bu belgedeki ölçüm ve yayın durumu yazıldığı tarihin kesitidir.
+> Güncel üretim ve açık işler için [ai/STATE.md](../ai/STATE.md) ile
+> [2026-11-24 denetimine](DENETIM-2026-11-24.md) bakın.
+
+**Kesit tarihi:** 2026-09-24. Depolara erişimi olmayan dış yapay zekâ için amaç,
+mimari ve ölçülmüş sonuç bağlamıdır; uygulama talimatı veya canlı yatırım sinyali değildir.
+
+## 24 Kasım ek bağlamı
+
+İki ana hesap 60.000 TL nakitte. Ortak T0 kapalı. BIST trend ve R:R etkileşimi
+ile altın makası belirgin giriş engelleri. [24 Kasım denetimi](DENETIM-2026-11-24.md)
+ek raporlardaki iddiaları, veri kapsamını ve karar gerekçelerini içerir.
 
 ## 0. En kısa doğru zihinsel model
 
 - Sistem **iki ayrı Python deposundan** oluşur: `BIST tahmin` ve
   `gold_tracking_system`. Her depo kendi fiyat geçmişini, sanal hesabını,
-  `advisor/config.json` ayarını, `data/advisor/events.jsonl` olay defterini ve
+  `advisor/config.json` ayarını, `data/advisor/accounts/<account_id>/events.jsonl` olay defterini ve
   `data/advisor/latest.json` son görünümünü tutar.
 - Bu depoda **V1** (`src/`) günlük veri ve eski BIST analist/LLM araştırma hattıdır;
   otomatik veri, göstergeler, plan, analiz, rapor üretimi sürmektedir. **V2**
@@ -611,30 +618,20 @@ tarihinin durumudur, 2026-09-24'ün durumu değildir.
 
 ### Projeye uygun geliştirme ölçütü
 
-Yeni bir fikir değerlendirilecekse önce **hangi hattı** değiştirdiği
-belirtilmeli: BIST V1 araştırma/LLM mi, BIST V2 sanal karar mı, altın V2 mi,
-ortak panel mi, işletim/kanıt mı? Ardından değişen karar sözleşmesi, ihtiyaç
-duyduğu gerçek veri, aynı bütçeli taban, zaman sızıntısı riski, komisyon/makas,
-gerçek deftere dokunmadan deney ve başarısızlıkta davranış anlatılmalı.
-Yeni oran kapısında hem payın hem paydanın sınırı incelenmeli. Gözlemci
-işi durdurmamalı; durduran kapı yalnız bu çevrimin düzeltebileceği girdiye
-bakmalı. “Veri yok” olumlu hükme dönmemeli. Kısıtlı kullanıcı bütçesi için
-önce az parçalı ve geri alınabilir çözüm düşünülmeli.
+Önerinin hangi hatta ait olduğu açık olmalı: BIST V1, BIST V2, altın V2,
+ortak panel veya işletim. Farklı hatların karne ve defterleri birleştirilmez.
+Yeni yöntem aynı bütçe ve maliyetle ayrı sınanır; tarihsel kaynak eksikliği
+ve ileriye dönük kanıt gereksinimi görünür kalır.
 
 ## 15. Dış yapay zekâya verilecek çalışma talimatı
 
 Bu belgenin tamamı veya seçilen bölümü aşağıdaki istemle birlikte verilebilir:
 
-> Bu, çalışan ama getirisi kanıtlanmamış kişisel bir BIST + gram altın sanal
-> karar sisteminin teknik bağlamıdır. Depolara erişimin yok; anlatılmayan
-> dosya veya üretim sonucunu var sayma. Önerilerini mevcut V1/V2 sınırına
-> göre ver. Her öneri için (1) çözdüğü somut sorun veya sınanacak hipotez,
-> (2) değişecek modül/veri sözleşmesi, (3) gerekli dış veri ve maliyet,
-> (4) aynı bütçeli al-tut veya mevcut politika karşısında ölçüm,
-> (5) olası sessiz yanlış sonuç ve koruyucu test, (6) geri alma yolunu yaz.
-> Önce canlı karar doğruluğu/kanıt, sonra arayüz kolaylığı düşün. Yeni
-> özellik gerektirmeyen bulguyu da açıkça söyle. Gerçek para işlemi veya
-> kanıtlanmamış getiri üstünlüğü varsayma.
+> Bu tarihli bağlamı kullanarak sorulan konuyu değerlendir. Depolara erişimin
+> yok; eksik bilgiyi varsayım olarak belirt. V1/V2 sınırlarını, yalnız sanal
+> hesap kapsamını ve ölçümün kaynak sınırlarını koru. Önerinin gerekçesini ve
+> gerektirdiği veri/maliyeti açıkla; getiri üstünlüğü öneriyorsan aynı bütçeli,
+> maliyet sonrası kıyasta nasıl sınanacağını belirt.
 
 **Paylaşım hijyeni:** Bu doküman bilerek API anahtarı, parola, bot tokenı,
 kişisel portföy miktarı veya ham `events.jsonl` içermiyor. Başka sisteme

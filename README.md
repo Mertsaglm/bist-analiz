@@ -1,9 +1,18 @@
 # BIST Analiz
 
-[İşletim, yayın ve sonraki adımlar](docs/ISLETIM-2026-11-18.md)
+> **Güncel başlangıç.** [Doküman haritası](docs/PROJE-ICINDEKILER.md), [durum ve üretim kanıtı](ai/STATE.md), [25 Kasım tahmin denetimi](docs/TAHMIN-DENETIMI-2026-11-25.md). Tarihli kesitler kendi ölçüm koşullarına aittir.
 
 
-Yerel eğitim ve son tamamlanma denetimi (2026-09-25): [rapor](docs/YEREL-DENETIM-2026-09-25.md). Commit/push/deploy yapılmadı.
+Yeni oturum için [proje kapsamı](ai/PROJECT.md) ve [güncel durum](ai/STATE.md). [İşletim rehberi](docs/ISLETIM-2026-11-18.md) ve [24 Kasım denetimi](docs/DENETIM-2026-11-24.md).
+
+**Tarihsel yayın kaydı (2026-10-01):** Yeni kod [BIST `main`](https://github.com/Mertsaglm/bist-analiz/commit/bee1a1c)
+ve [altın `main`](https://github.com/Mertsaglm/gold_tracking_system/commit/dddb27c)
+dallarında. Altın yeni kodla canlı çevrim ve Telegram gönderimi yaptı; ilk BIST
+koşusu seans dışında atlandı. Beş yeni %80 çekirdek/%20 taktik deney hesabı
+için ortak T0 hâlâ kapalıdır; geçmiş performans üstünlüğü gösterilmedi.
+Güncel durum [STATE](ai/STATE.md), deney sözleşmesi
+[PORTFOY-DENEYI](docs/PORTFOY-DENEYI-2026-10-01.md).
+[Doküman haritası](docs/PROJE-ICINDEKILER.md) ve [25 Eylül tarihsel denetimi](docs/YEREL-DENETIM-2026-09-25.md).
 
 ## Birikim V2 — 2026-09-15 revizyonu
 
@@ -14,6 +23,7 @@ Gerçek emir gönderilmez. Alım/satım kararı, miktarı, masrafı ve fiyat kay
 
 - [2026-09-16: öncelik grupları ve uygulama sonucu](reports/IYILESTIRME-2026-09-16.md)
 - [Kullanım, mimari ve Vercel kurulumu](docs/V2-REHBER.md)
+- [Çekirdek/taktik deney, eski veri sınavı ve canlı yayın sınırı](docs/PORTFOY-DENEYI-2026-10-01.md)
 - [İnceleme, değişiklikler ve doğrulama raporu](reports/REVIZYON-2026-09-15.md)
 - Güncel kod, üretim ve açık risk durumu: [ai/STATE.md](ai/STATE.md).
 - Kısa karar: `.venv/bin/python -m advisor status`

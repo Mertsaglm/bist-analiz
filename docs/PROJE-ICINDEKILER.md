@@ -1,11 +1,11 @@
-# Birikim projesi — danışma için içindekiler
+# Birikim projesi — doküman haritası
 
-**Kesit:** 2026-09-24. Bu dosya bir konu seçme haritasıdır; seçilen bölümün
-ayrıntılı teknik paketi ayrıca hazırlanır. Canlı sonuç ve açık riskler için
-`ai/STATE.md` esas alınır.
+> **2026-11-25 devir notu.** Güncel üretim, yerel paket, bağımsız momentum ve ortak T0 durumu [STATE kaydında](../ai/STATE.md). Bu sayfadaki tarihli kesitler kendi koşullarına aittir.
 
-Tüm başlıkların dış yapay zekâ için ayrıntılı teknik bağlamı:
-`docs/AI-DANISMA-BAGLAMI.md`.
+
+**Güncelleme:** 2026-11-25. Başlangıç için [kapsam](../ai/PROJECT.md), [durum ve kabul](../ai/STATE.md), [kararlar](../ai/DECISIONS.md) ve [dersler](../ai/LESSONS.md).
+
+[24 Kasım denetimi](DENETIM-2026-11-24.md) işlemsizlik, karar kapıları ve açık kanıtları toplar. [İşletim rehberi](ISLETIM-2026-11-18.md) yerel düzeltmeleri açıklar. [Dış AI bağlamı](AI-DANISMA-BAGLAMI.md) 24 Eylül tarihsel mimari kesitini ve güncel kaynakları gösterir. Ortak T0 kapalıdır.
 
 ## Önce mimariyi doğru ayır
 
@@ -62,7 +62,7 @@ Tüm başlıkların dış yapay zekâ için ayrıntılı teknik bağlamı:
 - Girdi paketi, model zinciri/fallback, JSON çıktı ve sert hata denetimi.
 - LLM yalnız izin verilen planı seçer veya veto eder; fiyat/stop/miktar icat edemez.
 - Journal, model/araç kimliği, sonuç çözümü ve katkı ölçümü.
-- 2026-09-24 yerel model sırası değişikliği henüz üretime yayımlanmadı.
+- 2026-09-24 model sırası notu tarihsel kesittir; geçerli sıra için `config.yaml` okunur.
 - Kaynak: `src/llm_io.py`, `src/analist.py`, `src/audit.py`, `src/journal.py`,
   `src/resolver.py`, `src/evaluate.py`, `src/otonom.py`, `config.yaml`.
 
@@ -71,36 +71,51 @@ Tüm başlıkların dış yapay zekâ için ayrıntılı teknik bağlamı:
 - Trend/momentum/oynaklık/RSI özellikleri; ridge modeli ve zaman sıralı sınav.
 - Sonucu henüz olgunlaşmamış tarihin eğitime girmemesi ve örtüşmeyen dönemler.
 - Model onayı, küçük deneme, tahmin kalibrasyonu ve model sürümleri.
+- Ayrı aday olarak BIST 20 seans göreli Ridge ve altın ons/kur Ridge;
+  LightGBM yalnız offline. Tarihli replay üstünlük göstermedi.
 - Kaynak: `advisor/learning.py`, `advisor/outcomes.py`, `advisor/evidence.py`,
-  `advisor/shadow.py`, `advisor/config.json`.
+  `advisor/shadow.py`, `advisor/specialized.py`, `advisor/config.json`,
+  `scripts/portfolio_research.py`.
+- [25 Kasım tahmin araştırması](TAHMIN-ARASTIRMASI-2026-11-25.md)
+  ortak seans etiketlerini, yeni adayları, kalibrasyon sonuçlarını ve
+  bağımsız ileri BIST gölge kaydını içerir.
+- [İki AI denetimine teknik yanıt](TAHMIN-DENETIMI-2026-11-25.md) maliyetli
+  sıralama, uzun 5 seans deneyi ve banka kotasyonu karşılaştırmasını içerir.
 
 ### 08 — V2 karar, risk ve sanal işlem kuralları
 
 - AL/SAT/TUT/BEKLE/VERİ BEKLENİYOR; gerekçe ve ret kodları.
 - Stop/hedef/süre, net beklenti, getiri:risk, nakit rezervi ve sektör/pozisyon sınırı.
 - Lot/gram adımı, işlem penceresi, aynı gün tekrar ve fiyat kayması.
-- Kaynak: `advisor/engine.py`, `advisor/policy.py`, `advisor/risk.py`, `advisor/calendar.py`.
+- Eski ana politika ile T0 bekleyen %80 çekirdek/%20 taktik adayının kapıları ayrıdır.
+- Kaynak: `advisor/engine.py`, `advisor/policy.py`, `advisor/risk.py`,
+  `advisor/portfolio_candidates.py`, `advisor/decision_trace.py`, `advisor/calendar.py`.
 
 ### 09 — V2 sanal defter, maliyet ve kurumsal işlemler
 
 - Başlangıç ve aylık katkı; hash zincirli olaylar ve tekrarın tekilleştirilmesi.
 - Alış/satış, komisyon/vergi, nakit, miktar, gerçekleşen ve değerleme getirisi.
 - Bölünme, temettü alacağı/ödemesi ve kanıta bağlı mutabakat.
-- Kaynak: `advisor/ledger.py`, `advisor/corporate.py`, `advisor/observations.py`.
+- Çekirdek/taktik kısmi dolumları ayrı lotlarda; saklama ücreti hesapta tek kez.
+- Kaynak: `advisor/ledger.py`, `advisor/corporate.py`, `advisor/observations.py`,
+  `advisor/portfolio_candidates.py`.
 
 ### 10 — Karşılaştırma, sonuç ve deneyler
 
 - Aynı katkı ve masrafla al-tut; katkıdan arındırılmış getiri eğrisi.
 - Tahmin vadesi, hata, kaçan hareket, gölge model/portföy ve maliyet stresi.
 - Ayrı tam portföy simülasyonu; tarihsel veri ve üyelik yanlılıkları.
+- Aynı T0/katkı/maliyetle beş aday; 20 seans çalışma, 63/126 seans ekonomik
+  değerlendirme. Otomatik model terfisi yok.
 - Kaynak: `advisor/benchmark.py`, `advisor/outcomes.py`, `advisor/shadow.py`,
-  `advisor/simulation.py`, `advisor/reporting.py`.
+  `advisor/simulation.py`, `advisor/reporting.py`, `advisor/portfolio_candidates.py`,
+  `docs/PORTFOY-DENEYI-2026-10-01.md`.
 
 ### 11 — Ortak web paneli
 
 - Genel bakış, kararlar, sanal portföy, gelişim karnesi ve geçmiş raporlar.
 - İki depodan salt okunur son görünüm, parola, erişim hatası ve veri tazeliği.
-- Vercel yayını ve yerel Node sunucusu.
+- Vercel yeni statik sürümü yayımladı; parolalı veri görünümü henüz doğrulanmadı.
 - Kaynak: `dashboard/public/`, `dashboard/api/status.js`,
   `dashboard/lib/status.mjs`, `dashboard/server.mjs`, `dashboard/vercel.json`.
 
@@ -108,6 +123,8 @@ Tüm başlıkların dış yapay zekâ için ayrıntılı teknik bağlamı:
 
 - V1 uzun günlük raporu ve V2 kısa işlem/karar özetinin ayrımı.
 - Gönderim makbuzu, yeniden deneme, olası mükerrer mesaj ve haftalık özet.
+- 2026-10-01 altın yeni kod gönderimi `message_id: 320`; BIST ilk koşusu
+  seans dışında atlandığından yeni bildirim üretmedi.
 - Kaynak: `advisor/notifications.py`, `advisor/reporting.py`,
   `src/report.py`, `src/telegram_bist.py`, `ops/push_retry.sh`.
 
@@ -130,10 +147,17 @@ Tüm başlıkların dış yapay zekâ için ayrıntılı teknik bağlamı:
 ### 15 — Test, üretim denetimi ve açık riskler
 
 - Sözleşme, davranış, uçtan uca akış, gerçek arşiv replay ve panel API testleri.
-- Gerçek satış/stop ve ilk olgunlaşan V2 sonuç henüz canlıda gözlenmedi.
+- Yeni beş deney hesabı için T0 henüz açılmadı; getiri sonucu yok.
 - Cron yedeği, Telegram alıcı ekranı, kişisel tarife ve tarihsel banka makası açık.
 - Kaynak: `tests/`, `dashboard/test/`, `reports/URETIM-DENETIMI-2026-09-22.md`,
   `reports/ACIK-RISKLER-2026-09-23.md`, `ai/STATE.md`.
+
+## Tarihli ölçümler ve arşiv
+
+- 24 Kasım veri toplama grafikleri [BIST](../reports/veri-toplama-2026-11-24/bist-veri-toplama.html) ve [altın](../reports/veri-toplama-2026-11-24/altin-veri-toplama.html).
+- [32 ileri tahmin](BIST-ILERI-SIRALAMA-2026-11-18.md) 15 Aralık vadelidir. BEKLE ölçümü BIST deposundaki `scripts/decision_activity.py` ile alınır.
+- [17 Kasım denetimi](DENETIM-2026-11-17.md), [19 Kasım işletim revizyonu](OTOMASYON-VE-STRATEJI-2026-11-19.md) ve [Ekim yayını](YAYIN-SONUCU-2026-10-29.md) tarihli kanıt kayıtlarıdır.
+- [Hafıza arşivi](../ai/archive/README.md) ve mühürlü V1 ön kayıtlar [seviye](on-kayit-seviye-02.md) ile [revizyon](on-kayit-revizyon-01.md).
 
 ## Ayrıntı paketi hazırlanırken
 

@@ -1,51 +1,59 @@
 # Mevcut durum
 
-**Güncelleme:** 2026-11-18 akşamı (İstanbul).
-BIST kapanış arşivi güncel. Seans içinde BIST çevrimi eksik kaldı.
-Altının akşam veri boşluğundan sonra taze banka fiyatı doğrulandı.
+## Devir kontrolü — 2026-11-25
 
-## Tamamlananlar
+25 Kasım seans öncesi GitHub, SQL ve iki defter yeniden doğrulandı.
+Son doğrulanan finansal çevrimler 24 Kasım.
+Araştırma yayın hedefi `codex/forecast-audit-docs-20261125`.
+Bu dal inceleme içindir. Üretim kaynağı `main`.
 
-- 2026-11-19 yayın paketi: ayrı kapanış Telegram makbuzu, ağ ve bulut
-  telafisi, nöbetçi fiyat/tahmin/defter kanıtı ve nedensel göreli hedef.
-  Ana motor Ridge. Eski defterler ve araştırma kolları korunuyor.
-  Üretim kabulü için yayın sonrası gerçek otomatik çevrim bekleniyor.
+| Konu | Son doğrulanmış durum |
+|---|---|
+| BIST üretimi | `591cb3a` arşivi. 24 Kasım 21.54 V2 33/33, Telegram 304 kapanış makbuzu defterle eşleşti. Telafi adımı SQL 71/73 yüzünden başarısız, BIST30 30/30 ve beş kur/endeks serisi tam. |
+| Altın üretimi | `76b8dd2` arşivi. 24 Kasım 21.49 V2 1/1, standart Telegram 418 defterle eşleşti. V1 günlük raporu başarılı. Teorik arşiv 23 Kasım, V2 gün sonu makbuzu açık. |
+| Araştırma | 30 BIST30 momentum sırası 24 Kasım 21.50 mühürlü; vade 22 Aralık. Portföy ilk uygun 25 Kasım veya sonraki seansı bekliyordu. Ortak T0 kapalı. Altın ileri zamanlama ve BIST tek değişkenli trend/R:R kolları sırada. |
+| Tahmin araştırması | Ayrı 5/20/60 seans CPU koşusu tamamlandı, BIST 20 seans LambdaRank IC +0,0984, altında sıfır getiri MAE'de üç ufukta önde. 25 Kasım 01.09 yerel gölge, 29/30 hisse, altı sıralayıcı, vade 22 Aralık. [Kanıt](../docs/TAHMIN-ARASTIRMASI-2026-11-25.md) |
+| Ek denetim | Tarihli 42 seans replay'inde saf LambdaRank 51.752,75 TL, momentum 52.135,60 TL, pasif 52.634,27 TL. Yeni sözleşme kapsamı ve 5 seans gölge yerel. [Denetim](../docs/TAHMIN-DENETIMI-2026-11-25.md) |
+| Yerel paket | Momentum/pasif hisse ve nakit payı, haftalık ortalama ve gün sayısı, stop ve stres ölçümleri. BIST OHLC reddinde dört ham değer. Üretim yayını bekliyor. Her depoda 5 hedefli test, BIST'te 30 fiyat/telafi testi, 39 ortak modül eş. |
+| Veri İzleme | Vercel canlı dosyası doğrulandı. Parolalı oturum, altın otomatik gün sonu makbuzu ve yeni haftalık teslim açık. |
+| Kapasite | 24 Kasım aktif artifact: BIST 9 / 496 MB, altın 32 / 6,21 GB. Git defterleri 66,6 / 8,0 MB. BIST örnek günlük koşusu 4 dk 36 sn, V2 telafisi 3 dk 28 sn, CI toplamı 3 dk 48 sn. Hesap faturalama erişimi yok; kalan kota bilinmiyor. |
 
-- 2026-11-19: BIST 10.17 çevriminde 33/33 fiyat ve karar; altın 11.01
-  çevriminde taze GRAM fiyatı. GitHub kaynak verisi panel şemasından geçti.
-  İki arşivde de aktif kararla eşleşen Telegram makbuzu doğrulandı.
-  Bulut telafisi iki deponun kendi GitHub Actions işinde yürütülür.
+ARCLK ve SELEC, V1 canlı evreni, V2 izleme evreni ve BIST30 dışında.
+Aynı Yahoo istemcisinin sonraki okuması iki barı da doğruladı. Üretimde
+reddedilen ilk ham değerler olmadığından kök neden doğrulanmadı.
 
-- 18 Kasım BIST: 73/73 hisse, USD/TRY ve dört endeks 18 Kasım kapanışına ulaştı.
-  19.32 değerlemesinde 33/33 fiyat, Telegram makbuzu 277. İşlem aralığında
-  sıfır çevrim; 32 girdisiz dispatch tasarım gereği atlandı. Geçmişe işlem yazılmadı.
-- Altın: 18.34 nöbetçisi 45 dakikayı aşan arayı bildirdi. 21.41 telafi çevrimi
-  taze GRAM fiyatı ve BEKLE kararı üretti. İki FRED serisinde zaman aşımı var.
-- Kapanışın eksik seansı gizlemesini önleyen ortak nöbetçi kontrolü ve
-  regresyon testleri eklendi. Girdisiz dış çağrılar için saatlik telafi hazır; ilk seans kabulü bekleniyor.
+[BIST V2](https://github.com/Mertsaglm/bist-analiz/actions/runs/45464353034) ·
+[BIST CI](https://github.com/Mertsaglm/bist-analiz/actions/runs/45464429266) ·
+[Altın çevrimi](https://github.com/Mertsaglm/gold_tracking_system/actions/runs/45463521929) ·
+[Altın telafisi](https://github.com/Mertsaglm/gold_tracking_system/actions/runs/45464093885) ·
+[Mühürlü momentum](https://github.com/Mertsaglm/bist-analiz/blob/7e19f7e3c369fd9c961f1258fac5efd750e68ca9/reports/champion-challenger-2026-11-24/bist-momentum-forward.json)
 
-
-- BIST USDTRY 2026-10-22'de donmuştu: tarihsel tek bozuk satır tüm batch'i
-  reddediyordu. Sağlam satırlar ilerler, retler ayrı görünür; güncel eksik
-  veya bozuk kapanış başarısız kalır. V1 ve V2 tüketicileri düzeltildi.
-- Gerçek Yahoo çekimi yalnız geçici üretim kopyasında: 18 bozuk kaynak
-  tarihi ayrıldı, beş endeks/kur 2026-11-17'ye ulaştı. Üretim SQL değişmedi.
-- Kapanış değerlemesindeki yanlış veri/saat tanısı iki ortak motorda düzeltildi;
-  bayat fiyat engeli ve dolum yasağı davranış testinde korundu.
-- BIST 1508 test geçti; Gold 1025 geçti/12 atlandı. Ortak 37 modül eş.
-- Güncel SQL: BIST 208.982 bar/73 sembol, altın 2.640 tarih; integrity başarılı.
-- 26 fold/126 tarih offline sınav: BIST LightGBM rank IC 0,1213, Ridge -0,0120;
-  altın ons/kur ek özellikleri MAE'yi artırdı. Canlı terfi yapılmadı.
+Önceki çalışma ve ölçümler [24 Kasım denetiminde](../docs/DENETIM-2026-11-24.md),
+[portföy deneyinde](../docs/PORTFOY-DENEYI-2026-10-01.md) ve
+[işletim rehberinde](../docs/ISLETIM-2026-11-18.md).
 
 ## Açık bulgular ve kanıt sınırı
 
-- 18 Kasım kapanışında USDTRY ve değerleme doğrulandı; seans içi ritim açık.
+- BIST girişinde dört ekonomik kapısı ölçülen 14.861 kararın sıfırı
+  birlikte geçti. R:R çıkarılırsa 2.130 aday kalıyor. Vade ve kotasyonu
+  eşleşen 14 R:R reddinin 11’i masraf sonrası nakdin altında.
+- 20 Kasım: BIST 8/9 işlem çevrimi, kapanış Telegram 286 dışa aktarımla
+  eşleşti. 21.54 AGHOL veri uyarısı gerçek. Altında 33/33 fiyatlı çevrim var,
+  sonuncusu 18.26. Geciken işler hafta sonu sebebiyle atlandı, kapanış yok.
+- 23 Kasım: BIST 8/10 çalışan işlem çevrimi, makbuz 298 eksik kapanış.
+  24 Kasım kesitinde arşiv toparlandı. Kaynak arızasının nedeni DOĞRULANMADI.
+- Canlı parolalı panel, yeni haftalık teslim ve altın V2 kapanış makbuzu açık.
+- BIST’te 6 şablon testi, çalışma kopyasında önceden kaldırılmış
+  `Proje Yardımcısı/yeni-proje.sh` dosyasını bekliyor. 25 Kasım
+  araştırma paketinde 42 hedefli ve 1.545 toplam test geçti.
+- CCOLA/HEKTS kırılmaları 40 eğitim etiketini etkiliyor. Offline duyarlılık
+  MAE ve Rank IC'yi kayda değer değiştirmedi. Kaynak tarihleri doğrulanacak.
 - Altın 2026-11-17 sabah kaynak kimliği hatası, ardından toparlanma doğrulandı;
   başarısız yanıtın gövdesi yok, kök neden DOĞRULANMADI. Kontrol gevşetilmedi.
 - Altın dış tetikleyicide 14:45–15:58 UTC boşluğu; nöbetçi doğru alarm üretti.
   Dış scheduler arızasının nedeni DOĞRULANMADI; cron zaman garantisi yok.
-- BIST 16 Kasım gecikmesi son SQL'de 73/73 ile toparlandı; ilk eksikliğin
-  nedeni DOĞRULANMADI. Ekim kota engeli bugünkü koşulara taşınmaz.
+- 24 Kasım 20.20: Geçici arşivde gerçek kaynakla 73/73 hisse ve beş
+  kur/endeks serisi 24 Kasım'a ulaştı. [Yerel telafi](../reports/champion-challenger-2026-11-24/bist-closing-recovery.json)
 - Arşivde 61 eski USDTRY OHLC ihlali; bağımsız kaynak olmadan onarılmadı.
 - BIST data/advisor uzak Git ağacı 3.349.042.744 byte; geçmiş silinmedi.
 - İki canlı model approved=false, tamamlanmış strateji roundtrip 0.
@@ -53,26 +61,31 @@ Altının akşam veri boşluğundan sonra taze banka fiyatı doğrulandı.
 
 ## Sıradaki 3 İş
 
-1. 19 Kasım açılışından itibaren BIST gerçek işlem çevrimini ve altın sürekliliğini izle.
-   DoD: işlem penceresindeki zaman damgalı geçerli fiyat/karar, 90/45 dk
-   boşluk kontrolü ve kapanış makbuzu; saatlik dış tetikleyici ayarı doğrulanmalı.
-2. Dış scheduler ve kaynak kesintisini bağımsız izle; arşiv büyümesini çöz.
-   DoD: tetikleyici saatleri ile runner saatleri ayrılmış, kaynak hata sınıfı
-   doğrulanmış; saklama değişikliğinde eski kanıtın geri dönüşü korunmuş.
-3. BIST LightGBM adayını aynı maliyetli tam portföy/stop sınavında değerlendir.
-   DoD: zaman sıralı bağımsız sınav, pasif kıyas, düşüş ve işlem sayısı;
-   ardından iki piyasa kabulüyle ortak ileri T0 ayrı değerlendirilir.
+1. Üretim kapanışını ve ilk ileri momentum çevrimini doğrula.
+   DoD: Son SQL tarihi, fiyat kapsamı, ilk katkı/dolum ve kapanış makbuzu.
+2. Yerel ölçüm paketini yayın ve canlı kabul açısından takip et.
+   DoD: Eş pasif maruziyet, nakit, stop ve örneklem paydası haftalık görünür.
+3. Altın zamanlama, BIST trend/R:R ve yeni sıralama deneylerini bağımsız izle.
+   DoD: Ayrı kimlik, eş bütçe, tek politika farkı, ilk uygun çevrim ve
+   vadesi gelen gölge tahminlerde kapsam/IC/ilk beş brüt farkı.
 
 ## TAKVİM
 
 | Tarih | İş | Kim | Durum |
 |---|---|:--:|---|
-| 2026-11-18 | Yerel düzeltmelerin yayın onayı ve canlı kabul | 🤖 | Mert yayın onayını verdi. Canlı koşu izlenecek |
+| 2026-11-20 | İlk günlük Telegram canlı kabulü | 🤖 | BIST geçti, altın eksik |
 | 2026-11-25 | GC=F roll, bağımsız prim/FRED kapsamı | 🤖 | Bekliyor |
+| 2026-12-01 | Yeni 5 seans yerel BIST gölge vadesi | 🤖 | Bekliyor |
+| 2026-12-15 | 32 mühürlü BIST tahmininin vadesi | 🤖 | Bekliyor |
+| 2026-12-22 | Bağımsız 30 momentum sırası ve 29 isimlik ML gölge vadesi | 🤖 | Bekliyor |
 
 ## SENDE KALANLAR
 
+- 24 Kasım: Mert önceki paket için commit, push ve üretim yayınına onay verdi.
+  25 Kasım tahmin araştırması inceleme dalında izlenir. Ortak T0 ve altın V2 kapanış kabulü açık.
 - 👤 Mert yayın onayını 2026-11-18 tarihinde verdi.
+- 2026-11-19: Mert yayın onayı verdi. Üretim `2764d23` ile güncellendi.
+  19 Kasım yeni işletim dönemi başlangıç kesiti. Eski defterler korunuyor.
 
 ## Backlog
 
@@ -80,7 +93,6 @@ Altının akşam veri boşluğundan sonra taze banka fiyatı doğrulandı.
   revizyonları önceki kayıtta açık; yeni denetim bunları kapatmıyor.
 - Geçmiş üyelik, banka kotasyonu/emir sırası, kişisel tarife/MKK, temettü
   ödeme günü ve revizyon geçmişli TÜFE sınırları devam ediyor.
-- 2026-11-25: GC=F roll ve bağımsız prim/FRED kapsamı incelemesi.
 - 2027 tahmini takvim resmi kaynakla doğrulanmalı.
 - Ayrıntılı önceki kayıt: `ai/archive/STATE-2026-11-17-before-audit.md`.
 - Denetim: `docs/DENETIM-2026-11-17.md`; kanıtlar `reports/denetim-2026-11-17/`.

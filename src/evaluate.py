@@ -369,9 +369,9 @@ def llm_contribution(cfg: dict, con: sqlite3.Connection, *,
 def veto_value(cfg: dict, con: sqlite3.Connection, *, tool: str | None = None) -> dict:
     """Veto edilen isimler sonradan nasıl gitti?
 
-    Veto POZİTİF değerliyse vetolananların alfası seçilenlerinkinden DÜŞÜK
-    olmalı. Tersi çıkarsa veto zarar veriyordur ve kapatılır — LLM katmanının
-    en savunulabilir işlevi bile ölçüme tabidir.
+    Fark, vetolananların ortalama plansız alfası eksi seçilenlerinkidir.
+    Negatif farkta vetolanan grup daha zayıf gitmiştir. Pozitif fark,
+    veto edilen grupta daha yüksek ileri alfa görüldüğünü gösterir.
 
     ⚠ BU ÖLÇÜM 2026-08-16'ya KADAR KENDİ KONUSUNU ELİYORDU. Kaynak `_cozulmus`
     idi ve o `outcomes` ile INNER JOIN yapıyor; veto edilen bir tahminin

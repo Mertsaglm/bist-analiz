@@ -26,6 +26,8 @@ from scripts.portfolio_research import LIGHTGBM
 ARMS = ('relative-lightgbm', 'relative-ridge', 'core-passive')
 DAILY_ARMS = {'daily-lightgbm': 'relative-lightgbm', 'daily-ridge': 'relative-ridge'}
 MOMENTUM_ARMS = ('relative-ridge', 'momentum-120-20', 'core-passive')
+AUDIT_ARMS = ('rank-lambda', 'rank-momentum', 'rank-ridge', 'rank-ensemble',
+              'lambda-with-absolute-gate', 'core-passive')
 
 
 def fit_models(frame, members, cutoff, *, with_lightgbm=True):
@@ -121,7 +123,8 @@ def performance(series, ledger):
             'series': series}
 
 
-def replay(frame, records, actions, cfg, start, end, tmp, *, compare_daily=False, momentum_ablation=False):
+def replay(frame, records, actions, cfg, start, end, tmp, *, compare_daily=False,
+           momentum_ablation=False, rank_inputs=None):
     calendar.require_coverage(start, end, cfg)
     # Stored OHLC are split-adjusted. Applying a second share multiplier
     # would create synthetic wealth. Require an as-traded reconstruction first.
@@ -129,6 +132,8 @@ def replay(frame, records, actions, cfg, start, end, tmp, *, compare_daily=False
            and a['ticker'] in {r['symbol'] for r in records} for a in actions):
         raise ValueError('Bölünme içeren aralık için tarihsel ham lot/fiyat mutabakatı gerekir.')
     arms = MOMENTUM_ARMS if momentum_ablation else (*ARMS, *DAILY_ARMS) if compare_daily else ARMS
+    if rank_inputs is not None:
+        arms = AUDIT_ARMS
     ledgers = {arm: Ledger(tmp / arm) for arm in arms}
     series = {arm: [] for arm in arms}
     folds, coverage = [], []
@@ -138,32 +143,35 @@ def replay(frame, records, actions, cfg, start, end, tmp, *, compare_daily=False
     for i, day in enumerate(sessions(start, end, cfg)):
         now = datetime.fromisoformat(day + 'T10:30:00').replace(tzinfo=calendar.IST)
         prior = calendar.last_closed_session(now, cfg).isoformat()
-        members = universe.members(records, day)
+        members = (portfolio.core_members(records, day, 'bist')
+                   if rank_inputs is not None else universe.members(records, day))
         # Only start once this universe is actually known, and refit on changes.
         if len(portfolio.core_members(records, day, 'bist')) != 30:
             raise ValueError(f'{day}: tarihli BIST30 üyeliği eksik.')
-        universe_changed = active != members
-        if universe_changed:
-            active = members
-            features = learning.features(frame[frame.symbol.isin(active)], 20)
-        if universe_changed or i % 5 == 0:
-            base, ridge, booster, fold = (fit_models(frame, members, prior, with_lightgbm=False)
-                                          if momentum_ablation else fit_models(frame, members, prior))
-            folds.append(fold)
-            models = base, ridge, booster
-        base, ridge, booster = models
-        signal = features[features.date == prior]
-        names = ridge['features']
-        valid = signal[signal.quality_ok].dropna(subset=names)
-        if valid.empty:
-            raise ValueError(f'{prior}: kullanılabilir sinyal yok.')
-        forecasts = dict(zip(valid.symbol, learning.predict(base, valid)))
-        ranks = {'relative-ridge': dict(zip(valid.symbol, learning.predict(ridge, valid)))}
-        if momentum_ablation:
-            momentum = ((100 + valid.momentum120) / (100 + valid.momentum20) - 1) * 100
-            ranks['momentum-120-20'] = dict(zip(valid.symbol, momentum))
+        if rank_inputs is not None:
+            signal, valid, forecasts, ranks = rank_inputs[day]
         else:
-            ranks['relative-lightgbm'] = dict(zip(valid.symbol, booster.predict(valid[names])))
+            universe_changed = active != members
+            if universe_changed:
+                active = members
+                features = learning.features(frame[frame.symbol.isin(active)], 20)
+            if universe_changed or i % 5 == 0:
+                base, ridge, booster, fold = (fit_models(frame, members, prior, with_lightgbm=False)
+                                              if momentum_ablation else fit_models(frame, members, prior))
+                folds.append(fold)
+                models = base, ridge, booster
+            base, ridge, booster = models
+            signal = features[features.date == prior]
+            valid = signal[signal.quality_ok].dropna(subset=ridge['features'])
+            if valid.empty:
+                raise ValueError(f'{prior}: kullanılabilir sinyal yok.')
+            forecasts = dict(zip(valid.symbol, learning.predict(base, valid)))
+            ranks = {'relative-ridge': dict(zip(valid.symbol, learning.predict(ridge, valid)))}
+            if momentum_ablation:
+                momentum = ((100 + valid.momentum120) / (100 + valid.momentum20) - 1) * 100
+                ranks['momentum-120-20'] = dict(zip(valid.symbol, momentum))
+            else:
+                ranks['relative-lightgbm'] = dict(zip(valid.symbol, booster.predict(valid[ridge['features']])))
         median_momentum, median_volatility = valid.momentum20.median(), valid.volatility20.median()
         trend = 'yükselen' if median_momentum > 2 else 'düşen' if median_momentum < -2 else 'yatay'
         volatility = 'yüksek' if median_volatility >= 2 else 'düşük'
@@ -188,7 +196,8 @@ def replay(frame, records, actions, cfg, start, end, tmp, *, compare_daily=False
                 portfolio._core(ledger, cfg, records, rows, opening, now, book='tactical')
             else:
                 portfolio._tactical(ledger, cfg, rows, opening, forecasts,
-                                    ranks[DAILY_ARMS.get(arm, arm)], now, review_daily=arm in DAILY_ARMS)
+                                    ranks[DAILY_ARMS.get(arm, arm)], now, review_daily=arm in DAILY_ARMS,
+                                    rank_only=rank_inputs is not None and arm.startswith('rank-'))
                 intraday_stops(ledger, bars, cfg, now.replace(hour=11, minute=45))
             fees = costs.accrue(ledger, cfg, marks, close, books=(('portfolio', ('core', 'tactical'), 'core'),))
             if fees['pending']:
@@ -198,8 +207,14 @@ def replay(frame, records, actions, cfg, start, end, tmp, *, compare_daily=False
                 raise ValueError(f'{day}: {arm} kapanış değerlemesi eksik.')
             series[arm].append({key: view[key] for key in ('contributed_try', 'equity_try', 'account_fees_try')}
                                | {'date': day, 'regime': f'{trend}/{volatility}'})
-    return {'folds': folds, 'coverage': coverage,
-            'arms': {a: performance(series[a], ledgers[a]) for a in arms}}
+    results = {a: performance(series[a], ledgers[a]) for a in arms}
+    if rank_inputs is not None:
+        for arm, result in results.items():
+            fills = [e['data'] for e in ledgers[arm].events if e['kind'] == 'fill']
+            gross = sum(f['notional_cents'] for f in fills if f['book'] == 'tactical') / 100
+            mean_equity = sum(row['equity_try'] for row in series[arm]) / len(series[arm])
+            result['tactical_turnover_of_mean_equity_pct'] = 100 * gross / mean_equity
+    return {'folds': folds, 'coverage': coverage, 'arms': results}
 
 
 def main():

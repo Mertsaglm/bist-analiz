@@ -1,21 +1,8 @@
 # Sıfır ek ödeme ile hata düzeltmeleri — 2026-10-29
 
-**2026-10-29 üretim veri onarımı eki:** Mert, ayrıntısı sunulan bu onarım için
-“sen tercih et” yanıtıyla karar yetkisi verdi. TMSN 2026-10-22 düşük fiyatı,
-aynı Yahoo kaynağının güncel cevabıyla 50,0999984741 → 50,00 olarak doğrulandı.
-Yalnız bu barın düşük fiyatı ve ingestion zamanı onarılır; SQL'nin diğer
-satırları, eski kararlar ve işlem defterleri korunur. Düzeltilmiş RAM kopyasında
-dört mevcut OHLC veri testi geçti. Kaynak ayrıca hacimde 18 lot revizyon veriyor;
-bu ayrı fark burada uygulanmadı, normal veri yenilemesine bırakıldı.
-Önbellekteki göstergeler veya dondurulmuş kararlar geriye dönük yazılmadı;
-sonraki normal veri hattı göstergeleri yeniden hesaplar. Aşağıdaki eski TMSN
-başarısızlığı yayın öncesi kesittir. Kaynak ve doğrulanmış plan:
-`reports/duzeltmeler-2026-10-29/tmsn-repair-plan.json`.
+> Ekim 2026 çalışma kesiti. Sonraki üretim ve açık işler [STATE](../ai/STATE.md) ile [24 Kasım denetiminde](DENETIM-2026-11-24.md).
 
-
-Bu dosya yayın öncesi doğrulama kesitidir. Mert 2026-10-29 tarihinde
-commit/push ve gerekli güvenli işlemleri yetkilendirdi. Canlı çalışmanın kabulü
-GitHub kota ve gerçek veri kontrollerine bağlıdır. Üretim SQL'si,
+Durum: yerelde hazır ve sınandı; commit/push/deploy yapılmadı. Üretim SQL'si,
 defterler, geçmiş kapsüller, hesap bütçeleri ve deney T0 değiştirilmedi.
 Kullanıcı ek ödeme yapamayacağını belirtti. Harcama/plan ayarı değiştirilmedi;
 özel depo açılmadı ve yeni servis alınmadı.

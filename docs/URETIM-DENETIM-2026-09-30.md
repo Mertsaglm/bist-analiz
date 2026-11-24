@@ -1,6 +1,10 @@
 # Üretim denetimi — 2026-09-30
 
-**Sonuç: Son düzenlemenin bütün hedefleri üretimde çalışmıyor.** BIST'in yeni sanal hesap ve muhasebe çekirdeği tutarlı; fakat kapanış verisi gecikiyor, gecikmeyi telafi eden hat eksik ve gece yarısından sonraki kapanış tetikleri atlanıyor. Eski V1 karnesinde gerçek bir yanlış başarı kaydı doğrulandı. Ortak panelin altın tarafı hâlâ önceki sürümde.
+> **Tarihsel kesit:** Bu belgedeki ölçüm ve yayın durumu yazıldığı tarihin kesitidir.
+> Güncel üretim ve açık işler için [ai/STATE.md](../ai/STATE.md) ile
+> [2026-10-01 deney durumuna](PORTFOY-DENEYI-2026-10-01.md) bakın.
+
+**2026-09-30 sonucu: Son düzenlemenin bütün hedefleri üretimde çalışmıyordu.** BIST'in yeni sanal hesap ve muhasebe çekirdeği tutarlıydı; kapanış verisi gecikiyor, gecikmeyi telafi eden hat eksik ve gece yarısından sonraki kapanış tetikleri atlanıyordu. Eski V1 karnesinde gerçek bir yanlış başarı kaydı doğrulandı. Ortak panelin altın tarafı o tarihte önceki sürümdeydi. Kod 2026-10-01'de yayımlandı; bu rapor yayın sonrası yeniden denetim yerine geçmez.
 
 Bu bir denetim raporudur. Üretim kodu, config, SQL, defter, GitHub workflow ve dağıtım değiştirilmedi. Deneyler geçici kopyalarda veya bellekte yapıldı; Telegram gönderilmedi. Rapor, kanıt dosyaları ve oturum hafızası yerelde kaydedildi.
 

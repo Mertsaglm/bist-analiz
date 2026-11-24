@@ -1,5 +1,7 @@
 # Otomasyon ve strateji revizyonu · 2026-11-19
 
+> Tarihli kanıt kaydı. Sonraki kesit [24 Kasım denetiminde](DENETIM-2026-11-24.md).
+
 ## Üretimde gözlenen akış
 
 GitHub Actions koşuları ve iki üretim hesabının olay defteri salt okunur
@@ -118,6 +120,19 @@ olarak kullanılamaz. Pasif kıyası geçen bir taktik kol veya canlı terfi olu
   Olgunlaşmamış bir payın getirisi, aynı günün diğer paylarına sızamaz.
   Kârlılık kararı masraf sonrası servet ve düşüş ölçümüyle verilir.
 
+Nedensellik düzeltmesinden sonra aynı BIST araştırma komutu 3.944 test
+satırında tekrar çalıştırıldı. Göreli Ridge ortalama sıralama korelasyonu
+−0,0074, LightGBM 0,1265 verdi. İşlem maliyetli portföy sınavında pasif kol
+önde kaldığından bu araştırma sonucu üretim modelini değiştirmedi.
+
+Üretim defterindeki 2 Ekim–19 Kasım altın alım penceresinde zaman ve fiyat
+kontrolünden geçen 1.092 ayrı kotasyonun 571'i makas sınırını geçti. Bunlar
+34 gözlenen işlem gününün 18'ine dağılıyor. Son on gözlenen günde aynı daralma
+oluşmadı. İş Bankası'nın halka açık XAU tablosunda 19 Kasım'da yaklaşık %14
+satış/alış farkı da görüldü. Bu tablo aynı dakikanın kişisel İşCep kotasyonunu
+doğrulamaz. Ürün ve zaman damgası kontrolü ile mevcut %3 alım eşiği korunur.
+[İş Bankası XAU tablosu](https://www.isbank.com.tr/doviz-kurlari)
+
 ## Üretim kabulü
 
 Yayın onayından sonra iki depoda mevcut olmayan seans saati zorlanmadan,
@@ -130,3 +145,23 @@ tüketimi kişisel faturalama API'sinde mevcut yetkiyle doğrulanamadı.
 Projenin salt okunur nöbetçisi son çevrim için fiyat kaynaklarını, model
 kimliğini, tahmin ve mühürlü kayıt kapsamını, defter hash'ini ve son Telegram
 makbuzunun birebir çevrim eşleşmesini ayrı alanlarda raporlar.
+
+### 19 Kasım yayın sonucu
+
+BIST `2764d23`, altın `98ce9fa` üretimde. BIST CI 1.531 test, altın
+CI 1.041 test geçti (11 atlandı). İki panel işi başarılı.
+[BIST CI](https://github.com/Mertsaglm/bist-analiz/actions/runs/44588953502)
+[Altın CI](https://github.com/Mertsaglm/gold_tracking_system/actions/runs/44588950591)
+
+BIST nöbetçisi seans kapandıktan sonra 19.40 otomatik çıktısını salt
+okunur doğruladı. İş Yatırım kaynağı, 33/33 fiyat ve aynı modelden 33 mühürlü
+tahmin, görünümün defter hash'i ve 282 numaralı Telegram makbuzu eşleşti.
+[Nöbetçi](https://github.com/Mertsaglm/bist-analiz/actions/runs/44589013479)
+
+Altında geciken akşam çevrimi projenin kendi Actions işinden telafi edildi.
+21.33 damgalı banka referansı, GRAM tahmini ve BEKLE kaydedildi. Görünüm
+hash'i ve yeni modelin tahmini aynı çevrimin karar olayında doğrulandı.
+Ayrı tahmin sınavı o analiz tarihinin ilk mühürlü modelini korudu. Makas
+%14,007. Değişmeyen kararın 410 numaralı mevcut Telegram makbuzu geçerli.
+Yeni kapanış raporunun doğal koşu ve teslimi seans sonunu bekliyor.
+[Altın telafisi](https://github.com/Mertsaglm/gold_tracking_system/actions/runs/44589022096)
