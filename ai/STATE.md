@@ -4,8 +4,8 @@
 
 25 Kasım seans öncesi GitHub, SQL ve iki defter yeniden doğrulandı.
 Son doğrulanan finansal çevrimler 24 Kasım.
-Araştırma yayın hedefi `codex/forecast-audit-docs-20261125`.
-Bu dal inceleme içindir. Üretim kaynağı `main`.
+Araştırma inceleme dalına gönderildi. [İlk paket `3d035cb`](https://github.com/Mertsaglm/bist-analiz/commit/3d035cb848d78f8e23c28c290e300c32b426ab87).
+Üretim kaynağı `main`. Canlı kabul ayrıca ölçülür.
 
 | Konu | Son doğrulanmış durum |
 |---|---|
