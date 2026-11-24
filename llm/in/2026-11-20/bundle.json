@@ -2,7 +2,7 @@
   "bundle_version": "bist_bundle_v1",
   "asof": "2026-11-20",
   "karar_gunu": "2026-12-18",
-  "generated_utc": "2026-11-23T22:19:10+00:00",
+  "generated_utc": "2026-11-24T03:04:32+00:00",
   "uyari": "Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir.",
   "takvim": {
     "son_kapali_seans": "2026-11-20",
@@ -8396,5 +8396,5 @@
     "Bir planı beğenmiyorsan `plan_reddet` + `veto_code` kullan — bu gerçek bir karardır ve performansı ölçülür.",
     "Bu sistemde ÖLÇÜLEN KENAR YOKTUR (ADR #008). Seviyeler planlama geometrisidir; yön iddiası üretme."
   ],
-  "bundle_sha": "c235c93e7d59c6fe04e2a501610f3811d5e80ecba5a8b185604635b44bc2941b"
+  "bundle_sha": "627af5b17a173ec0f5626d6f48bdf72f97b9eeec75a89ad8587d934e2540c117"
 }
