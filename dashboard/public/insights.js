@@ -59,7 +59,8 @@ export function weeklyPanel(s) {
   const w=s.weekly;
   if (!w?.ready) return panel('Son 7 gün','<p>Yeni değerlemelerle haftalık özet oluşacak.</p>','weekly-summary');
   return panel('Son 7 gün',metric('Eklenen para',money(w.contributions_try))+metric('Yatırım sonucu',money(w.investment_result_try))+
-    metric('Ödenen masraf',money(w.fees_try))+metric('Al-tut farkı',money(w.excess_try))+metric('En büyük gerileme',`${number(w.max_drawdown_pct)}%`)+
+    metric('Ödenen masraf',money(w.fees_try))+metric('Pasif yatırım sonucu',money(w.baseline_result_try))+
+    metric('Aktif eksi pasif',money(w.excess_try))+metric('En büyük gerileme',`${number(w.max_drawdown_pct)}%`)+
     `<p>${esc(w.note)}</p><small>Son değerleme: ${esc(w.through)}${w.stale?' · Güncel değerleme bekleniyor':''}</small>`,'weekly-summary');
 }
 
@@ -110,17 +111,23 @@ export function freshness(s, now=Date.now()) {
   const at=Date.parse(s?.generated_at);
   if (!Number.isFinite(at)||at>now+60000) return {stale:true, note:'Kayıt zamanı doğrulanamadı.'};
   if (!s.monitoring?.calendar?.available) return {stale:now-at>90*60000,note:'Çalışma takvimi bulunamadı; kayıt yaşını kontrol edin.'};
-  const m=s.monitoring, cal=m.calendar, cutoff=new Date(now-90*60000+3*3600000);
+  const m=s.monitoring, cal=m.calendar;
+  const positiveMinutes=(value,fallback)=>Number.isInteger(value)&&value>0?value:fallback;
+  const interval=positiveMinutes(m.cycle_interval_minutes,s.market==='bist'?60:30)*60000;
+  const grace=positiveMinutes(m.watchdog_grace_minutes,90)*60000;
+  const cutoff=new Date(now-grace+3*3600000);
   if (!cal.years.includes(String(cutoff.getUTCFullYear()))) return {stale:true,note:'Bu yılın çalışma takvimi eksik.'};
   for(let offset=0;offset<370;offset++) {
     const date=new Date(cutoff);date.setUTCDate(date.getUTCDate()-offset);
     const day=date.toISOString().slice(0,10);
     if([0,6].includes(date.getUTCDay())||cal.full_days.includes(day)) continue;
     const w=m.observation_window, close=cal.half_days.includes(day)?w.half_day_close:w.close;
-    const end=Math.min(Date.parse(`${day}T${close}:00+03:00`),now-90*60000);
-    let slot=Date.parse(`${day}T${w.open.slice(0,2)}:17:00+03:00`), due=null;
-    while(slot<=end){due=slot;slot+=30*60000;}
-    if(due!==null) return {stale:at<due,note:at<due?'Beklenen fiyat gözlemi eksik; yeni koşu gerekli.':'Çalışma takvimine göre son beklenen gözlem mevcut; bu ifade anlık fiyat garantisi değildir.'};
+    const end=Math.min(Date.parse(`${day}T${close}:00+03:00`),now-grace);
+    const first=Date.parse(`${day}T${w.open.slice(0,2)}:17:00+03:00`);
+    if(first<=end) {
+      const due=first+Math.floor((end-first)/interval)*interval;
+      return {stale:at<due,note:at<due?'Beklenen fiyat gözlemi eksik; yeni koşu gerekli.':'Çalışma takvimine göre son beklenen gözlem mevcut; bu ifade anlık fiyat garantisi değildir.'};
+    }
   }
   return {stale:true,note:'Beklenen çalışma zamanı hesaplanamadı.'};
 }

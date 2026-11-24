@@ -1,0 +1,16 @@
+BIST · SON 7 GÜN · SANAL
+Eklenen para: 0.00 TL
+Yatırım sonucu: +0.00 TL
+Ödenen masraf: 0.00 TL (sonuca dahil)
+Pasif yatırım sonucu: -2725.81 TL
+Aktif eksi pasif: +2725.81 TL
+İşlemler: 0 alış, 0 satış
+Son değerleme: 24.11.2026 16.17 İstanbul
+
+ARAŞTIRMA · SANAL
+Çekirdek/taktik · T0 bekleniyor
+İlk günden aktif eksi pasif (TL) · sma50-v1 +6550, recent-20-v1 +8024, recent-5-v1 +8250, reversion-5-v1 +8172
+BEKLE no_edge · ölçülen 90/124, fiyat eksik 30, ort. net -2.17%, nakit üstü 36/90, pasif üstü 40/90 · 1 örtüşmeyen pencere
+BEKLE reward_risk · ölçülen 6/8, fiyat eksik 2, ort. net +2.10%, nakit üstü 3/6, pasif üstü 5/6 · 1 örtüşmeyen pencere
+Öğrenilen · Bazı ret gruplarında nakit üstü ortalama var. Eş portföy sınavı gerekli.
+Sırada · Eksik vade fiyatı kapsamını ölç ve aynı hipotezi yeni kohortta izle.

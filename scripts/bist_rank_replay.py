@@ -25,10 +25,10 @@ from scripts.portfolio_research import LIGHTGBM
 
 ARMS = ('relative-lightgbm', 'relative-ridge', 'core-passive')
 DAILY_ARMS = {'daily-lightgbm': 'relative-lightgbm', 'daily-ridge': 'relative-ridge'}
+MOMENTUM_ARMS = ('relative-ridge', 'momentum-120-20', 'core-passive')
 
 
-def fit_models(frame, members, cutoff):
-    from lightgbm import LGBMRegressor
+def fit_models(frame, members, cutoff, *, with_lightgbm=True):
     # Truncation precedes construction of every forward return, including the
     # cross-sectional reference when a stock missed a session.
     prefix = frame[(frame.date < cutoff) & frame.symbol.isin(members)]
@@ -42,7 +42,10 @@ def fit_models(frame, members, cutoff):
     absolute = raw[raw.quality_ok].dropna(subset=learning.FEATURES + ['forward_pct', 'label_end'])
     base = learning.fit(absolute, 20)
     ridge = learning.fit(train, 20, names, 126, 756)
-    booster = LGBMRegressor(**LIGHTGBM).fit(train[names], train.forward_pct)
+    booster = None
+    if with_lightgbm:
+        from lightgbm import LGBMRegressor
+        booster = LGBMRegressor(**LIGHTGBM).fit(train[names], train.forward_pct)
     return base, ridge, booster, {
         'signal_date': cutoff, 'train_rows': len(train), 'train_dates': len(dates),
         'last_label_date': str(train.label_end.max()), 'last_base_label_date': str(absolute.label_end.max())}
@@ -93,9 +96,15 @@ def performance(series, ledger):
     nav = peak = 1.
     drawdown = 0.
     previous_equity = previous_contribution = 0.
+    regimes = {}
     for row in series:
         flow = row['contributed_try'] - previous_contribution
-        nav *= row['equity_try'] / (previous_equity + flow)
+        step = row['equity_try'] / (previous_equity + flow)
+        nav *= step
+        if 'regime' in row:
+            group = regimes.setdefault(row['regime'], {'sessions': 0, 'return_factor': 1.})
+            group['sessions'] += 1
+            group['return_factor'] *= step
         peak = max(peak, nav)
         drawdown = min(drawdown, nav / peak - 1)
         previous_equity, previous_contribution = row['equity_try'], row['contributed_try']
@@ -107,17 +116,19 @@ def performance(series, ledger):
             'tactical_sells': sum(f['side'] == 'SELL' for f in tactical),
             'stop_exits': sum(f['reason'] in ('tactical_stop', 'intraday_stop') for f in tactical),
             'trading_fees_try': sum(f['fee_cents'] for f in fills) / 100,
+            'regime_returns': {k: {'sessions': v['sessions'], 'twr_pct': (v['return_factor'] - 1) * 100}
+                               for k, v in regimes.items()},
             'series': series}
 
 
-def replay(frame, records, actions, cfg, start, end, tmp, *, compare_daily=False):
+def replay(frame, records, actions, cfg, start, end, tmp, *, compare_daily=False, momentum_ablation=False):
     calendar.require_coverage(start, end, cfg)
     # Stored OHLC are split-adjusted. Applying a second share multiplier
     # would create synthetic wealth. Require an as-traded reconstruction first.
     if any(a['kind'] == 'bolunme' and start <= a['date'] <= end
            and a['ticker'] in {r['symbol'] for r in records} for a in actions):
         raise ValueError('Bölünme içeren aralık için tarihsel ham lot/fiyat mutabakatı gerekir.')
-    arms = (*ARMS, *DAILY_ARMS) if compare_daily else ARMS
+    arms = MOMENTUM_ARMS if momentum_ablation else (*ARMS, *DAILY_ARMS) if compare_daily else ARMS
     ledgers = {arm: Ledger(tmp / arm) for arm in arms}
     series = {arm: [] for arm in arms}
     folds, coverage = [], []
@@ -136,7 +147,8 @@ def replay(frame, records, actions, cfg, start, end, tmp, *, compare_daily=False
             active = members
             features = learning.features(frame[frame.symbol.isin(active)], 20)
         if universe_changed or i % 5 == 0:
-            base, ridge, booster, fold = fit_models(frame, members, prior)
+            base, ridge, booster, fold = (fit_models(frame, members, prior, with_lightgbm=False)
+                                          if momentum_ablation else fit_models(frame, members, prior))
             folds.append(fold)
             models = base, ridge, booster
         base, ridge, booster = models
@@ -146,8 +158,15 @@ def replay(frame, records, actions, cfg, start, end, tmp, *, compare_daily=False
         if valid.empty:
             raise ValueError(f'{prior}: kullanılabilir sinyal yok.')
         forecasts = dict(zip(valid.symbol, learning.predict(base, valid)))
-        ranks = {'relative-ridge': dict(zip(valid.symbol, learning.predict(ridge, valid))),
-                 'relative-lightgbm': dict(zip(valid.symbol, booster.predict(valid[names])))}
+        ranks = {'relative-ridge': dict(zip(valid.symbol, learning.predict(ridge, valid)))}
+        if momentum_ablation:
+            momentum = ((100 + valid.momentum120) / (100 + valid.momentum20) - 1) * 100
+            ranks['momentum-120-20'] = dict(zip(valid.symbol, momentum))
+        else:
+            ranks['relative-lightgbm'] = dict(zip(valid.symbol, booster.predict(valid[names])))
+        median_momentum, median_volatility = valid.momentum20.median(), valid.volatility20.median()
+        trend = 'yükselen' if median_momentum > 2 else 'düşen' if median_momentum < -2 else 'yatay'
+        volatility = 'yüksek' if median_volatility >= 2 else 'düşük'
         rows = signal.set_index('symbol').to_dict('index')
         bars = raw_by_day.get(day, {})
         if not bars:
@@ -178,7 +197,7 @@ def replay(frame, records, actions, cfg, start, end, tmp, *, compare_daily=False
             if not view['valuation_complete']:
                 raise ValueError(f'{day}: {arm} kapanış değerlemesi eksik.')
             series[arm].append({key: view[key] for key in ('contributed_try', 'equity_try', 'account_fees_try')}
-                               | {'date': day})
+                               | {'date': day, 'regime': f'{trend}/{volatility}'})
     return {'folds': folds, 'coverage': coverage,
             'arms': {a: performance(series[a], ledgers[a]) for a in arms}}
 
@@ -189,9 +208,18 @@ def main():
     parser.add_argument('--asof')
     parser.add_argument('--compare-daily', action='store_true',
                         help='Haftalık kontrol kollarına her seans yeniden karar veren iki aday ekle.')
+    parser.add_argument('--momentum-ablation', action='store_true',
+                        help='Aynı taktik motorunda göreli Ridge ve 120–20 momentum sıralamalarını kıyasla.')
+    parser.add_argument('--cost-multiplier', type=float, choices=(1., 1.5), default=1.)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
+    if args.compare_daily and args.momentum_ablation:
+        parser.error('Sıralama ve sıklık deneyleri ayrı çalıştırılır.')
+    if args.momentum_ablation and args.output.exists():
+        parser.error('Önceki deney raporu korunur. Yeni bir --output gerekli.')
     cfg = configuration(ROOT)
+    for key in ('commission_rate', 'commission_min_try', 'exchange_fee_rate', 'slippage_bps'):
+        cfg[key] *= args.cost_multiplier
     cfg['calendar'] = calendar.load(ROOT)
     records = universe.read(ROOT)
     start = max(cfg['start_date'], min(r['known_at'] for r in records))
@@ -205,14 +233,16 @@ def main():
     if start > end:
         raise ValueError('Kayıtlı üyelikten sonra tamamlanmış seans yok.')
     with tempfile.TemporaryDirectory(prefix='bist-rank-replay-') as tmp:
-        report = replay(frame, records, actions, cfg, start, end, Path(tmp), compare_daily=args.compare_daily)
+        report = replay(frame, records, actions, cfg, start, end, Path(tmp),
+                        compare_daily=args.compare_daily, momentum_ablation=args.momentum_ablation)
     data_hash = hashlib.sha256(pd.util.hash_pandas_object(frame, index=False).values.tobytes()).hexdigest()
     report.update(start=start, end=end, sessions=len(report['coverage']), input_rows=len(frame),
-                  frame_sha256=data_hash, lightgbm_version=version('lightgbm'),
+                  frame_sha256=data_hash, lightgbm_version=None if args.momentum_ablation else version('lightgbm'),
                   production_eligible=False, independent_holdout=False,
                   initial_try=cfg['initial_try'], monthly_try=cfg['monthly_try'],
-                  policy=portfolio.POLICY_ID, model_parameters=LIGHTGBM,
+                  policy=portfolio.POLICY_ID, model_parameters=None if args.momentum_ablation else LIGHTGBM,
                   daily_review_candidate=args.compare_daily,
+                  momentum_ablation=args.momentum_ablation, cost_multiplier=args.cost_multiplier,
                   limitations=[
                       'Eski 126 tarihli model sınavıyla örtüşen ve önceden incelenmiş arşiv. Bağımsız ileri sınav yok.',
                       'Üyelik tarihli kayıtla sınırlı. Önceki eğitim fiyatları revizyon ve evrende kalma yanlılığı taşıyabilir.',

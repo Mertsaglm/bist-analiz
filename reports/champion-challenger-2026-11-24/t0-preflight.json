@@ -1,0 +1,26 @@
+{
+  "market": "bist",
+  "latest_archive_date": "2026-11-23",
+  "expected_previous_session": "2026-11-24",
+  "core_members": 30,
+  "missing": [],
+  "start_date": "2026-11-25",
+  "core_quote_evidence": {
+    "usable": 30,
+    "expected": 30,
+    "missing": [],
+    "max_spread_pct": null
+  },
+  "initial_try": 50000,
+  "monthly_try": 5000,
+  "ready": false,
+  "reasons": [
+    "Kapanış eski: 2026-11-23; beklenen en az 2026-11-24"
+  ],
+  "assessed_at": "2026-11-24T20:10:00+03:00",
+  "source_head": "5e267203c90c2cf23313f164f4dfaa73dda283d1",
+  "archive_blob": "032b588ffdb2584df7e828d8b8c0f946590e9d81",
+  "observation_time_rounded": "2026-11-24T17:17:00+03:00",
+  "activation_config": null,
+  "executed_on_production": false
+}

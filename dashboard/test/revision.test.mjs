@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {freshness,candidatePanel,operatingPanel} from '../public/insights.js';
+import {freshness,candidatePanel,operatingPanel,weeklyPanel} from '../public/insights.js';
 
 const snapshot=()=>({generated_at:'2026-09-25T16:47:00Z',monitoring:{phase:'valuation',
   calendar:{available:true,years:['2026'],full_days:[],half_days:[]},
@@ -9,6 +9,22 @@ test('overnight/weekend age is compared with expected observation, not wall time
   const s=snapshot();assert.equal(freshness(s,Date.parse('2026-09-26T15:00:00Z')).stale,false);
   s.generated_at='2026-09-25T14:31:00Z';assert.equal(freshness(s,Date.parse('2026-09-26T15:00:00Z')).stale,true);
   s.generated_at='2026-09-26T19:00:00Z';assert.equal(freshness(s,Date.parse('2026-09-26T15:00:00Z')).stale,true);
+});
+test('freshness honors the hourly and half-hour observation schedules',()=>{
+  const s=snapshot();
+  s.generated_at='2026-09-25T10:17:00Z';
+  s.monitoring.watchdog_grace_minutes=60;
+  const now=Date.parse('2026-09-25T11:55:00Z');
+  s.monitoring.cycle_interval_minutes=60;
+  assert.equal(freshness(s,now).stale,false);
+  s.monitoring.cycle_interval_minutes=30;
+  assert.equal(freshness(s,now).stale,true);
+});
+test('weekly comparison names the passive result and subtraction direction',()=>{
+  const html=weeklyPanel({weekly:{ready:true,contributions_try:0,investment_result_try:0,
+    fees_try:0,baseline_result_try:2855.55,excess_try:-2855.55,max_drawdown_pct:0}});
+  assert.match(html,/Pasif yatırım sonucu[\s\S]*2\.855,55/);
+  assert.match(html,/Aktif eksi pasif[\s\S]*-2\.855,55/);
 });
 test('candidate capital is explicitly excluded from wealth and zeros stay visible',()=>{
   const c={name:'<test>',strategy:{equity_try:50000},benchmark:{equity_try:49900},feedback:{twr_pct:0},evidence:{periods:0,minimum_periods:24},status:'Deneme'};

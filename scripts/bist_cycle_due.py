@@ -21,14 +21,17 @@ def decision(now, cfg, snapshot):
 
     interval = timedelta(minutes=cfg["cycle_interval_minutes"])
     slot = opening + ((now - opening) // interval) * interval
+    execution_close = datetime.fromisoformat(f"{day}T{cfg['execution_window'][close_key]}").replace(tzinfo=IST)
+    eligible_phases = ('entry', 'protection') if now < execution_close else ('valuation',)
     try:
         at = datetime.fromisoformat(snapshot["generated_at"])
         health = snapshot["health"]
         complete = (snapshot["market"] == "bist" and at.tzinfo is not None
                     and slot <= at <= now and health["errors"] == []
+                    and not health.get("analysis_issues")
                     and health["expected_quotes"] > 0
                     and health["quote_coverage"] == health["expected_quotes"]
-                    and snapshot["monitoring"]["phase"] in ("entry", "protection", "valuation"))
+                    and snapshot["monitoring"]["phase"] in eligible_phases)
     except (KeyError, ValueError, TypeError):
         complete = False
     return (False, "bu saatin çevrimi kayıtlı") if complete else (True, "saatlik çevrim gerekli")

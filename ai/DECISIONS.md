@@ -1,8 +1,81 @@
 # DECISIONS.md — Karar Günlüğü (ADR)
 
-> Yalnızca ÖNEMLİ kararlar: mimari, araç, yaklaşım seçimleri.
-> Her karar "neden"i ve "tekrar gözden geçirme koşulu" ile kaydedilir.
-> En yeni karar en üste.
+> Önemli teknik kararlar; en yeni kayıt üsttedir. Tarihli uygulama/yayın notları
+> geçmişin kaydıdır; güncel kapsam PROJECT, işletim durumu STATE dosyasındadır.
+> Eski V1 kararları V2'ye otomatik uygulanmaz; örneğin #019 türetilmiş V1
+> portföyüdür, #022 ve sonrası V2'nin ayrı olay defterini tanımlar.
+
+---
+
+## #040 — 2026-11-24 — İleri momentum ve veri telafisi
+
+**İleri sınav.** BIST30 120–20 seans momentumu ayrı defterde çalışır.
+En erken 25 Kasım 2026. İlk uygun giriş gözlemi ve tamamlanmış
+30 isimlik sıralamayla başlar. Eş 50.000/5.000 TL bütçeli pasif kol
+referanstır. Haftalık ilk beş giriş, ilk on koruma, isim başına %8 değer
+ve %0,6 stop riski üst sınırı kullanılır. Sıralamayı Ridge, SMA veya R:R
+onayı belirlemez. Taze farklı kotasyon, gerçekçi masraf, lot ve nakit
+uygulanır. Katkısız net getiri, en büyük düşüş, fiyat kapsamı ve stop
+sonuçları 20, 63 ve 126 seansta ayrı değerlendirilir.
+
+**İşletim.** GitHub API 502/503/504 okuma hatalarının ve eksik
+fiyat HTML'inin sınırlı tekrarı vardır. Kimlik ve fiyat doğrulaması
+yeniden çalışır. Veri izleme bugünkü takvime göre son yedi günün
+slotunu, ilk defter gözlemini ve son fiyat kapsamını gösterir.
+Tarihsel SQL yazım damgası ilk alınma zamanı olarak kullanılmaz.
+
+**Yeniden değerlendirme.** Ayrı portföyün eş pasif kıyası, tam fiyatlı
+seans kapsamı ve düşüş birlikte incelenir. Başarılı workflow tek başına
+fiyat veya teslim kanıtı sayılmaz.
+
+---
+
+## #039 — 2026-11-24 — Bağımsız sanal rakipler ve ekonomik ölçüm
+
+**Karar.** Veri ve muhasebe sözleşmeleri ortak. Politikalar ayrı kimlikle,
+eş sermaye ve maliyetle denenir. V2 ve pasif referans. Yeterli veriyle
+deney başlar. Ana politikaya geçiş ileri ekonomik değerlendirme gerektirir.
+Ortak çekirdekte altın için sabit %4 azami makas sınırı kullanılır;
+ana ve aktif taktik kolda %3 sürer. Pasif çekirdek, taktik model hazır
+olmasa da geçerli kapanış, üyelik, kotasyon ve bütçeyle ilerler.
+
+**Ön kayıt.** BIST, 25 Eylül–23 Kasım 2026 tarihli üyelik ve günlük
+arşivde göreli Ridge sırası ile 120–20 seans momentumunu kıyaslar.
+İki kolda aynı mutlak Ridge net giriş kapısı, haftalık seçim, stop,
+%80 çekirdek, %20 taktik ve işlem masrafı uygulanır. Üçüncü kol tam pasif.
+Karar öncesi evren medyanı 20 seans momentumu ±%2 sınırlarıyla ve
+20 seans günlük volatilite %2 sınırıyla gruplandırılır. İşlem maliyeti
+ayrıca 1,5 kat senaryosunda ölçülür.
+
+Altın, aynı dönemin İş Bankası kotasyon defterindeki 50.000/5.000 TL
+katkılarını iki kolda eşler. Pasif kol %4 üst sınırla ilk uygun alımı
+izler. Rakip en çok üç işlem seansı %2,75 makas arar ve sonra %4 sınırına
+döner. İki kolda sonraki taze kotasyon, banka tarafı, %0,20 alım vergisi,
+0,01 gram ve satışsız birikim aynı. Bu iki replay keşif sınavıdır.
+Öncelik net tasfiye serveti, katkısız getiri ve düşüş. Bekleme,
+işlem sayısı, masraf ve kapsama tanı amaçlıdır. Eşikler aynı raporun
+sonucuna göre değiştirilmez.
+
+**Yeniden değerlendirme.** Makas ve momentum kuralı bu aralığın dışında,
+eşleşen ileri koşullarda tutarlı ekonomik katkı gösterirse yeniden ele
+alınır. Tarihsel net servet farkı, kısa rejim grupları ve kapsama boşlukları
+raporda kalır. Haftalık rapor bunları ve yeni olgunlaşan BEKLE ölçümünü
+görünür tutar.
+
+---
+
+## #038 — 2026-11-24 — Karar etkinliği ve geç kapanış kanıtı
+
+**Karar:** 60 günlük işlemsizlik, salt okunur denetim tetikler. BEKLE için
+sonraki geçerli referans ve sabit vade üzerinden maliyetli varsayımsal
+getiri ölçülür. Belgeli pasif NAV ile eşleşen örneklerde fark ayrıca hesaplanır.
+Geç kapanış makbuzu seans gününe bağlanır. Sonraki günün kotasyonu önceki
+kapanışı tamamlamaz. Zorunlu tahsis ayrı ön kayıtlı araştırma hipotezidir.
+**Neden:** İşlem görülmemesi veri, model, filtre ve fırsat ayrımını gizler.
+Gözlenen aday sayısı, ekonomik fayda veya gerçekleşmiş işlem sayısı vermez.
+**Tekrar gözden geçir:** Vade kotasyonu kapsamı ve örtüşmeyen dönemler yeterli
+olduğunda. Ana defter ve sabit T0 kollarındaki kurallar deney bazında korunur.
+[Ölçüm raporu](../docs/DENETIM-2026-11-24.md)
 
 ---
 
@@ -91,7 +164,8 @@ göstermedi; aday olarak kalmaları ve ön kayıt bu yüzden önemlidir.
 katkısız getiri ve en yüksek düşüş birlikte değerlendirildiğinde; veri/üyelik
 ve maliyet kaynakları değişirse yeni deney sürümü açılır.
 **Kanıt:** `docs/PORTFOY-DENEYI-2026-10-01.md`; yerel arşiv kopyası ve model
-makbuzları orada listelidir. Yayın ve T0 aktivasyonu yapılmadı.
+makbuzları orada listelidir. Kod 2026-10-01'de yayımlandı; T0 aktivasyonu
+yapılmadı. Altın canlı/Telegram çevrimi geçti, BIST ilk yeni koşusu seans dışı atlandı.
 
 ---
 
@@ -103,7 +177,8 @@ işi iptal ediyordu. Yalnız grup adını birleştirmek bu eski hatayı geri get
 **Seçenekler:** Ayrı gruplar ve veri birleşimi; tek iş mimarisi; ortak grup + kuyruk.
 **Karar:** İki repoda SQL yazan işler `repo-commit`, `cancel-in-progress: false`,
 `queue: max` kullanır; checkout açıkça güncel `main` dalını alır. Workflow sözleşme
-testleri bütün SQL yazarlarında bunu zorlar. Yayın ayrı onay bekler.
+testleri bütün SQL yazarlarında bunu zorlar. Kod 2026-10-01'de kullanıcı
+onayıyla yayımlandı; bu kararın veri onarımına etkisi ayrıca ölçülür.
 **Neden:** Mevcut düşük maliyetli Actions hattını korur; SQL çakışması ve bekleyen
 tek işin ezilmesi birlikte önlenir. Takvim cron'u gerçek zaman garantisi değildir.
 **Kaynak:** GitHub'ın kuyruk belgesi, 2026-09-30 kontrol edildi:

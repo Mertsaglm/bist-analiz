@@ -17,6 +17,7 @@ const pages = {
   decisions: ['Kararlar', 'Bugün ne yapmak mantıklı?', 'Al, sat, tut veya bekle. Her kararın kısa gerekçesi ve fiyat referansı burada.'],
   portfolio: ['Sanal portföy', 'Paran nerede, sonuç ne?', 'Adetleri, gramları, nakdi ve işlem maliyetlerini tek tek takip et.'],
   learning: ['Gelişim karnesi', 'Model ne kadar isabetli?', 'Modelin geçmiş sınavı, gerçekleşen tahminler ve öğrendiği hatalar.'],
+  collection: ['Veri izleme', 'Veri toplama durumu', 'Son yedi günün fiyat kapsamı, ilk kayıt zamanı ve açık boşlukları.'],
   legacy: ['Geçmiş raporlar', 'Nereden başladığımızı unutma.', 'Önceki analizlerin karnesi. Eski sonuçlar yeni sanal hesaplarla karıştırılmaz.']
 };
 
@@ -85,6 +86,12 @@ function legacyPage(s) {
   return `<section class="panel"><div class="panel-head"><h2>Önceki sistemin karnesi</h2>${badge('V1 arşivi','gray')}</div><p class="panel-subtitle">${esc(s.legacy.note)}</p><div class="table-wrap"><table><thead><tr><th>KAYNAK</th><th>TAHMİN KAYDI</th><th>SONUÇLANAN / GİRİLEN</th><th>ÖLÇÜLEN SONUÇ</th></tr></thead><tbody>${s.legacy.sources.map(r=>`<tr><td><strong>${esc(r.source)}</strong><small>${esc(r.decision||'')}</small></td><td>${num(r.decisions,0)}</td><td>${num(r.entered??r.resolved,0)}</td><td>${pct(r.average_trade_return_pct??r.gram_effect_pct)}<small>${market==='bist'?'İşlem ortalaması':'Gram etkisi'} · Portföy getirisi değildir</small></td></tr>`).join('')}</tbody></table></div><div class="note-strip">Replay verisi canlı kararlardan ayrı gösterilir. Küçük örneklem ve seçilmiş işlemler başarı iddiasını sınırlıyor.</div></section><section class="panel"><div class="panel-head"><h2>Son eski analizlerin gerekçeleri</h2></div>${s.legacy.recent.length?s.legacy.recent.map(d=>`<details><summary>${esc(d.symbol)} · ${esc(d.signal)} · ${esc(d.action)}</summary><p class="body-copy">${esc(d.thesis)}</p><p class="body-copy">Risk: ${esc(d.key_risk)}</p><p class="body-copy">Eski LLM yorumu. Haber dayanağı ayrıca doğrulanmalıdır.</p></details>`).join(''):empty('Eski strateji özeti yukarıdaki tabloda.','Ayrıntılı günlük raporlar proje içindeki reports klasöründe korunuyor.')}</section>`;
 }
 
+function collectionPanel(s) {
+  if (!Array.isArray(s.collection) || !s.collection.length) return empty('İlk izleme kaydı bekleniyor.');
+  const days = s.collection.filter(d=>Array.isArray(d.slots)).slice().reverse();
+  const rows = days.map(d=>`<details${d===days[0]?' open':''}><summary>${esc(date(d.day))} · ${d.slots.filter(r=>r.state==='tam fiyat').length}/${d.slots.filter(r=>r.state!=='açık slot').length} tam slot</summary><div class="table-wrap"><table><thead><tr><th>SLOT</th><th>SON DURUM</th><th>İLK KAYIT</th><th>KAYNAK TANISI</th></tr></thead><tbody>${d.slots.map(r=>`<tr><td>${esc(date(r.at,true))}</td><td>${esc(r.state)}${r.expected ? ` · ${esc(r.valid)}/${esc(r.expected)}` : ''}</td><td>${esc(date(r.first_observed_at,true))}</td><td>${esc(r.source_failure?.stage || '')} ${esc(r.source_failure?.reason || '')} ${esc(r.source_failure?.http || '')}</td></tr>`).join('')}</tbody></table></div></details>`).join('');
+  return `<section class="panel"><div class="panel-head"><h2>Referans fiyat çevrimleri</h2></div>${rows}<p class="note-strip">Slotlar güncel izleme takvimine göre hesaplanır. İlk kayıt zamanı defter gözlemidir. SQL satırına ve GitHub koşusuna ayrı bakılır.</p></section>`;
+}
 function renderContent() {
   const s=current();
   if (!s) { $('#content').innerHTML=empty('Bu portföy henüz yüklenemedi.',response?.errors?.[market]||'Veri bekleniyor.'); return; }
@@ -94,6 +101,7 @@ function renderContent() {
   if (view==='decisions') content=funnelPanel(s)+decisionPanel(s,true)+costs(s);
   if (view==='portfolio') content=portfolioExperimentPanel(s)+positions(s)+exposurePanel(response?.portfolios)+riskPanel(s)+weeklyPanel(s)+trades(s)+chartPanel(s)+costs(s);
   if (view==='learning') content=portfolioExperimentPanel(s)+candidatePanel(s)+evidencePanel(s)+learningPage(s);
+  if (view==='collection') content=collectionPanel(s);
   if (view==='legacy') content=legacyPage(s);
   $('#content').innerHTML=content;
   if ($('#search')) { $('#search').value=search; $('#action-filter').value=actionFilter; }

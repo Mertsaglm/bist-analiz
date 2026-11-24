@@ -1,10 +1,32 @@
 # LESSONS.md — Dersler ve Anti-Pattern'ler
 
-> Geçmiş hatalardan çıkan dersler. Usta bunları bilir ve aynı çukura ikinci
-> kez düşülmesine izin vermez. `/ders <olay>` komutuyla yeni ders eklenir.
-> Bu dosya projeler arası taşınır — dersler birikir.
+> Tarihli hata kayıtları ve tekrarını önleyen bilgiler; ilgili konuya göre başvurulur.
+> Kayıtların içindeki eski durumlar güncel üretim iddiası değildir. Bu dosya
+> yeni projelere kopyalanabilir; kaynağa özgü olaylar yeni projenin kapsamını belirlemez.
 
 ---
+
+## L-040 — 2026-11-24 — Model arızası pasif çekirdeği durdurmamalı
+
+Özelleşmiş model çağrısı bozulduğunda ortak kol çağrısı yapılmıyordu.
+Tahmin yokken taktik stop da çağrılmıyordu. Hata görünür, çekirdek
+ve mevcut stop geçerli veride işler. Altın fiyatının tazeliği, aktif
+ve pasif kolların farklı makas sınırlarından ayrı korunur.
+[Davranış sınavı](../tests/test_portfolio_experiments.py)
+
+## L-039 — 2026-11-21 — Geciken kapanışın ait olduğu gün saklanmalı
+
+Altın kapanış işi 20 Kasım seans penceresinden sonra başladı. Yeşil koşu
+hafta sonu nedeniyle atlanmıştı, gün sonu Telegram makbuzu oluşmadı. Günlük
+rapor dosyası, V2 kapanış tesliminin kanıtı olamaz. Önceki seansın beklenen
+kapanışını çalışma saatinden ayrı takip et. Taze fiyat yoksa boşluğu belirt.
+
+2026-11-24 denetiminde sonraki seansın kotasyonuyla önceki gün raporunun
+tam sayılabildiği ve gecikmiş değerlemenin saatlik kapıda gerçek işlem
+çevrimi yerine geçtiği saptandı. İşletim kapısı ve Telegram tüketicisini
+aynı senaryoda sına. Sonraki güne ait fiyat, önceki kapanış kanıtı değildir.
+Kapıların elediği adayları ekonomik olarak yorumlarken vade kotasyonu
+kapsamını ve masraf sonrası nakit/pasif sonuçlarını da göster.
 
 ## L-038 — 2026-11-19 — Karar makbuzu kapanış raporu değildir
 
@@ -12,6 +34,8 @@ Gün içi BEKLE değişmediyse durum mesajını bastırmak yararlıdır. Aynı k
 gün sonu raporunu sessizce eleyebilir. Kapanışa İstanbul işlem günü
 kimliği ver, gerçekleşmeleri defterden say ve eksik kapanış toparlanırsa
 güncel raporu ilet. Çevrim başarı durumu Telegram teslimini kanıtlamaz.
+Yeni makbuz sözleşmesini eski görünümden bekleme. Üretici beklentiyi
+görünümde açıkça kaydetsin. Eski geçerli teslim kendi kuralıyla doğrulansın.
 
 ## L-037 — 2026-11-17 — Batch reddi sağlam günleri de dondurur
 
@@ -52,7 +76,7 @@ telafi geçerli alt kümeyi saklar ve hata tanısıyla başarısız sonuç verir
 **Olay:** Actions/mail incelemesinde BIST job'larının ödeme/harcama engeliyle
 hiç başlamadığı, harici yedeklerin artifact kotasına takıldığı görüldü. Altında
 geçerli kotasyonun geniş makası `data_blocked_symbols` üzerinden veri arızası
-oluyordu. 2026-10-28 kanıtı: 28 Ekim denetim notu.
+oluyordu. 2026-10-28 kanıtı: `docs/HATA-DENETIMI-2026-10-28.md`.
 
 **Ders:** Önce job'un başlayıp başlamadığını ve başarısız adımı doğrula.
 Geniş makas gibi normal işlem kapılarını eksik/bayat veriden sınıf koduyla ayır;

@@ -74,6 +74,20 @@ def test_data_warning_is_a_notification_state_change():
     assert notifications.notification_key(s, NOW) != original
 
 
+def test_bist_late_report_does_not_count_next_days_quote_as_previous_close(tmp_path):
+    late = datetime.fromisoformat('2026-11-24T09:19:00+00:00')
+    s = snapshot()
+    s.update(market='bist', generated_at=late.isoformat(), analysis_date='2026-11-23',
+             monitoring={'phase': 'valuation', 'closing_refresh': True})
+    s['health'].update(expected_analysis_date='2026-11-23', expected_quotes=33, quote_coverage=33)
+    day = notifications.closing_day(s, late)
+    assert day == '2026-11-23'
+    assert not notifications._closing_complete(s)
+    text = notifications._closing_summary(s, Ledger(tmp_path/'events.jsonl'), day, '', 1000)
+    assert 'Fiyat gözleminin tarihi 2026-11-24.' in text
+    assert 'Uyarı: kapanış' in text
+
+
 @pytest.mark.parametrize('market', ['bist', 'gold'])
 def test_daily_close_reports_real_fills_even_if_the_decisions_did_not_change(tmp_path, monkeypatch, market):
     monkeypatch.setenv('TELEGRAM_BOT_TOKEN', 'test')

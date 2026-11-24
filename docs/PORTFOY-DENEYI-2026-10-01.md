@@ -4,7 +4,9 @@ Bu paket ana BIST/altın hesaplarının kararını değiştirmez. Ayrı defterle
 başlangıç ve katkılarla beş kol açar: mevcut politika, %80 çekirdek + %20 nakit,
 çekirdek + pasif kalan dilim, çekirdek + mevcut Ridge ve çekirdek + piyasaya özel
 Ridge. `advisor/config.json` içindeki `experiment_start_date` iki repoda da
-`null` olduğu için **ileri T0 başlamamıştır**. BIST ile altın arasında para aktarılmaz.
+`null` olduğu için **ileri T0 başlamamıştır**. Kod 2026-10-01'de iki `main`
+dalına yayımlandı; beş deney hesabının canlı çalışması ayrı bir sonraki adımdır.
+BIST ile altın arasında para aktarılmaz.
 
 ## Uygulanan sözleşme
 
@@ -54,8 +56,8 @@ Tarihli makbuzlar:
   `reports/portfolio-model-research-bist-2026-09-24.json` ve aynı kodun
   güncellenmiş yerel SQL ile 2026-10-01 yeniden çalıştırma makbuzu
   `reports/portfolio-model-research-bist-2026-10-01-replay.json`.
-- Altın: diğer repoda `../gold_tracking_system/reports/portfolio-smoke-gold-2026-09-22.json`,
-  `../gold_tracking_system/reports/portfolio-model-research-gold-2026-09-22.json`.
+- Altın: [eski arşiv provası](https://github.com/Mertsaglm/gold_tracking_system/blob/main/reports/portfolio-smoke-gold-2026-09-22.json)
+  ve [model sınavı](https://github.com/Mertsaglm/gold_tracking_system/blob/main/reports/portfolio-model-research-gold-2026-09-22.json).
 
 BIST yerel SQL'nin son kapanışı 2026-09-24'tür. O günde DSTKF ve TRALT barı
 bulunmadığı için tarihli kopya provasındaki çekirdek 30 yerine 28 hissede
@@ -71,7 +73,7 @@ sayılmaz. Bu, **ortak ileri T0 için taze veri hazır** demek değildir.
 prova tekrarlandı. [BIST makbuzu](../reports/portfolio-smoke-bist-production-copy-2026-09-30.json)
 2026-09-30 kapanışından sonraki varsayımsal 2026-10-01 çevriminde 32 geçerli
 kotasyon, 30 çekirdek pozisyon, beş aday ve altı mutabık defter gösterir.
-[Altın makbuzu](../../gold_tracking_system/reports/portfolio-smoke-gold-production-copy-2026-09-30.json)
+[Altın makbuzu](https://github.com/Mertsaglm/gold_tracking_system/blob/main/reports/portfolio-smoke-gold-production-copy-2026-09-30.json)
 aynı günün tarihli gram kapanışıyla beş aday/altı defter gösterir. İki makbuzda
 tekrar işlem ve yedek farkı yoktur; fiyatlar **tarihsel varsayımdır**, canlı
 işlem veya ileri performans kanıtı değildir. İlk BIST provası, karşılaştırma
@@ -155,16 +157,80 @@ LightGBM 0,0017; MAE sırasıyla 7,680 ve 7,733 yüzde puandır. 26 katlamanın
 hepsinde eğitim etiketinin bitişi test başlangıcından öncedir. İlk makbuz
 korundu; bu iki farklı veri sürümünün sonucu tek sonuç gibi sunulmaz.
 
-## T0 ve yayın sınırı
+## 24 Kasım T0 kontrolü
 
-Önce 2026-09-30 yerel üretim düzeltmelerinin güncel üretim sürümüyle farkı,
-iki piyasada taze kapanış/fiyat, aktif ve eski defter hash'i, kurumsal işlem,
-iş sırası ve dış scheduler gerçekleşmesi doğrulanmalı. Kopya provasının
-geçmesi canlı üretim eşliği kanıtı değildir. Ortak sonraki işlem günü T0
-seçilip iki config'de aynı tarih girildiğinde yeni kollar açılır; geçmiş
-hesaplar yeniden ölçeklenmez. 20 seans çalışma, 63/126 seans ekonomik
+İki üretim ayarında `experiment_start_date` boş ve beş yeni defter açılmamıştı.
+BIST çekirdeğinde 30/30 üyenin kotasyonu alıma uygundu. Altın 1/1 geçerli
+fiyat verdi ve yaklaşık %3,38 makas %3 alım sınırını aştı. Ortak başlangıç
+için iki otomatik kapanış makbuzu, uygun kotasyon, doğrulanmış takvim,
+eş bütçe ve mevcut defter bütünlüğü gerekir. T0 ortak bir gelecek seansında
+açılır. İlk katkı ve kotasyon kimlikleri ayrıca doğrulanır.
+[24 Kasım kanıtı](DENETIM-2026-11-24.md)
+
+## T0 ve 1 Ekim yayın kaydı
+
+Kod 2026-10-01'de BIST `bee1a1c` ve altın `dddb27c` ile üretim `main`
+dalına yayımlandı. [BIST yeni kod koşusu](https://github.com/Mertsaglm/bist-analiz/actions/runs/36901914212)
+başarılı fakat seans dışı olduğu için atlandı; eski ana deftere yalnız
+`session_check` eklendi, finansal olay sayısı değişmedi.
+[Altın yeni kod koşusu](https://github.com/Mertsaglm/gold_tracking_system/actions/runs/36901918911)
+başarılıdır: yeni ana hesap 50.000 TL başlangıç ve 5.000 TL Ekim katkısını
+ayrı kaydetti, Telegram makbuzu `message_id: 320` taşır. Yeni deneyin
+`portfolio_experiments.status` alanı `T0 bekleniyor`, hesap listesi boştur.
+Vercel'in üç canlı statik dosyası yayımlanan sürümle eşleşti; parolalı API
+görünümü doğrulanmadı.
+
+Ortak T0 için 2026-10-01 kapanış/fiyatları, iki piyasada seans içi atlanmamış
+yeni kod çevrimleri, 30 BIST30 üyesi ve GRAM kotasyonu, aktif/eski defter
+bütünlüğü yeniden doğrulanmalı. Kopya provasının geçmesi canlı eşlik değildir.
+Bu kapılar geçince ortak gelecek işlem günü iki config'e aynı T0 yazılır;
+geçmiş hesaplar yeniden ölçeklenmez. 20 seans çalışma, 63/126 seans ekonomik
 değerlendirme için ayrı eşiklerdir; erken işlem sayısı üstünlük sayılmaz.
+BIMAS geçmiş karne düzeltmesi bu yayına dahil değildir. Geri dönüş yeni adayın
+yeni işlemlerini durdurur; eski sanal defter silinmez.
 
-Bu deney `codex/portfolio-research` dalında hazırlanır. Üretim yayını ve
-BIMAS geçmiş karne düzeltmesi ayrı onay gerektirir. Geri dönüş yeni adayın yeni işlemlerini durdurur;
-eski sanal defter silinmez.
+
+## 24 Kasım araştırma paketi
+
+İlk T0 değerlendirmesinde yalnız çekirdeğin güvenilir fiyatı, tarihli üyelik,
+ortak bütçe ve son tamamlanmış kapanış aranır. Çekirdek ve tam pasif kolda
+GRAM için %4, ana ve aktif taktik kolda %3 azami makas geçerlidir. Aktif
+tahmin, trend ve R:R çekirdeği belirlemez. Taktik model başarısız olduğunda
+açık pozisyonun geçerli güncel fiyatla stop kontrolü sürer.
+
+20.10 İstanbul kesitinde 25 Kasım önerisi BIST çekirdeğinde 30/30 ve
+altında 1/1 uygun gözlem buldu. İki üretim SQL'i de 23 Kasım'da bitiyor.
+Ortak başlangıç için 24 Kasım kapanışı eksik. Tarih ayarı boş.
+[Salt okunur T0 makbuzu](../reports/champion-challenger-2026-11-24/t0-preflight.json)
+20.20'de gerçek fiyat kaynağıyla geçici BIST arşivi 24 Kasım kapanışına
+ulaştı. T0 kontrolü o kopyada 30/30 ile geçti. İki üretim SQL'i için
+20.10 sonucu yukarıda. [BIST kapanış telafisi](../reports/champion-challenger-2026-11-24/bist-closing-recovery.json)
+
+Beş kolun kopya provasında katkı, tekrar çalıştırma ve altı defterin
+bağımsız mutabakatı geçti. [Prova makbuzu](../reports/champion-challenger-2026-11-24/t0-bist-smoke.json)
+[Rapor önizlemesi](../reports/champion-challenger-2026-11-24/weekly-preview.txt)
+
+Bağımsız tarihsel deneyler T0'dan önce çalıştırıldı. Protokol ve
+değerlendirme koşulu [karar günlüğünde](../ai/DECISIONS.md).
+
+25 Eylül–23 Kasım aralığı 41 seans ve kol başına 60.000 TL katkı içeriyor.
+
+| Sıralama | Net değer | Katkısız getiri | En büyük düşüş | 1,5× işlem maliyetinde net değer |
+|---|---:|---:|---:|---:|
+| Göreli Ridge | 52.189,55 TL | −%15,10 | −%18,31 | 52.156,22 TL |
+| 120–20 seans momentum | 52.741,68 TL | −%14,24 | −%18,50 | 52.665,74 TL |
+| Tam pasif | 52.920,08 TL | −%13,98 | −%18,71 | 52.764,33 TL |
+
+Momentum aynı taktik kurallarla Ridge'i 552,13 TL geçti ve 43,28 TL daha
+az işlem ücreti üretti. Pasif her iki maliyet senaryosunda son net değerde
+önde. Karar öncesi veriye göre 32 düşen/yüksek, 6 yatay/yüksek,
+3 düşen/düşük seans vardı. Yükselen rejim gözlenmedi. Momentum
+yatay/yüksek grupta iki referansı geçti. Altı seans, rejim değiştirici
+politika için yetersiz. [Normal](../reports/champion-challenger-2026-11-24/bist-momentum-cost-1.json)
+· [Maliyet stresi](../reports/champion-challenger-2026-11-24/bist-momentum-cost-1.5.json)
+
+Aynı protokol üretim SQL kopyası üzerinden tekrar çalıştırılabilir.
+
+```sh
+python -m scripts.bist_rank_replay --momentum-ablation --asof 2026-11-23 --database /tmp/bist.db --output /tmp/bist-momentum-yeni.json
+```

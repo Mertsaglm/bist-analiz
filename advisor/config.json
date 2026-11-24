@@ -63,6 +63,7 @@
   "account_id": "paper-2026-09-25",
   "candidates_enabled": true,
   "experiment_start_date": null,
+  "forward_momentum_start": "2026-11-25",
   "require_next_quote": true,
   "entry_intent_minutes": 90,
   "entry_window": {

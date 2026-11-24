@@ -27,3 +27,15 @@ def test_market_windows_and_holidays():
     assert not check("2026-11-19T20:00", {})
     assert not check("2026-11-21T11:00", {})
     assert not check("2026-10-29T11:00", {"monitoring": {"calendar": {"full_days": ["2026-10-29"]}}})
+
+
+def test_delayed_close_or_stale_analysis_cannot_replace_a_trading_cycle():
+    snapshot = {"market": "bist", "generated_at": "2026-11-24T07:17:00+00:00",
+                "health": {"expected_quotes": 33, "quote_coverage": 33, "errors": []},
+                "monitoring": {"phase": "valuation", "closing_refresh": True}}
+    assert check("2026-11-24T10:45", snapshot)
+    snapshot["monitoring"] = {"phase": "entry"}
+    snapshot["health"]["analysis_issues"] = {"AKBNK": "Beklenen kapanış eksik"}
+    assert check("2026-11-24T10:45", snapshot)
+    snapshot["health"]["analysis_issues"] = {}
+    assert not check("2026-11-24T10:45", snapshot)
