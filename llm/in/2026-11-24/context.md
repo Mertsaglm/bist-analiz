@@ -2,7 +2,7 @@
 
 > ⚠ Ölçülen kenar yok (ADR #008). Bu seviyeler planlama geometrisidir, yön iddiası değildir.
 
-**bundle_sha:** `161775415c19c71058a5697a88b2336a0b5b5a1062114794d467987d78731fd5` — çıktına BİREBİR kopyala.
+**bundle_sha:** `8e1b86ddf933af9b033e4e6febeea36512d961965954cd8d73c408b3b26d2267` — çıktına BİREBİR kopyala.
 
 ## Piyasa rejimi: **risk-off**
 
@@ -51,7 +51,7 @@ _Plan yok: 2 giriş bandı denendi; brüt R:R hiçbir kombinasyonda ≥1.5 olmad
 
 ### ASTOR · elektrik_ekipman
 Kapanış **149.7** (2.60% günlük) · 52h 90.60–385.75
-RSI 41.03 · ATR 12.77 (8.53%) · ADX 23.08 · SMA20 158.83 / SMA50 188.38 / SMA200 246.45
+RSI 41.03 · ATR 12.77 (8.53%) · ADX 23.08 · SMA20 158.82 / SMA50 188.38 / SMA200 246.45
 📌 Açık tahmin: avoid (bariyer None), avoid (bariyer None), avoid (bariyer None), avoid (bariyer None), avoid (bariyer None), avoid (bariyer None), avoid (bariyer None), avoid (bariyer None), avoid (bariyer None), hold (bariyer None), avoid (bariyer None), avoid (bariyer None), hold (bariyer None), avoid (bariyer None), avoid (bariyer None), avoid (bariyer None), avoid (bariyer None), hold (bariyer None), avoid (bariyer None), avoid (bariyer None), avoid (bariyer None), hold (bariyer None), avoid (bariyer None), avoid (bariyer None), hold (bariyer None), avoid (bariyer None), hold (bariyer None), avoid (bariyer None), avoid (bariyer None), avoid (bariyer None), avoid (bariyer None), avoid (bariyer None), hold (bariyer None), avoid (bariyer None), avoid (bariyer None), avoid (bariyer None), avoid (bariyer None), avoid (bariyer None), hold (bariyer None), hold (bariyer None), hold (bariyer None), avoid (bariyer None), hold (bariyer None), hold (bariyer None), avoid (bariyer None), avoid (bariyer None), hold (bariyer None), avoid (bariyer None), avoid (bariyer None), avoid (bariyer None), hold (bariyer None), avoid (bariyer None), hold (bariyer None)
 
 **KAP bildirimleri** (son analizden bu yana):
