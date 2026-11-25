@@ -1,10 +1,27 @@
 # LESSONS.md — Dersler ve Anti-Pattern'ler
 
+Güncel oturum devri ve doğrulama kesiti [STATE](STATE.md) dosyasındadır.
+
 > Tarihli hata kayıtları ve tekrarını önleyen bilgiler; ilgili konuya göre başvurulur.
 > Kayıtların içindeki eski durumlar güncel üretim iddiası değildir. Bu dosya
 > yeni projelere kopyalanabilir; kaynağa özgü olaylar yeni projenin kapsamını belirlemez.
 
 ---
+
+## L-042 — 2026-11-25 — Derleme özeti deney politikasının özeti değildir
+
+Bütün ortak modülleri sözleşme eşitliğine katmak bir rapor düzenlemesini
+başlamış deneye politika değişikliği olarak yansıtıyordu. Yeni sözleşme
+hesabı etkileyen kodu karşılaştırır, ilk tam özeti kanıt olarak tutar.
+Politika değişikliğinde ret davranışını iki depoda da sına.
+
+## L-041 — 2026-11-25 — İzleme evreni çekirdek evrenin yerine geçebilir
+
+İlk araştırma çalıştırması, genel aktif seçiciyle 32 adı BIST30 sanıyordu.
+XU030 tek başına ayrıca 16 yüksek katılımlı seansı kaçırıyordu. Çekirdek
+seçici, beklenen 30 ad, hisse katılımıyla takvim ve test günü paydası
+birlikte doğrulanır. Eksik sembol barı ortak hedef vadesini değiştirmez.
+[Davranış testleri](../tests/test_forecast_research.py)
 
 ## L-040 — 2026-11-24 — Model arızası pasif çekirdeği durdurmamalı
 

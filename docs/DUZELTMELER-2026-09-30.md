@@ -1,6 +1,11 @@
 # Üretim denetimi sonrası düzeltmeler — 2026-09-30
 
-Yerel düzenlemeler tamamlandı; yayın ve geçmiş üretim kaydına uygulama bekliyor.
+> **Tarihsel kesit:** Bu belgedeki ölçüm ve yayın durumu yazıldığı tarihin kesitidir.
+> Güncel üretim ve açık işler için [ai/STATE.md](../ai/STATE.md) ile
+> [2026-10-01 deney durumuna](PORTFOY-DENEYI-2026-10-01.md) bakın.
+
+2026-09-30'da yerel düzenlemeler tamamlanmış, yayın bekliyordu. Kod
+2026-10-01'de yayımlandı; BIMAS geçmiş üretim kaydı düzeltmesi ayrı ve bekliyor.
 Kaynak denetim: `docs/URETIM-DENETIM-2026-09-30.md`.
 Kanıt paketi: `reports/duzeltmeler-2026-09-30/README.md`.
 

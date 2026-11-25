@@ -1,91 +1,86 @@
 # Mevcut durum
 
-**Güncelleme:** 2026-10-01
-**Aktif iş:** İki piyasada yeni kod 2026-10-01'de `main` dalına yayımlandı.
-Altın canlı çevrimi ve Telegram teslim makbuzu geçti; BIST ilk yeni koşusu
-seans dışı olduğu için atlandı. Ortak deney T0 kapalı (`experiment_start_date: null`);
-yeni beş aday hesap henüz canlı işlemedi. BIMAS geçmiş karne düzeltmesi ayrı.
+**Güncelleme:** 2026-10-29
+**Aktif iş:** Kodlar iki uzak main'e yayımlandı; Gold CI ve gerçek operasyon
+  yedeği/geri dönüşü geçti, Vercel production READY. Mert iki somut iş için
+  “sen tercih et” yetkisi verdi: TMSN tek bar onarımı üretime uygulandı;
+  12 eski BIST artifact silindi, son bulut yedeği ve 13 yerel kopya korundu.
+  BIST runner öncesi ödeme/harcama engeli sürüyor. Ücretli servis/limit açılmadı.
+  Piyasa açık taze çevrim kabulü ve ortak deney T0 henüz yok.
 
 ## Tamamlananlar
 
-- Beş ayrı yeni sanal kol, çekirdek/taktik bölüm muhasebesi, kısmi işlem,
-  tek saklama ücreti, tarihli BIST30/GRAM çekirdeği ve haftalık taktik kuruldu.
-- Sayısal karar izi, ham/kalibre tahmin kimliği, hedef portföy, filtre etkileşimi
-  ve ileri ilk görülme haber damgası panel ile birlikte eklendi.
-- BIST göreli Ridge ve altın ons/kur Ridge ayrı aday; LightGBM yalnız offline.
-  Son offline pencerede yeni modeller lehine üstünlük bulunmadı.
-- Eski yerel SQL kopyalarında iki kotasyonlu çevrim, altışar bağımsız defter,
-  tekrar ve yedek geçti. BIST 2026-09-24, altın 2026-09-22 kaynaklıydı;
-  eksikler deney raporunda, ortak ileri T0 için taze veri kanıtı yok.
-- Eksik BIST30 üyeliği ve engelli haftalık satış kilitlendi; yarım kuruşluk
-  taktik tutar hatası Decimal ile düzeltildi. Geçmiş/kapalı T0 reddedilir.
-- Yeni rapor: `docs/PORTFOY-DENEYI-2026-10-01.md` ve oradaki tarihli makbuzlar.
+- 2026-10-29 eski girdisiz dispatch gerçek GitHub koşusunda runner almadan
+  atlandı (40899224420); fiyat/defter adımı çalışmadı, makbuz raporda.
 
-- Önceki üretim düzeltmeleri: `ai/archive/STATE-2026-10-01-evidence.md`.
-- Altın ortak çekirdekle eşitlendi; bekleyen yeni hesabı gerçek arşiv kopyasında sınandı.
+- 2026-10-29: TMSN kaynakla doğrulanan düşük fiyatı 50,00'a onarıldı
+  (`4101882`); tek SQL satırı/düşük+ingestion değişti, dört mevcut
+  OHLC testi geçti ve uzak blob test edilen SQL ile eşleşti. Eski karar/defter aynı.
+  12 eski artifact 933.906.756 byte temizlendi; 336.038.973 byte son bulut yedeği
+  ve 13 doğrulanmış yerel kopya korundu. Somut iki soruya “sen tercih et” yetkisi.
+
+- 2026-10-29 yayın: `8d91c6f`; BIST runner öncesi engel; Vercel READY.
+  `reports/duzeltmeler-2026-10-29/publication.json` güncel makbuzdur.
+  Yerel kirli çalışma ağacı/branch reset veya rebase edilmedi; önceden değişmiş
+  belgeler yayına katılmadı. Sonraki yayında eski yerel SQL kullanılmamalı.
+
+- 2026-10-29: makas/veri ayrımı, güvenli kaynak tanısı/sınırlı retry, ortak parçalı
+  v2 kapsül ve kapsamı etiketli operasyon yedeği iki depoda yerel olarak tamamlandı.
+  BIST saatlik ve eski girdisiz dış dispatch kapalı; V1 LLM kapalı, veri nöbeti açık.
+  BIST OHLC ve V1/V2 yarım gün kapanış simetrisi düzeltildi. Gold ritmi korunur.
+  %3 eşik, stop, eski defter/kanıt ve üretim SQL'si korunur. Ayrıntı/kanıt sınırları:
+  `docs/DUZELTMELER-2026-10-29.md`; ADR #035.
+
+- Önceki deney/AI talimat işleri ve tarihli ölçümler yayın sonrası arşivde korunur.
 - İki suite'te HTTP/curl ağ yasağı zorlandı; sızıntıyı örten eksik mock'lar düzeltildi.
 
 ## Kanıt ve dürüst durum
 
-- Denetim: `docs/URETIM-DENETIM-2026-09-30.md`.
-- Düzeltme: `docs/DUZELTMELER-2026-09-30.md`.
-- Makbuzlar: `reports/duzeltmeler-2026-09-30/README.md`.
-- 2026-09-30: BIST 1459 geçti; altın 998 geçti/8 atlandı; iki panelde 10'ar test geçti.
-- Altı eski-hata geri koyma denemesi kırmızı; 33 ortak modül hash'i eşit.
-- Gerçek 73 hisse kurumsal kaynağı başarılı; 18 eksik olay ve 47 sonuç incelendi.
-- Mühürlü plan yalnız BIMAS yanlış başarısını iptal eder; TAVHL geçerli kaybı korunur.
-- Plan DB kopyasında uygulandı/tekrarlandı; salt-okur üretim kopyasının hash'i aynı.
-- Kapanış telafisi kopyada 73 eksiği tamamladı; 32 veri engeli 1 SASA engeline indi.
-- BIST/altın tekrar çevrimleri, kapsül, model refit, muhasebe ve yedekten dönüş geçti.
-- API telafisi sonradan alındı; eski saatte erişilebilirlik ve canlı başarı iddiası yok.
-- Model üstünlüğü/otomatik terfi yok; nakitte kalmak tek başına başarı değildir.
-- 2026-10-01 son paket: BIST 1478, altın 1016 geçti/9 atlandı; paneller 12'şer
-  test/build geçti. Son finansal düzeltmenin hedefli testi ve arşiv kopyası
-  provaları tekrar geçti; altışar defter bağımsız muhasebeyle uyuştu.
-- Güncel üretim SQL'leriyle de beşer aday/altışar defter provası geçti;
-  TOASO karşılaştırma yarım kuruşu düzeltilip davranış testine bağlandı.
-- Uzak altın ana durumunda 14:33 UTC'de 10.000 TL katkı/sıfır işlem; 07:02–14:46
-  UTC arasında 33 kayıt, en büyük boşluk 15,3 dk. Özel BIST Safari'de okundu:
-  14:46:54 UTC koşusu başarılı, 29 görünür çıktı 08:02–14:47 UTC; en büyük
-  boşluk 17 dk. İki uzak SQL salt-okunur geçici kopyada incelendi: BIST30'un
-  30/30 barı 2026-09-30'da var; altın tarih/banka tick'i 2026-09-30, ons/kur
-  OHLC 2026-09-29. Actions manuel dispatch + planlı yedek gösterir; dış
-  dispatch kimliği kanıtlanmadı. SHA ve ayrıntı deney belgesinde.
-- Güncel BIST ana hesap defterinde 7.124, altın defterinde 1.863 olayın hash
-  zinciri ve dörder hesabın bağımsız muhasebesi doğrulandı. BIST ana hesap
-  55.000 TL, altın ana hesap 10.000 TL nakitte; ikisinde de ana işlem yok.
-- Üretim Telegram defterinde BIST için 32, altın için 33 başarılı bildirim
-  makbuzu var. Vercel paneli HTTP 200, yetkisiz durum API'si HTTP 401 verdi;
-  parolalı veri görünümü henüz sınanmadı.
-- Eski veri sınavı 2026-10-01'de yeniden koştu: altın raporu birebir aynı;
-  BIST'e sonradan eklenen dört test satırı ayrı makbuzda saklandı.
-- Yayın sonrası [BIST koşusu](https://github.com/Mertsaglm/bist-analiz/actions/runs/36901914212)
-  başarılı fakat seans dışı atlandı. [Altın koşusu](https://github.com/Mertsaglm/gold_tracking_system/actions/runs/36901918911)
-  başarılı; Telegram `message_id: 320`. Vercel'in üç statik dosyası yeni sürümle eş.
+- 2026-10-29 Gold gerçek operasyon yedeği 2.207.264 byte; GitHub ve yerel
+  boş dizin geri dönüşü geçti. Kapsül geçmişi kapsam dışı, Git'te korunur.
+
+- 2026-10-29: BIST tam suite 1503; Gold tam suite 1026 geçti/9 atlandı. Son hata
+  yedeği/workflow/doküman hedef kümeleri BIST 55, Gold 56 geçti; makbuzlar raporda.
+  37 ortak modül eşit. Sabit gerçek girdide BIST 33 karar değişmedi; Gold yalnız
+  makas sınıfı değişti; iki tarafta yeni dolum 0. Canlı kabul değildir.
+- 13 artifact yerelde digest/CRC ile korundu; önceki denetimde asıllar duruyordu,
+  2026-10-29 onaylı temizlik sonrası bulutta yalnız son başarılı yedek kaldı.
+  2 Ekim son başarılı harici yedeği 1130 dosya ve muhasebe eşliğiyle geri döndü.
+
+- 2026-10-28 denetimi/mailler ücretsiz dakika ve artifact kotası doluluğunu
+  doğruladı; ayrıntı `docs/HATA-DENETIMI-2026-10-28.md` ve önceki durum arşivinde.
+- Yarım gün hatası tekrarlandı; erken Ekim telafi kayıplarının tüm kök nedeni
+  hâlâ doğrulanmadı. Bu açık çözülmüş kabul edilmez.
+  Aşağıdaki eski ölçümler tarihlidir.
+- Eski 73/73 kapanış kaybı, önceki canlı yayın ve arşiv provaları
+  `ai/archive/STATE-2026-10-28-before-free-repairs.md` içinde korunur.
+  Yeni yarım gün düzeltmesi o tarihsel kayıpların tamamının kanıtı değildir.
 
 ## Sıradaki 3 İş
 
-1. 2026-10-02 seansında BIST ve altının yeni kodla taze çevrimlerini,
-   Telegram makbuzunu ve 2026-10-01 kapanış verisini doğrula.
-   DoD: iki piyasada geçerli veri, atlanmamış çevrim ve eski defter eşliği.
-2. Koşullar geçince ortak gelecek işlem günü T0'ı iki ayarda sabitle.
-   DoD: BIST30 30/30 fiyat, GRAM ve beş ayrı hesap ilk çevrimde mutabık.
-3. Parolalı Vercel görünümünü ve 20/63/126 seans değerlendirmesini izle.
-   DoD: panel iki yeni hesabı gösterir; sonuçlar pasif kolla maliyet sonrası kıyaslanır.
+1. GitHub ücretsiz hak/ödeme engeli kalkınca BIST'in gerçek taze çevrimini kabul et.
+   DoD: runner başlamış, beklenen kapanış/evren tamam, eski defter eş ve Telegram
+   makbuzu var. Temizlik dakika iade etmez; ücret/harcama limiti artırılmaz.
+2. Yeni BIST operasyon yedeğini gerçek runner'da oluşturup geri dönüşünü doğrula.
+   DoD: kapsam etiketli küçük artifact, muhasebe eşliği ve ücretsiz bütçe ölçümü;
+   mevcut 336 MB bulut yedeği kabul kanıtı çıkmadan ayrıca silinmez.
+3. Piyasa açık yeni kodla iki piyasa kabulünden sonra ortak ileri T0'ı ayrı değerlendir.
+   DoD: taze veri ve bağımsız hesap/masraf eşliği; otomatik T0/aday terfisi yok.
 
 ## Takvim
 
 | Tarih | İş | Durum |
 |---|---|---|
 | 2026-09-25 | BIST revizyonunun yayınlanması | Önceki konuşma ve üretimle doğrulandı |
-| 2026-09-30 | Üretim denetimi ve yerel düzeltmeler | Tamam; yeni yayın bekliyor |
-| 2026-10-01 | Katkı, üyelik ve çeyrek ücret geçişi | Kopyada sınandı; canlı koşu doğrulanmadı |
+| 2026-09-30 | Üretim denetimi ve yerel düzeltmeler | Tamam; kod 2026-10-01 yayımlandı, BIMAS veri düzeltmesi ayrı |
+| 2026-10-01 | Kod yayını ve ilk canlı çevrim | Altın katkı/Telegram geçti; BIST seans dışı atlandı, T0 kapalı |
 
 ## Backlog / açık sınırlar
 
-- D-01 geçmiş karne planı ve D-03 altın yeni hesap aktivasyonu üretime uygulanmadı.
-- GitHub CLI kimliği geçersiz; iki üretim SQL'i Safari'den alınıp geçici DB'de
-  incelendi. İki güncel olay defteri de geçici kopyada mutabık; yerel SQL'ler canlı eşlik değil.
+- D-01 BIMAS geçmiş karne düzeltmesi üretime uygulanmadı; altın yeni ana hesap
+  2026-10-01'de açıldı. İki yeni deneyin ortak T0 kapısı kapalıdır.
+- Yerel SQL ve tarihli kopya provaları canlı fiyat/defter eşliği sayılmaz;
+  ilk seans içi yeni kod koşusunda tekrar doğrulanmalıdır.
 - D-05 dış scheduler ve Telegram alıcı teslim/okunması bağımsız doğrulanmadı.
 - SASA 29 Eylül barı sıfır hacimli; 30 Eylül kapanışında analiz sorunu yok.
   Eski sıfır hacim kayıtları için doğrulanmış kaynak gerekiyor.
@@ -98,3 +93,7 @@ yeni beş aday hesap henüz canlı işlemedi. BIMAS geçmiş karne düzeltmesi a
 - 2026-11-25: altın GC=F roll, bağımsız prim/FRED kapsamı incelemesi.
 - V1 ön kayıt: `docs/on-kayit-seviye-02.md`; tetikleyici olmadan çalıştırılmaz.
 - Önceki hafıza: `ai/archive/STATE-2026-09-30-production-audit-open.md`.
+
+Önceki durumun tam kesiti: `ai/archive/STATE-2026-10-28-before-free-repairs.md`.
+
+Yayın sonrası tam kesit: `ai/archive/STATE-2026-10-29-after-publication.md`.

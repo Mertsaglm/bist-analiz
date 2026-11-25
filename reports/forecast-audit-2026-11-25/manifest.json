@@ -1,0 +1,30 @@
+{
+  "versions": {
+    "lightgbm": "4.6.0",
+    "numpy": "2.5.1",
+    "pandas": "2.3.3",
+    "scikit-learn": "1.7.2"
+  },
+  "archive_commits": {
+    "bist": "591cb3a3979df11b53bfd2b4d3ffb1a3f1a54d6c",
+    "gold": "76b8dd2edcf317ba05e7c5dbe31415bfb5739e2d"
+  },
+  "sha256": {
+    "advisor/portfolio_candidates.py": "6f1c76fa17234e2a4cd21a50171459e8657e3fc7c564bfd4a069a6a530ff2dee",
+    "docs/TAHMIN-DENETIMI-ON-KAYIT-2026-11-25.md": "3583dbb71e963606be46230769b7a74c4aeeb91a6c1a7f49cef629afa35eaa7a",
+    "reports/forecast-audit-2026-11-25/bist-long.json": "22275d2afa4bafe4d7533bf9f86fb0a7e0bb7622a099553fc07f11bc36eb0701",
+    "reports/forecast-audit-2026-11-25/bist-shadow-5.json": "85183c462d46bb87f948a84cc02698cd6f58e710b5770de40fa148cc97cd3647",
+    "reports/forecast-audit-2026-11-25/bist.json": "f513db34baa96d55cfd032a9b3451ff75ad316f2a039326081fd6c5024d0293f",
+    "reports/forecast-audit-2026-11-25/coverage.json": "e50adaa646395d56aec60c98c446a67013378ea40561f0ba6337d22c66ddc233",
+    "reports/forecast-audit-2026-11-25/forecast_rank_shadow_v1.py": "6b92aa22c1e9dc08b74d170ebb069d38e061a973d2b3bddd91b451ca21eb477b",
+    "reports/forecast-audit-2026-11-25/gold-legs.json": "eb90a2c0be9aecff7cfaa0f8fe44d0e73763f01c5fa36951908e80be9b154f8f",
+    "reports/forecast-audit-2026-11-25/gold-timing.json": "9f5c36a6a3182610103f6d488e99a3d6ce3a9539818823572218e74b454585f5",
+    "scripts/bist_long_research.py": "0135faf961d76a1131e6c0444db3cbc2c369b88af152e29051ba4b4f224d3ea2",
+    "scripts/bist_rank_replay.py": "734e26cdc26a25129d9eed8d503d4cbfc958c29397e57474275ad157d0acb558",
+    "scripts/forecast_audit.py": "746d3f1c2373825d5db1bf511189fd5591ad78b96ce678a6e720e1303f004137",
+    "scripts/forecast_rank_shadow.py": "584d78328a132becc610bafc343f3d4be179ad362bb163c5615d5a672804de18",
+    "scripts/forecast_research.py": "eded06311d9d85df54172be78a2f8d2162d345843c19bcc44a8296b43dec4c8b",
+    "scripts/gold_leg_research.py": "e8fc1783ebde268390abf44752983208c773d64eb3487d0940bcc7dca71828fd",
+    "scripts/gold_timing_audit.py": "c1b84c4906f622f75430c5a8816021dedc7fd9a54c081646228fb4177108db22"
+  }
+}

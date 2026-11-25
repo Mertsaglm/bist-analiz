@@ -1,9 +1,67 @@
 # DECISIONS.md — Karar Günlüğü (ADR)
 
+Güncel oturum devri ve doğrulama kesiti [STATE](STATE.md) dosyasındadır.
+
 > Önemli teknik kararlar; en yeni kayıt üsttedir. Tarihli uygulama/yayın notları
 > geçmişin kaydıdır; güncel kapsam PROJECT, işletim durumu STATE dosyasındadır.
 > Eski V1 kararları V2'ye otomatik uygulanmaz; örneğin #019 türetilmiş V1
 > portföyüdür, #022 ve sonrası V2'nin ayrı olay defterini tanımlar.
+
+---
+
+## #043 — 2026-11-25 — Deney sürümünde ekonomik kodun kapsamı
+
+Yeni T0 sözleşmelerinde ekonomik kod özeti, bildirim, raporlama ve
+nöbetçi modüllerini dışarıda tutar. İlk tam derleme özeti kanıttır.
+Önceki sözleşmeler tam hash ile korunur. Davranış testi rapor değişince
+devamı, politika değişince reddi doğrular.
+
+Saf sıralama, ek 5 seans gölge ve altın drift deneyleri yerel ve
+bağımsızdır. Ana politika ve ortak T0 kabulünde eş maliyet, canlı
+kotasyon ve ileri sonuç yeniden değerlendirme koşuludur.
+[Ek denetim](../docs/TAHMIN-DENETIMI-2026-11-25.md)
+
+---
+
+## #042 — 2026-11-25 — Ortak seans etiketli tahmin araştırması
+
+Üretim motoru dışında 5/20/60 seanslık sabit model kataloğu çalıştırılır.
+BIST30 tarihli çekirdek seçici ve iki hisse/endeks takvim kanıtı kullanılır.
+Geriye dönük sabit evren, eşleşen hisse farkı ve eş bütçeli net pasif
+üç ayrı kapsama sahiptir. OOS kalibrasyon yalnız testten önce sonucu
+olgunlaşmış OOS veride öğrenilir. Yeni gölge BIST kaydı ayrı kimlikli ve
+tekrar yazılamazdır. Altın sentetik gram ve banka kotasyonu ayrı hedeflerdir.
+
+**Gerekçe.** Doğrudan sıralama 20 seansta umut veriyor. Farklı ufuklar,
+hacim genişlemesi, olasılık ve altın yönü aynı faydayı göstermedi.
+Eğitimi işlem çevrimine taşımadan sonuçları maliyetli deneyle bağla.
+
+**Yeniden değerlendirme.** Üretim değişikliği için ileri gölge ölçümleri,
+eş sermayeli maliyet ve net düşüş kıyası. Model/politika değişiminde yeni
+sürüm. Tarihli üyelik kapanınca sabit evren duyarlılığı tekrar ölçülür.
+[Ön kayıt](../docs/TAHMIN-ARASTIRMA-ON-KAYIT-2026-11-25.md)
+
+---
+
+## #041 — 2026-11-24 — İleri deneyde maruziyet ve model sürümü
+
+İlk beş giriş, beş pozisyonla genişlik ve işlem maliyeti arasında
+başlangıç tercihidir. İlk on koruma, haftalık sıra 5/6 çevresinde
+gereksiz al-sat yapılmasını azaltır. %8 tahsis ve %0,6 masraflı
+stop zararı isim başına giriş bütçesidir. Beş yeni pozisyonda
+yaklaşık %40 hisse, %60 nakit ve %3 girişte stop riski hedeflenir.
+Fiyat hareketi, masraf, lot ve stop boşluğu bu değerleri değiştirir.
+
+Net tasfiye üzerinden güncel hisse ve nakit payı, eş pasif payları,
+açık stop riski ve stres gözlemi kaydedilir. Eksik değerleme
+bilinmiyor kalır. Ölçüm, mevcut emir ve tahmin kurallarını değiştirmez.
+
+Özellik, ufuk, maliyet veya karar semantiği değişen ML adayına ayrı
+kimlik ve ayrı defter gerekir. İleri sıralama dosyası, girdisi ve
+vadesi korunur. Devam eden momentum aynı 120–20 tanımıyla izlenir.
+Sıradaki bağımsız deneyler altın için eş bütçeli makas-zamanlama,
+BIST için ortak sinyal üzerinde tek değişkenli trend ve R:R
+kıyaslarıdır. Ortak T0 bu deneylerin ön koşulu değildir.
 
 ---
 
