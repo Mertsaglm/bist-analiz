@@ -1,11 +1,11 @@
 # Birikim projesi — doküman haritası
 
-> **2026-11-25 devir notu.** Güncel üretim, yerel paket, bağımsız momentum ve ortak T0 durumu [STATE kaydında](../ai/STATE.md). Bu sayfadaki tarihli kesitler kendi koşullarına aittir.
+> **2026-11-26 devir notu.** Güncel üretim, yerel paket, bağımsız momentum ve ortak T0 durumu [STATE kaydında](../ai/STATE.md). Bu sayfadaki tarihli kesitler kendi koşullarına aittir.
 
 
-**Güncelleme:** 2026-11-25. Başlangıç için [kapsam](../ai/PROJECT.md), [durum ve kabul](../ai/STATE.md), [kararlar](../ai/DECISIONS.md) ve [dersler](../ai/LESSONS.md).
+**Güncelleme:** 2026-11-26. Başlangıç için [kapsam](../ai/PROJECT.md), [durum ve kabul](../ai/STATE.md), [kararlar](../ai/DECISIONS.md) ve [dersler](../ai/LESSONS.md).
 
-[24 Kasım denetimi](DENETIM-2026-11-24.md) işlemsizlik, karar kapıları ve açık kanıtları toplar. [İşletim rehberi](ISLETIM-2026-11-18.md) yerel düzeltmeleri açıklar. [Dış AI bağlamı](AI-DANISMA-BAGLAMI.md) 24 Eylül tarihsel mimari kesitini ve güncel kaynakları gösterir. Ortak T0 kapalıdır.
+[24 Kasım denetimi](DENETIM-2026-11-24.md) işlemsizlik, karar kapıları ve açık kanıtları toplar. [İşletim rehberi](ISLETIM-2026-11-18.md) yerel düzeltmeleri açıklar. [Dış AI bağlamı](AI-DANISMA-BAGLAMI.md) 24 Eylül tarihsel mimari kesitini ve güncel kaynakları gösterir. [26 Kasım tarihsel sınaması](TARIHSEL-SINAMA-2026-11-26.md) 20 seanslık eğitim pencerelerini ve ekonomik kıyası ölçer.
 
 ## Önce mimariyi doğru ayır
 
@@ -18,6 +18,9 @@
 - Gerçek banka/borsa emir bağlantısı yoktur. V2'de LLM sayısal işlem kararı vermez.
 
 ## Seçilebilir bölümler
+
+[26 Kasım takip denetimi](AGIRLIK-VE-TAKVIM-DENETIMI-2026-11-26.md) eş tarihli
+Ridge ağırlığını, BIST hedef vadesini ve T0 kabul durumunu belgeler.
 
 ### 01 — Amaç, kapsam ve başarı ölçütü
 

@@ -1,0 +1,122 @@
+{
+  "AKBNK": {
+    "url": "https://www.isyatirim.com.tr/_layouts/15/Isyatirim.Website/Common/Data.aspx/HisseTekil?hisse=AKBNK&startdate=08-04-2024&enddate=15-04-2024",
+    "response_body_sha256": "310a1bc68e1ba4f39d62d00933514c6c48893aea16849cc555bb24da8770da55",
+    "verified_rows": [
+      {
+        "date": "2024-04-09",
+        "symbol": "AKBNK",
+        "raw_close_try": 56.7,
+        "reported_turnover": 1527223611.0,
+        "raw_low_try": 55.65,
+        "raw_high_try": 57.7
+      }
+    ]
+  },
+  "THYAO": {
+    "url": "https://www.isyatirim.com.tr/_layouts/15/Isyatirim.Website/Common/Data.aspx/HisseTekil?hisse=THYAO&startdate=09-04-2024&enddate=09-04-2024",
+    "response_body_sha256": "e18b9b71bf38a183c1546e0dc426a07921055b46fdd7e79f33621b8ef812bf9a",
+    "verified_rows": [
+      {
+        "date": "2024-04-09",
+        "symbol": "THYAO",
+        "raw_close_try": 309.25,
+        "reported_turnover": 4482603426.0,
+        "raw_low_try": 308.5,
+        "raw_high_try": 311.0
+      }
+    ]
+  },
+  "SASA": {
+    "url": "https://www.isyatirim.com.tr/_layouts/15/Isyatirim.Website/Common/Data.aspx/HisseTekil?hisse=SASA&startdate=09-04-2024&enddate=09-04-2024",
+    "response_body_sha256": "a0dd811393a759dff104599ffa8d644d45bdcd9e7dec3af092b0faba850793ff",
+    "verified_rows": [
+      {
+        "date": "2024-04-09",
+        "symbol": "SASA",
+        "raw_close_try": 41.4,
+        "reported_turnover": 1183241203.0,
+        "raw_low_try": 40.42,
+        "raw_high_try": 41.88
+      }
+    ]
+  },
+  "SASA-recent": {
+    "url": "https://www.isyatirim.com.tr/_layouts/15/Isyatirim.Website/Common/Data.aspx/HisseTekil?hisse=SASA&startdate=25-09-2026&enddate=05-11-2026",
+    "response_body_sha256": "52af19ebf93c7c04bc3cb27365d44421e7d78f76bc6adf51bb19da707ba42592",
+    "verified_rows": [
+      {
+        "date": "2026-09-25",
+        "symbol": "SASA",
+        "raw_close_try": 2.08,
+        "reported_turnover": 7342320867.0,
+        "raw_low_try": 2.02,
+        "raw_high_try": 2.17
+      },
+      {
+        "date": "2026-09-28",
+        "symbol": "SASA",
+        "raw_close_try": 1.88,
+        "reported_turnover": 6472819333.0,
+        "raw_low_try": 1.88,
+        "raw_high_try": 2.05
+      },
+      {
+        "date": "2026-09-29",
+        "symbol": "SASA",
+        "raw_close_try": 1.88,
+        "reported_turnover": 5952535284.0,
+        "raw_low_try": 1.8,
+        "raw_high_try": 1.92
+      },
+      {
+        "date": "2026-09-30",
+        "symbol": "SASA",
+        "raw_close_try": 1.8,
+        "reported_turnover": 5171408127.0,
+        "raw_low_try": 1.75,
+        "raw_high_try": 1.9
+      },
+      {
+        "date": "2026-10-01",
+        "symbol": "SASA",
+        "raw_close_try": 1.92,
+        "reported_turnover": 5393562460.0,
+        "raw_low_try": 1.83,
+        "raw_high_try": 1.97
+      },
+      {
+        "date": "2026-10-23",
+        "symbol": "SASA",
+        "raw_close_try": 1.6,
+        "reported_turnover": 4311333293.0,
+        "raw_low_try": 1.48,
+        "raw_high_try": 1.64
+      },
+      {
+        "date": "2026-10-30",
+        "symbol": "SASA",
+        "raw_close_try": 1.45,
+        "reported_turnover": 3945103309.0,
+        "raw_low_try": 1.45,
+        "raw_high_try": 1.53
+      },
+      {
+        "date": "2026-11-04",
+        "symbol": "SASA",
+        "raw_close_try": 1.65,
+        "reported_turnover": 7269074598.0,
+        "raw_low_try": 1.57,
+        "raw_high_try": 1.65
+      },
+      {
+        "date": "2026-11-05",
+        "symbol": "SASA",
+        "raw_close_try": 1.63,
+        "reported_turnover": 4379343225.0,
+        "raw_low_try": 1.61,
+        "raw_high_try": 1.71
+      }
+    ]
+  }
+}

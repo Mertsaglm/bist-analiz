@@ -9,6 +9,19 @@ Güncel oturum devri ve doğrulama kesiti [STATE](STATE.md) dosyasındadır.
 
 ---
 
+## #045 — 2026-11-26 — Eğitim penceresi tarihsel keşfi
+
+20 seanslık hedefte 2, 3, 5 yıl ve genişleyen Ridge aynı tarihlerde
+sınandı. İlk sıkı BIST koşusunun 19 eşli dönemi veri boşluğuna duyarlı.
+Takvim ve fiyat şartları sabitken yalnız özellik hesabını gerçek gözlenen
+barlara bağlayan ikinci koşu 57 eşli dönem verdi. Adaylar ve ekonomik
+başarı ölçütü ön kayıttaki gibi kaldı. Sonuçlar üretim yeniden eğitimini
+veya aday terfisini desteklemiyor.
+
+Yeniden değerlendirme için BIST'te resmî tarihli üyelik ve eksik yarım
+seansın fiyat kanıtı, altında yeterli banka gözlemi ve ileri eşli ekonomik
+sonuç aranır. [Protokol ve sonuç](../docs/TARIHSEL-SINAMA-2026-11-26.md)
+
 ## #044 — 2026-11-26 — Ortak T0 başlangıcı ve ekonomik ayar mührü
 
 Ortak seans 27 Kasım 2026. Girişte son geçerli kaynak kapanışı,

@@ -8,6 +8,19 @@ Güncel oturum devri ve doğrulama kesiti [STATE](STATE.md) dosyasındadır.
 
 ---
 
+## L-044 — 2026-11-26 — Eksik yarım seansın uzun göstergeye etkisi
+
+9 Nisan 2024 resmî yarım seansında XU030 ve XU100 var. Eldeki 15 hisse
+barında pozitif hacim yok. Ortak takvimde tek boşluk 200 seanslık özelliği
+sonraki 199 gözlemde düşürdü ve 2 yıllık eğitimde değerler eksildi.
+Bu kayıp ortak takvime boş satır ekleyen araştırma yolundaydı.
+Ham sembol barıyla çalışan V2 yolunda aynı 200 günün 199'u kapsandı.
+V2'de ayrı kusur, sembol barıyla hesaplanan 20 seans etiketinin kayması.
+Özellik, vade takvimi ve fiyat kapsamını bağımsız ölç. Fiyat uydurmadan
+yapılan özellik duyarlılığında eksik dönem, ekonomik tabloda eksik kalır.
+[Ölçüm](../docs/TARIHSEL-SINAMA-2026-11-26.md#bist) ·
+[Davranış testi](../tests/test_historical_window_research.py)
+
 ## L-043 — 2026-11-26 — Kod özeti ayar değişikliğini yakalamaz
 
 Açılmış deneyin risk ayarı değişince 25 Kasım sürümü yeni çevrimi kabul

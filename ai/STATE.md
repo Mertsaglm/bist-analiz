@@ -14,6 +14,8 @@ Araştırma inceleme dalına gönderildi. [İlk paket `3d035cb`](https://github.
 | Ortak T0 | 27 Kasım iki config için ortak seans. 26 Kasım kesitinde aday defterleri 0/0, bütçeler 50.000/5.000 TL, aktif defter zincirleri doğrulandı. Başlangıçta BIST 26 Kasım, altın 25 Kasım kaynak kapanışını ve aynı seansın geçerli çekirdek kotasyonlarını bekler. İlk katkı ve ilk dolum teyidi açık. [Sözleşme](../docs/PORTFOY-DENEYI-2026-10-01.md) |
 | Araştırma | Bağımsız momentum 25 Kasım'da başladı. 30/30 sıra, 50.000 TL katkı, 5 strateji ve 30 pasif dolum. 22 Aralık vadesi korunuyor. [İlk gün görünümü](https://github.com/Mertsaglm/bist-analiz/blob/044e14fd12286ee0d94328d5ba16fbd5a228fe10/data/advisor/latest.json) |
 | Tahmin araştırması | Ayrı 5/20/60 seans CPU koşusu tamamlandı, BIST 20 seans LambdaRank IC +0,0984, altında sıfır getiri MAE'de üç ufukta önde. 25 Kasım 01.09 yerel gölge, 29/30 hisse, altı sıralayıcı, vade 22 Aralık. [Kanıt](../docs/TAHMIN-ARASTIRMASI-2026-11-25.md) |
+| 26 Kasım tarihsel sınama | 25 Kasım kapanışına sabitlenen iki SQL ve üretim makbuzu doğrulandı. 20 seans, 2/3/5 yıl ve genişleyen eğitim. BIST 19 eşli dönem, gözlenen bar duyarlılığında 57 dönem. Bütün eşanlı aralıklar sıfırı içeriyor. Altın 59 olgun tahmin, tüm aktif kollar %3 ve %4 makasta pasifin altında. Yerel araştırma. [Rapor ve makbuzlar](../docs/TARIHSEL-SINAMA-2026-11-26.md) |
+| 26 Kasım takip denetimi | Ana altın Ridge ağırlıksız. Aynı 59 tarihte 126 yarı ömür MAE'yi 5,36'dan 6,69'a çıkardı. BIST ham bar yolu yarım seans sonrasında 199/200 gün yeterli özellik verdi, yakın etiketlerin 1.140/1.440'ı piyasa vadesinden kaydı. 14.17/14.31 İstanbul karar makbuzları ortak T0'ı bekliyor. [Kanıt ve deneme kaydı](../docs/AGIRLIK-VE-TAKVIM-DENETIMI-2026-11-26.md) |
 | Ek denetim | Tarihli 42 seans replay'inde saf LambdaRank 51.752,75 TL, momentum 52.135,60 TL, pasif 52.634,27 TL. Yeni sözleşme kapsamı ve 5 seans gölge yayın paketinde. [Denetim](../docs/TAHMIN-DENETIMI-2026-11-25.md) |
 | Yerel paket | Momentum/pasif hisse ve nakit payı, haftalık ortalama ve gün sayısı, stop ve stres ölçümleri. BIST OHLC reddinde dört ham değer. 25 Kasım main yayın paketinde. Her depoda 5 hedefli test, BIST'te 30 fiyat/telafi testi, 39 ortak modül eş. |
 | Veri İzleme | Vercel canlı dosyası doğrulandı. Parolalı oturum, altın otomatik gün sonu makbuzu ve yeni haftalık teslim açık. |
@@ -64,8 +66,10 @@ reddedilen ilk ham değerler olmadığından kök neden doğrulanmadı.
 
 1. 27 Kasım ortak T0 açılışını ve bağımsız momentum kolunu takip et.
    DoD: Her piyasada 5 sözleşme ve 50.000 TL ilk katkı, ilk dolumun uygun farklı kotasyonu ve canlı defter zinciri doğrulanır. Telegram teslimi ayrıca izlenir.
-2. Yerel ölçüm paketini yayın ve canlı kabul açısından takip et.
-   DoD: Eş pasif maruziyet, nakit, stop ve örneklem paydası haftalık görünür.
+2. Öncelikli teknik iş olarak BIST hedef vadesini ayrı sürümde ölç.
+   DoD: `bist-market-session-target-v1` için piyasa seansı vadesi, eksik
+   uç fiyatı ve eski mühür uyumluluğu doğrulanır. Model farkı ortak
+   tarihlerde ölçülür. [Deney](../docs/BIST-HEDEF-VADESI-2026-11-26.md)
 3. Altın zamanlama, BIST trend/R:R ve yeni sıralama deneylerini bağımsız izle.
    DoD: Ayrı kimlik, eş bütçe, tek politika farkı, ilk uygun çevrim ve
    vadesi gelen gölge tahminlerde kapsam/IC/ilk beş brüt farkı.

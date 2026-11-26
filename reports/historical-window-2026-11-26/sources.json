@@ -1,0 +1,61 @@
+{
+  "bist": {
+    "bars": {
+      "bad_high_low": 0,
+      "bad_open_close": 0,
+      "first": "2015-01-02",
+      "last": "2026-11-25",
+      "nonpositive_or_null_volume": 341,
+      "rows": 209420,
+      "symbols": 73
+    },
+    "commit": "c12fe61d05fcbc0d4d1e4a959adf8e3956789f14",
+    "decision_count": 33,
+    "half_day_2024_04_09": {
+      "positive_volume": 0,
+      "rows": 15
+    },
+    "ledger_events": 39623,
+    "ledger_head": "1b50d976c17e83a7c4d76a94d3a3fda328a32b320a3373f21b428806cc7291c4",
+    "matching_quote_snapshot_hash": "ade5ee7e54e624246868c565f19a0a982002b5f3a095c309df8c6f583712455e",
+    "priced_workflow_run": 45799662675,
+    "receipt_generated_at": "2026-11-26T10:18:41.484663+00:00",
+    "repository": "Mertsaglm/bist-analiz",
+    "research_sql_sha256": "4aa13e062eb6d9643a70e079e2fdb5d5137e865fc150776960420ec5b3d72141",
+    "snapshot_quotes": 33,
+    "source_analysis_date": "2026-11-25",
+    "t0_accounts_in_receipt": 0,
+    "t0_config": "2026-11-27",
+    "t0_status": "T0 bekleniyor",
+    "workflow_run_checked_at_1400_trt": 45806611580
+  },
+  "gold": {
+    "bank_reference": {
+      "dates": 40,
+      "first": "2026-10-01T20:47:30.178034+03:00",
+      "last": "2026-11-26T14:01:57.037245+03:00",
+      "snapshots": 1291
+    },
+    "commit": "43e998531920a109181de4f3dbc62df2303649f5",
+    "decision_count": 1,
+    "ledger_events": 9783,
+    "ledger_head": "5c6543b41ef5481064bcfa35ab67453f26242176eaa56af0be5d3b547e17648a",
+    "matching_quote_snapshot_hash": "973c528281bc0bcadc61c8dd156af0abde8423980cb5c5115a4e7d80f701758d",
+    "priced_workflow_run": 45806612222,
+    "receipt_generated_at": "2026-11-26T11:01:57.037245+00:00",
+    "repository": "Mertsaglm/gold_tracking_system",
+    "research_sql_sha256": "5a1c3e6e6a529d1a149ce2a1cd11bf2f9e9cc4f1fd7664e06184e2407fc8eb8e",
+    "snapshot_quotes": 1,
+    "source_analysis_date": "2026-11-25",
+    "t0_accounts_in_receipt": 0,
+    "t0_config": "2026-11-27",
+    "t0_status": "T0 bekleniyor",
+    "theoretical_gram": {
+      "first": "2016-01-04",
+      "last": "2026-11-25",
+      "max_formula_residual_try": 9.094947017729282e-13,
+      "rows": 2647
+    },
+    "workflow_run_checked_at_1400_trt": 45806612222
+  }
+}
