@@ -49,8 +49,9 @@ GRAM. En fazla %20 taktik, masraf sonrası tahmin ve açık stop riskiyle sını
 Çekirdek + nakit/pasif kollar taktiğin ek katkısını ölçer. Eski Ridge kontrol,
 göreli BIST/ons-kur altın Ridge ayrı model adayıdır. LightGBM yalnız offline'dır.
 Başarı, aynı katkılarla maliyet sonrası servet ve katkısız getirinin pasif kola
-göre değerlendirilmesidir; düşüş daha kötü olmamalı. İleri T0 henüz açılmadı;
-otomatik terfi ve gerçek emir yok. Ayrıntı: `docs/PORTFOY-DENEYI-2026-10-01.md`.
+göre değerlendirilmesidir. Düşüş daha kötü olmamalı. İlk T0 çevrimi tüm çekirdek
+fiyatları ve taze kaynak kapanışıyla ekonomik ayarları mühürler.
+[Portföy deneyi](../docs/PORTFOY-DENEYI-2026-10-01.md)
 Yayın, ilk canlı çevrim ve T0 ön koşullarının güncel durumu `ai/STATE.md` dosyasındadır.
 
 ## Karar ölçümü — 2026-11-24

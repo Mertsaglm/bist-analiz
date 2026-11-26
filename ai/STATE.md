@@ -1,17 +1,18 @@
 # Mevcut durum
 
-## Devir kontrolü — 2026-11-25
+## Devir kontrolü — 2026-11-26
 
-25 Kasım 21.56 İstanbul kesitinde GitHub dalları, koşular ve üretim defter görünümleri yeniden doğrulandı.
+26 Kasım 13.25 İstanbul kesitinde üretim arşivleri, kotasyonlar ve defterler doğrulandı.
 İnceleme dalının doküman CI'ı iki depoda geçti. Araştırma paketi ve işletim düzeltmeleri 25 Kasım main yayın paketinde. İlk yeni kodlu canlı finansal çevrim ayrı doğrulanır.
 Araştırma inceleme dalına gönderildi. [İlk paket `3d035cb`](https://github.com/Mertsaglm/bist-analiz/commit/3d035cb848d78f8e23c28c290e300c32b426ab87).
 Üretim kaynağı `main`. Canlı kabul ayrıca ölçülür.
 
 | Konu | Son doğrulanmış durum |
 |---|---|
-| BIST üretimi | `044e14f` main. 25 Kasım 17.17 V2 33/33, analiz 24 Kasım. 20.59 koşusunda portföy adımı atlandı. [Yazan çevrim](https://github.com/Mertsaglm/bist-analiz/actions/runs/45632089206) |
-| Altın üretimi | `e9f670b` main. 25 Kasım 20.12 V2 1/1, analiz ve son teorik SQL 24 Kasım. Standart Telegram ve makbuz adımları geçti; planlı kapanış adımı atlandı. [Çevrim](https://github.com/Mertsaglm/gold_tracking_system/actions/runs/45662069899) |
-| Araştırma | Bağımsız momentum 25 Kasım'da başladı. 30/30 sıra, 50.000 TL katkı, 5 strateji ve 30 pasif dolum. 22 Aralık vadesi korunuyor. Ortak T0 kapalı. [İlk gün görünümü](https://github.com/Mertsaglm/bist-analiz/blob/044e14fd12286ee0d94328d5ba16fbd5a228fe10/data/advisor/latest.json) |
+| BIST üretimi | 26 Kasım 13.18 V2 33/33, analiz ve çekirdek SQL 25 Kasım. Tarihli BIST30 ve uygun giriş kotasyonu 30/30. [Üretim çevrimi](https://github.com/Mertsaglm/bist-analiz/actions/runs/45799662675) |
+| Altın üretimi | 26 Kasım 13.16 V2 1/1, analiz ve GC=F teorik SQL 25 Kasım. GRAM çekirdeğinde geçerli giriş kotasyonu. [Üretim çevrimi](https://github.com/Mertsaglm/gold_tracking_system/actions/runs/45799662442) |
+| Ortak T0 | 27 Kasım iki config için ortak seans. 26 Kasım kesitinde aday defterleri 0/0, bütçeler 50.000/5.000 TL, aktif defter zincirleri doğrulandı. Başlangıçta BIST 26 Kasım, altın 25 Kasım kaynak kapanışını ve aynı seansın geçerli çekirdek kotasyonlarını bekler. İlk katkı ve ilk dolum teyidi açık. [Sözleşme](../docs/PORTFOY-DENEYI-2026-10-01.md) |
+| Araştırma | Bağımsız momentum 25 Kasım'da başladı. 30/30 sıra, 50.000 TL katkı, 5 strateji ve 30 pasif dolum. 22 Aralık vadesi korunuyor. [İlk gün görünümü](https://github.com/Mertsaglm/bist-analiz/blob/044e14fd12286ee0d94328d5ba16fbd5a228fe10/data/advisor/latest.json) |
 | Tahmin araştırması | Ayrı 5/20/60 seans CPU koşusu tamamlandı, BIST 20 seans LambdaRank IC +0,0984, altında sıfır getiri MAE'de üç ufukta önde. 25 Kasım 01.09 yerel gölge, 29/30 hisse, altı sıralayıcı, vade 22 Aralık. [Kanıt](../docs/TAHMIN-ARASTIRMASI-2026-11-25.md) |
 | Ek denetim | Tarihli 42 seans replay'inde saf LambdaRank 51.752,75 TL, momentum 52.135,60 TL, pasif 52.634,27 TL. Yeni sözleşme kapsamı ve 5 seans gölge yayın paketinde. [Denetim](../docs/TAHMIN-DENETIMI-2026-11-25.md) |
 | Yerel paket | Momentum/pasif hisse ve nakit payı, haftalık ortalama ve gün sayısı, stop ve stres ölçümleri. BIST OHLC reddinde dört ham değer. 25 Kasım main yayın paketinde. Her depoda 5 hedefli test, BIST'te 30 fiyat/telafi testi, 39 ortak modül eş. |
@@ -61,8 +62,8 @@ reddedilen ilk ham değerler olmadığından kök neden doğrulanmadı.
 
 ## Sıradaki 3 İş
 
-1. Üretim kapanışlarını ve başlayan momentum kolunu takip et.
-   DoD: Son SQL tarihi, fiyat kapsamı, defter ve kapanış makbuzları eşleşir.
+1. 27 Kasım ortak T0 açılışını ve bağımsız momentum kolunu takip et.
+   DoD: Her piyasada 5 sözleşme ve 50.000 TL ilk katkı, ilk dolumun uygun farklı kotasyonu ve canlı defter zinciri doğrulanır. Telegram teslimi ayrıca izlenir.
 2. Yerel ölçüm paketini yayın ve canlı kabul açısından takip et.
    DoD: Eş pasif maruziyet, nakit, stop ve örneklem paydası haftalık görünür.
 3. Altın zamanlama, BIST trend/R:R ve yeni sıralama deneylerini bağımsız izle.
