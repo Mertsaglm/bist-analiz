@@ -1,1 +1,1 @@
-{"attempted_at":"2026-11-26T09:17:01.217254+00:00","errors":{},"expected":"2026-11-25","legacy_cutoff_after":"2026-11-25","legacy_cutoff_before":"2026-11-25","missing":[],"missing_before":["ARCLK"],"missing_indices":[],"ok":true,"rejected_indices":[]}
+{"attempted_at":"2026-11-28T00:17:23.580717+00:00","errors":{},"expected":"2026-11-27","legacy_cutoff_after":"2026-11-27","legacy_cutoff_before":"2026-11-27","missing":["DSTKF"],"missing_before":["DSTKF"],"missing_indices":[],"ok":false,"rejected_indices":[]}
